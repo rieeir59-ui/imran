@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -8,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import ProjectsPage from '@/app/projects/page';
 
 const fileIndexItems = [
     { no: 1, id: 'section-1', title: 'Project Checklist' },
@@ -339,7 +341,7 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
                 <Card>
                     <CardHeader><CardTitle>Requirement Performa (For Residential project)</CardTitle></CardHeader>
                     <CardContent>
-                        <p>Details for Requirement Performa...</p>
+                        <ProjectsPage />
                     </CardContent>
                 </Card>
             );
@@ -383,7 +385,7 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
         case 'section-11':
             return (
                 <Card>
-                    <CardHeader><CardTitle>Drawings (Architectural / Interiors / submission)</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>Drawings (Architectural / Interiors / submission)</CardHeader></CardHeader>
                     <CardContent>
                         <DrawingsList />
                     </CardContent>
