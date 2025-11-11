@@ -10,6 +10,10 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ProjectsPage from '@/app/projects/page';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const fileIndexItems = [
     { no: 1, id: 'section-1', title: 'Project Checklist' },
@@ -19,7 +23,7 @@ const fileIndexItems = [
     { no: 5, id: 'section-5', title: 'Project Agreement' },
     { no: 6, id: 'section-6', title: 'List of Services' },
     { no: 7, id: 'section-7', title: 'Requirement Performa (for Residential and Commercial Project)' },
-    { no: 8, id: 'section-8', title: 'Site Survey' },
+    { no: 8, id. 'section-8', title: 'Site Survey' },
     { no: 9, id: 'section-9', title: 'Project Bylaws' },
     { no: 10, id: 'section-10', title: 'Proposal request' },
     { no: 11, id: 'section-11', title: 'Drawings (architectural/interior/submission)' },
@@ -118,6 +122,223 @@ const DrawingsList = () => {
         </>
     );
 };
+
+const SiteSurveySection = () => {
+    const YesNoField = ({ label, inlineLabel }: { label: string, inlineLabel?: string }) => (
+        <div className="flex items-center justify-between">
+            <Label>{label}</Label>
+            <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                    <Checkbox id={`${label}-yes`} /> <Label htmlFor={`${label}-yes`}>Yes</Label>
+                </div>
+                {inlineLabel && <span className="text-sm text-muted-foreground">{inlineLabel}</span>}
+                <div className="flex items-center gap-2">
+                    <Checkbox id={`${label}-no`} /> <Label htmlFor={`${label}-no`}>No</Label>
+                </div>
+            </div>
+        </div>
+    );
+
+    const LabeledInput = ({ label, placeholder }: { label: string, placeholder?: string }) => (
+        <div className="grid grid-cols-2 items-center">
+            <Label>{label}</Label>
+            <Input placeholder={placeholder} />
+        </div>
+    );
+
+    return (
+        <Card>
+            <CardHeader>
+                <div className="text-center">
+                    <CardTitle>SITE SURVEY - REAL ESTATE MANAGEMENT</CardTitle>
+                    <p className="text-sm font-semibold">PREMISES REVIEW FOR PROPOSED BRANCH/OFFICE</p>
+                    <p className="text-xs text-muted-foreground">The questionnaire form provides preliminary information for determining the suitability of premises or property to be acquired</p>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div>
+                    <Subtitle>Location</Subtitle>
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-8">
+                            <Label>Purpose</Label>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2"><Checkbox id="purpose-branch" /> <Label htmlFor="purpose-branch">Branch</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="purpose-office" /> <Label htmlFor="purpose-office">Office</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="purpose-other" /> <Label htmlFor="purpose-other">Other</Label></div>
+                            </div>
+                        </div>
+                        <LabeledInput label="City" />
+                        <LabeledInput label="Region" />
+                        <LabeledInput label="Address" />
+                    </div>
+                </div>
+
+                <div>
+                    <Subtitle>Legal File</Subtitle>
+                    <div className="space-y-4">
+                        <LabeledInput label="Name of Owner" />
+                        <YesNoField label="Is completion certificate available?" />
+                        <YesNoField label="Is the property leased?" inlineLabel="As informed by owner representative" />
+                    </div>
+                </div>
+
+                <div>
+                    <Subtitle>Area</Subtitle>
+                    <div className="space-y-4">
+                        <p className="font-semibold">Dimension</p>
+                        <div className="pl-4 space-y-4">
+                            <p className="text-sm">Attach as-built plan(s)</p>
+                            <LabeledInput label="Maximum Frontage in feet" />
+                            <LabeledInput label="Maximum Depth in feet" />
+                            <LabeledInput label="Total Area in sqft" />
+                        </div>
+                        <LabeledInput label="Minimum clear height (Floor to Roof) in ft" />
+                        <LabeledInput label="Building plot size of which premises is a part" />
+                        <p className="font-semibold">Covered Area</p>
+                        <div className="pl-4 space-y-4">
+                            <LabeledInput label="Basement" />
+                            <LabeledInput label="Ground Floor" />
+                        </div>
+                         <LabeledInput label="No. stories/floors (mention, mezzanine basement, roof parapet wall)" />
+                         <LabeledInput label="Basement / Ground Floor" />
+                    </div>
+                </div>
+                
+                <div>
+                    <Subtitle>Building Overview</Subtitle>
+                     <div className="space-y-4">
+                        <LabeledInput label="Status" />
+                        <LabeledInput label="Type of Premises" />
+                        <LabeledInput label="Age of Premises" />
+                        <LabeledInput label="Interior of Premises" />
+                        <LabeledInput label="Type of Construction" />
+                        <p className="font-semibold">Condition of premises with reference to structural stability</p>
+                        <div className="pl-4 space-y-4">
+                            <YesNoField label="Is entrance independent?" />
+                            <YesNoField label="Staircase for staff use available with its assessment?" />
+                            <YesNoField label="Emergency Exit available?" />
+                            <YesNoField label="Emergency Exit if not available can be provided or not?" />
+                            <YesNoField label="Ramp available?" />
+                            <YesNoField label="Ramp if not available can be provided or not?" />
+                            <YesNoField label="Seepage?" />
+                            <LabeledInput label="Area of seepage (walls, slab, etc.)" />
+                            <LabeledInput label="Cause of seepage" />
+                            <YesNoField label="Generator installation space?" />
+                        </div>
+                        <div className="space-y-2">
+                           <Label>Property Utilization</Label>
+                           <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2"><Checkbox id="util-res" /> <Label htmlFor="util-res">Fully Residential</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="util-com" /> <Label htmlFor="util-com">Fully Commercial</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="util-dual" /> <Label htmlFor="util-dual">Dual use residential & commercial</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="util-ind" /> <Label htmlFor="util-ind">Industrial</Label></div>
+                            </div>
+                        </div>
+                        <LabeledInput label="Building plinth level from the road" />
+                        <YesNoField label="Is area susceptible to flooding during rainfall?" />
+                        <YesNoField label="Disable access available or can be provided?" />
+                        <LabeledInput label="Condition of roof waterproofing (if applicable)" />
+                        <YesNoField label="Parking available?" inlineLabel="On Main Road" />
+                        <YesNoField label="Approachable through Road?" />
+                        <YesNoField label="Any hazard like petrol pump/cng station/in vicinity?" inlineLabel="300 meter" />
+                        <YesNoField label="Wall masonary material as per region?" />
+                        <YesNoField label="Space for signage available?" />
+                        <div className="space-y-2">
+                           <Label>Major retainable building elements</Label>
+                           <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2"><Checkbox id="retain-water" /> <Label htmlFor="retain-water">Water Tank</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="retain-vault" /> <Label htmlFor="retain-vault">Vault</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="retain-sub" /> <Label htmlFor="retain-sub">Subflooring</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="retain-stair" /> <Label htmlFor="retain-stair">Staircase</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="retain-other" /> <Label htmlFor="retain-other">Others</Label></div>
+                            </div>
+                        </div>
+                        <LabeledInput label="In case of Plot provide existing level from road & surrounding buildings" />
+                        <div className="space-y-2">
+                           <Label>Building Control Violations</Label>
+                           <div className="flex items-center gap-4">
+                               <div className="flex items-center gap-2"><Checkbox id="violation-major" /> <Label htmlFor="violation-major">Major</Label></div>
+                               <div className="flex items-center gap-2"><Checkbox id="violation-minor" /> <Label htmlFor="violation-minor">Minor</Label></div>
+                               <div className="flex items-center gap-2"><Checkbox id="violation-none" /> <Label htmlFor="violation-none">No Deviation</Label></div>
+                               <span className="text-sm text-muted-foreground">As performed by owner representative</span>
+                           </div>
+                        </div>
+                     </div>
+                </div>
+
+                <div>
+                    <Subtitle>Utilities</Subtitle>
+                    <div className="space-y-4">
+                        <LabeledInput label="Sanctioned electrical load" />
+                        <div className="flex items-center gap-8">
+                            <Label>Type of electrical load</Label>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2"><Checkbox id="load-com" /> <Label htmlFor="load-com">Commercial</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="load-ind" /> <Label htmlFor="load-ind">Industrial</Label></div>
+                                <div className="flex items-center gap-2"><Checkbox id="load-res" /> <Label htmlFor="load-res">Residential</Label></div>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 items-center">
+                            <Label>Electrical Meter</Label>
+                            <RadioGroup defaultValue="single">
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="single" id="single" />
+                                    <Label htmlFor="single">Single Phase</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="3phase" id="3phase" />
+                                    <Label htmlFor="3phase">3 Phase</Label>
+                                </div>
+                            </RadioGroup>
+                        </div>
+                        <YesNoField label="Piped water available?" />
+                        <YesNoField label="Underground tank?" />
+                        <YesNoField label="Overhead tank?" />
+                        <LabeledInput label="Type of Overhead tank (RCC, Fiber etc.)" />
+                        <LabeledInput label="Type of water (boring or liner water)" />
+                        <YesNoField label="Gas Connection?" />
+                        <YesNoField label="Connected to Sewerage line?" />
+                    </div>
+                </div>
+                
+                <div>
+                    <Subtitle>Bounded As</Subtitle>
+                    <div className="space-y-4">
+                        <LabeledInput label="Front" />
+                        <LabeledInput label="Back" />
+                        <LabeledInput label="Right" />
+                        <LabeledInput label="Left" />
+                    </div>
+                </div>
+                
+                <div>
+                    <Subtitle>Rental Detail</Subtitle>
+                    <div className="space-y-4">
+                        <LabeledInput label="Acquisition" />
+                        <LabeledInput label="Expected Rental/month" />
+                        <LabeledInput label="Expected Advance (# of months)" />
+                        <LabeledInput label="Expected period of lease" />
+                        <LabeledInput label="Annual increase in rental" />
+                    </div>
+                </div>
+
+                <div>
+                    <Subtitle>Survey Conducted By</Subtitle>
+                    <div className="space-y-4">
+                        <LabeledInput label="Name" />
+                        <LabeledInput label="Designation" />
+                        <LabeledInput label="Contact" />
+                        <LabeledInput label="Cell" />
+                        <LabeledInput label="Landline" />
+                        <LabeledInput label="Email" />
+                        <LabeledInput label="Date" />
+                    </div>
+                </div>
+
+            </CardContent>
+        </Card>
+    )
+}
 
 const SectionContent = ({ sectionId }: { sectionId: string }) => {
     switch (sectionId) {
@@ -508,14 +729,7 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
                 </Card>
             );
         case 'section-8':
-            return (
-                <Card>
-                    <CardHeader><CardTitle>Site Survey</CardTitle></CardHeader>
-                    <CardContent>
-                        <p>Details for Site Survey...</p>
-                    </CardContent>
-                </Card>
-            );
+            return <SiteSurveySection />;
         case 'section-9':
             return (
                 <Card>
