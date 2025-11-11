@@ -64,10 +64,9 @@ export default function ProjectsPage() {
       .then((docSnap) => {
         if (docSnap.exists()) {
           setFormData(docSnap.data() || {});
-          setIsEditing(false);
-        } else {
-          setIsEditing(true);
         }
+        // Always start in editing mode, regardless of whether data exists.
+        setIsEditing(true);
       })
       .catch((error) => {
         console.error("Error fetching project data:", error);
@@ -107,12 +106,15 @@ export default function ProjectsPage() {
     setIsSaving(true);
     setDocumentNonBlocking(projectDocRef, formData, { merge: true });
     
-    setIsEditing(false);
-    setIsSaving(false);
-    toast({
-      title: "Project Saved",
-      description: "Your project information has been saved.",
-    });
+    // Use a short delay to allow the user to see the saving state, then exit editing mode.
+    setTimeout(() => {
+      setIsSaving(false);
+      setIsEditing(false);
+      toast({
+        title: "Project Saved",
+        description: "Your project information has been saved.",
+      });
+    }, 500);
   };
 
   if (isUserLoading || isLoading) {
