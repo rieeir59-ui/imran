@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
+import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -68,18 +68,18 @@ export default function ProjectsPage() {
         // Always start in editing mode, regardless of whether data exists.
         setIsEditing(true);
       })
-      .catch((error) => {
-        console.error("Error fetching project data:", error);
-        toast({
-          variant: "destructive",
-          title: "Load Failed",
-          description: "Could not load project data.",
+      .catch(async (serverError) => {
+        console.error("Error fetching project data:", serverError);
+        const permissionError = new FirestorePermissionError({
+          path: projectDocRef.path,
+          operation: 'get',
         });
+        errorEmitter.emit('permission-error', permissionError);
       })
       .finally(() => {
         setIsLoading(false);
       });
-  }, [projectDocRef, toast]);
+  }, [projectDocRef]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -361,3 +361,5 @@ export default function ProjectsPage() {
     </main>
   );
 }
+
+    

@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
+import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -72,18 +72,18 @@ export default function PredesignAssessmentPage() {
                 }
                 setIsEditing(true); 
             })
-            .catch((error) => {
-                console.error("Error fetching assessment data:", error);
-                toast({
-                    variant: "destructive",
-                    title: "Load Failed",
-                    description: "Could not load assessment data.",
+            .catch(async (serverError) => {
+                console.error("Error fetching assessment data:", serverError);
+                const permissionError = new FirestorePermissionError({
+                  path: assessmentDocRef.path,
+                  operation: 'get',
                 });
+                errorEmitter.emit('permission-error', permissionError);
             })
             .finally(() => {
                 setIsLoading(false);
             });
-    }, [assessmentDocRef, toast]);
+    }, [assessmentDocRef]);
     
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -197,3 +197,5 @@ export default function PredesignAssessmentPage() {
         </main>
     );
 }
+
+    
