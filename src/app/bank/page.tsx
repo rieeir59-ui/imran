@@ -462,11 +462,115 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
                 </Card>
             );
         case 'section-18':
+            const timelinePhases = [
+                {
+                    title: "1. Project Initiation & Site Studies",
+                    tasks: [
+                        "Client Brief",
+                        "Project Scope and Area Statements",
+                        "Topographic / Preliminary Survey",
+                        "Geotechnical Investigation and Report",
+                    ],
+                },
+                {
+                    title: "2. Concept Design Stage",
+                    tasks: [
+                        "Concept Design Development",
+                        "Concept Plans and Supporting Drawings",
+                        "Interior Design Concept Development",
+                        "Finalization of Concept Design Report",
+                        "Client Approval on Concept Design",
+                    ],
+                },
+                {
+                    title: "3. Preliminary Design Stage",
+                    tasks: [
+                        "Preliminary Design and Layout Plan – Cycle 1",
+                        "Initial Engineering Coordination (Structural / MEP)",
+                        "Layout Plan – Cycle 2 (Refined Based on Feedback)",
+                        "Environmental Study (if applicable)",
+                        "Authority Pre-Consultation / Coordination (LDA, CDA, etc.)",
+                        "3D Model Development",
+                        "Elevations and Sections",
+                        "Preliminary Interior Layout",
+                        "Preliminary Engineering Design",
+                        "Finalization of Preliminary Design Report",
+                        "Client Comments / Approval on Preliminary Design",
+                    ],
+                },
+                {
+                    title: "4. Authority Submission Stage",
+                    tasks: [
+                        "Preparation of Submission Drawings",
+                        "Submission to LDA / CDA / Other Relevant Authority",
+                        "Application for Stage-1 Approval",
+                        "Authority Approval Process (Review, Comments, Compliance)",
+                        "Receipt of Authority Approval (Stage-1)",
+                    ],
+                },
+                {
+                    title: "5. Detailed Design and Tender Preparation Stage",
+                    tasks: [
+                        "Detailed Architectural Design",
+                        "Detailed Interior Layout",
+                        "Detailed Engineering Designs (Structural / MEP)",
+                        "Draft Conditions of Contract",
+                        "Draft BOQs and Technical Specifications",
+                        "Client Comments and Approvals on Detailed Design",
+                        "Finalization of Detailed Design",
+                    ],
+                },
+                {
+                    title: "6. Construction Design and Tender Finalization Stage",
+                    tasks: [
+                        "Construction Design and Final Tender Preparation",
+                        "Architectural Construction Drawings",
+                        "Engineering Construction Drawings",
+                        "Final Tender Documents",
+                        "Client Comments / Approval on Final Tender Documents",
+                        "Tender Documents Ready for Issue",
+                    ],
+                },
+                {
+                    title: "7. Interior Design Development Stage",
+                    tasks: [
+                        "Final Interior Design Development",
+                        "Interior Layout Working Details",
+                        "Interior Thematic Mood Board and Color Scheme",
+                        "Ceiling Detail Design Drawings",
+                        "Built-in Feature Details",
+                        "Partition and Pattern Detail Drawings",
+                        "Draft Interior Design Tender",
+                        "Client Comments / Approval on Interior Design Development",
+                        "Client Comments / Approval on Interior Design Tender",
+                        "Finalization of Interior Design Tender",
+                    ],
+                },
+                {
+                    title: "8. Procurement & Appointment Stage",
+                    tasks: ["Procurement of Main Contractor", "Contract Award / Mobilization"],
+                },
+            ];
+
             return (
                 <Card>
-                    <CardHeader><CardTitle>Time line Schedule</CardTitle></CardHeader>
+                    <CardHeader>
+                        <CardTitle>Time line Schedule</CardTitle>
+                    </CardHeader>
                     <CardContent>
-                        <p>Timeline schedule details will be here.</p>
+                        <h2 className="text-2xl font-semibold mb-4">Architectural Project Timeline – Phase-wise Breakdown</h2>
+                        <div className="space-y-6">
+                            {timelinePhases.map((phase, index) => (
+                                <div key={index}>
+                                    <Subtitle>{phase.title}</Subtitle>
+                                    <ul className="list-disc list-inside pl-4 space-y-1">
+                                        {phase.tasks.map((task, taskIndex) => (
+                                            <li key={taskIndex}>{task}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
                     </CardContent>
                 </Card>
             );
@@ -657,4 +761,6 @@ export default function BankPage() {
     );
 }
     
+    
+
     
