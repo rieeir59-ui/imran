@@ -153,7 +153,7 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
                 <Card>
                     <CardHeader><CardTitle>Project Information</CardTitle></CardHeader>
                     <CardContent>
-                        <p>Please refer to the <Link href="/projects" className="text-primary underline">Project Information page</Link>.</p>
+                        <ProjectsPage />
                     </CardContent>
                 </Card>
             );
@@ -245,84 +245,186 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
         case 'section-5':
             return (
                 <Card>
-                    <CardHeader><CardTitle>Project Agreement</CardTitle></CardHeader>
-                    <CardContent>
-                        <div className="prose">
-                            <p>Made as of the day</p>
-                            <p>Between the Owner</p>
-                            <p>And the Firm: Isbah Hassan & Associates</p>
-                            <p>For the Design of</p>
-                            <p>Address</p>
-                            <p>Covered Area of Project</p>
-                            <p>Consultancy Charges @ Rs ___/Sft</p>
-                            <p>Sales Tax @ 16%</p>
-                            <p>Withholding Tax @ 10%</p>
-                            <p>Final Consultancy Charges</p>
-                            <Subtitle>PAYMENT SCHEDULE:</Subtitle>
-                            <p>On mobilization (advance payment): 20 %</p>
-                            <p>On approval of schematic designs & 3D’s: 15%</p>
-                            <p>On completion of submission drawings: 15%</p>
-                            <p>On start of construction drawings: 15%</p>
-                            <p>On completion of construction drawings: 10%</p>
-                            <p>On completion of interior drawings: 10%</p>
-                            <p>On preparation of detailed BOQ: 10%</p>
-                            <Subtitle>Project Management:</Subtitle>
-                            <Subtitle>Top Supervision:</Subtitle>
-                            <ul className="list-disc list-inside">
-                                <li>Please find attached the site visit schedule for the project please intimate the office one week in advance before the required visit for timely surveillance. Any Unscheduled visits would be charged as under.</li>
-                                <li>For out of station visits, the travelling by air and lodging in a five-star hotel will be paid by the client.</li>
-                                <li>Rs. 50,000 for Principal Architect's site visit per day.</li>
-                                <li>Rs. 30,000 for Associate Architect's site visit per day.</li>
-                                <li>For International visits, the travelling by air and lodging in a five-star hotel will be paid by the client.</li>
-                                <li>Rs. 150,000 for Principal Architect' s fee per day.</li>
-                                <li>Rs. 30,000 for Associate Architect' s fee per day.</li>
+                    <CardHeader><CardTitle>PROJECT AGREEMENT</CardTitle></CardHeader>
+                    <CardContent className="prose">
+                        <h2 className="text-xl font-bold text-center">COMMERCIAL AGREEMENT</h2>
+                        <p><strong>Made as of the day:</strong> _________________</p>
+                        <p><strong>Between the Owner:</strong> _________________</p>
+                        <p><strong>And the Firm:</strong> Isbah Hassan & Associates</p>
+                        <p><strong>For the Design of:</strong> _________________</p>
+                        <p><strong>Address:</strong> _________________</p>
+                        <p><strong>Covered Area of Project:</strong> _________________</p>
+                        <p><strong>Consultancy Charges @ Rs ___/Sft:</strong> _________________</p>
+                        <p><strong>Sales Tax @ 16%:</strong> _________________</p>
+                        <p><strong>Withholding Tax @ 10%:</strong> _________________</p>
+                        <p><strong>Final Consultancy Charges:</strong> _________________</p>
+
+                        <Subtitle>PAYMENT SCHEDULE:</Subtitle>
+                        <p>On mobilization (advance payment): <strong>20 %</strong></p>
+                        <p>On approval of schematic designs & 3D’s: <strong>15%</strong></p>
+                        <p>On completion of submission drawings: <strong>15%</strong></p>
+                        <p>On start of construction drawings: <strong>15%</strong></p>
+                        <p>On completion of construction drawings: <strong>10%</strong></p>
+                        <p>On completion of interior drawings: <strong>10%</strong></p>
+                        <p>On preparation of detailed BOQ: <strong>10%</strong></p>
+
+                        <Subtitle>Project Management:</Subtitle>
+                        <h4 className="font-bold">Top Supervision:</h4>
+                        <ul className="list-disc list-inside">
+                            <li>Please find attached the site visit schedule for the project please intimate the office one week in advance before the required visit for timely surveillance. Any Unscheduled visits would be charged as under.</li>
+                            <li>For out of station visits, the travelling by air and lodging in a five-star hotel will be paid by the client.</li>
+                            <li>Rs. 50,000 for Principal Architect's site visit per day.</li>
+                            <li>Rs. 30,000 for Associate Architect's site visit per day.</li>
+                            <li>For International visits, the travelling by air and lodging in a five-star hotel will be paid by the client.</li>
+                            <li>Rs. 150,000 for Principal Architect' s fee per day.</li>
+                            <li>Rs. 30,000 for Associate Architect' s fee per day.</li>
+                        </ul>
+
+                        <h4 className="font-bold mt-4">Detailed Supervision:</h4>
+                        <p>The fee for detailed supervision will be Rs. 300,000 /- per month, which will ensure daily progress at the site.</p>
+
+                        <Subtitle>Please Note:</Subtitle>
+                        <ul className="list-disc list-inside">
+                            <li>The above quoted rates do not include any kind of tax.</li>
+                            <li>The contract value is lumpsum for the area between 90,000 to 120,000 Sft, if however, the area increases the above amount only the sub-consultants fee @ Rs. 70/Sft will be charged.</li>
+                            <li>The above consultancy charges quoted are valid for only two months.</li>
+                        </ul>
+
+                        <Subtitle>Architectural Design Services:</Subtitle>
+                        <ol className="list-decimal list-inside">
+                            <li>Space Planning</li>
+                            <li>Design Concept</li>
+                            <li>Design Development & 3Ds (Facade)</li>
+                            <li>Budgeting Bil of Quantity’s.</li>
+                            <li>Work Drawings
+                                <ul className="list-[circle] list-inside pl-4">
+                                    <li>Site Plan</li>
+                                    <li>Ground Floor Plan</li>
+                                    <li>Mezzanine Floor Plan</li>
+                                    <li>Elevation NE</li>
+                                    <li>Elevation NW</li>
+                                    <li>Elevation SW</li>
+                                    <li>Sections</li>
+                                    <li>Stair Details</li>
+                                    <li>Kitchen Details</li>
+                                    <li>Bath Details</li>
+                                    <li>Schedules</li>
+                                </ul>
+                            </li>
+                             <li>Structure Drawing
+                                <ul className="list-[circle] list-inside pl-4">
+                                    <li>Foundation Plan</li>
+                                    <li>Floor Framing Plan</li>
+                                    <li>Wall Elev. & Slab Section</li>
+                                    <li>Wall section & Details</li>
+                                    <li>Stair Details</li>
+                                    <li>Schedules</li>
+                                    <li>Specs of Concrete</li>
+                                </ul>
+                            </li>
+                            <li>Electrification Drawings
+                                <ul className="list-[circle] list-inside pl-4">
+                                    <li>Power Plan</li>
+                                    <li>Lighting Plans</li>
+                                    <li>Section & Details</li>
+                                    <li>Communication Plan</li>
+                                </ul>
+                            </li>
+                            <li>Plumbing Drawings
+                                <ul className="list-[circle] list-inside pl-4">
+                                    <li>Water Protect System</li>
+                                    <li>Soil Protect System</li>
+                                    <li>Ventilation System</li>
+                                    <li>Fire Protection System</li>
+                                </ul>
+                            </li>
+                             <li>Miscellaneous Services
+                                <ul className="list-[circle] list-inside pl-4">
+                                    <li>Roof air Conditioning</li>
+                                    <li>H.V.A.C</li>
+                                    <li>Material Specifications</li>
+                                </ul>
+                            </li>
+                            <li>Extra Services
+                                <ul className="list-[circle] list-inside pl-4">
+                                    <li>Landscaping</li>
+                                    <li>Acoustical</li>
+                                    <li>Land Survey</li>
+                                    <li>Geo-Technical Survey</li>
+                                    <li>Graphic design</li>
+                                </ul>
+                            </li>
+                        </ol>
+
+                        <Subtitle>Interior Design Services:</Subtitle>
+                        <ul className="list-disc list-inside">
+                            <li>Design Details:</li>
+                            <ul className="list-[circle] list-inside pl-4">
+                                <li>Flooring</li>
+                                <li>Wood Work</li>
+                                <li>Doors</li>
+                                <li>Windows</li>
+                                <li>False Ceiling</li>
+                                <li>Lighting</li>
+                                <li>Bath Details</li>
+                                <li>Kitchen Details</li>
+                                <li>Wall Textures.</li>
+                                <li>Stairways</li>
+                                <li>Built-in Features Fire Places</li>
+                                <li>Patios</li>
+                                <li>Water bodies</li>
+                                <li>Trellis</li>
+                                <li>Skylights</li>
+                                <li>Furniture</li>
+                                <li>Partitioning</li>
                             </ul>
-                            <Subtitle>Detailed Supervision:</Subtitle>
-                            <p>The fee for detailed supervision will be Rs. 300,000 /- per month, which will ensure daily progress at the site.</p>
-                            <Subtitle>Please Note:</Subtitle>
-                            <ul className="list-disc list-inside">
-                                <li>The above quoted rates do not include any kind of tax.</li>
-                                <li>The contract value is lumpsum for the area between 90,000 to 120,000 Sft, if however, the area increases the above amount only the sub-consultants fee @ Rs. 70/Sft will be charged.</li>
-                                <li>The above consultancy charges quoted are valid for only two months.</li>
-                            </ul>
-                            <Subtitle>Architect's Responsibilities.</Subtitle>
-                            <ol className="list-decimal list-inside">
-                                <li>The architect will produce a maximum of two proposals are revisions for the client for the said amount of consultancy every proposal or revision after this will be charged @ Rs. 500,000 /- per Proposal.</li>
-                                <li>The architect will require a minimum period of one month for the design development. 2 months will be required for work drawings.</li>
-                                <li>The architect will represent the owner and will advise and consult with the owner regarding construction.</li>
-                                <li>The architect will be responsible for checking the contractor's progress and giving the approval for payments due to the contractor.</li>
-                                <li>The architect is to prepare a maximum of 2 design proposals for the proposal stage for the client...</li>
-                                <li>No revision will be made after the Issuance of Construction Drawings. If client wants the revision, he will have to pay for the amount ascertained in the contract.</li>
-                                <li>No revision will be made for working drawings. If client wants the revision, he will be required to pay the amount.</li>
-                                <li>Project supervision will include visits as mentioned in Construction Activity Schedule.</li>
-                                <li>The Architect will provide 3 Sets of working drawings to the client. For additional sets of working drawings Rs. 50,000 per set will be charged.</li>
-                                <li>The Architect will provide only two options/revisions of 3Ds for the Facade after which any option/revision will be charged based on normal market rates. For Interior renderings Rs. 500,000/- will be charged.</li>
-                            </ol>
-                            <Subtitle>The Architect will not be responsible for the following things:</Subtitle>
-                            <ol className="list-decimal list-inside">
-                                <li>Continuous site supervision.</li>
-                                <li>Technical sequences and procedures of the contractors.</li>
-                                <li>Change of acts and omissions of the contractor. These are the contractor's responsibilities.</li>
-                                <li>Changes and omissions made on the owner's directions.</li>
-                            </ol>
-                            <Subtitle>ARTICLE-1: Termination of the Agreement</Subtitle>
-                            <ol className="list-decimal list-inside">
-                                <li>The agreement may be terminated by any of the parties on 7 days written notice...</li>
-                                <li>The owner at least on 7 days’ notice to the designer may terminate the agreement in the event that the project is permanently abandoned.</li>
-                                <li>In the event of termination not the fault of the design builder, the design builder will be compensated for services performed till termination date.</li>
-                                <li>No reimbursable then due and termination expenses...</li>
-                            </ol>
-                            <Subtitle>ARTICLE-2: Bases of Compensation</Subtitle>
-                            <ul className="list-disc list-inside">
-                                <li>Compensation for basic services</li>
-                                <li>Basic services will be as mentioned</li>
-                                <li>Subsequent payments will be as mentioned</li>
-                                <li>Compensation for additional services</li>
-                                <li>For additional services compensation will be as mentioned</li>
-                                <li>Travel expenses of Architect, Engineer, Sub-Engineer and Sub-Consultant will be separately billed</li>
-                                <li>Computer Animation will be charged at the normal market rates</li>
-                                <li>The rate of interest past due payments will be 15 % per month</li>
-                            </ul>
+                        </ul>
+                        <p><strong>Note:</strong> The item number 9 & 10 is under the head of extra services if the client requests these services, the extra charges will be as mentioned above.</p>
+                        
+                        <Subtitle>Architect's Responsibilities.</Subtitle>
+                        <ol className="list-decimal list-inside space-y-2">
+                            <li>The architect will produce a maximum of two proposals are revisions for the client for the said amount of consultancy every proposal or revision after this will be charged @ Rs. 500,000 /- per Proposal.</li>
+                            <li>The architect will require a minimum period of one month for the design development. 2 months will be required for work drawings.</li>
+                            <li>The architect will represent the owner and will advise and consult with the owner regarding construction.</li>
+                            <li>The architect will be responsible for checking the contractor's progress and giving the approval for payments due to the contractor.</li>
+                            <li>The architect is to prepare a maximum of 2 design proposals for the proposal stage for the client...</li>
+                            <li>No revision will be made after the Issuance of Construction Drawings. If client wants the revision, he will have to pay for the amount ascertained in the contract.</li>
+                            <li>No revision will be made for working drawings. If client wants the revision, he will be required to pay the amount.</li>
+                            <li>Project supervision will include visits as mentioned in Construction Activity Schedule.</li>
+                            <li>The Architect will provide 3 Sets of working drawings to the client. For additional sets of working drawings Rs. 50,000 per set will be charged.</li>
+                            <li>The Architect will provide only two options/revisions of 3Ds for the Facade after which any option/revision will be charged based on normal market rates. For Interior renderings Rs. 500,000/- will be charged.</li>
+                        </ol>
+
+                        <Subtitle>The Architect will not be responsible for the following things:</Subtitle>
+                        <ol className="list-decimal list-inside">
+                            <li>Continuous site supervision.</li>
+                            <li>Technical sequences and procedures of the contractors.</li>
+                            <li>Change of acts and omissions of the contractor. These are the contractor's responsibilities.</li>
+                            <li>Changes and omissions made on the owner's directions.</li>
+                        </ol>
+
+                        <Subtitle>ARTICLE-1: Termination of the Agreement</Subtitle>
+                        <ol className="list-decimal list-inside space-y-2">
+                            <li>The agreement may be terminated by any of the parties on 7 days written notice...</li>
+                            <li>The owner at least on 7 days’ notice to the designer may terminate the agreement in the event that the project is permanently abandoned.</li>
+                            <li>In the event of termination not the fault of the design builder, the design builder will be compensated for services performed till termination date.</li>
+                            <li>No reimbursable then due and termination expenses...</li>
+                        </ol>
+
+                        <Subtitle>ARTICLE-2: Bases of Compensation</Subtitle>
+                        <ul className="list-disc list-inside">
+                            <li>Compensation for basic services</li>
+                            <li>Basic services will be as mentioned</li>
+                            <li>Subsequent payments will be as mentioned</li>
+                            <li>Compensation for additional services</li>
+                            <li>For additional services compensation will be as mentioned</li>
+                            <li>Travel expenses of Architect, Engineer, Sub-Engineer and Sub-Consultant will be separately billed</li>
+                            <li>Computer Animation will be charged at the normal market rates</li>
+                            <li>The rate of interest past due payments will be 15 % per month</li>
+                        </ul>
+                        <div className="flex justify-between mt-8">
+                            <p>____________________<br />Architect</p>
+                            <p>____________________<br />Client</p>
                         </div>
                     </CardContent>
                 </Card>
