@@ -2,6 +2,10 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { DataProvider } from '@/lib/data-context';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/layout/sidebar';
+import { SidebarInset } from '@/components/ui/sidebar';
+import { AppHeader } from '@/components/layout/header';
 
 export const metadata: Metadata = {
   title: 'Isbah Dashboard',
@@ -22,7 +26,15 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <DataProvider>
-          {children}
+          <SidebarProvider>
+            <AppSidebar />
+            <div className="flex-1">
+              <SidebarInset>
+                <AppHeader />
+                {children}
+              </SidebarInset>
+            </div>
+          </SidebarProvider>
         </DataProvider>
         <Toaster />
       </body>
