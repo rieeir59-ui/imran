@@ -26,7 +26,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   
   return (
-    <Sidebar>
+    <Sidebar className="no-print">
       <SidebarHeader>
         <a href="/" className="flex items-center gap-2">
           <BriefcaseBusiness className="size-8 text-sidebar-primary" />
