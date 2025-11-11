@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { projectChecklistSections } from "@/lib/projects-data";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ProjectDetails {
   name: string;
@@ -23,6 +24,8 @@ interface ProjectDetails {
   projectNo: string;
   projectDate: string;
 }
+
+type CheckedItems = Record<string, boolean>;
 
 export default function ProjectsPage() {
   const [isEditing, setIsEditing] = useState(true);
@@ -32,17 +35,27 @@ export default function ProjectsPage() {
     projectNo: "",
     projectDate: "",
   });
+  const [checkedItems, setCheckedItems] = useState<CheckedItems>({});
   const { toast } = useToast();
 
   useEffect(() => {
     try {
-      const savedData = localStorage.getItem("projectChecklistDetails");
+      const savedData = localStorage.getItem("projectChecklist");
       if (savedData) {
-        setProjectDetails(JSON.parse(savedData));
-        setIsEditing(false);
+        const { details, checked } = JSON.parse(savedData);
+        if (details) {
+          setProjectDetails(details);
+        }
+        if (checked) {
+          setCheckedItems(checked);
+        }
+        // Only switch out of editing mode if there's saved data
+        if (details.name || details.architect || details.projectNo || details.projectDate) {
+          setIsEditing(false);
+        }
       }
     } catch (error) {
-      console.error("Failed to parse project details from localStorage", error);
+      console.error("Failed to parse project data from localStorage", error);
     }
   }, []);
 
@@ -51,9 +64,19 @@ export default function ProjectsPage() {
     setProjectDetails((prev) => ({ ...prev, [id]: value }));
   };
 
+  const handleCheckboxChange = (id: string, checked: boolean | "indeterminate") => {
+    if (typeof checked === 'boolean') {
+      setCheckedItems((prev) => ({ ...prev, [id]: checked }));
+    }
+  };
+
   const handleSave = () => {
     try {
-      localStorage.setItem("projectChecklistDetails", JSON.stringify(projectDetails));
+      const dataToSave = {
+        details: projectDetails,
+        checked: checkedItems,
+      };
+      localStorage.setItem("projectChecklist", JSON.stringify(dataToSave));
       setIsEditing(false);
       toast({
         title: "Project Saved",
@@ -164,10 +187,26 @@ export default function ProjectsPage() {
                         <h4 className="font-medium text-lg mb-2">
                           {subSection.title}:
                         </h4>
-                        <ul className="list-disc space-y-1 pl-6 text-muted-foreground">
-                          {subSection.items.map((item) => (
-                            <li key={item}>{item}</li>
-                          ))}
+                        <ul className="space-y-2 pl-2">
+                          {subSection.items.map((item, itemIndex) => {
+                            const checkboxId = `${section.title}-${subSection.title}-${itemIndex}`;
+                            return (
+                              <li key={checkboxId} className="flex items-center gap-2">
+                                <Checkbox
+                                  id={checkboxId}
+                                  checked={checkedItems[checkboxId] || false}
+                                  onCheckedChange={(checked) => handleCheckboxChange(checkboxId, checked)}
+                                  disabled={!isEditing}
+                                />
+                                <label
+                                  htmlFor={checkboxId}
+                                  className="text-sm text-muted-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                >
+                                  {item}
+                                </label>
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
                     ))}
