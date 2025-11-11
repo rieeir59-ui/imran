@@ -48,6 +48,13 @@ export function DataEntryForm({ setOpen }: { setOpen: (open: boolean) => void })
     defaultValues: {
       name: "",
       location: "",
+      value: 0,
+      occupancyRate: 0,
+      units: 0,
+      starRating: 0,
+      rooms: 0,
+      transactionVolume: 0,
+      employees: 0
     },
   });
 
