@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Building2, Home, Hotel, Landmark, BriefcaseBusiness, LayoutDashboard } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const menuItems = [
@@ -28,21 +27,19 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <Link href="/" className="flex items-center gap-2">
+        <a href="/" className="flex items-center gap-2">
           <BriefcaseBusiness className="size-8 text-sidebar-primary" />
           {state === 'expanded' && <h1 className="text-xl font-semibold">Isbah Dashboard</h1>}
-        </Link>
+        </a>
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href} passHref>
-                <SidebarMenuButton as="a" tooltip={item.label} isActive={pathname === item.href}>
-                  <item.icon />
-                  <span>{item.label}</span>
-                </SidebarMenuButton>
-              </Link>
+              <SidebarMenuButton as="a" href={item.href} tooltip={item.label} isActive={pathname === item.href}>
+                <item.icon />
+                <span>{item.label}</span>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>

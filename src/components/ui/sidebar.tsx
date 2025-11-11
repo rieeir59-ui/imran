@@ -4,6 +4,7 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
+import Link from "next/link"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -539,6 +540,7 @@ const SidebarMenuButton = React.forwardRef<
     as?: 'button' | 'a'
     isActive?: boolean
     tooltip?: string | React.ComponentProps<typeof TooltipContent>
+    href?: string
   } & VariantProps<typeof sidebarMenuButtonVariants>
 >(
   (
@@ -549,6 +551,7 @@ const SidebarMenuButton = React.forwardRef<
       size = "default",
       tooltip,
       className,
+      href,
       ...props
     },
     ref
@@ -565,9 +568,11 @@ const SidebarMenuButton = React.forwardRef<
         {...props}
       />
     )
+    
+    const linkedButton = href ? <Link href={href} passHref legacyBehavior>{button}</Link> : button
 
     if (!tooltip) {
-      return button
+      return linkedButton
     }
 
     if (typeof tooltip === "string") {
@@ -578,7 +583,7 @@ const SidebarMenuButton = React.forwardRef<
 
     return (
       <Tooltip>
-        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipTrigger asChild>{linkedButton}</TooltipTrigger>
         <TooltipContent
           side="right"
           align="center"
