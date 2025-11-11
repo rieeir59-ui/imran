@@ -18,7 +18,7 @@ const fileIndexItems = [
     { no: 4, id: 'section-4', title: 'Project Data' },
     { no: 5, id: 'section-5', title: 'Project Agreement' },
     { no: 6, id: 'section-6', title: 'List of Services' },
-    { no: 7, id: 'section-7', title: 'Requirement Performa (for Residential Project)' },
+    { no: 7, id: 'section-7', title: 'Requirement Performa (for Residential and Commercial Project)' },
     { no: 8, id: 'section-8', title: 'Site Survey' },
     { no: 9, id: 'section-9', title: 'Project Bylaws' },
     { no: 10, id: 'section-10', title: 'Proposal request' },
@@ -339,7 +339,7 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
         case 'section-7':
             return (
                 <Card>
-                    <CardHeader><CardTitle>Requirement Performa (For Residential project)</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>Requirement Performa (for Residential and Commercial Project)</CardTitle></CardHeader>
                     <CardContent>
                         <ProjectsPage />
                     </CardContent>
@@ -656,4 +656,5 @@ export default function BankPage() {
         </main>
     );
 }
+    
     
