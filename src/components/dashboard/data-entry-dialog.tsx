@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,8 +14,10 @@ import { PlusCircle } from "lucide-react";
 import { DataEntryForm } from "./data-entry-form";
 
 export function DataEntryDialog() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
           <PlusCircle className="mr-2" />
@@ -28,7 +31,7 @@ export function DataEntryDialog() {
             Select a category and fill in the details for the new property or branch.
           </DialogDescription>
         </DialogHeader>
-        <DataEntryForm />
+        <DataEntryForm setOpen={setOpen} />
       </DialogContent>
     </Dialog>
   );

@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardContent,
@@ -5,13 +7,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Building2, Home, Hotel, Landmark, DollarSign } from "lucide-react";
-import { allData } from "@/lib/data";
+import { useData } from "@/lib/data-context";
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact' }).format(value);
 };
 
 export default function StatsCards() {
+  const { data: allData } = useData();
   const commercialCount = allData.commercial.length;
   const commercialValue = allData.commercial.reduce((acc, p) => acc + p.value, 0);
 

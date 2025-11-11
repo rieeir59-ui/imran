@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sparkles, Terminal } from "lucide-react";
 import { generateComparativeAnalysis } from "@/ai/flows/generate-comparative-analysis";
-import { allData } from "@/lib/data";
+import { useData } from "@/lib/data-context";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -21,6 +21,7 @@ export default function ComparativeAnalysis() {
   const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState("");
   const { toast } = useToast();
+  const { data: allData } = useData();
 
   const handleGenerateAnalysis = async () => {
     setLoading(true);

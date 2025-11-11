@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useData } from "@/lib/data-context";
 
 const formSchema = z.object({
   category: z.enum(["commercial", "residential", "hotel", "bank"]),
@@ -39,8 +40,9 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export function DataEntryForm() {
+export function DataEntryForm({ setOpen }: { setOpen: (open: boolean) => void }) {
   const { toast } = useToast();
+  const { addData } = useData();
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,13 +54,15 @@ export function DataEntryForm() {
   const category = form.watch("category");
 
   function onSubmit(values: FormData) {
-    console.log(values);
+    const { category, ...itemData } = values;
+    addData(category, itemData as any);
+    
     toast({
       title: "Data Submitted!",
       description: "Your new data entry has been successfully logged.",
     });
-    // Here you would typically send the data to your backend/database
-    // For this demo, we'll just log it and show a success message.
+    form.reset();
+    setOpen(false);
   }
 
   return (

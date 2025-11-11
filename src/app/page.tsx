@@ -1,3 +1,5 @@
+"use client";
+
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/header";
@@ -5,14 +7,16 @@ import { SidebarInset } from "@/components/ui/sidebar";
 import StatsCards from "@/components/dashboard/stats-cards";
 import DataChart from "@/components/dashboard/data-chart";
 import ComparativeAnalysis from "@/components/dashboard/comparative-analysis";
-import { allData } from "@/lib/data";
+import { useData } from "@/lib/data-context";
 
 export default function Home() {
+  const { data } = useData();
+
   const chartData = [
-    { name: 'Commercial', value: allData.commercial.reduce((acc, p) => acc + p.value, 0) },
-    { name: 'Residential', value: allData.residential.reduce((acc, p) => acc + p.value, 0) },
-    { name: 'Hotel', value: allData.hotel.reduce((acc, p) => acc + p.value, 0) },
-    { name: 'Bank Branch', value: allData.bank.reduce((acc, p) => acc + p.value, 0) },
+    { name: 'Commercial', value: data.commercial.reduce((acc, p) => acc + p.value, 0) },
+    { name: 'Residential', value: data.residential.reduce((acc, p) => acc + p.value, 0) },
+    { name: 'Hotel', value: data.hotel.reduce((acc, p) => acc + p.value, 0) },
+    { name: 'Bank Branch', value: data.bank.reduce((acc, p) => acc + p.value, 0) },
   ];
 
   return (
