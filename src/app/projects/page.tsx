@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Download, Edit, Save } from "lucide-react";
+import { ArrowLeft, Download, Edit, Save, Loader2 } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -17,6 +17,11 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { projectChecklistSections } from "@/lib/projects-data";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useAuth, useFirestore, useUser, useMemoFirebase } from "@/firebase";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { initiateAnonymousSignIn, setDocumentNonBlocking } from "@/firebase";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Terminal } from "lucide-react";
 
 interface ProjectDetails {
   name: string;
@@ -27,6 +32,8 @@ interface ProjectDetails {
 
 type CheckedItems = Record<string, boolean>;
 
+const DEFAULT_PROJECT_ID = "main-checklist";
+
 export default function ProjectsPage() {
   const [isEditing, setIsEditing] = useState(true);
   const [projectDetails, setProjectDetails] = useState<ProjectDetails>({
@@ -36,28 +43,60 @@ export default function ProjectsPage() {
     projectDate: "",
   });
   const [checkedItems, setCheckedItems] = useState<CheckedItems>({});
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
+  const { toast } = useToast();
+  const firestore = useFirestore();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+
+  // Effect for anonymous sign-in
   useEffect(() => {
-    try {
-      const savedData = localStorage.getItem("projectChecklist");
-      if (savedData) {
-        const { details, checked } = JSON.parse(savedData);
-        if (details) {
-          setProjectDetails(details);
-        }
-        if (checked) {
-          setCheckedItems(checked);
-        }
-        // Only switch out of editing mode if there's saved data
-        if (details.name || details.architect || details.projectNo || details.projectDate) {
-          setIsEditing(false);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to parse project data from localStorage", error);
+    if (!isUserLoading && !user) {
+      initiateAnonymousSignIn(auth);
     }
-  }, []);
+  }, [isUserLoading, user, auth]);
+
+  const checklistDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, `users/${user.uid}/projectChecklists/${DEFAULT_PROJECT_ID}`);
+  }, [user, firestore]);
+
+  // Effect to load data from Firestore
+  useEffect(() => {
+    if (!checklistDocRef) {
+      // Still waiting for user/firestore
+      return;
+    }
+
+    setIsLoading(true);
+    getDoc(checklistDocRef)
+      .then((docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setProjectDetails(data.details || { name: "", architect: "", projectNo: "", projectDate: "" });
+          setCheckedItems(data.checkedItems || {});
+          // If data exists, start in non-editing mode
+          setIsEditing(false);
+        } else {
+          // No data, start in editing mode
+          setIsEditing(true);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching project data:", error);
+        toast({
+          variant: "destructive",
+          title: "Load Failed",
+          description: "Could not load project data from the database.",
+        });
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [checklistDocRef, toast]);
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -71,25 +110,31 @@ export default function ProjectsPage() {
   };
 
   const handleSave = () => {
-    try {
-      const dataToSave = {
-        details: projectDetails,
-        checked: checkedItems,
-      };
-      localStorage.setItem("projectChecklist", JSON.stringify(dataToSave));
-      setIsEditing(false);
-      toast({
-        title: "Project Saved",
-        description: "Your project details have been saved locally.",
-      });
-    } catch (error) {
-      console.error("Failed to save project details to localStorage", error);
+    if (!checklistDocRef) {
       toast({
         variant: "destructive",
         title: "Save Failed",
-        description: "Could not save your project details.",
+        description: "User not authenticated. Cannot save.",
       });
+      return;
     }
+
+    setIsSaving(true);
+    const dataToSave = {
+      details: projectDetails,
+      checkedItems: checkedItems,
+    };
+    
+    setDocumentNonBlocking(checklistDocRef, dataToSave, { merge: true });
+    
+    // Optimistically update UI
+    setIsEditing(false);
+    setIsSaving(false);
+    toast({
+      title: "Project Saved",
+      description: "Your project details have been saved.",
+    });
+
   };
   
   const handleEdit = () => {
@@ -99,6 +144,36 @@ export default function ProjectsPage() {
   const handleDownload = () => {
     window.print();
   };
+  
+  if (isUserLoading || isLoading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2">Loading Project...</p>
+      </div>
+    );
+  }
+  
+  if (!user && !isUserLoading) {
+    return (
+       <main className="p-4 md:p-6 lg:p-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Authentication Required</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Alert variant="destructive">
+              <Terminal className="h-4 w-4" />
+              <AlertTitle>Unable to Authenticate</AlertTitle>
+              <AlertDescription>
+                We could not sign you in. Please refresh the page to try again.
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      </main>
+    )
+  }
 
   return (
     <main className="p-4 md:p-6 lg:p-8">
@@ -119,8 +194,9 @@ export default function ProjectsPage() {
                 <Download /> Download
               </Button>
               {isEditing ? (
-                <Button onClick={handleSave}>
-                  <Save /> Save
+                <Button onClick={handleSave} disabled={isSaving}>
+                  {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
+                   Save
                 </Button>
               ) : (
                 <Button onClick={handleEdit}>
@@ -174,7 +250,7 @@ export default function ProjectsPage() {
             </div>
           </div>
 
-          <Accordion type="single" collapsible className="w-full">
+          <Accordion type="single" collapsible className="w-full" defaultValue="item-1">
             {projectChecklistSections.map((section, index) => (
               <AccordionItem value={`item-${index + 1}`} key={section.title}>
                 <AccordionTrigger className="text-xl font-semibold">
@@ -189,7 +265,7 @@ export default function ProjectsPage() {
                         </h4>
                         <ul className="space-y-2 pl-2">
                           {subSection.items.map((item, itemIndex) => {
-                            const checkboxId = `${section.title}-${subSection.title}-${itemIndex}`;
+                            const checkboxId = `${section.title}-${subSection.title}-${itemIndex}`.replace(/\s+/g, '-');
                             return (
                               <li key={checkboxId} className="flex items-center gap-2">
                                 <Checkbox
@@ -220,3 +296,5 @@ export default function ProjectsPage() {
     </main>
   );
 }
+
+    

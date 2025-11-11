@@ -6,6 +6,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { SidebarInset } from '@/components/ui/sidebar';
 import { AppHeader } from '@/components/layout/header';
+import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
   title: 'Isbah Dashboard',
@@ -25,19 +26,23 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <DataProvider>
-          <SidebarProvider>
-            <AppSidebar />
-            <div className="flex-1">
-              <SidebarInset>
-                <AppHeader />
-                {children}
-              </SidebarInset>
-            </div>
-          </SidebarProvider>
-        </DataProvider>
+        <FirebaseClientProvider>
+          <DataProvider>
+            <SidebarProvider>
+              <AppSidebar />
+              <div className="flex-1">
+                <SidebarInset>
+                  <AppHeader />
+                  {children}
+                </SidebarInset>
+              </div>
+            </SidebarProvider>
+          </DataProvider>
+        </FirebaseClientProvider>
         <Toaster />
       </body>
     </html>
   );
 }
+
+    
