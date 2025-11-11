@@ -3,46 +3,40 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Download, Edit, Save, Loader2 } from "lucide-react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { ArrowLeft, Download, Edit, Save, Loader2, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { projectChecklistSections } from "@/lib/projects-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth, useFirestore, useUser, useMemoFirebase } from "@/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn, setDocumentNonBlocking } from "@/firebase";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
-interface ProjectDetails {
-  name: string;
-  architect: string;
-  projectNo: string;
-  projectDate: string;
-}
+const DEFAULT_PROJECT_ID = "main-project-information";
 
-type CheckedItems = Record<string, boolean>;
+// Helper component for form rows
+const FormRow = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-2 md:gap-4">
+    <Label className="md:text-right">{label}</Label>
+    <div className="md:col-span-2">{children}</div>
+  </div>
+);
 
-const DEFAULT_PROJECT_ID = "main-checklist";
+const SectionTitle = ({ children }: { children: React.ReactNode }) => (
+  <>
+    <h3 className="text-lg font-semibold mt-6 mb-3">{children}</h3>
+    <Separator className="mb-4" />
+  </>
+);
 
 export default function ProjectsPage() {
   const [isEditing, setIsEditing] = useState(true);
-  const [projectDetails, setProjectDetails] = useState<ProjectDetails>({
-    name: "",
-    architect: "",
-    projectNo: "",
-    projectDate: "",
-  });
-  const [checkedItems, setCheckedItems] = useState<CheckedItems>({});
+  const [formData, setFormData] = useState<any>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -51,36 +45,27 @@ export default function ProjectsPage() {
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
 
-  // Effect for anonymous sign-in
   useEffect(() => {
     if (!isUserLoading && !user) {
       initiateAnonymousSignIn(auth);
     }
   }, [isUserLoading, user, auth]);
 
-  const checklistDocRef = useMemoFirebase(() => {
+  const projectDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return doc(firestore, `users/${user.uid}/projectChecklists/${DEFAULT_PROJECT_ID}`);
+    return doc(firestore, `users/${user.uid}/projectInformation/${DEFAULT_PROJECT_ID}`);
   }, [user, firestore]);
 
-  // Effect to load data from Firestore
   useEffect(() => {
-    if (!checklistDocRef) {
-      // Still waiting for user/firestore
-      return;
-    }
+    if (!projectDocRef) return;
 
     setIsLoading(true);
-    getDoc(checklistDocRef)
+    getDoc(projectDocRef)
       .then((docSnap) => {
         if (docSnap.exists()) {
-          const data = docSnap.data();
-          setProjectDetails(data.details || { name: "", architect: "", projectNo: "", projectDate: "" });
-          setCheckedItems(data.checkedItems || {});
-          // If data exists, start in non-editing mode
+          setFormData(docSnap.data() || {});
           setIsEditing(false);
         } else {
-          // No data, start in editing mode
           setIsEditing(true);
         }
       })
@@ -89,62 +74,47 @@ export default function ProjectsPage() {
         toast({
           variant: "destructive",
           title: "Load Failed",
-          description: "Could not load project data from the database.",
+          description: "Could not load project data.",
         });
       })
       .finally(() => {
         setIsLoading(false);
       });
-  }, [checklistDocRef, toast]);
+  }, [projectDocRef, toast]);
 
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setProjectDetails((prev) => ({ ...prev, [id]: value }));
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev: any) => ({ ...prev, [name]: value }));
+  };
+  
+  const handleCheckboxChange = (name: string, checked: boolean | 'indeterminate') => {
+      if (typeof checked === 'boolean') {
+          setFormData((prev: any) => ({ ...prev, [name]: checked }));
+      }
   };
 
-  const handleCheckboxChange = (id: string, checked: boolean | "indeterminate") => {
-    if (typeof checked === 'boolean') {
-      setCheckedItems((prev) => ({ ...prev, [id]: checked }));
-    }
-  };
 
   const handleSave = () => {
-    if (!checklistDocRef) {
+    if (!projectDocRef) {
       toast({
         variant: "destructive",
         title: "Save Failed",
-        description: "User not authenticated. Cannot save.",
+        description: "User not authenticated.",
       });
       return;
     }
 
     setIsSaving(true);
-    const dataToSave = {
-      details: projectDetails,
-      checkedItems: checkedItems,
-    };
+    setDocumentNonBlocking(projectDocRef, formData, { merge: true });
     
-    setDocumentNonBlocking(checklistDocRef, dataToSave, { merge: true });
-    
-    // Optimistically update UI
     setIsEditing(false);
     setIsSaving(false);
     toast({
       title: "Project Saved",
-      description: "Your project details have been saved.",
+      description: "Your project information has been saved.",
     });
+  };
 
-  };
-  
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-  
-  const handleDownload = () => {
-    window.print();
-  };
-  
   if (isUserLoading || isLoading) {
     return (
       <div className="flex h-full w-full items-center justify-center p-8">
@@ -153,27 +123,68 @@ export default function ProjectsPage() {
       </div>
     );
   }
-  
+
   if (!user && !isUserLoading) {
-    return (
+     return (
        <main className="p-4 md:p-6 lg:p-8">
         <Card>
-          <CardHeader>
-            <CardTitle>Authentication Required</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Authentication Required</CardTitle></CardHeader>
           <CardContent>
             <Alert variant="destructive">
               <Terminal className="h-4 w-4" />
               <AlertTitle>Unable to Authenticate</AlertTitle>
-              <AlertDescription>
-                We could not sign you in. Please refresh the page to try again.
-              </AlertDescription>
+              <AlertDescription>We could not sign you in. Please refresh the page to try again.</AlertDescription>
             </Alert>
           </CardContent>
         </Card>
       </main>
     )
   }
+
+  const renderInput = (name: string, placeholder = "") => (
+    <Input
+      name={name}
+      value={formData[name] || ''}
+      onChange={handleInputChange}
+      disabled={!isEditing}
+      placeholder={placeholder}
+    />
+  );
+  
+  const renderTextarea = (name: string, placeholder = "") => (
+      <Textarea
+        name={name}
+        value={formData[name] || ''}
+        onChange={handleInputChange}
+        disabled={!isEditing}
+        placeholder={placeholder}
+      />
+  );
+
+  const renderCheckbox = (name: string, label: string) => (
+      <div className="flex items-center gap-2">
+          <Checkbox 
+              id={name} 
+              name={name}
+              checked={formData[name] || false} 
+              onCheckedChange={(checked) => handleCheckboxChange(name, checked)}
+              disabled={!isEditing}
+          />
+          <label htmlFor={name} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              {label}
+          </label>
+      </div>
+  );
+  
+  const renderConsultantRow = (type: string) => (
+    <div className="grid grid-cols-5 gap-2 items-center">
+        <p>{type}</p>
+        <div className="flex justify-center">{renderCheckbox(`consultant_${type}_basic`, '')}</div>
+        <div className="flex justify-center">{renderCheckbox(`consultant_${type}_additional`, '')}</div>
+        <div className="flex justify-center">{renderCheckbox(`consultant_${type}_architect`, '')}</div>
+        <div className="flex justify-center">{renderCheckbox(`consultant_${type}_owner`, '')}</div>
+    </div>
+  )
 
   return (
     <main className="p-4 md:p-6 lg:p-8">
@@ -182,119 +193,166 @@ export default function ProjectsPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 no-print">
               <Button variant="outline" asChild>
-                <Link href="/">
-                  <ArrowLeft />
-                  Back
-                </Link>
+                <Link href="/"><ArrowLeft />Back</Link>
               </Button>
             </div>
-            <CardTitle>Project Checklist</CardTitle>
+            <CardTitle>PROJECT INFORMATION</CardTitle>
             <div className="flex items-center gap-2 no-print">
-              <Button onClick={handleDownload} variant="outline">
-                <Download /> Download
-              </Button>
+              <Button onClick={() => window.print()} variant="outline"><Download /> Download</Button>
               {isEditing ? (
                 <Button onClick={handleSave} disabled={isSaving}>
-                  {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
-                   Save
+                  {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
                 </Button>
               ) : (
-                <Button onClick={handleEdit}>
-                  <Edit /> Edit
-                </Button>
+                <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
               )}
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4 border rounded-lg">
-            <div className="space-y-2">
-              <Label htmlFor="name">Project Name, Address</Label>
-              <Input
-                id="name"
-                placeholder="Enter project name and address"
-                value={projectDetails.name}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="architect">Architect</Label>
-              <Input
-                id="architect"
-                placeholder="Enter architect name"
-                value={projectDetails.architect}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="projectNo">Architect Project No</Label>
-              <Input
-                id="projectNo"
-                placeholder="Enter project number"
-                value={projectDetails.projectNo}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="projectDate">Project Date</Label>
-              <Input
-                id="projectDate"
-                type="date"
-                value={projectDetails.projectDate}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-              />
-            </div>
-          </div>
+        <CardContent className="space-y-4">
+            <div className="space-y-4 printable-content">
+                <FormRow label="Project:">{renderInput("project_name")}</FormRow>
+                <FormRow label="Address:">{renderInput("project_address")}</FormRow>
+                <FormRow label="Project No:">{renderInput("project_no")}</FormRow>
+                <FormRow label="Prepared By:">{renderInput("prepared_by")}</FormRow>
+                <FormRow label="Prepared Date:">{renderInput("prepared_date", "YYYY-MM-DD")}</FormRow>
 
-          <Accordion type="single" collapsible className="w-full" defaultValue="item-1">
-            {projectChecklistSections.map((section, index) => (
-              <AccordionItem value={`item-${index + 1}`} key={section.title}>
-                <AccordionTrigger className="text-xl font-semibold">
-                  {`${index + 1}: - ${section.title}`}
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-4 pl-4">
-                    {section.subSections.map((subSection) => (
-                      <div key={subSection.title}>
-                        <h4 className="font-medium text-lg mb-2">
-                          {subSection.title}:
-                        </h4>
-                        <ul className="space-y-2 pl-2">
-                          {subSection.items.map((item, itemIndex) => {
-                            const checkboxId = `${section.title}-${subSection.title}-${itemIndex}`.replace(/\s+/g, '-');
-                            return (
-                              <li key={checkboxId} className="flex items-center gap-2">
-                                <Checkbox
-                                  id={checkboxId}
-                                  checked={checkedItems[checkboxId] || false}
-                                  onCheckedChange={(checked) => handleCheckboxChange(checkboxId, checked)}
-                                  disabled={!isEditing}
-                                />
-                                <label
-                                  htmlFor={checkboxId}
-                                  className="text-sm text-muted-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                >
-                                  {item}
-                                </label>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+                <SectionTitle>About Owner</SectionTitle>
+                <FormRow label="Full Name:">{renderInput("owner_name")}</FormRow>
+                <FormRow label="Address (Office):">{renderInput("owner_office_address")}</FormRow>
+                <FormRow label="Address (Res.):">{renderInput("owner_res_address")}</FormRow>
+                <FormRow label="Phone (Office):">{renderInput("owner_office_phone")}</FormRow>
+                <FormRow label="Phone (Res.):">{renderInput("owner_res_phone")}</FormRow>
+                <FormRow label="Owner's Project Representative Name:">{renderInput("owner_rep_name")}</FormRow>
+                <FormRow label="Address (Office):">{renderInput("owner_rep_office_address")}</FormRow>
+                <FormRow label="Address (Res.):">{renderInput("owner_rep_res_address")}</FormRow>
+                <FormRow label="Phone (Office):">{renderInput("owner_rep_office_phone")}</FormRow>
+                <FormRow label="Phone (Res.):">{renderInput("owner_rep_res_phone")}</FormRow>
+
+                <SectionTitle>About Project</SectionTitle>
+                <FormRow label="Address:">{renderInput("project_about_address")}</FormRow>
+                <FormRow label="Project Reqt.">
+                    <div className="space-y-2">
+                        {renderCheckbox("req_architectural", "Architectural Designing")}
+                        {renderCheckbox("req_interior", "Interior Decoration")}
+                        {renderCheckbox("req_landscaping", "Landscaping")}
+                        {renderCheckbox("req_turnkey", "Turnkey")}
+                        {renderCheckbox("req_other", "Other")}
+                    </div>
+                </FormRow>
+                <FormRow label="Project Type:">
+                    <div className="space-y-2">
+                        {renderCheckbox("type_commercial", "Commercial")}
+                        {renderCheckbox("type_residential", "Residential")}
+                    </div>
+                </FormRow>
+                <FormRow label="Project Status:">
+                    <div className="space-y-2">
+                        {renderCheckbox("status_new", "New")}
+                        {renderCheckbox("status_addition", "Addition")}
+                        {renderCheckbox("status_rehab", "Rehabilitation/Renovation")}
+                    </div>
+                </FormRow>
+                <FormRow label="Project Area:">{renderInput("project_area")}</FormRow>
+                <FormRow label="Special Requirments of Project:">{renderTextarea("project_special_reqs")}</FormRow>
+                 <FormRow label="Project's Cost:">
+                    <div className="space-y-2">
+                        {renderCheckbox("cost_architectural", "Architectural Designing")}
+                        {renderCheckbox("cost_interior", "Interior Decoration")}
+                        {renderCheckbox("cost_landscaping", "Landscaping")}
+                        {renderCheckbox("cost_construction", "Construction")}
+                        {renderCheckbox("cost_turnkey", "Turnkey")}
+                        {renderCheckbox("cost_other", "Other")}
+                    </div>
+                </FormRow>
+                <FormRow label="First Information about Project:">{renderInput("date_first_info", "YYYY-MM-DD")}</FormRow>
+                <FormRow label="First Meeting:">{renderInput("date_first_meeting", "YYYY-MM-DD")}</FormRow>
+                <FormRow label="First Working on Project:">{renderInput("date_first_working", "YYYY-MM-DD")}</FormRow>
+                <FormRow label="First Proposal:">
+                    <div className="flex gap-4">
+                        <div className="w-1/2">{renderInput("date_proposal1_start", "Start Date")}</div>
+                        <div className="w-1/2">{renderInput("date_proposal1_completion", "Completion Date")}</div>
+                    </div>
+                </FormRow>
+                <FormRow label="Second Proposal:">
+                     <div className="flex gap-4">
+                        <div className="w-1/2">{renderInput("date_proposal2_start", "Start Date")}</div>
+                        <div className="w-1/2">{renderInput("date_proposal2_completion", "Completion Date")}</div>
+                    </div>
+                </FormRow>
+                <FormRow label="Working on Finalized Proposal:">{renderInput("date_final_proposal", "YYYY-MM-DD")}</FormRow>
+                <FormRow label="Revised Presentation:">{renderInput("date_revised_presentation", "YYYY-MM-DD")}</FormRow>
+                <FormRow label="Quotation:">{renderInput("date_quotation", "YYYY-MM-DD")}</FormRow>
+                <FormRow label="Drawings:">
+                    <div className="flex gap-4">
+                        <div className="w-1/2">{renderInput("date_drawings_start", "Start Date")}</div>
+                        <div className="w-1/2">{renderInput("date_drawings_completion", "Completion Date")}</div>
+                    </div>
+                </FormRow>
+                <FormRow label="Other Major Projects Milestone Dates:">{renderTextarea("date_other_milestones")}</FormRow>
+
+                <SectionTitle>Provided by Owner</SectionTitle>
+                <FormRow label="Program:">{renderCheckbox("provided_program", "")}</FormRow>
+                <FormRow label="Suggested Schedule:">{renderCheckbox("provided_schedule", "")}</FormRow>
+                <FormRow label="Legal Site Description & Other Concerned Documents:">{renderCheckbox("provided_legal", "")}</FormRow>
+                <FormRow label="Land Survey Report:">{renderCheckbox("provided_survey", "")}</FormRow>
+                <FormRow label="Geo-Technical, Tests and Other Site Information:">{renderCheckbox("provided_geo", "")}</FormRow>
+                <FormRow label="Existing Structure's Drawings:">{renderCheckbox("provided_drawings", "")}</FormRow>
+
+                <SectionTitle>Compensation</SectionTitle>
+                <FormRow label="Initial Payment:">{renderInput("comp_initial_payment")}</FormRow>
+                <FormRow label="Basic Services (% of Cost of Construction):">{renderInput("comp_basic_services_pct")}</FormRow>
+                <div className="pl-4">
+                    <p className="font-medium mb-2">Breakdown by Phase:</p>
+                    <FormRow label="Schematic Design %:">{renderInput("comp_schematic_pct")}</FormRow>
+                    <FormRow label="Design Development %:">{renderInput("comp_dev_pct")}</FormRow>
+                    <FormRow label="Construction Doc's %:">{renderInput("comp_docs_pct")}</FormRow>
+                    <FormRow label="Bidding / Negotiation %:">{renderInput("comp_bidding_pct")}</FormRow>
+                    <FormRow label="Construction Contract Admin %:">{renderInput("comp_admin_pct")}</FormRow>
+                </div>
+                <FormRow label="Additional Services (Multiple of Times Direct Cost to Architect):">{renderInput("comp_additional_services")}</FormRow>
+                <FormRow label="Reimbursable Expenses:">{renderInput("comp_reimbursable")}</FormRow>
+                <FormRow label="Other:">{renderInput("comp_other")}</FormRow>
+                <FormRow label="Special Confidential Requirements:">{renderTextarea("comp_confidential")}</FormRow>
+
+                <SectionTitle>Miscellaneous Notes</SectionTitle>
+                <Textarea name="misc_notes" value={formData.misc_notes || ''} onChange={handleInputChange} disabled={!isEditing} rows={5}/>
+
+                <SectionTitle>Consultants</SectionTitle>
+                <div className="grid grid-cols-5 gap-2 font-semibold">
+                    <p>Type</p>
+                    <p className="text-center">Within Basic Fee</p>
+                    <p className="text-center">Additional Fee</p>
+                    <p className="text-center">Architect</p>
+                    <p className="text-center">Owner</p>
+                </div>
+                <Separator/>
+                {["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Solar", "Construction Cost", "Other 1", "Other 2", "Other 3", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"].map(renderConsultantRow)}
+
+                <SectionTitle>Requirements</SectionTitle>
+                <FormRow label="Residence Nos:">{renderInput("req_residence_nos")}</FormRow>
+                <FormRow label="Size of plot:">{renderInput("req_plot_size")}</FormRow>
+                <FormRow label="Number of Bedrooms:">{renderInput("req_bedrooms")}</FormRow>
+                <FormRow label="Specifications:">{renderInput("req_specifications")}</FormRow>
+                <FormRow label="Number of Dressing Rooms:">{renderInput("req_dressing_rooms")}</FormRow>
+                <FormRow label="Number of Bath Rooms:">{renderInput("req_bathrooms")}</FormRow>
+                <FormRow label="Living Rooms:">{renderInput("req_living_rooms")}</FormRow>
+                <FormRow label="Breakfast:">{renderInput("req_breakfast")}</FormRow>
+                <FormRow label="Dinning:">{renderInput("req_dinning")}</FormRow>
+                <FormRow label="Servant Kitchen:">{renderInput("req_servant_kitchen")}</FormRow>
+                <FormRow label="Self Kitchenett:">{renderInput("req_kitchenette")}</FormRow>
+                <FormRow label="Garage:">{renderInput("req_garage")}</FormRow>
+                <FormRow label="Servant Quarters:">{renderInput("req_servant_quarters")}</FormRow>
+                <FormRow label="Guard Room:">{renderInput("req_guard_room")}</FormRow>
+                <FormRow label="Study Room:">{renderInput("req_study_room")}</FormRow>
+                <FormRow label="Stores:">{renderInput("req_stores")}</FormRow>
+                <FormRow label="Entertainment Area:">{renderInput("req_entertainment")}</FormRow>
+                <FormRow label="Patio:">{renderInput("req_patio")}</FormRow>
+                <FormRow label="Atrium:">{renderInput("req_atrium")}</FormRow>
+                <FormRow label="Remarks:">{renderTextarea("req_remarks")}</FormRow>
+            </div>
         </CardContent>
       </Card>
     </main>
   );
 }
-
-    

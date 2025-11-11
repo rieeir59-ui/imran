@@ -196,37 +196,103 @@
         "totalLoans"
       ]
     },
-    "ProjectChecklist": {
+    "ProjectInformation": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ProjectChecklist",
+      "title": "ProjectInformation",
       "type": "object",
-      "description": "Represents a project checklist with details and checked items.",
+      "description": "Represents a comprehensive project information form.",
       "properties": {
-        "details": {
-          "type": "object",
-          "description": "Details of the project.",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "architect": {
-              "type": "string"
-            },
-            "projectNo": {
-              "type": "string"
-            },
-            "projectDate": {
-              "type": "string"
-            }
-          }
-        },
-        "checkedItems": {
-          "type": "object",
-          "description": "A map of checked items in the checklist.",
-          "additionalProperties": {
-            "type": "boolean"
-          }
-        }
+        "project_name": {"type": "string"},
+        "project_address": {"type": "string"},
+        "project_no": {"type": "string"},
+        "prepared_by": {"type": "string"},
+        "prepared_date": {"type": "string"},
+        "owner_name": {"type": "string"},
+        "owner_office_address": {"type": "string"},
+        "owner_res_address": {"type": "string"},
+        "owner_office_phone": {"type": "string"},
+        "owner_res_phone": {"type": "string"},
+        "owner_rep_name": {"type": "string"},
+        "owner_rep_office_address": {"type": "string"},
+        "owner_rep_res_address": {"type": "string"},
+        "owner_rep_office_phone": {"type": "string"},
+        "owner_rep_res_phone": {"type": "string"},
+        "project_about_address": {"type": "string"},
+        "req_architectural": {"type": "boolean"},
+        "req_interior": {"type": "boolean"},
+        "req_landscaping": {"type": "boolean"},
+        "req_turnkey": {"type": "boolean"},
+        "req_other": {"type": "boolean"},
+        "type_commercial": {"type": "boolean"},
+        "type_residential": {"type": "boolean"},
+        "status_new": {"type": "boolean"},
+        "status_addition": {"type": "boolean"},
+        "status_rehab": {"type": "boolean"},
+        "project_area": {"type": "string"},
+        "project_special_reqs": {"type": "string"},
+        "cost_architectural": {"type": "boolean"},
+        "cost_interior": {"type": "boolean"},
+        "cost_landscaping": {"type": "boolean"},
+        "cost_construction": {"type": "boolean"},
+        "cost_turnkey": {"type": "boolean"},
+        "cost_other": {"type": "boolean"},
+        "date_first_info": {"type": "string"},
+        "date_first_meeting": {"type": "string"},
+        "date_first_working": {"type": "string"},
+        "date_proposal1_start": {"type": "string"},
+        "date_proposal1_completion": {"type": "string"},
+        "date_proposal2_start": {"type": "string"},
+        "date_proposal2_completion": {"type": "string"},
+        "date_final_proposal": {"type": "string"},
+        "date_revised_presentation": {"type": "string"},
+        "date_quotation": {"type": "string"},
+        "date_drawings_start": {"type": "string"},
+        "date_drawings_completion": {"type": "string"},
+        "date_other_milestones": {"type": "string"},
+        "provided_program": {"type": "boolean"},
+        "provided_schedule": {"type": "boolean"},
+        "provided_legal": {"type": "boolean"},
+        "provided_survey": {"type": "boolean"},
+        "provided_geo": {"type": "boolean"},
+        "provided_drawings": {"type": "boolean"},
+        "comp_initial_payment": {"type": "string"},
+        "comp_basic_services_pct": {"type": "string"},
+        "comp_schematic_pct": {"type": "string"},
+        "comp_dev_pct": {"type": "string"},
+        "comp_docs_pct": {"type": "string"},
+        "comp_bidding_pct": {"type": "string"},
+        "comp_admin_pct": {"type": "string"},
+        "comp_additional_services": {"type": "string"},
+        "comp_reimbursable": {"type": "string"},
+        "comp_other": {"type": "string"},
+        "comp_confidential": {"type": "string"},
+        "misc_notes": {"type": "string"},
+        "req_residence_nos": {"type": "string"},
+        "req_plot_size": {"type": "string"},
+        "req_bedrooms": {"type": "string"},
+        "req_specifications": {"type": "string"},
+        "req_dressing_rooms": {"type": "string"},
+        "req_bathrooms": {"type": "string"},
+        "req_living_rooms": {"type": "string"},
+        "req_breakfast": {"type": "string"},
+        "req_dinning": {"type": "string"},
+        "req_servant_kitchen": {"type": "string"},
+        "req_kitchenette": {"type": "string"},
+        "req_garage": {"type": "string"},
+        "req_servant_quarters": {"type": "string"},
+        "req_guard_room": {"type": "string"},
+        "req_study_room": {"type": "string"},
+        "req_stores": {"type": "string"},
+        "req_entertainment": {"type": "string"},
+        "req_patio": {"type": "string"},
+        "req_atrium": {"type": "string"},
+        "req_remarks": {"type": "string"}
+      },
+      "additionalProperties": {
+        "anyOf": [
+          { "type": "string" },
+          { "type": "boolean" }
+        ]
       }
     }
   },
@@ -319,21 +385,21 @@
         }
       },
       {
-        "path": "/users/{userId}/projectChecklists/{checklistId}",
+        "path": "/users/{userId}/projectInformation/{infoId}",
         "definition": {
-          "entityName": "ProjectChecklist",
+          "entityName": "ProjectInformation",
           "schema": {
-            "$ref": "#/backend/entities/ProjectChecklist"
+            "$ref": "#/backend/entities/ProjectInformation"
           },
-          "description": "Stores project checklist data for a specific user.",
+          "description": "Stores project information data for a specific user.",
           "params": [
             {
               "name": "userId",
-              "description": "The ID of the user who owns the checklist."
+              "description": "The ID of the user who owns the information."
             },
             {
-              "name": "checklistId",
-              "description": "The unique ID of the project checklist."
+              "name": "infoId",
+              "description": "The unique ID of the project information."
             }
           ]
         }
@@ -342,4 +408,3 @@
     "reasoning": "To address the user's requirement for saving and displaying data related to commercial, residential, hotel, and bank branch properties within the Isbah Dashboard application, I propose the following Firestore structure:\n\n*   **Authorization Independence:** Each property document (CommercialProperty, ResidentialProperty, HotelProperty, and BankBranch) will be stored under a path based on the user's ID. This eliminates the need for `get()` calls in security rules to check ownership, as the path itself establishes ownership. No membership maps are needed as ownership is implicit in the path.\n*   **Structural Segregation:** Each type of property (commercial, residential, hotel, and bank branch) is stored in its own top-level collection. This simplifies security rules by ensuring that all documents within a collection share the same access control requirements.\n*   **Clear Data Organization:** Properties are organized under user-specific subcollections to maintain data privacy and ownership.\n\nThis structure offers several advantages:\n\n*   **Security:** Access control is straightforward. Rules can easily restrict read/write access to only the owner of a specific `propertyId`.\n*   **Scalability:** Firestore's scalability is maximized by avoiding complex queries and hierarchical dependencies.\n*   **Debuggability:** The structure is simple and easy to understand, making it easier to debug security rules and data access issues.\n\nThis structure directly addresses the core design principles:\n\n*   **Authorization Independence:** The hierarchical path `/users/{userId}/{propertyType}/{propertyId}` ensures that ownership is inherent in the path structure, removing the need for `get()` calls to verify ownership.\n*   **Clarity of Intent:** The path-based ownership model clearly expresses the relationship between users and their properties.\n*   **DBAC (No Custom Claims):** Authorization relies solely on `request.auth.uid` and the path structure.\n*   **QAPs (Rules are not Filters):** The structure enables secure `list` operations. A user can only list properties under their `userId`, preventing unauthorized access to other users' properties.\n*   **Invariants:** Ownership and timestamps can be easily enforced via rules."
   }
 }
-    

@@ -1,3 +1,4 @@
+
 /**
  * @file Firestore Security Rules
  * @description This ruleset enforces a strict user-ownership model for property data.
@@ -114,15 +115,13 @@ service cloud.firestore {
     }
     
     /**
-     * @description Enforces ownership for project checklists.
-     * @path /users/{userId}/projectChecklists/{checklistId}
-     * @allow (create, get, update, delete) - Authenticated user can manage their own project checklists.
+     * @description Enforces ownership for project information.
+     * @path /users/{userId}/projectInformation/{infoId}
+     * @allow (create, get, update, delete) - Authenticated user can manage their own project information.
      * @deny - All other access is denied.
      */
-    match /users/{userId}/projectChecklists/{checklistId} {
+    match /users/{userId}/projectInformation/{infoId} {
       allow read, write: if isOwner(userId);
     }
   }
 }
-
-    
