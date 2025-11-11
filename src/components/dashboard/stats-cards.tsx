@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -28,28 +29,30 @@ export default function StatsCards() {
   const bankValue = allData.bank.reduce((acc, p) => acc + p.value, 0);
 
   const stats = [
-    { title: 'Commercial', icon: Building2, count: commercialCount, value: commercialValue },
-    { title: 'Residential', icon: Home, count: residentialCount, value: residentialValue },
-    { title: 'Hotel', icon: Hotel, count: hotelCount, value: hotelValue },
-    { title: 'Bank Branches', icon: Landmark, count: bankCount, value: bankValue },
+    { title: 'Commercial', icon: Building2, count: commercialCount, value: commercialValue, href: '/commercial' },
+    { title: 'Residential', icon: Home, count: residentialCount, value: residentialValue, href: '/residential' },
+    { title: 'Hotel', icon: Hotel, count: hotelCount, value: hotelValue, href: '/hotel' },
+    { title: 'Bank Branches', icon: Landmark, count: bankCount, value: bankValue, href: '/bank' },
   ];
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat) => (
-        <Card key={stat.title}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-            <stat.icon className="h-5 w-5 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stat.count} Properties</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <DollarSign className="h-3 w-3 mr-1" />
-              {formatCurrency(stat.value)} total value
-            </p>
-          </CardContent>
-        </Card>
+        <Link href={stat.href} key={stat.title}>
+          <Card className="hover:bg-accent transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+              <stat.icon className="h-5 w-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.count}</div>
+              <p className="text-xs text-muted-foreground flex items-center">
+                <DollarSign className="h-3 w-3 mr-1" />
+                {formatCurrency(stat.value)} total value
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       ))}
     </div>
   );
