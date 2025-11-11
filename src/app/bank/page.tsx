@@ -23,7 +23,7 @@ const fileIndexItems = [
     { no: 5, id: 'section-5', title: 'Project Agreement' },
     { no: 6, id: 'section-6', title: 'List of Services' },
     { no: 7, id: 'section-7', title: 'Requirement Performa (for Residential and Commercial Project)' },
-    { no: 8, id. 'section-8', title: 'Site Survey' },
+    { no: 8, id: 'section-8', title: 'Site Survey' },
     { no: 9, id: 'section-9', title: 'Project Bylaws' },
     { no: 10, id: 'section-10', title: 'Proposal request' },
     { no: 11, id: 'section-11', title: 'Drawings (architectural/interior/submission)' },
@@ -1143,3 +1143,4 @@ export default function BankPage() {
 
 
     
+
