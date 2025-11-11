@@ -33,7 +33,7 @@ const fileIndexItems = [
     { no: 22, title: 'Preliminary Project Budget' },
     { no: 23, title: 'Bill Of Quantity' },
     { no: 24, title: 'Rate Analysis' },
-    { no: 25, title'Change Order' },
+    { no: 25, title: 'Change Order' },
     { no: 26, title: 'Application and Certificate for Payment' },
     { no: 27, title: 'Instruction Sheet' },
     { no: 28, title: 'Certificate Substantial Summary' },
