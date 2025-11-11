@@ -462,7 +462,7 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
         case 'section-18':
             return (
                 <Card>
-                    <CardHeader><CardTitle>Time Line Schedule</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>Time line Schedule</CardTitle></CardHeader>
                     <CardContent>
                         <p>Timeline schedule details will be here.</p>
                     </CardContent>
@@ -489,7 +489,7 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
         case 'section-21':
             return (
                 <Card>
-                    <CardHeader><CardTitle>Construction Activity Schedule</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>Construction Activity schedule</CardTitle></CardHeader>
                     <CardContent>
                         <p>No content provided for this section.</p>
                     </CardContent>
@@ -577,8 +577,8 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
                 </Card>
             );
         case 'section-31':
-            return (
-                 <Card>
+             return (
+                <Card>
                     <CardHeader><CardTitle>Total Package of Project</CardTitle></CardHeader>
                     <CardContent>
                         <p>No content provided for this section.</p>
@@ -654,3 +654,4 @@ export default function BankPage() {
         </main>
     );
 }
+    
