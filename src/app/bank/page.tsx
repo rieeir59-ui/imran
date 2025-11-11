@@ -430,11 +430,71 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
                 </Card>
             );
         case 'section-6':
+            const ServiceSection = ({ title, items }: { title: string, items: string[] }) => (
+                <div>
+                    <h4 className="text-lg font-bold mt-4 mb-2">{title}</h4>
+                    <ul className="list-decimal list-inside space-y-1">
+                        {items.map((item, index) => <li key={index}>{item}</li>)}
+                    </ul>
+                </div>
+            );
+
             return (
                 <Card>
                     <CardHeader><CardTitle>List of Services</CardTitle></CardHeader>
                     <CardContent>
-                        <p>Please refer to the Project Checklist section.</p>
+                        <SectionTitle>1: - Predesign</SectionTitle>
+                        <ServiceSection title="Predesign Services:-" items={["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Programming", "Space Schematics/ Flow Diagrams", "Existing Facilities Surveys", "Presentations"]} />
+                        <ServiceSection title="Site Analysis Services" items={["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Site Analysis and Selection", "Site Development and Planning", "Detailed Site Utilization Studies", "Onsite Utility Studies", "Offsite Utility Studies", "Zoning Processing Assistance", "Project Development Scheduling", "Project Budgeting", "Presentations"]} />
+                        
+                        <SectionTitle>2: - Design</SectionTitle>
+                        <ServiceSection title="Schematic Design Services: -" items={["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design/ Documentation", "Electrical Design/ Documentation", "Civil Design/ Documentation", "Landscape Design/ Documentation", "Interior Design/ Documentation", "Materials Research/ Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"]} />
+                        <ServiceSection title="Design Development Services:-" items={["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design / Documentation", "Electrical Design / Documentation", "Civil Design / Documentation", "Landscape Design / Documentation", "Interior Design / Documentation", "Materials Research / Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"]} />
+                        <ServiceSection title="Construction Documents Services:-" items={["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design/ Documentation", "Electrical Design / Documentation", "Civil Design/ Documentation", "Landscape Design/ Documentation", "Interior Design/ Documentation", "Materials Research / Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"]} />
+
+                        <SectionTitle>3: - Construction</SectionTitle>
+                        <ServiceSection title="Bidding Or Negotiation Services:" items={["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Bidding Materials", "Addenda", "Bidding Negotiations", "Analysis Of Alternates/ Substitutions", "Special Bidding Services", "Bid Evaluation", "Construction Contract Agreements"]} />
+                        <ServiceSection title="Construction Contract Administration Services:-" items={["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Office Construction Administration", "Construction Field Observation", "Project Representation", "Inspection Coordination", "Supplemental Documents", "Quotation Requests/ Change Orders", "Project Schedule Monitoring", "Construction Cost Accounting", "Project Closeout"]} />
+
+                        <SectionTitle>4: - Post</SectionTitle>
+                        <ServiceSection title="Post Construction Services:-" items={["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Maintenance And Operational Programming", "Start Up Assistance", "Record Drawings", "Warranty Review", "Post Construction Evaluation"]} />
+
+                        <SectionTitle>5: - Supplemental</SectionTitle>
+                        <ServiceSection title="Supplemental Services: -" items={["Graphics Design", "Fine Arts and Crafts Services", "Special Furnishing Design", "Non-Building Equipment Selection"]} />
+
+                        <SectionTitle>List Of Materials:-</SectionTitle>
+                        <ul className="list-decimal list-inside space-y-1">
+                            <li>Conceptual Site and Building Plans/ Basic Layout</li>
+                            <li>Preliminary Sections and Elevations</li>
+                            <li>Air Conditioning/ H.V.A.C Design</li>
+                            <li>Plumbing</li>
+                            <li>Fire Protection</li>
+                            <li>Special Mechanical Systems</li>
+                            <li>General Space Requirements</li>
+                            <li>Power Services and Distribution</li>
+                            <li>Telephones</li>
+                            <li>Security Systems</li>
+                            <li>Special Electrical Systems</li>
+                            <li>Landscaping</li>
+                            <li>Materials</li>
+                            <li>Partition Sections</li>
+                            <li>Furniture Design</li>
+                            <li>Identification Of Potential Architectural Materials</li>
+                            <li>Specification Of
+                                <ul className="list-[lower-alpha] list-inside pl-6">
+                                    <li>Wall Finishes</li>
+                                    <li>Floor Finishes</li>
+                                    <li>Windows Coverings</li>
+                                    <li>Carpeting</li>
+                                </ul>
+                            </li>
+                            <li>Specialized Features Construction Details</li>
+                            <li>Project Administration</li>
+                            <li>Space Schematic Flow</li>
+                            <li>Existing Facilities Services</li>
+                            <li>Project Budgeting</li>
+                            <li>Presentation</li>
+                        </ul>
                     </CardContent>
                 </Card>
             );
@@ -864,5 +924,8 @@ export default function BankPage() {
 }
     
     
+
+    
+
 
     
