@@ -163,7 +163,7 @@ export default function ProjectsPage() {
       />
   );
 
-  const renderCheckbox = (name: string, label: string) => (
+  const renderCheckbox = (name: string, label?: string) => (
       <div className="flex items-center gap-2">
           <Checkbox 
               id={name} 
@@ -172,19 +172,19 @@ export default function ProjectsPage() {
               onCheckedChange={(checked) => handleCheckboxChange(name, checked)}
               disabled={!isEditing}
           />
-          <label htmlFor={name} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          {label && <label htmlFor={name} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
               {label}
-          </label>
+          </label>}
       </div>
   );
   
   const renderConsultantRow = (type: string) => (
     <div key={type} className="grid grid-cols-5 gap-2 items-center">
         <p>{type}</p>
-        <div className="flex justify-center">{renderCheckbox(`consultant_${type}_basic`, '')}</div>
-        <div className="flex justify-center">{renderCheckbox(`consultant_${type}_additional`, '')}</div>
-        <div className="flex justify-center">{renderCheckbox(`consultant_${type}_architect`, '')}</div>
-        <div className="flex justify-center">{renderCheckbox(`consultant_${type}_owner`, '')}</div>
+        <div className="flex justify-center">{renderCheckbox(`consultant_${type.toLowerCase().replace(/ /g, '_')}_basic`)}</div>
+        <div className="flex justify-center">{renderCheckbox(`consultant_${type.toLowerCase().replace(/ /g, '_')}_additional`)}</div>
+        <div className="flex justify-center">{renderCheckbox(`consultant_${type.toLowerCase().replace(/ /g, '_')}_architect`)}</div>
+        <div className="flex justify-center">{renderCheckbox(`consultant_${type.toLowerCase().replace(/ /g, '_')}_owner`)}</div>
     </div>
   )
 
@@ -358,5 +358,3 @@ export default function ProjectsPage() {
     </main>
   );
 }
-
-    
