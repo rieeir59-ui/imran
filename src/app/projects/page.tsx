@@ -11,9 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useAuth, useFirestore, useUser, useMemoFirebase } from "@/firebase";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import { initiateAnonymousSignIn, setDocumentNonBlocking } from "@/firebase";
+import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 
@@ -46,7 +46,7 @@ export default function ProjectsPage() {
   const { user, isUserLoading } = useUser();
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
+    if (!isUserLoading && !user && auth) {
       initiateAnonymousSignIn(auth);
     }
   }, [isUserLoading, user, auth]);
@@ -178,15 +178,18 @@ export default function ProjectsPage() {
       </div>
   );
   
-  const renderConsultantRow = (type: string) => (
-    <div key={type} className="grid grid-cols-5 gap-2 items-center">
-        <p>{type}</p>
-        <div className="flex justify-center">{renderCheckbox(`consultant_${type.toLowerCase().replace(/ /g, '_')}_basic`)}</div>
-        <div className="flex justify-center">{renderCheckbox(`consultant_${type.toLowerCase().replace(/ /g, '_')}_additional`)}</div>
-        <div className="flex justify-center">{renderCheckbox(`consultant_${type.toLowerCase().replace(/ /g, '_')}_architect`)}</div>
-        <div className="flex justify-center">{renderCheckbox(`consultant_${type.toLowerCase().replace(/ /g, '_')}_owner`)}</div>
-    </div>
-  )
+  const renderConsultantRow = (type: string) => {
+    const slug = type.toLowerCase().replace(/ /g, '_').replace(/\//g, '_');
+    return (
+        <div key={slug} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-center">
+            <p>{type}</p>
+            <div className="flex items-center gap-1">{renderCheckbox(`consultant_${slug}_basic`)} {renderInput(`consultant_${slug}_basic_text`)}</div>
+            <div className="flex items-center gap-1">{renderCheckbox(`consultant_${slug}_additional`)} {renderInput(`consultant_${slug}_additional_text`)}</div>
+            <div className="flex items-center gap-1">{renderCheckbox(`consultant_${slug}_architect`)} {renderInput(`consultant_${slug}_architect_text`)}</div>
+            <div className="flex items-center gap-1">{renderCheckbox(`consultant_${slug}_owner`)} {renderInput(`consultant_${slug}_owner_text`)}</div>
+        </div>
+    )
+  }
 
   return (
     <main className="p-4 md:p-6 lg:p-8">
@@ -296,7 +299,7 @@ export default function ProjectsPage() {
                 <SectionTitle>Provided by Owner</SectionTitle>
                 <FormRow label="Program:">{renderCheckbox("provided_program", "")}</FormRow>
                 <FormRow label="Suggested Schedule:">{renderCheckbox("provided_schedule", "")}</FormRow>
-                <FormRow label="Legal Site Description & Other Concerned Documents:">{renderCheckbox("provided_legal", "")}</FormRow>
+                <FormRow label="Legal Site Description &amp; Other Concerned Documents:">{renderCheckbox("provided_legal", "")}</FormRow>
                 <FormRow label="Land Survey Report:">{renderCheckbox("provided_survey", "")}</FormRow>
                 <FormRow label="Geo-Technical, Tests and Other Site Information:">{renderCheckbox("provided_geo", "")}</FormRow>
                 <FormRow label="Existing Structure's Drawings:">{renderCheckbox("provided_drawings", "")}</FormRow>
@@ -321,7 +324,7 @@ export default function ProjectsPage() {
                 <Textarea name="misc_notes" value={formData.misc_notes || ''} onChange={handleInputChange} disabled={!isEditing} rows={5}/>
 
                 <SectionTitle>Consultants</SectionTitle>
-                <div className="grid grid-cols-5 gap-2 font-semibold">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-2 font-semibold">
                     <p>Type</p>
                     <p className="text-center">Within Basic Fee</p>
                     <p className="text-center">Additional Fee</p>
@@ -357,4 +360,5 @@ export default function ProjectsPage() {
       </Card>
     </main>
   );
-}
+
+    
