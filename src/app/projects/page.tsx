@@ -177,7 +177,7 @@ export default function ProjectsPage() {
   );
   
   const renderConsultantRow = (type: string) => (
-    <div className="grid grid-cols-5 gap-2 items-center">
+    <div key={type} className="grid grid-cols-5 gap-2 items-center">
         <p>{type}</p>
         <div className="flex justify-center">{renderCheckbox(`consultant_${type}_basic`, '')}</div>
         <div className="flex justify-center">{renderCheckbox(`consultant_${type}_additional`, '')}</div>
@@ -356,3 +356,5 @@ export default function ProjectsPage() {
     </main>
   );
 }
+
+    
