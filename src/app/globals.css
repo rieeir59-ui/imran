@@ -85,17 +85,50 @@
 
 @media print {
   body {
-    background: white;
+    background: white !important;
+    color: black !important;
   }
   .no-print {
-    display: none;
+    display: none !important;
   }
-  main {
-    padding: 0;
-    margin: 0;
+  main.p-4, main.p-6, main.p-8 {
+    padding: 0 !important;
+    margin: 0 !important;
   }
   .printable-card {
-    border: none;
-    box-shadow: none;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .printable-card .border {
+      border: 1px solid #ccc !important;
+  }
+  
+  input, label {
+    color: black !important;
+  }
+
+  input {
+    border-color: #ccc !important;
+    -webkit-print-color-adjust: exact; 
+    print-color-adjust: exact;
+  }
+
+  input:disabled {
+    background-color: #f0f0f0 !important;
+    opacity: 1 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Ensure checkbox state is visible */
+  [data-state=checked] {
+    background-color: hsl(var(--primary)) !important;
+    border-color: hsl(var(--primary)) !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  [data-state=checked] > svg {
+    color: hsl(var(--primary-foreground)) !important;
   }
 }
