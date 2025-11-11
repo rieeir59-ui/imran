@@ -2,22 +2,15 @@
 "use client";
 
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { projectChecklistData, ProjectChecklistItem } from "@/lib/projects-data";
-
-const statusVariant = {
-  "Completed": "default",
-  "In Progress": "secondary",
-  "Not Started": "outline",
-}
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { projectChecklistSections } from "@/lib/projects-data";
 
 export default function ProjectsPage() {
   return (
@@ -26,27 +19,49 @@ export default function ProjectsPage() {
         <CardHeader>
           <CardTitle>Project Checklist</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[100px]">Serial No.</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead className="w-[150px]">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {projectChecklistData.map((item: ProjectChecklistItem) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.id}</TableCell>
-                  <TableCell>{item.title}</TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariant[item.status] as any}>{item.status}</Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4 border rounded-lg">
+            <div className="space-y-2">
+              <Label htmlFor="project-name">Project Name, Address</Label>
+              <Input id="project-name" placeholder="Enter project name and address" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="project-architect">Architect</Label>
+              <Input id="project-architect" placeholder="Enter architect name" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="project-no">Architect Project No</Label>
+              <Input id="project-no" placeholder="Enter project number" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="project-date">Project Date</Label>
+              <Input id="project-date" type="date" />
+            </div>
+          </div>
+
+          <Accordion type="single" collapsible className="w-full">
+            {projectChecklistSections.map((section, index) => (
+              <AccordionItem value={`item-${index + 1}`} key={section.title}>
+                <AccordionTrigger className="text-xl font-semibold">
+                  {`${index + 1}: - ${section.title}`}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-4 pl-4">
+                    {section.subSections.map((subSection) => (
+                      <div key={subSection.title}>
+                        <h4 className="font-medium text-lg mb-2">{subSection.title}:</h4>
+                        <ul className="list-disc space-y-1 pl-6 text-muted-foreground">
+                          {subSection.items.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </CardContent>
       </Card>
     </main>
