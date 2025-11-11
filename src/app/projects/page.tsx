@@ -82,7 +82,6 @@ export default function ProjectsPage() {
       <Card className="printable-card">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Project Checklist</CardTitle>
             <div className="flex items-center gap-2 no-print">
               <Button variant="outline" asChild>
                 <Link href="/">
@@ -90,6 +89,9 @@ export default function ProjectsPage() {
                   Back
                 </Link>
               </Button>
+            </div>
+            <CardTitle>Project Checklist</CardTitle>
+            <div className="flex items-center gap-2 no-print">
               <Button onClick={handleDownload} variant="outline">
                 <Download /> Download
               </Button>
