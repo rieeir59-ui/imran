@@ -1,0 +1,291 @@
+{
+  "entities": {
+    "CommercialProperty": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CommercialProperty",
+      "type": "object",
+      "description": "Represents a commercial property data entry.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the commercial property."
+        },
+        "propertyName": {
+          "type": "string",
+          "description": "Name of the commercial property."
+        },
+        "address": {
+          "type": "string",
+          "description": "Address of the commercial property."
+        },
+        "propertyType": {
+          "type": "string",
+          "description": "Type of commercial property (e.g., Office, Retail)."
+        },
+        "squareFootage": {
+          "type": "number",
+          "description": "Square footage of the commercial property."
+        },
+        "rentalRate": {
+          "type": "number",
+          "description": "Rental rate of the commercial property."
+        },
+        "occupancyRate": {
+          "type": "number",
+          "description": "Occupancy rate of the commercial property."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes or comments about the commercial property."
+        }
+      },
+      "required": [
+        "id",
+        "propertyName",
+        "address",
+        "propertyType",
+        "squareFootage",
+        "rentalRate",
+        "occupancyRate"
+      ]
+    },
+    "ResidentialProperty": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ResidentialProperty",
+      "type": "object",
+      "description": "Represents a residential property data entry.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the residential property."
+        },
+        "propertyName": {
+          "type": "string",
+          "description": "Name of the residential property."
+        },
+        "address": {
+          "type": "string",
+          "description": "Address of the residential property."
+        },
+        "propertyType": {
+          "type": "string",
+          "description": "Type of residential property (e.g., Apartment, House)."
+        },
+        "numberOfUnits": {
+          "type": "number",
+          "description": "Number of units in the residential property."
+        },
+        "averageRent": {
+          "type": "number",
+          "description": "Average rent for units in the residential property."
+        },
+        "occupancyRate": {
+          "type": "number",
+          "description": "Occupancy rate of the residential property."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes or comments about the residential property."
+        }
+      },
+      "required": [
+        "id",
+        "propertyName",
+        "address",
+        "propertyType",
+        "numberOfUnits",
+        "averageRent",
+        "occupancyRate"
+      ]
+    },
+    "HotelProperty": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "HotelProperty",
+      "type": "object",
+      "description": "Represents a hotel property data entry.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the hotel property."
+        },
+        "hotelName": {
+          "type": "string",
+          "description": "Name of the hotel property."
+        },
+        "address": {
+          "type": "string",
+          "description": "Address of the hotel property."
+        },
+        "starRating": {
+          "type": "number",
+          "description": "Star rating of the hotel property."
+        },
+        "numberOfRooms": {
+          "type": "number",
+          "description": "Number of rooms in the hotel property."
+        },
+        "averageDailyRate": {
+          "type": "number",
+          "description": "Average daily rate for rooms in the hotel property."
+        },
+        "occupancyRate": {
+          "type": "number",
+          "description": "Occupancy rate of the hotel property."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes or comments about the hotel property."
+        }
+      },
+      "required": [
+        "id",
+        "hotelName",
+        "address",
+        "starRating",
+        "numberOfRooms",
+        "averageDailyRate",
+        "occupancyRate"
+      ]
+    },
+    "BankBranch": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BankBranch",
+      "type": "object",
+      "description": "Represents a bank branch data entry.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the bank branch."
+        },
+        "bankName": {
+          "type": "string",
+          "description": "Name of the bank."
+        },
+        "branchAddress": {
+          "type": "string",
+          "description": "Address of the bank branch."
+        },
+        "branchManager": {
+          "type": "string",
+          "description": "Name of the branch manager."
+        },
+        "numberOfEmployees": {
+          "type": "number",
+          "description": "Number of employees at the bank branch."
+        },
+        "totalDeposits": {
+          "type": "number",
+          "description": "Total deposits at the bank branch."
+        },
+        "totalLoans": {
+          "type": "number",
+          "description": "Total loans issued by the bank branch."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes or comments about the bank branch."
+        }
+      },
+      "required": [
+        "id",
+        "bankName",
+        "branchAddress",
+        "branchManager",
+        "numberOfEmployees",
+        "totalDeposits",
+        "totalLoans"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}/commercialProperties/{propertyId}",
+        "definition": {
+          "entityName": "CommercialProperty",
+          "schema": {
+            "$ref": "#/backend/entities/CommercialProperty"
+          },
+          "description": "Stores commercial property data owned by a specific user. Path-based ownership enforced via /users/{userId}. Includes 'userId' as the owner.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user who owns the commercial property."
+            },
+            {
+              "name": "propertyId",
+              "description": "The unique ID of the commercial property."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/residentialProperties/{propertyId}",
+        "definition": {
+          "entityName": "ResidentialProperty",
+          "schema": {
+            "$ref": "#/backend/entities/ResidentialProperty"
+          },
+          "description": "Stores residential property data owned by a specific user. Path-based ownership enforced via /users/{userId}. Includes 'userId' as the owner.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user who owns the residential property."
+            },
+            {
+              "name": "propertyId",
+              "description": "The unique ID of the residential property."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/hotelProperties/{propertyId}",
+        "definition": {
+          "entityName": "HotelProperty",
+          "schema": {
+            "$ref": "#/backend/entities/HotelProperty"
+          },
+          "description": "Stores hotel property data owned by a specific user. Path-based ownership enforced via /users/{userId}. Includes 'userId' as the owner.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user who owns the hotel property."
+            },
+            {
+              "name": "propertyId",
+              "description": "The unique ID of the hotel property."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/bankBranches/{propertyId}",
+        "definition": {
+          "entityName": "BankBranch",
+          "schema": {
+            "$ref": "#/backend/entities/BankBranch"
+          },
+          "description": "Stores bank branch data owned by a specific user. Path-based ownership enforced via /users/{userId}. Includes 'userId' as the owner.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user who owns the bank branch property."
+            },
+            {
+              "name": "propertyId",
+              "description": "The unique ID of the bank branch property."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "To address the user's requirement for saving and displaying data related to commercial, residential, hotel, and bank branch properties within the Isbah Dashboard application, I propose the following Firestore structure:\n\n*   **Authorization Independence:** Each property document (CommercialProperty, ResidentialProperty, HotelProperty, and BankBranch) will be stored under a path based on the user's ID. This eliminates the need for `get()` calls in security rules to check ownership, as the path itself establishes ownership. No membership maps are needed as ownership is implicit in the path.\n*   **Structural Segregation:** Each type of property (commercial, residential, hotel, and bank branch) is stored in its own top-level collection. This simplifies security rules by ensuring that all documents within a collection share the same access control requirements.\n*   **Clear Data Organization:** Properties are organized under user-specific subcollections to maintain data privacy and ownership.\n\nThis structure offers several advantages:\n\n*   **Security:** Access control is straightforward. Rules can easily restrict read/write access to only the owner of a specific `propertyId`.\n*   **Scalability:** Firestore's scalability is maximized by avoiding complex queries and hierarchical dependencies.\n*   **Debuggability:** The structure is simple and easy to understand, making it easier to debug security rules and data access issues.\n\nThis structure directly addresses the core design principles:\n\n*   **Authorization Independence:** The hierarchical path `/users/{userId}/{propertyType}/{propertyId}` ensures that ownership is inherent in the path structure, removing the need for `get()` calls to verify ownership.\n*   **Clarity of Intent:** The path-based ownership model clearly expresses the relationship between users and their properties.\n*   **DBAC (No Custom Claims):** Authorization relies solely on `request.auth.uid` and the path structure.\n*   **QAPs (Rules are not Filters):** The structure enables secure `list` operations. A user can only list properties under their `userId`, preventing unauthorized access to other users' properties.\n*   **Invariants:** Ownership and timestamps can be easily enforced via rules."
+  }
+}
