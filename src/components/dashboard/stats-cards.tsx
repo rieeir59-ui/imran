@@ -7,12 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Building2, Home, Hotel, Landmark, DollarSign } from "lucide-react";
+import { Building2, Home, Hotel, Landmark } from "lucide-react";
 import { useData } from "@/lib/data-context";
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact' }).format(value);
-};
 
 export default function StatsCards() {
   const { data: allData } = useData();
@@ -41,15 +37,11 @@ export default function StatsCards() {
         <Link href={stat.href} key={stat.title}>
           <Card className="hover:bg-accent transition-colors">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+              <CardTitle className="text-base font-medium">{stat.title}</CardTitle>
               <stat.icon className="h-5 w-5 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.count}</div>
-              <p className="text-xs text-muted-foreground flex items-center">
-                <DollarSign className="h-3 w-3 mr-1" />
-                {formatCurrency(stat.value)} total value
-              </p>
+              {/* The count and value have been removed as per the user's request. */}
             </CardContent>
           </Card>
         </Link>
