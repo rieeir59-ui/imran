@@ -385,7 +385,7 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
         case 'section-11':
             return (
                 <Card>
-                    <CardHeader><CardTitle>Drawings (Architectural / Interiors / submission)</CardHeader></CardHeader>
+                    <CardHeader><CardTitle>Drawings (Architectural / Interiors / submission)</CardTitle></CardHeader>
                     <CardContent>
                         <DrawingsList />
                     </CardContent>
