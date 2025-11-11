@@ -123,5 +123,15 @@ service cloud.firestore {
     match /users/{userId}/projectInformation/{infoId} {
       allow read, write: if isOwner(userId);
     }
+
+    /**
+     * @description Enforces ownership for predesign assessments.
+     * @path /users/{userId}/predesignAssessments/{assessmentId}
+     * @allow (create, get, update, delete) - Authenticated user can manage their own assessment.
+     * @deny - All other access is denied.
+     */
+    match /users/{userId}/predesignAssessments/{assessmentId} {
+        allow read, write: if isOwner(userId);
+    }
   }
 }

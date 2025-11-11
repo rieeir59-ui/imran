@@ -294,6 +294,14 @@
           { "type": "boolean" }
         ]
       }
+    },
+    "PredesignAssessment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PredesignAssessment",
+      "type": "object",
+      "description": "Represents a predesign assessment form.",
+      "properties": {},
+      "additionalProperties": { "type": "string" }
     }
   },
   "auth": {
@@ -400,6 +408,26 @@
             {
               "name": "infoId",
               "description": "The unique ID of the project information."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/predesignAssessments/{assessmentId}",
+        "definition": {
+          "entityName": "PredesignAssessment",
+          "schema": {
+            "$ref": "#/backend/entities/PredesignAssessment"
+          },
+          "description": "Stores predesign assessment data for a specific user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user who owns the assessment."
+            },
+            {
+              "name": "assessmentId",
+              "description": "The unique ID of the predesign assessment."
             }
           ]
         }

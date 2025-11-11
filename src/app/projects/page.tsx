@@ -299,7 +299,7 @@ export default function ProjectsPage() {
                 <SectionTitle>Provided by Owner</SectionTitle>
                 <FormRow label="Program:">{renderCheckbox("provided_program", "")}</FormRow>
                 <FormRow label="Suggested Schedule:">{renderCheckbox("provided_schedule", "")}</FormRow>
-                <FormRow label="Legal Site Description &amp; Other Concerned Documents:">{renderCheckbox("provided_legal", "")}</FormRow>
+                <FormRow label="Legal Site Description & Other Concerned Documents:">{renderCheckbox("provided_legal", "")}</FormRow>
                 <FormRow label="Land Survey Report:">{renderCheckbox("provided_survey", "")}</FormRow>
                 <FormRow label="Geo-Technical, Tests and Other Site Information:">{renderCheckbox("provided_geo", "")}</FormRow>
                 <FormRow label="Existing Structure's Drawings:">{renderCheckbox("provided_drawings", "")}</FormRow>
@@ -360,5 +360,4 @@ export default function ProjectsPage() {
       </Card>
     </main>
   );
-
-    
+}
