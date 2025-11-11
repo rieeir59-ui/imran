@@ -8,7 +8,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton
 } from "@/components/ui/sidebar";
-import { Building2, Home, Hotel, Landmark, BriefcaseBusiness, LayoutDashboard } from 'lucide-react';
+import { Building2, Home, Hotel, Landmark, BriefcaseBusiness, LayoutDashboard, FolderKanban } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 
@@ -18,6 +18,7 @@ const menuItems = [
   { href: '/residential', icon: Home, label: 'Residential' },
   { href: '/hotel', icon: Hotel, label: 'Hotel' },
   { href: '/bank', icon: Landmark, label: 'Bank Branches' },
+  { href: '/projects', icon: FolderKanban, label: 'Projects' },
 ];
 
 export function AppSidebar() {
