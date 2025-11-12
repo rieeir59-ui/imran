@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -15,6 +15,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+
 
 const fileIndexItems = [
     { no: 1, id: 'section-1', title: 'Project Checklist' },
@@ -391,7 +398,7 @@ const Section2 = () => (
 
 const Section3 = () => (
     <Card>
-        <CardHeader><CardTitle>Predesign General Assessment</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Predesign general assessment</CardTitle></CardHeader>
         <CardContent>
             <div className="grid grid-cols-3 gap-4 mb-4">
                 <FormField label="Project (Name, Address)" value="" />
@@ -1345,55 +1352,68 @@ const Section11 = () => (
         </CardContent>
     </Card>
 );
-const Section12 = () => (<Card><CardHeader><CardTitle>Shop Drawings Sample Record</CardTitle></CardHeader><CardContent>
-    <div className="space-y-4">
-        <FormField label="Project" value="" />
-        <FormField label="Architect's Project No" value="" />
-        <FormField label="Contractor" value="" />
-        <FormField label="Spec. Section No." value="" />
-        <FormField label="Shop Drawing or Sample Drawing No." value="" />
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>#</TableHead>
-                    <TableHead>Record Date</TableHead>
-                    <TableHead>Referred To</TableHead>
-                    <TableHead>Date Sent</TableHead>
-                    <TableHead># Copies</TableHead>
-                    <TableHead>Date Ret'd.</TableHead>
-                    <TableHead>Action</TableHead>
-                    <TableHead>Copies To</TableHead>
-                    <TableHead>Title</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {[...Array(9)].map((_, i) => (
-                    <TableRow key={i}>
-                        <TableCell>{i + 1}</TableCell>
-                        <TableCell></TableCell>
-                        <TableCell></TableCell>
-                        <TableCell></TableCell>
-                        <TableCell></TableCell>
-                        <TableCell></TableCell>
-                        <TableCell className="space-y-1">
-                            <div><Checkbox id={`a${i}`}/><Label htmlFor={`a${i}`}>Approved</Label></div>
-                            <div><Checkbox id={`an${i}`}/><Label htmlFor={`an${i}`}>App'd as Noted</Label></div>
-                            <div><Checkbox id={`rr${i}`}/><Label htmlFor={`rr${i}`}>Revise & Resubmit</Label></div>
-                            <div><Checkbox id={`na${i}`}/><Label htmlFor={`na${i}`}>Not Approved</Label></div>
-                        </TableCell>
-                         <TableCell className="space-y-1">
-                            <div><Checkbox id={`co${i}`}/><Label htmlFor={`co${i}`}>Contractor</Label></div>
-                            <div><Checkbox id={`ow${i}`}/><Label htmlFor={`ow${i}`}>Owner</Label></div>
-                            <div><Checkbox id={`fi${i}`}/><Label htmlFor={`fi${i}`}>Field</Label></div>
-                            <div><Checkbox id={`f${i}`}/><Label htmlFor={`f${i}`}>File</Label></div>
-                        </TableCell>
-                        <TableCell></TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-    </div>
-</CardContent></Card>);
+const Section12 = () => (
+    <Card>
+        <CardHeader>
+            <CardTitle className="text-center font-bold">
+                SHOP DRAWINGS
+                <br />&<br />
+                SAMPLE RECORD
+            </CardTitle>
+        </CardHeader>
+        <CardContent>
+            <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                    <FormField label="Project" value="" />
+                    <FormField label="Architect's Project No" value="" />
+                    <FormField label="Contractor" value="" />
+                    <FormField label="Spec. Section No." value="" />
+                    <FormField label="Shop Drawing or Sample Drawing No." value="" />
+                </div>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>#</TableHead>
+                            <TableHead>Record Date</TableHead>
+                            <TableHead>Referred To</TableHead>
+                            <TableHead>Date Sent</TableHead>
+                            <TableHead># Copies</TableHead>
+                            <TableHead>Date Ret'd.</TableHead>
+                            <TableHead>Action</TableHead>
+                            <TableHead>Copies To</TableHead>
+                            <TableHead>Title</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {[...Array(12)].map((_, i) => (
+                            <TableRow key={i}>
+                                <TableCell>{i + 1}</TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell className="space-y-1 text-xs">
+                                    <div><Checkbox id={`a${i}`}/><Label htmlFor={`a${i}`}>Approved</Label></div>
+                                    <div><Checkbox id={`an${i}`}/><Label htmlFor={`an${i}`}>App'd as Noted</Label></div>
+                                    <div><Checkbox id={`rr${i}`}/><Label htmlFor={`rr${i}`}>Revise & Resubmit</Label></div>
+                                    <div><Checkbox id={`na${i}`}/><Label htmlFor={`na${i}`}>Not Approved</Label></div>
+                                </TableCell>
+                                <TableCell className="space-y-1 text-xs">
+                                    <div><Checkbox id={`co${i}`}/><Label htmlFor={`co${i}`}>Contractor</Label></div>
+                                    <div><Checkbox id={`ow${i}`}/><Label htmlFor={`ow${i}`}>Owner</Label></div>
+                                    <div><Checkbox id={`fi${i}`}/><Label htmlFor={`fi${i}`}>Field</Label></div>
+                                    <div><Checkbox id={`f${i}`}/><Label htmlFor={`f${i}`}>File</Label></div>
+                                </TableCell>
+                                <TableCell></TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+        </CardContent>
+    </Card>
+);
 const Section13 = () => (<Card><CardHeader><CardTitle>Project Chart (Studio)</CardTitle></CardHeader><CardContent>...</CardContent></Card>);
 const Section14 = () => (
     <Card>
@@ -1711,31 +1731,43 @@ const Section17 = () => {
         ],
     };
 
-    const renderVendorTable = (title: string, data: any[]) => (
-        <div key={title} className="mb-8">
-            <h3 className="text-xl font-bold mb-4">{title}</h3>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        {Object.keys(data[0]).map(key => <TableHead key={key}>{key}</TableHead>)}
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {data.map((row, index) => (
-                        <TableRow key={index}>
-                            {Object.values(row).map((value: any, i) => <TableCell key={i}>{value}</TableCell>)}
+    const renderVendorTable = (title: string, data: any[]) => {
+        if (!data || data.length === 0) return null;
+        return (
+            <div key={title} className="mb-8">
+                <h3 className="text-xl font-bold mb-4">{title}</h3>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            {Object.keys(data[0]).map(key => <TableHead key={key}>{key}</TableHead>)}
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </div>
-    );
+                    </TableHeader>
+                    <TableBody>
+                        {data.map((row, index) => (
+                            <TableRow key={index}>
+                                {Object.values(row).map((value: any, i) => <TableCell key={i}>{value}</TableCell>)}
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+        )
+    };
 
     return (
         <Card>
             <CardHeader><CardTitle>List of approve vendors</CardTitle></CardHeader>
             <CardContent>
-                {Object.entries(vendors).map(([title, data]) => renderVendorTable(title, data))}
+                <Accordion type="single" collapsible className="w-full">
+                    {Object.entries(vendors).map(([title, data]) => (
+                         <AccordionItem value={title} key={title}>
+                            <AccordionTrigger>{title}</AccordionTrigger>
+                            <AccordionContent>
+                                {renderVendorTable(title, data)}
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
             </CardContent>
         </Card>
     );
