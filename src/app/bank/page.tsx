@@ -1352,23 +1352,28 @@ const Section11 = () => (
         </CardContent>
     </Card>
 );
+
 const Section12 = () => (
     <Card>
         <CardHeader>
-            <CardTitle className="text-center font-bold">
-                SHOP DRAWINGS
-                <br />&<br />
-                SAMPLE RECORD
+            <CardTitle className="text-center font-bold text-2xl">
+                SHOP DRAWINGS<br />&<br />SAMPLE RECORD
             </CardTitle>
         </CardHeader>
         <CardContent>
             <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                    <FormField label="Project" value="" />
-                    <FormField label="Architect's Project No" value="" />
-                    <FormField label="Contractor" value="" />
-                    <FormField label="Spec. Section No." value="" />
-                    <FormField label="Shop Drawing or Sample Drawing No." value="" />
+                <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-4">
+                    <FormField label="Project:" value="________________________________________" />
+                    <FormField label="Architect's Project No:" value="_________________________" />
+                    <FormField label="Contractor:" value="________________________________________" />
+                    <FormField label="Date:" value="_________________________" />
+                    <FormField label="Spec. Section No.:" value="____________________________________" />
+                    <FormField label="Shop Drawing or Sample Drawing No.:" value="______________________" />
+                </div>
+                <div className="grid grid-cols-3 gap-x-8 gap-y-2 mb-4">
+                    <FormField label="Contractor:" value="________________________________________" />
+                    <FormField label="Subcontractor:" value="________________________________________" />
+                    <FormField label="Trade:" value="________________________________________" />
                 </div>
                 <Table>
                     <TableHeader>
@@ -1394,16 +1399,16 @@ const Section12 = () => (
                                 <TableCell></TableCell>
                                 <TableCell></TableCell>
                                 <TableCell className="space-y-1 text-xs">
-                                    <div><Checkbox id={`a${i}`}/><Label htmlFor={`a${i}`}>Approved</Label></div>
-                                    <div><Checkbox id={`an${i}`}/><Label htmlFor={`an${i}`}>App'd as Noted</Label></div>
-                                    <div><Checkbox id={`rr${i}`}/><Label htmlFor={`rr${i}`}>Revise & Resubmit</Label></div>
-                                    <div><Checkbox id={`na${i}`}/><Label htmlFor={`na${i}`}>Not Approved</Label></div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`a${i}`}/> Approved</div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`an${i}`}/> App'd as Noted</div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`rr${i}`}/> Revise & Resubmit</div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`na${i}`}/> Not Approved</div>
                                 </TableCell>
                                 <TableCell className="space-y-1 text-xs">
-                                    <div><Checkbox id={`co${i}`}/><Label htmlFor={`co${i}`}>Contractor</Label></div>
-                                    <div><Checkbox id={`ow${i}`}/><Label htmlFor={`ow${i}`}>Owner</Label></div>
-                                    <div><Checkbox id={`fi${i}`}/><Label htmlFor={`fi${i}`}>Field</Label></div>
-                                    <div><Checkbox id={`f${i}`}/><Label htmlFor={`f${i}`}>File</Label></div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`co${i}`}/> Contractor</div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`ow${i}`}/> Owner</div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`fi${i}`}/> Field</div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`f${i}`}/> File</div>
                                 </TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
@@ -1730,45 +1735,3 @@ const Section17 = () => {
             {"Sr No.": 9, "Vendor's Name": "Tera Generation Solutions Pvt. Ltd.", "Contact Person": "", "Products": "Home Automation", "Address": "7-A, P Block Block P Gulberg 2, Lahore, Punjab", "Contact": "(042) 111 847 111"}
         ],
     };
-
-    const renderVendorTable = (title: string, data: any[]) => {
-        if (!data || data.length === 0) return null;
-        return (
-            <div key={title} className="mb-8">
-                <h3 className="text-xl font-bold mb-4">{title}</h3>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            {Object.keys(data[0]).map(key => <TableHead key={key}>{key}</TableHead>)}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {data.map((row, index) => (
-                            <TableRow key={index}>
-                                {Object.values(row).map((value: any, i) => <TableCell key={i}>{value}</TableCell>)}
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
-        )
-    };
-
-    return (
-        <Card>
-            <CardHeader><CardTitle>List of approve vendors</CardTitle></CardHeader>
-            <CardContent>
-                <Accordion type="single" collapsible className="w-full">
-                    {Object.entries(vendors).map(([title, data]) => (
-                         <AccordionItem value={title} key={title}>
-                            <AccordionTrigger>{title}</AccordionTrigger>
-                            <AccordionContent>
-                                {renderVendorTable(title, data)}
-                            </AccordionContent>
-                        </AccordionItem>
-                    ))}
-                </Accordion>
-            </CardContent>
-        </Card>
-    );
-};
