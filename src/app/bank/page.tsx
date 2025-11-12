@@ -1,19 +1,20 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Printer } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 
 const fileIndexItems = [
     { no: 1, id: 'section-1', title: 'Project Checklist' },
@@ -129,62 +130,81 @@ const DrawingsList = () => {
     
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                    <h4 className="font-semibold mb-2">Architectural Drawings</h4>
-                    <ul className="list-disc list-inside space-y-1">
-                        {architecturalDrawings.map((item, i) => <li key={i}>{item}</li>)}
-                    </ul>
-                </div>
-                <div>
-                    <h4 className="font-semibold mb-2">Details</h4>
-                    <ul className="list-disc list-inside space-y-1">
-                        {details.map((item, i) => <li key={i}>{item}</li>)}
-                    </ul>
-                </div>
-                <div>
-                    <h4 className="font-semibold mb-2">Structure Drawings</h4>
-                    <ul className="list-disc list-inside space-y-1">
-                        {structureDrawings.map((item, i) => <li key={i}>{item}</li>)}
-                    </ul>
-                </div>
-                <div>
-                    <h4 className="font-semibold mb-2">Plumbing Drawings</h4>
-                    <ul className="list-disc list-inside space-y-1">
-                        {plumbingDrawings.map((item, i) => <li key={i}>{item}</li>)}
-                    </ul>
-                </div>
-                <div>
-                    <h4 className="font-semibold mb-2">Electrification Drawings</h4>
-                    <ul className="list-disc list-inside space-y-1">
-                        {electrificationDrawings.map((item, i) => <li key={i}>{item}</li>)}
-                    </ul>
-                </div>
+            <FormField label="Project" value="" />
+            <div className="grid grid-cols-2 gap-4">
+                <FormField label="(Name, Address)" value="" />
+                <FormField label="Architects Project No" value="" />
+                <FormField label="Date" value="" />
+                <FormField label="Contract Date" value="" />
             </div>
-            <Separator />
+            <FormField label="Project Incharge" value="" />
+
+            <Table>
+                <TableHeader><TableRow><TableHead>Serial No.</TableHead><TableHead>Drawings Title</TableHead><TableHead>Starting Date</TableHead><TableHead>Completion Date</TableHead><TableHead>Remarks</TableHead></TableRow></TableHeader>
+                <TableBody>
+                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Architectural Drawings</TableCell></TableRow>
+                    {architecturalDrawings.map((item, i) => <TableRow key={`arch-${i}`}><TableCell>{i+1}</TableCell><TableCell>{item}</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}
+                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Details</TableCell></TableRow>
+                    {details.map((item, i) => <TableRow key={`detail-${i}`}><TableCell>{i+17}</TableCell><TableCell>{item}</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}
+                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Structure Drawings</TableCell></TableRow>
+                    {structureDrawings.map((item, i) => <TableRow key={`struct-${i}`}><TableCell>{i+22}</TableCell><TableCell>{item}</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}
+                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Plumbing Drawings</TableCell></TableRow>
+                    {plumbingDrawings.map((item, i) => <TableRow key={`plumb-${i}`}><TableCell>{i+32}</TableCell><TableCell>{item}</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}
+                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Electrification Drawings</TableCell></TableRow>
+                    {electrificationDrawings.map((item, i) => <TableRow key={`elec-${i}`}><TableCell>{i+40}</TableCell><TableCell>{item}</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}
+                </TableBody>
+            </Table>
+
+            <Separator className="my-8" />
+            
             <div>
-                <h3 className="text-xl font-bold mb-4">Sample List</h3>
+                <h3 className="text-xl font-bold mb-4 text-center">SAMPLE LIST</h3>
+                 <p className="mb-2 text-center"><strong>List of drawings</strong></p>
+                <p className="mb-2 text-center"><strong>Working Drawings</strong></p>
                 <p className="mb-2"><strong>Draftsman Name:</strong> Mr. Adeel</p>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4">
                     <Table>
-                        <TableHeader><TableRow><TableHead>Sr. no.</TableHead><TableHead>Description</TableHead></TableRow></TableHeader>
-                        <TableBody>{sampleList1.map(item => <TableRow key={item.code}><TableCell>{item.code}</TableCell><TableCell>{item.desc}</TableCell></TableRow>)}</TableBody>
+                        <TableHeader><TableRow><TableHead>Sr. no.</TableHead><TableHead>Description</TableHead><TableHead>Start Date</TableHead><TableHead>End Date</TableHead><TableHead>Remarks</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                            <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Introduction (AR-01-AR-10)</TableCell></TableRow>
+                            {sampleList1.slice(0,10).map(item => <TableRow key={item.code}><TableCell>{item.code}</TableCell><TableCell>{item.desc}</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}
+                            <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Working Layout Drawings (AR-11-AR-20)</TableCell></TableRow>
+                            {sampleList1.slice(10,20).map(item => <TableRow key={item.code}><TableCell>{item.code}</TableCell><TableCell>{item.desc}</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}
+                             <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Elevation & Section Drawings (AR-21-AR-40)</TableCell></TableRow>
+                            {sampleList1.slice(20).map(item => <TableRow key={item.code}><TableCell>{item.code}</TableCell><TableCell>{item.desc}</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}
+                        </TableBody>
                     </Table>
                     <Table>
-                         <TableHeader><TableRow><TableHead>Sr. no.</TableHead><TableHead>Description</TableHead></TableRow></TableHeader>
-                        <TableBody>{sampleList2.map(item => <TableRow key={item.code}><TableCell>{item.code}</TableCell><TableCell>{item.desc}</TableCell></TableRow>)}</TableBody>
+                         <TableHeader><TableRow><TableHead>Sr. no.</TableHead><TableHead>Description</TableHead><TableHead>Start Date</TableHead><TableHead>End Date</TableHead><TableHead>Remarks</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                            <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Doors & Windows Drawings (AR-41-AR-80)</TableCell></TableRow>
+                            {sampleList2.map(item => <TableRow key={item.code}><TableCell>{item.code}</TableCell><TableCell>{item.desc}</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}
+                        </TableBody>
                     </Table>
                     <Table>
-                        <TableHeader><TableRow><TableHead>Sr. no.</TableHead><TableHead>Description</TableHead></TableRow></TableHeader>
-                        <TableBody>{sampleList3.map(item => <TableRow key={item.code}><TableCell>{item.code}</TableCell><TableCell>{item.desc}</TableCell></TableRow>)}</TableBody>
+                        <TableHeader><TableRow><TableHead>Sr. no.</TableHead><TableHead>Description</TableHead><TableHead>Start Date</TableHead><TableHead>End Date</TableHead><TableHead>Remarks</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                             <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Stair, Step & Ramp Drawings (AR-81-AR-100)</TableCell></TableRow>
+                            {sampleList3.slice(0,20).map(item => <TableRow key={item.code}><TableCell>{item.code}</TableCell><TableCell>{item.desc}</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}
+                            <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Bathroom Drawings (AR-101-AR-140)</TableCell></TableRow>
+                            {sampleList3.slice(20).map(item => <TableRow key={item.code}><TableCell>{item.code}</TableCell><TableCell>{item.desc}</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}
+                        </TableBody>
                     </Table>
                      <Table>
-                        <TableHeader><TableRow><TableHead>Sr. no.</TableHead><TableHead>Description</TableHead></TableRow></TableHeader>
-                        <TableBody>{sampleList4.map(item => <TableRow key={item.code}><TableCell>{item.code}</TableCell><TableCell>{item.desc}</TableCell></TableRow>)}</TableBody>
+                        <TableHeader><TableRow><TableHead>Sr. no.</TableHead><TableHead>Description</TableHead><TableHead>Start Date</TableHead><TableHead>End Date</TableHead><TableHead>Remarks</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                            <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Kitchen Drawings (AR-141-AR-160)</TableCell></TableRow>
+                            {sampleList4.slice(0,20).map(item => <TableRow key={item.code}><TableCell>{item.code}</TableCell><TableCell>{item.desc}</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}
+                            <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Floor Pattern Drawings (AR-161-AR-180)</TableCell></TableRow>
+                            {sampleList4.slice(20).map(item => <TableRow key={item.code}><TableCell>{item.code}</TableCell><TableCell>{item.desc}</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}
+                        </TableBody>
                     </Table>
                      <Table>
-                        <TableHeader><TableRow><TableHead>Sr. no.</TableHead><TableHead>Description</TableHead></TableRow></TableHeader>
-                        <TableBody>{sampleList5.map(item => <TableRow key={item.code}><TableCell>{item.code}</TableCell><TableCell>{item.desc}</TableCell></TableRow>)}</TableBody>
+                        <TableHeader><TableRow><TableHead>Sr. no.</TableHead><TableHead>Description</TableHead><TableHead>Start Date</TableHead><TableHead>End Date</TableHead><TableHead>Remarks</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                             <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Other Item Drawings (AR-181-AR-250)</TableCell></TableRow>
+                            {sampleList5.map(item => <TableRow key={item.code}><TableCell>{item.code}</TableCell><TableCell>{item.desc}</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}
+                        </TableBody>
                     </Table>
                 </div>
             </div>
@@ -1459,7 +1479,7 @@ const Section14 = () => (
                 </div>
                  <Table>
                     <TableHeader><TableRow><TableHead>Copies</TableHead><TableHead>Date</TableHead><TableHead>Rev. No.</TableHead><TableHead>Description</TableHead><TableHead>Action Code</TableHead></TableRow></TableHeader>
-                    <TableBody>{[...Array(4)].map((_,i)=><TableRow key={i}><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell</TableRow>)}</TableBody>
+                    <TableBody>{[...Array(4)].map((_,i)=><TableRow key={i}><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}</TableBody>
                 </Table>
                 <div className="text-xs my-2">
                     <strong>Action Code:</strong> A. Action indicated on item transmitted D. For signature and forwarding as noted below under REMARKS, B. No action required E. See REMARKS below, C. For signature and return to this office
@@ -1690,3 +1710,33 @@ const Section17 = () => {
             {"Sr No.": 9, "Vendor's Name": "Tera Generation Solutions Pvt. Ltd.", "Contact Person": "", "Products": "Home Automation", "Address": "7-A, P Block Block P Gulberg 2, Lahore, Punjab", "Contact": "(042) 111 847 111"}
         ],
     };
+
+    const renderVendorTable = (title: string, data: any[]) => (
+        <div key={title} className="mb-8">
+            <h3 className="text-xl font-bold mb-4">{title}</h3>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        {Object.keys(data[0]).map(key => <TableHead key={key}>{key}</TableHead>)}
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {data.map((row, index) => (
+                        <TableRow key={index}>
+                            {Object.values(row).map((value: any, i) => <TableCell key={i}>{value}</TableCell>)}
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
+    );
+
+    return (
+        <Card>
+            <CardHeader><CardTitle>List of approve vendors</CardTitle></CardHeader>
+            <CardContent>
+                {Object.entries(vendors).map(([title, data]) => renderVendorTable(title, data))}
+            </CardContent>
+        </Card>
+    );
+};
