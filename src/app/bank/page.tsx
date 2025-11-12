@@ -59,12 +59,13 @@ const Subtitle = ({ children }: { children: React.ReactNode }) => (
     <h3 className="text-xl font-semibold mt-6 mb-3">{children}</h3>
 );
 
-const FormField = ({ label, value }: { label: string, value?: string }) => (
-    <div className="flex flex-col mb-2">
-        <span className="font-semibold">{label}:</span>
-        <span>{value || '___________________________'}</span>
+const FormField = ({ label, value, as, children }: { label: string, value?: string, as?: 'textarea', children?: React.ReactNode }) => (
+    <div className="flex flex-col space-y-1">
+        <span className="font-semibold text-sm">{label}:</span>
+        {children ? children : (as === 'textarea' ? <div className="border rounded-md p-2 h-24 bg-gray-50">{value || ''}</div> : <div className="border-b">{value || '___________________________'}</div>)}
     </div>
 );
+
 
 const renderChecklist = (title: string, items: string[]) => (
     <div>
@@ -467,27 +468,31 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
             return (
                 <Card>
                     <CardHeader><CardTitle>PROJECT AGREEMENT</CardTitle></CardHeader>
-                    <CardContent className="prose">
+                    <CardContent className="prose max-w-none">
                         <h2 className="text-xl font-bold text-center">COMMERCIAL AGREEMENT</h2>
-                        <p><strong>Made as of the day:</strong> _________________</p>
-                        <p><strong>Between the Owner:</strong> _________________</p>
-                        <p><strong>And the Firm:</strong> Isbah Hassan & Associates</p>
-                        <p><strong>For the Design of:</strong> _________________</p>
-                        <p><strong>Address:</strong> _________________</p>
-                        <p><strong>Covered Area of Project:</strong> _________________</p>
-                        <p><strong>Consultancy Charges @ Rs ___/Sft:</strong> _________________</p>
-                        <p><strong>Sales Tax @ 16%:</strong> _________________</p>
-                        <p><strong>Withholding Tax @ 10%:</strong> _________________</p>
-                        <p><strong>Final Consultancy Charges:</strong> _________________</p>
+                        <div className="space-y-2">
+                            <FormField label="Made as of the day" />
+                            <FormField label="Between the Owner" />
+                            <FormField label="And the Firm" value="Isbah Hassan & Associates" />
+                            <FormField label="For the Design of" />
+                            <FormField label="Address" />
+                            <FormField label="Covered Area of Project" />
+                            <FormField label="Consultancy Charges @ Rs ___/Sft" />
+                            <FormField label="Sales Tax @ 16%" />
+                            <FormField label="Withholding Tax @ 10%" />
+                            <FormField label="Final Consultancy Charges" />
+                        </div>
 
                         <Subtitle>PAYMENT SCHEDULE:</Subtitle>
-                        <p>On mobilization (advance payment): <strong>20 %</strong></p>
-                        <p>On approval of schematic designs & 3D’s: <strong>15%</strong></p>
-                        <p>On completion of submission drawings: <strong>15%</strong></p>
-                        <p>On start of construction drawings: <strong>15%</strong></p>
-                        <p>On completion of construction drawings: <strong>10%</strong></p>
-                        <p>On completion of interior drawings: <strong>10%</strong></p>
-                        <p>On preparation of detailed BOQ: <strong>10%</strong></p>
+                        <ul className="list-none space-y-1 p-0">
+                            <li>On mobilization (advance payment): <strong>20 %</strong></li>
+                            <li>On approval of schematic designs & 3D’s: <strong>15%</strong></li>
+                            <li>On completion of submission drawings: <strong>15%</strong></li>
+                            <li>On start of construction drawings: <strong>15%</strong></li>
+                            <li>On completion of construction drawings: <strong>10%</strong></li>
+                            <li>On completion of interior drawings: <strong>10%</strong></li>
+                            <li>On preparation of detailed BOQ: <strong>10%</strong></li>
+                        </ul>
 
                         <Subtitle>Project Management:</Subtitle>
                         <h4 className="font-bold">Top Supervision:</h4>
@@ -512,7 +517,7 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
                         </ul>
 
                         <Subtitle>Architectural Design Services:</Subtitle>
-                        <ol className="list-decimal list-inside">
+                        <ol className="list-decimal list-inside space-y-2">
                             <li>Space Planning</li>
                             <li>Design Concept</li>
                             <li>Design Development & 3Ds (Facade)</li>
@@ -644,8 +649,12 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
                             <li>The rate of interest past due payments will be 15 % per month</li>
                         </ul>
                         <div className="flex justify-between mt-8">
-                            <p>____________________<br />Architect</p>
-                            <p>____________________<br />Client</p>
+                            <div className="text-center">
+                                <p className="border-t border-black pt-2 mt-12 w-48">Architect</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="border-t border-black pt-2 mt-12 w-48">Client</p>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -742,18 +751,50 @@ const SectionContent = ({ sectionId }: { sectionId: string }) => {
         case 'section-10':
             return (
                 <Card>
-                    <CardHeader><CardTitle>Proposal Request</CardTitle></CardHeader>
+                    <CardHeader>
+                        <CardTitle className="text-center text-2xl font-bold">PROPOSAL REQUEST</CardTitle>
+                    </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
-                            <FormField label="Project (Name, Address)" />
-                            <FormField label="Proposal Request No." />
-                            <FormField label="Date" />
-                            <FormField label="Architects Project No" />
-                            <FormField label="Contract For" />
-                            <FormField label="Owner" />
-                            <FormField label="To (Contractor)" />
-                            <FormField label="Description (Written description of the Work)" />
-                            <FormField label="Attachments (List attached documents that support description)" />
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-8">
+                                <FormField label="Project (Name, Address)" />
+                                <FormField label="Proposal Request No." />
+                            </div>
+                            <div className="grid grid-cols-2 gap-8">
+                                <div>
+                                    <FormField label="Architects Project No" />
+                                    <FormField label="Owner" />
+                                </div>
+                                <div>
+                                    <FormField label="Date" />
+                                    <FormField label="Contract For" />
+                                    <FormField label="Contract Date" />
+                                </div>
+                            </div>
+                            <FormField label="To (Contractor)">
+                                <div className="border rounded-md p-4 h-24 bg-gray-50"></div>
+                            </FormField>
+                            <FormField label="Description (Written description of the Work)" as="textarea" />
+                            <FormField label="Attachments (List attached documents that support description)" as="textarea" />
+
+                            <div className="pt-4">
+                                <p>Please submit an itemized quotation for changes in the Contract Sum and/or Time incidental to proposed modifications to the Contract Documents described herein.</p>
+                                <p className="font-bold text-center my-4">THIS IS NOT A CHANGE ORDER NOT A DIRECTION TO PROCEED WITH THE WORK DESCRIBED HEREIN.</p>
+                            </div>
+                            
+                            <div className="flex justify-between items-end pt-8">
+                                <div>
+                                    <p className="border-t border-black pt-2 mt-8 w-64">Architect</p>
+                                    <p className="border-t border-black pt-2 mt-8 w-64">By:</p>
+                                </div>
+                                <div className="flex gap-4 text-xs">
+                                    <span>Owner</span>
+                                    <span>Architect</span>
+                                    <span>Contractor</span>
+                                    <span>Field</span>
+                                    <span>Other</span>
+                                </div>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -1143,4 +1184,5 @@ export default function BankPage() {
 
 
     
+
 
