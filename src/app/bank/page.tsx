@@ -1631,10 +1631,10 @@ const Section17 = React.memo(() => {
             { "Sr.No": 5, "Company Name": "AmerIcan bricks", "Person Name": "Umer latif", "Products": "Brick", "Address": "Lahore", "Contact": "3218833616" },
         ],
         "Steel Vendors List": [
-            { "Sr No.": 1, "Vendor's Name": "Shalimar Steel", "Contact Person": "", "Products": "Metal Support System", "Address": "40-A Pecco Road,Badami Bagh,Lahore", "Contact": "042-7283342,7284313" },
-            { "Sr No.": 2, "Vendor's Name": "Izhar Steel", "Contact Person": "", "Products": "Metal Support System", "Address": "35-Tipu Block,New Garden Town Main Ferozepur Road", "Contact": "35888000-9" },
-            { "Sr No.": 3, "Vendor's Name": "Pak Steel", "Contact Person": "", "Products": "Metal Support System", "Address": "Pakistan Steel Bin Qasim Karachi 75000", "Contact": "021-99264222,021-3750271" },
-            { "Sr No.": 4, "Vendor's Name": "FF Steel", "Contact Person": "", "Products": "Metal Support System", "Address": "307/J, Block Commerical Area Near Bank of Punjab DHA Phase 12 EME Multan Road Lahore.", "Contact": "0334-4888999" },
+            {"Sr No.": 1, "Vendor's Name": "Shalimar Steel", "Contact Person": "", "Products": "Metal Support System", "Address": "40-A Pecco Road,Badami Bagh,Lahore", "Contact": "042-7283342,7284313"},
+            {"Sr No.": 2, "Vendor's Name": "Izhar Steel", "Contact Person": "", "Products": "Metal Support System", "Address": "35-Tipu Block,New Garden Town Main Ferozepur Road", "Contact": "35888000-9"},
+            {"Sr No.": 3, "Vendor's Name": "Pak Steel", "Contact Person": "", "Products": "Metal Support System", "Address": "Pakistan Steel Bin Qasim Karachi 75000", "Contact": "021-99264222,021-3750271"},
+            {"Sr No.": 4, "Vendor's Name": "FF Steel", "Contact Person": "", "Products": "Metal Support System", "Address": "307/J, Block Commerical Area Near Bank of Punjab DHA Phase 12 EME Multan Road Lahore.", "Contact": "0334-4888999"},
         ],
         "Tiles Vendors": [
             {"Sr No": 1, "Company Name": "Hadayat Sons", "Contact Person": "Rubait Durrani", "Products": "Tiles, Granite, Marble", "Address": "Defence Main Boulevard Lahore", "Contact": "042-111-333-946,03464355119"},
@@ -1764,97 +1764,3 @@ const Section17 = React.memo(() => {
             {"Sr No.": 9, "Vendor's Name": "Tera Generation Solutions Pvt. Ltd.", "Contact Person": "", "Products": "Home Automation", "Address": "7-A, P Block Block P Gulberg 2, Lahore, Punjab", "Contact": "(042) 111 847 111"}
         ],
     };
-    return (
-        <Card>
-            <CardHeader><CardTitle>List of Approved Vendors</CardTitle></CardHeader>
-            <CardContent>
-                <div className="space-y-6">
-                    {Object.entries(vendors).map(([category, vendorList]) => (
-                        <div key={category}>
-                            <Subtitle>{category}</Subtitle>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        {Object.keys(vendorList[0] || {}).map(key => <TableHead key={key}>{key}</TableHead>)}
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {vendorList.map((vendor, index) => (
-                                        <TableRow key={index}>
-                                            {Object.values(vendor).map((value, i) => <TableCell key={i}>{value}</TableCell>)}
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    ))}
-                </div>
-            </CardContent>
-        </Card>
-    )
-});
-Section17.displayName = 'Section17';
-
-const renderSection = (id: string) => {
-    switch (id) {
-        case 'section-1': return <Section1 />;
-        case 'section-2': return <Section2 />;
-        case 'section-3': return <Section3 />;
-        case 'section-4': return <Section4 />;
-        case 'section-5': return <Section5 />;
-        case 'section-6': return <Section6 />;
-        case 'section-7': return <Section7 />;
-        case 'section-8': return <Section8 />;
-        case 'section-9': return <Section9 />;
-        case 'section-10': return <Section10 />;
-        case 'section-11': return <Section11 />;
-        case 'section-12': return <Section12 />;
-        case 'section-13': return <Section13 />;
-        case 'section-14': return <Section14 />;
-        case 'section-15': return <Section15 />;
-        case 'section-16': return <Section16 />;
-        case 'section-17': return <Section17 />;
-        // Add other cases here
-        default: return null;
-    }
-};
-
-export default function BankBranchesPage() {
-    const [activeSection, setActiveSection] = useState('section-1');
-
-    return (
-        <main className="flex min-h-screen">
-            <div className="w-64 bg-gray-100 p-4 overflow-y-auto no-print">
-                <h2 className="text-xl font-bold mb-4">File Index</h2>
-                <ul className="space-y-2">
-                    {fileIndexItems.map((item) => (
-                        <li key={item.id}>
-                            <button
-                                onClick={() => setActiveSection(item.id)}
-                                className={cn(
-                                    "w-full text-left p-2 rounded-md",
-                                    activeSection === item.id ? "bg-primary text-primary-foreground" : "hover:bg-gray-200"
-                                )}
-                            >
-                                {item.no}. {item.title}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-            <div className="flex-1 p-6 overflow-y-auto">
-                 <div className="flex justify-end mb-4 no-print">
-                    <Button variant="outline" onClick={() => window.print()}>
-                        <Printer className="mr-2 h-4 w-4" />
-                        Print Section
-                    </Button>
-                </div>
-                <div className="printable-content">
-                    {renderSection(activeSection)}
-                </div>
-            </div>
-        </main>
-    );
-}
-
-```
