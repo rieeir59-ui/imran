@@ -74,7 +74,7 @@ const FormField = ({ label, value, as, children }: { label: string, value?: stri
     </div>
 );
 
-const DrawingsList = () => {
+const DrawingsList = React.memo(() => {
     const architecturalDrawings = [
         "Submission Drawings", "Demolition Plan", "Excavation Plan", "Site Plan", "Basement Plan", "Ground Floor Plan", "First Floor Plan", "Second Floor Plan", "Roof Plan", "Section A", "Section B", "Section C", "Elevation 1", "Elevation 2", "Elevation 3", "Elevation 4"
     ];
@@ -217,7 +217,9 @@ const DrawingsList = () => {
             </div>
         </div>
     );
-};
+});
+DrawingsList.displayName = 'DrawingsList';
+
 
 const renderChecklist = (title: string, items: string[]) => (
     <div>
@@ -228,7 +230,7 @@ const renderChecklist = (title: string, items: string[]) => (
     </div>
 );
 
-const Section1 = () => (
+const Section1 = React.memo(() => (
     <Card>
         <CardHeader><CardTitle>Project Checklist</CardTitle></CardHeader>
         <CardContent>
@@ -254,9 +256,10 @@ const Section1 = () => (
             {renderChecklist("List Of Materials:-", ["Conceptual Site and Building Plans/ Basic Layout", "Preliminary Sections and Elevations", "Air Conditioning/ H.V.A.C Design", "Plumbing", "Fire Protection", "Special Mechanical Systems", "General Space Requirements", "Power Services and Distribution", "Telephones", "Security Systems", "Special Electrical Systems", "Landscaping", "Materials", "Partition Sections", "Furniture Design", "Identification Of Potential Architectural Materials", "Specification Of a. Wall Finishes b. Floor Finishes c. Windows Coverings d. Carpeting", "Specialized Features Construction Details", "Project Administration", "Space Schematic Flow", "Existing Facilities Services", "Project Budgeting", "Presentation"])}
         </CardContent>
     </Card>
-);
+));
+Section1.displayName = 'Section1';
 
-const Section2 = () => (
+const Section2 = React.memo(() => (
     <Card>
         <CardHeader><CardTitle>Project Information</CardTitle></CardHeader>
         <CardContent>
@@ -394,9 +397,10 @@ const Section2 = () => (
             </div>
         </CardContent>
     </Card>
-);
+));
+Section2.displayName = 'Section2';
 
-const Section3 = () => (
+const Section3 = React.memo(() => (
     <Card>
         <CardHeader><CardTitle>Predesign general assessment</CardTitle></CardHeader>
         <CardContent>
@@ -422,9 +426,10 @@ const Section3 = () => (
             </div>
         </CardContent>
     </Card>
-);
+));
+Section3.displayName = 'Section3';
 
-const Section4 = () => (
+const Section4 = React.memo(() => (
     <Card>
         <CardHeader><CardTitle>Project Data</CardTitle></CardHeader>
         <CardContent>
@@ -497,9 +502,10 @@ const Section4 = () => (
             </div>
         </CardContent>
     </Card>
-);
+));
+Section4.displayName = 'Section4';
 
-const Section5 = () => (
+const Section5 = React.memo(() => (
     <Card>
         <CardHeader><CardTitle>Project Agreement</CardTitle></CardHeader>
         <CardContent>
@@ -733,8 +739,10 @@ const Section5 = () => (
             </div>
         </CardContent>
     </Card>
-);
-const Section6 = () => (
+));
+Section5.displayName = 'Section5';
+
+const Section6 = React.memo(() => (
     <Card>
         <CardHeader><CardTitle>List of Services</CardTitle></CardHeader>
         <CardContent>
@@ -912,9 +920,10 @@ const Section6 = () => (
             </ol>
         </CardContent>
     </Card>
-);
+));
+Section6.displayName = 'Section6';
 
-const Section7 = () => {
+const Section7 = React.memo(() => {
     const [formData, setFormData] = useState<any>({});
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -1085,9 +1094,10 @@ const Section7 = () => {
             </CardContent>
         </Card>
     );
-};
+});
+Section7.displayName = 'Section7';
 
-const Section8 = () => {
+const Section8 = React.memo(() => {
     const [formData, setFormData] = useState<any>({});
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({...formData, [e.target.name]: e.target.value});
@@ -1292,10 +1302,14 @@ const Section8 = () => {
             </div>
         </CardContent>
     </Card>
-)};
+)});
+Section8.displayName = 'Section8';
 
-const Section9 = () => (<Card><CardHeader><CardTitle>Project Bylaws</CardTitle></CardHeader><CardContent>...</CardContent></Card>);
-const Section10 = () => (
+
+const Section9 = React.memo(() => (<Card><CardHeader><CardTitle>Project Bylaws</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section9.displayName = 'Section9';
+
+const Section10 = React.memo(() => (
     <Card>
         <CardHeader><CardTitle>Proposal Request</CardTitle></CardHeader>
         <CardContent>
@@ -1343,17 +1357,20 @@ const Section10 = () => (
             </div>
         </CardContent>
     </Card>
-);
-const Section11 = () => (
+));
+Section10.displayName = 'Section10';
+
+const Section11 = React.memo(() => (
     <Card>
         <CardHeader><CardTitle>Drawings (Architectural / Interiors / submission)</CardTitle></CardHeader>
         <CardContent>
             <DrawingsList />
         </CardContent>
     </Card>
-);
+));
+Section11.displayName = 'Section11';
 
-const Section12 = () => (
+const Section12 = React.memo(() => (
     <Card>
         <CardHeader>
             <CardTitle className="text-center font-bold text-2xl">
@@ -1367,6 +1384,8 @@ const Section12 = () => (
                     <FormField label="Architect's Project No:" value="_________________________" />
                     <FormField label="Contractor:" value="________________________________________" />
                     <FormField label="Date:" value="_________________________" />
+                </div>
+                <div className="border-t border-b py-2 my-2">
                     <FormField label="Spec. Section No.:" value="____________________________________" />
                     <FormField label="Shop Drawing or Sample Drawing No.:" value="______________________" />
                 </div>
@@ -1418,9 +1437,13 @@ const Section12 = () => (
             </div>
         </CardContent>
     </Card>
-);
-const Section13 = () => (<Card><CardHeader><CardTitle>Project Chart (Studio)</CardTitle></CardHeader><CardContent>...</CardContent></Card>);
-const Section14 = () => (
+));
+Section12.displayName = 'Section12';
+
+const Section13 = React.memo(() => (<Card><CardHeader><CardTitle>Project Chart (Studio)</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section13.displayName = 'Section13';
+
+const Section14 = React.memo(() => (
     <Card>
         <CardHeader><CardTitle>Architects Field Report / Transmittal Letter / Minutes of Meetings</CardTitle></CardHeader>
         <CardContent className="space-y-8">
@@ -1551,8 +1574,10 @@ const Section14 = () => (
             </div>
         </CardContent>
     </Card>
-);
-const Section15 = () => (
+));
+Section14.displayName = 'Section14';
+
+const Section15 = React.memo(() => (
     <Card>
         <CardHeader><CardTitle>List Of Sub consultants</CardTitle></CardHeader>
         <CardContent>
@@ -1568,8 +1593,10 @@ const Section15 = () => (
             </Table>
         </CardContent>
     </Card>
-);
-const Section16 = () => (
+));
+Section15.displayName = 'Section15';
+
+const Section16 = React.memo(() => (
      <Card>
         <CardHeader><CardTitle>List of Contractors</CardTitle></CardHeader>
         <CardContent>
@@ -1585,8 +1612,10 @@ const Section16 = () => (
             </Table>
         </CardContent>
     </Card>
-);
-const Section17 = () => {
+));
+Section16.displayName = 'Section16';
+
+const Section17 = React.memo(() => {
     const vendors = {
         "Cement Vendors": [
             { "Sr.No": 1, "Company Name": "DG Cement", "Person Name": "Tahir Hamid", "Products": "Cement", "Address": "Nishat House ,53-A Lawrence Road , Lahore ,Punjab", "Contact": "0300-84772882" },
@@ -1735,3 +1764,97 @@ const Section17 = () => {
             {"Sr No.": 9, "Vendor's Name": "Tera Generation Solutions Pvt. Ltd.", "Contact Person": "", "Products": "Home Automation", "Address": "7-A, P Block Block P Gulberg 2, Lahore, Punjab", "Contact": "(042) 111 847 111"}
         ],
     };
+    return (
+        <Card>
+            <CardHeader><CardTitle>List of Approved Vendors</CardTitle></CardHeader>
+            <CardContent>
+                <div className="space-y-6">
+                    {Object.entries(vendors).map(([category, vendorList]) => (
+                        <div key={category}>
+                            <Subtitle>{category}</Subtitle>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        {Object.keys(vendorList[0] || {}).map(key => <TableHead key={key}>{key}</TableHead>)}
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {vendorList.map((vendor, index) => (
+                                        <TableRow key={index}>
+                                            {Object.values(vendor).map((value, i) => <TableCell key={i}>{value}</TableCell>)}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    )
+});
+Section17.displayName = 'Section17';
+
+const renderSection = (id: string) => {
+    switch (id) {
+        case 'section-1': return <Section1 />;
+        case 'section-2': return <Section2 />;
+        case 'section-3': return <Section3 />;
+        case 'section-4': return <Section4 />;
+        case 'section-5': return <Section5 />;
+        case 'section-6': return <Section6 />;
+        case 'section-7': return <Section7 />;
+        case 'section-8': return <Section8 />;
+        case 'section-9': return <Section9 />;
+        case 'section-10': return <Section10 />;
+        case 'section-11': return <Section11 />;
+        case 'section-12': return <Section12 />;
+        case 'section-13': return <Section13 />;
+        case 'section-14': return <Section14 />;
+        case 'section-15': return <Section15 />;
+        case 'section-16': return <Section16 />;
+        case 'section-17': return <Section17 />;
+        // Add other cases here
+        default: return null;
+    }
+};
+
+export default function BankBranchesPage() {
+    const [activeSection, setActiveSection] = useState('section-1');
+
+    return (
+        <main className="flex min-h-screen">
+            <div className="w-64 bg-gray-100 p-4 overflow-y-auto no-print">
+                <h2 className="text-xl font-bold mb-4">File Index</h2>
+                <ul className="space-y-2">
+                    {fileIndexItems.map((item) => (
+                        <li key={item.id}>
+                            <button
+                                onClick={() => setActiveSection(item.id)}
+                                className={cn(
+                                    "w-full text-left p-2 rounded-md",
+                                    activeSection === item.id ? "bg-primary text-primary-foreground" : "hover:bg-gray-200"
+                                )}
+                            >
+                                {item.no}. {item.title}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <div className="flex-1 p-6 overflow-y-auto">
+                 <div className="flex justify-end mb-4 no-print">
+                    <Button variant="outline" onClick={() => window.print()}>
+                        <Printer className="mr-2 h-4 w-4" />
+                        Print Section
+                    </Button>
+                </div>
+                <div className="printable-content">
+                    {renderSection(activeSection)}
+                </div>
+            </div>
+        </main>
+    );
+}
+
+```
