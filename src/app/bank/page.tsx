@@ -1302,7 +1302,7 @@ const Section8 = React.memo(() => {
             </div>
         </CardContent>
     </Card>
-)});
+)};
 Section8.displayName = 'Section8';
 
 
@@ -1748,7 +1748,7 @@ const Section17 = React.memo(() => {
             {"SR #": 2, "COMPANY": "MASTER FIXER TECHNICAL WORKS(SWITCH GEARS)", "ADDRESS": "OFFICE#4,2nd FLOOR CHAMAN ARCADE,WAPDA ROUNDABOUT LAHORE", "CONTACT #": "3018442671, 3224195304", "CONTACT PERSON": "NAJAM UL HUSSAIN", "EMAIL ID": "malik_najmal@yahoo.com"},
             {"SR #": 3, "COMPANY": "ACRO TECH(SWITCH GEAR AND SOALR)", "ADDRESS": "OFFICE# 10,3RD FLOOR,ALI TOWER, MM ALAM ROAD, GULBERG II, LAHORE", "CONTACT #": "042-111-579-579", "CONTACT PERSON": "RIZWAN SALEEM", "EMAIL ID": "saleslhr@acro.pk"},
             {"SR #": 1, "COMPANY": "UNI DUCT", "ADDRESS": "Z-5, 2ND FLOOR,COMMERCIAL AREA,PHASEIII DHA,LAHORE CANTT", "CONTACT #": "3311454575, 042-37024332", "CONTACT PERSON": "SALMAN JAVAID", "EMAIL ID": ""},
-            {"SR #": 1, "COMPANY": "ICEBERG INDUSTRIES(LG)", "ADDRESS": "14,R-1 BLOCK M.A. JOHAR TOWN, LAHORE", "CONTACT #": "042-35275637, 042-35275639", "CONTACT PERSON": "RAQIB SHAHZAD(HVAC ENGR.)", "EMAIL ID": "raqib-shahzad@icebergindutries.net"},
+            {"SR #": 1, "COMPANY": "ICEBERG INDUSTRIES(LG)", "ADDRESS": "14,R-1 BLOCK M.A. JOHAR TOWN, LAHore", "CONTACT #": "042-35275637, 042-35275639", "CONTACT PERSON": "RAQIB SHAHZAD(HVAC ENGR.)", "EMAIL ID": "raqib-shahzad@icebergindutries.net"},
             {"SR #": 2, "COMPANY": "ENPOWER ENGINEERING COMPANY(GENERATORS)", "ADDRESS": "55-N,GULBERGII,LAHORE", "CONTACT #": "042-35310110, 3312488967", "CONTACT PERSON": "", "EMAIL ID": "sales@enpowerservices.com"},
             {"SR #": 3, "COMPANY": "", "ADDRESS": "100/11,EXECUTIVE PLAZA MAIN BOULEVARD DHA, LAHORE", "CONTACT #": "3022512004", "CONTACT PERSON": "", "EMAIL ID": "info@nei.net.pk"},
         ],
@@ -1764,3 +1764,185 @@ const Section17 = React.memo(() => {
             {"Sr No.": 9, "Vendor's Name": "Tera Generation Solutions Pvt. Ltd.", "Contact Person": "", "Products": "Home Automation", "Address": "7-A, P Block Block P Gulberg 2, Lahore, Punjab", "Contact": "(042) 111 847 111"}
         ],
     };
+    return (
+        <Card>
+            <CardHeader><CardTitle>List of Approved Vendors</CardTitle></CardHeader>
+            <CardContent>
+                {Object.entries(vendors).map(([category, vendorList]) => (
+                    <div key={category} className="mb-8">
+                        <h3 className="text-xl font-bold mb-4">{category}</h3>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    {vendorList.length > 0 && Object.keys(vendorList[0]).map(key => <TableHead key={key}>{key}</TableHead>)}
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {vendorList.map((vendor: any, index: number) => (
+                                    <TableRow key={index}>
+                                        {Object.values(vendor).map((value: any, i) => <TableCell key={i}>{value}</TableCell>)}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                ))}
+            </CardContent>
+        </Card>
+    );
+});
+Section17.displayName = 'Section17';
+
+const Section18 = React.memo(() => (<Card><CardHeader><CardTitle>Time line Schedule</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section18.displayName = 'Section18';
+
+const Section19 = React.memo(() => (<Card><CardHeader><CardTitle>Project Application Summary</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section19.displayName = 'Section19';
+
+const Section20 = React.memo(() => (<Card><CardHeader><CardTitle>Continuation Sheet</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section20.displayName = 'Section20';
+
+const Section21 = React.memo(() => (<Card><CardHeader><CardTitle>Construction Activity schedule</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section21.displayName = 'Section21';
+
+const Section22 = React.memo(() => (<Card><CardHeader><CardTitle>Preliminary Project Budget</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section22.displayName = 'Section22';
+
+const Section23 = React.memo(() => (<Card><CardHeader><CardTitle>Bill Of Quantity</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section23.displayName = 'Section23';
+
+const Section24 = React.memo(() => (<Card><CardHeader><CardTitle>Rate Analysis</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section24.displayName = 'Section24';
+
+const Section25 = React.memo(() => (<Card><CardHeader><CardTitle>Change Order</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section25.displayName = 'Section25';
+
+const Section26 = React.memo(() => (<Card><CardHeader><CardTitle>Application and Certificate for Payment</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section26.displayName = 'Section26';
+
+const Section27 = React.memo(() => (<Card><CardHeader><CardTitle>Instruction Sheet</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section27.displayName = 'Section27';
+
+const Section28 = React.memo(() => (<Card><CardHeader><CardTitle>Certificate Substantial Summary</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section28.displayName = 'Section28';
+
+const Section29 = React.memo(() => (<Card><CardHeader><CardTitle>Other Provisions</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section29.displayName = 'Section29';
+
+const Section30 = React.memo(() => (<Card><CardHeader><CardTitle>Consent of Surety</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section30.displayName = 'Section30';
+
+const Section31 = React.memo(() => (<Card><CardHeader><CardTitle>Total Package of Project</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section31.displayName = 'Section31';
+
+const Section32 = React.memo(() => (<Card><CardHeader><CardTitle>Architects Supplemental Instructions</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section32.displayName = 'Section32';
+
+const Section33 = React.memo(() => (<Card><CardHeader><CardTitle>Construction Change Director</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section33.displayName = 'Section33';
+
+
+
+// Mapping of section IDs to their components
+const sectionComponents: { [key: string]: React.ComponentType } = {
+    'section-1': Section1,
+    'section-2': Section2,
+    'section-3': Section3,
+    'section-4': Section4,
+    'section-5': Section5,
+    'section-6': Section6,
+    'section-7': Section7,
+    'section-8': Section8,
+    'section-9': Section9,
+    'section-10': Section10,
+    'section-11': Section11,
+    'section-12': Section12,
+    'section-13': Section13,
+    'section-14': Section14,
+    'section-15': Section15,
+    'section-16': Section16,
+    'section-17': Section17,
+    'section-18': Section18,
+    'section-19': Section19,
+    'section-20': Section20,
+    'section-21': Section21,
+    'section-22': Section22,
+    'section-23': Section23,
+    'section-24': Section24,
+    'section-25': Section25,
+    'section-26': Section26,
+    'section-27': Section27,
+    'section-28': Section28,
+    'section-29': Section29,
+    'section-30': Section30,
+    'section-31': Section31,
+    'section-32': Section32,
+    'section-33': Section33,
+};
+
+const BankBranchesPage: React.FC = () => {
+    const [activeSection, setActiveSection] = useState<string>('section-1');
+    const contentRef = useRef<HTMLDivElement>(null);
+
+    const renderSection = (id: string) => {
+        const Component = sectionComponents[id];
+        return Component ? <Component /> : <p>Section not found.</p>;
+    };
+
+    return (
+        <main className="p-4 md:p-6 lg:p-8">
+            <div className="flex flex-col md:flex-row gap-8">
+                <aside className="w-full md:w-1/4 lg:w-1/5 no-print">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>File Index</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ScrollArea className="h-96 md:h-auto md:max-h-[calc(100vh-200px)]">
+                                <ul className="space-y-2">
+                                    {fileIndexItems.map((item) => (
+                                        <li key={item.id}>
+                                            <Button
+                                                variant={activeSection === item.id ? "secondary" : "ghost"}
+                                                className="w-full justify-start text-left h-auto"
+                                                onClick={() => setActiveSection(item.id)}
+                                            >
+                                                <span className="mr-2 text-muted-foreground">{item.no}.</span>
+                                                {item.title}
+                                            </Button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </ScrollArea>
+                        </CardContent>
+                    </Card>
+                </aside>
+
+                <div className="flex-1" ref={contentRef}>
+                    <div className="flex justify-end mb-4 no-print">
+                        <Button onClick={() => window.print()} variant="outline">
+                            <Printer className="mr-2" />
+                            Print Section
+                        </Button>
+                    </div>
+                     <Accordion type="single" collapsible className="w-full" defaultValue="item-1">
+                        {fileIndexItems.map(item => (
+                            <AccordionItem value={`item-${item.no}`} key={item.id}>
+                                <AccordionTrigger>
+                                    <h2 className="text-xl font-semibold">{item.no}. {item.title}</h2>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    {renderSection(item.id)}
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
+                </div>
+            </div>
+        </main>
+    );
+};
+
+export default BankBranchesPage;
+    
+    
