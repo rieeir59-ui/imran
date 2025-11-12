@@ -359,8 +359,8 @@ const Section2 = () => (
                 <Table>
                     <TableHeader><TableRow><TableHead>Type</TableHead><TableHead>Within Basic Fee</TableHead><TableHead>Additional Fee</TableHead><TableHead>Architect</TableHead><TableHead>Owner</TableHead></TableRow></TableHeader>
                     <TableBody>
-                        {["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Solar", "Construction Cost", "Other", "...", "...", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"].map(item => (
-                            <TableRow key={item}><TableCell>{item}</TableCell><TableCell>...</TableCell><TableCell>...</TableCell><TableCell>...</TableCell><TableCell>...</TableCell></TableRow>
+                        {["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Solar", "Construction Cost", "Other", "...", "...", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"].map((item, index) => (
+                            <TableRow key={`${item}-${index}`}><TableCell>{item}</TableCell><TableCell>...</TableCell><TableCell>...</TableCell><TableCell>...</TableCell><TableCell>...</TableCell></TableRow>
                         ))}
                     </TableBody>
                 </Table>
