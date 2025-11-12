@@ -1302,7 +1302,7 @@ const Section8 = React.memo(() => {
             </div>
         </CardContent>
     </Card>
-)};
+)});
 Section8.displayName = 'Section8';
 
 
@@ -1492,37 +1492,37 @@ const Section14 = React.memo(() => (
                     <div>
                         <p>If Enclosures are not as noted, Please Inform us immediately.</p>
                         <p>If checked below, please:</p>
-                        <div className="flex gap-2"><Checkbox /> Acknowledge Receipt of Enclosures.</div>
-                        <div className="flex gap-2"><Checkbox /> Return Enclosures to us.</div>
+                        <div className="flex gap-2"><Checkbox id="ack-receipt"/> Acknowledge Receipt of Enclosures.</div>
+                        <div className="flex gap-2"><Checkbox id="return-enclosures"/> Return Enclosures to us.</div>
                     </div>
                 </div>
                 <div className="my-4">
                     <p>We Transmit:</p>
                     <div className="flex gap-4">
-                        <div className="flex gap-2"><Checkbox /> herewith</div>
-                        <div className="flex gap-2"><Checkbox /> under separate cover via ______</div>
-                        <div className="flex gap-2"><Checkbox /> in accordance with your request ______</div>
+                        <div className="flex gap-2"><Checkbox id="transmit-herewith"/> herewith</div>
+                        <div className="flex gap-2"><Checkbox id="transmit-separate"/> under separate cover via ______</div>
+                        <div className="flex gap-2"><Checkbox id="transmit-request"/> in accordance with your request ______</div>
                     </div>
                     <p className="mt-2">For Your:</p>
                     <div className="flex flex-wrap gap-4">
-                        <div className="flex gap-2"><Checkbox /> approval</div>
-                        <div className="flex gap-2"><Checkbox /> distribution to parties</div>
-                        <div className="flex gap-2"><Checkbox /> information</div>
-                        <div className="flex gap-2"><Checkbox /> review & comment</div>
-                        <div className="flex gap-2"><Checkbox /> record</div>
-                        <div className="flex gap-2"><Checkbox /> use</div>
-                        <div className="flex gap-2"><Checkbox /> ______</div>
+                        <div className="flex gap-2"><Checkbox id="for-approval"/> approval</div>
+                        <div className="flex gap-2"><Checkbox id="for-distribution"/> distribution to parties</div>
+                        <div className="flex gap-2"><Checkbox id="for-info"/> information</div>
+                        <div className="flex gap-2"><Checkbox id="for-review"/> review & comment</div>
+                        <div className="flex gap-2"><Checkbox id="for-record"/> record</div>
+                        <div className="flex gap-2"><Checkbox id="for-use"/> use</div>
+                        <div className="flex gap-2"><Checkbox id="for-other"/> ______</div>
                     </div>
                      <p className="mt-2">The Following:</p>
                     <div className="flex flex-wrap gap-4">
-                        <div className="flex gap-2"><Checkbox /> Drawings</div>
-                        <div className="flex gap-2"><Checkbox /> Shop Drawing Prints</div>
-                        <div className="flex gap-2"><Checkbox /> Samples</div>
-                        <div className="flex gap-2"><Checkbox /> Specifications</div>
-                        <div className="flex gap-2"><Checkbox /> Shop Drawing Reproducible</div>
-                        <div className="flex gap-2"><Checkbox /> Product Literature</div>
-                        <div className="flex gap-2"><Checkbox /> Change Order</div>
-                         <div className="flex gap-2"><Checkbox /> ______</div>
+                        <div className="flex gap-2"><Checkbox id="following-drawings"/> Drawings</div>
+                        <div className="flex gap-2"><Checkbox id="following-shop-prints"/> Shop Drawing Prints</div>
+                        <div className="flex gap-2"><Checkbox id="following-samples"/> Samples</div>
+                        <div className="flex gap-2"><Checkbox id="following-specs"/> Specifications</div>
+                        <div className="flex gap-2"><Checkbox id="following-shop-repro"/> Shop Drawing Reproducible</div>
+                        <div className="flex gap-2"><Checkbox id="following-prod-lit"/> Product Literature</div>
+                        <div className="flex gap-2"><Checkbox id="following-change-order"/> Change Order</div>
+                         <div className="flex gap-2"><Checkbox id="following-other"/> ______</div>
                     </div>
                 </div>
                  <Table>
