@@ -21,6 +21,7 @@ const menuItems = [
   { href: '/projects', icon: FolderKanban, label: 'Project Information' },
   { href: '/predesign-assessment', icon: ClipboardCheck, label: 'Predesign Assessment' },
   { href: '/project-timeline', icon: GanttChart, label: 'Project Timeline' },
+  { href: '/bank-alfalah-timeline', icon: Landmark, label: 'Bank Alfalah Timeline' },
 ];
 
 export function AppSidebar() {
