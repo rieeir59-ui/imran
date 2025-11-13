@@ -1381,19 +1381,19 @@ const Section12 = React.memo(() => (
         <CardContent>
             <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-4">
-                    <FormField label="Project:" value="________________________________________" />
-                    <FormField label="Architect's Project No:" value="_________________________" />
-                    <FormField label="Contractor:" value="________________________________________" />
-                    <FormField label="Date:" value="_________________________" />
+                    <FormField label="Project:" value="" />
+                    <FormField label="Architect's Project No:" value="" />
+                    <FormField label="Contractor:" value="" />
+                    <FormField label="Date:" value="" />
                 </div>
                 <div className="border-t border-b py-2 my-2">
-                    <FormField label="Spec. Section No.:" value="____________________________________" />
-                    <FormField label="Shop Drawing or Sample Drawing No.:" value="______________________" />
+                    <FormField label="Spec. Section No.:" value="" />
+                    <FormField label="Shop Drawing or Sample Drawing No.:" value="" />
                 </div>
                 <div className="grid grid-cols-3 gap-x-8 gap-y-2 mb-4">
-                    <FormField label="Contractor:" value="________________________________________" />
-                    <FormField label="Subcontractor:" value="________________________________________" />
-                    <FormField label="Trade:" value="________________________________________" />
+                    <FormField label="Contractor:" value="" />
+                    <FormField label="Subcontractor:" value="" />
+                    <FormField label="Trade:" value="" />
                 </div>
                 <Table>
                     <TableHeader>
@@ -1891,7 +1891,7 @@ const Section18 = React.memo(() => {
                 </Table>
             </CardContent>
         </Card>
-    )
+    );
 });
 Section18.displayName = 'Section18';
 
@@ -2000,7 +2000,69 @@ const Section19 = React.memo(() => (
 ));
 Section19.displayName = 'Section19';
 
-const Section20 = React.memo(() => (<Card><CardHeader><CardTitle>Continuation Sheet</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section20 = React.memo(() => (
+    <Card>
+        <CardHeader><CardTitle>Continuation Sheet</CardTitle></CardHeader>
+        <CardContent>
+            <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField label="Application Number" value="" />
+                    <FormField label="Application Date" value="" />
+                    <FormField label="Period To" value="" />
+                    <FormField label="Architect's Project No" value="" />
+                </div>
+                <p className="text-sm text-muted-foreground">In tabulations below, amounts are stated to the nearest rupee.</p>
+                <p className="text-sm text-muted-foreground">Use Column I on Contracts where variable retainage for line items may apply.</p>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead rowSpan={2}>A<br/>Item No.</TableHead>
+                            <TableHead rowSpan={2}>B<br/>Description of Work</TableHead>
+                            <TableHead rowSpan={2}>C<br/>Scheduled Value</TableHead>
+                            <TableHead colSpan={2}>D<br/>Work Completed</TableHead>
+                            <TableHead rowSpan={2}>F<br/>Materials Presently Stored (not in D or E)</TableHead>
+                            <TableHead rowSpan={2}>G<br/>Total Completed and Stored to Date (D+E+F)</TableHead>
+                            <TableHead rowSpan={2}>H<br/>% (G÷C)</TableHead>
+                            <TableHead rowSpan={2}>I<br/>Balance to Finish (C-G)</TableHead>
+                            <TableHead rowSpan={2}>Retainage</TableHead>
+                        </TableRow>
+                        <TableRow>
+                            <TableHead>From Previous Application (D+E)</TableHead>
+                            <TableHead>This Period</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {[...Array(10)].map((_, i) => (
+                            <TableRow key={i}>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                            </TableRow>
+                        ))}
+                         <TableRow>
+                            <TableCell colSpan={2} className="text-right font-bold">TOTALS</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                             <TableCell></TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </div>
+        </CardContent>
+    </Card>
+));
 Section20.displayName = 'Section20';
 
 const Section21 = React.memo(() => (<Card><CardHeader><CardTitle>Construction Activity schedule</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
@@ -2154,4 +2216,5 @@ const BankBranchesPage: React.FC = () => {
 export default BankBranchesPage;
     
     
+
 
