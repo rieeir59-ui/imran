@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -25,40 +24,41 @@ import {
 
 
 const fileIndexItems = [
-    { no: 1, id: 'section-1', title: 'Project Checklist' },
-    { no: 2, id: 'section-2', title: 'Project Information' },
-    { no: 3, id: 'section-3', title: 'Predesign general assessment' },
-    { no: 4, id: 'section-4', title: 'Project Data' },
-    { no: 5, id: 'section-5', title: 'Project Agreement' },
-    { no: 6, id: 'section-6', title: 'List of Services' },
-    { no: 7, id: 'section-7', title: 'Requirement Performa (for Residential and Commercial Project)' },
-    { no: 8, id: 'section-8', title: 'Site Survey' },
-    { no: 9, id: 'section-9', title: 'Project Bylaws' },
-    { no: 10, id: 'section-10', title: 'Proposal request' },
-    { no: 11, id: 'section-11', title: 'Drawings (architectural/interior/submission)' },
-    { no: 12, id: 'section-12', title: 'Shop Drawings Sample Record' },
-    { no: 13, id: 'section-13', title: 'Project Chart (Studio)' },
-    { no: 14, id: 'section-14', title: 'Architect field report/Transmittal letter/minutes of the meeting' },
-    { no: 15, id: 'section-15', title: 'List Of Sub consultants' },
-    { no: 16, id: 'section-16', title: 'List of Contractors' },
-    { no: 17, id: 'section-17', title: 'List of approve vendors' },
-    { no: 18, id: 'section-18', title: 'Time line Schedule' },
-    { no: 19, id: 'section-19', title: 'Project Application Summary' },
-    { no: 20, id: 'section-20', title: 'Continuation Sheet' },
-    { no: 21, id: 'section-21', title: 'Construction Activity schedule' },
-    { no: 22, id: 'section-22', title: 'Preliminary Project Budget' },
-    { no: 23, id: 'section-23', title: 'Bill Of Quantity' },
-    { no: 24, id: 'section-24', title: 'Rate Analysis' },
-    { no: 25, id: 'section-25', title: 'Change Order' },
-    { no: 26, id: 'section-26', title: 'Application and Certificate for Payment' },
-    { no: 27, id: 'section-27', title: 'Instruction Sheet' },
-    { no: 28, id: 'section-28', title: 'Certificate Substantial Summary' },
-    { no: 29, id: 'section-29', title: 'Other Provisions' },
-    { no: 30, id: 'section-30', title: 'Consent of Surety' },
-    { no: 31, id: 'section-31', title: 'Total Package of Project' },
-    { no: 32, id: 'section-32', title: 'Architects Supplemental Instructions' },
-    { no: 33, id: 'section-33', title: 'Construction Change Director' },
+    { no: 1, id: 'section-1', title: 'Project Checklist', component: 'Section1' },
+    { no: 2, id: 'section-2', title: 'Project Information', component: 'Section2' },
+    { no: 3, id: 'section-3', title: 'Predesign general assessment', component: 'Section3' },
+    { no: 4, id: 'section-4', title: 'Project Data', component: 'Section4' },
+    { no: 5, id: 'section-5', title: 'Project Agreement', component: 'Section5' },
+    { no: 6, id: 'section-6', title: 'List of Services', component: 'Section6' },
+    { no: 7, id: 'section-7', title: 'Requirement Performa (for Residential and Commercial Project)', component: 'Section7' },
+    { no: 8, id: 'section-8', title: 'Site Survey', component: 'Section8' },
+    { no: 9, id: 'section-9', title: 'Project Bylaws', component: 'Section9' },
+    { no: 10, id: 'section-10', title: 'Proposal request', component: 'Section10' },
+    { no: 11, id: 'section-11', title: 'Drawings (architectural/interior/submission)', component: 'Section11' },
+    { no: 12, id: 'section-12', title: 'Shop Drawings Sample Record', component: 'Section12' },
+    { no: 13, id: 'section-13', title: 'Project Chart (Studio)', component: 'Section13' },
+    { no: 14, id: 'section-14', title: 'Architect field report/Transmittal letter/minutes of the meeting', component: 'Section14' },
+    { no: 15, id: 'section-15', title: 'List Of Sub consultants', component: 'Section15' },
+    { no: 16, id: 'section-16', title: 'List of Contractors', component: 'Section16' },
+    { no: 17, id: 'section-17', title: 'List of approve vendors', component: 'Section17' },
+    { no: 18, id: 'section-18', title: 'Time line Schedule', component: 'Section18' },
+    { no: 19, id: 'section-19', title: 'Project Application Summary', component: 'Section19' },
+    { no: 20, id: 'section-20', title: 'Continuation Sheet', component: 'Section20' },
+    { no: 21, id: 'section-21', title: 'Construction Activity schedule', component: 'Section21' },
+    { no: 22, id: 'section-22', title: 'Preliminary Project Budget', component: 'Section22' },
+    { no: 23, id: 'section-23', title: 'Bill Of Quantity', component: 'Section23' },
+    { no: 24, id: 'section-24', title: 'Rate Analysis', component: 'Section24' },
+    { no: 25, id: 'section-25', title: 'Change Order', component: 'Section25' },
+    { no: 26, id: 'section-26', title: 'Application and Certificate for Payment', component: 'Section26' },
+    { no: 27, id: 'section-27', title: 'Instruction Sheet', component: 'Section27' },
+    { no: 28, id: 'section-28', title: 'Certificate Substantial Summary', component: 'Section28' },
+    { no: 29, id: 'section-29', title: 'Other Provisions', component: 'Section29' },
+    { no: 30, id: 'section-30', title: 'Consent of Surety', component: 'Section30' },
+    { no: 31, id: 'section-31', title: 'Total Package of Project', component: 'Section31' },
+    { no: 32, id: 'section-32', title: 'Architects Supplemental Instructions', component: 'Section32' },
+    { no: 33, id: 'section-33', title: 'Construction Change Director', component: 'Section33' },
 ];
+
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
     <h2 className="text-2xl font-bold mt-8 mb-4 pt-4">{children}</h2>
@@ -93,7 +93,7 @@ const DrawingsList = React.memo(() => {
         { code: 'AR-21', desc: 'Front elevation' }, { code: 'AR-22', desc: 'Right Side Elevation' }, { code: 'AR-23', desc: 'Rear Side Elevation' }, { code: 'AR-24', desc: 'Left Side Elevation' },
         { code: 'AR-25', desc: 'Section A-A' }, { code: 'AR-26', desc: 'Section B-B' }, { code: 'AR-27', desc: 'Section C-C' }, { code: 'AR-28', desc: 'Section D-D' },
         { code: 'AR-29', desc: 'Parapet & Slab Sectional Details' }, { code: 'AR-30', desc: 'Lift Section' }, { code: 'AR-31', desc: 'Elevation Blow up Detail' }, { code: 'AR-32', desc: 'Exterior Wall Cladding Detail' },
-        { code: 'AR-33', desc: '' }, { code: 'AR-34', desc: '' }, { code: 'AR-35', desc: '' }, { code: 'AR-36', desc: '' }, { code: 'AR-37', desc: '' }, { code: 'AR-38', desc: '' }, { code: 'AR-39', desc: '' }, { code: 'AR-40', desc: '' },
+        { code: 'AR-33', desc: '' }, { code: 'AR-34', desc: '' }, { code_AI: 'AR-35', desc: '' }, { code: 'AR-36', desc: '' }, { code: 'AR-37', desc: '' }, { code: 'AR-38', desc: '' }, { code: 'AR-39', desc: '' }, { code: 'AR-40', desc: '' },
     ];
 
     const sampleList2 = [
@@ -1303,7 +1303,8 @@ const Section8 = React.memo(() => {
             </div>
         </CardContent>
     </Card>
-)});
+    );
+});
 Section8.displayName = 'Section8';
 
 
@@ -1793,3 +1794,672 @@ const Section17 = React.memo(() => {
     );
 });
 Section17.displayName = 'Section17';
+
+const Section18 = React.memo(() => (
+    <Card>
+        <CardHeader><CardTitle className="text-center">TIME LINE SCHEDULE</CardTitle></CardHeader>
+        <CardContent>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+                <FormField label="Project" value="" />
+                <FormField label="Architect" value="IH&SA" />
+                <FormField label="(Name, Address)" value="" />
+                <FormField label="Architects Project No" value="" />
+                <FormField label="Project Date" value="" />
+            </div>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Task Name</TableHead>
+                        <TableHead>Duration</TableHead>
+                        <TableHead>Start</TableHead>
+                        <TableHead>Finish</TableHead>
+                        <TableHead>Predecessor</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {
+                      [
+                          { id: 1, name: "Project Name:", duration: "", start: "", finish: "", predecessor: "" },
+                          { id: 2, name: "Conceptual Design", duration: "", start: "", finish: "", predecessor: "" },
+                          { id: 3, name: "Client Brief", duration: "", start: "", finish: "", predecessor: "2" },
+                          { id: 4, name: "Topographic Survey", duration: "", start: "", finish: "", predecessor: "2" },
+                          { id: 5, name: "Project Scope and Area Statements", duration: "", start: "", finish: "", predecessor: "3,4" },
+                          { id: 6, name: "Conceptual Plans and Supporting Drawings", duration: "", start: "", finish: "", predecessor: "5" },
+                          { id: 7, name: "Concept Engineering", duration: "", start: "", finish: "", predecessor: "5" },
+                          { id: 8, name: "Geotechnical Investigation and Report", duration: "", start: "", finish: "", predecessor: "5" },
+                          { id: 9, name: "Conceptual Interior Brief", duration: "", start: "", finish: "", predecessor: "5" },
+                          { id: 10, name: "Finalize Concept Design / Report", duration: "", start: "", finish: "", predecessor: "6,7,8,9" },
+                          { id: 11, name: "Client Comments / Approval on Concept Design", duration: "", start: "", finish: "", predecessor: "10" },
+                          { id: 12, name: "Preliminary Design", duration: "", start: "", finish: "", predecessor: "11" },
+                          { id: 13, name: "Layout Plans-Cycle 1", duration: "", start: "", finish: "", predecessor: "12" },
+                          { id: 14, name: "Initial Engineering", duration: "", start: "", finish: "", predecessor: "12" },
+                          { id: 15, name: "Preliminary Design Workshop", duration: "", start: "", finish: "", predecessor: "13,14" },
+                          { id: 16, name: "Layout Plans-Cycle 2", duration: "", start: "", finish: "", predecessor: "15" },
+                          { id: 17, name: "Environmental Study and Authority Approval", duration: "", start: "", finish: "", predecessor: "16" },
+                          { id: 18, name: "3-D Model", duration: "", start: "", finish: "", predecessor: "16" },
+                          { id: 19, name: "External Elevation", duration: "", start: "", finish: "", predecessor: "16" },
+                          { id: 20, name: "Building Section", duration: "", start: "", finish: "", predecessor: "16" },
+                          { id: 21, name: "Preliminary Interior Layouts", duration: "", start: "", finish: "", predecessor: "16" },
+                          { id: 22, name: "Preliminary Engineering Design", duration: "", start: "", finish: "", predecessor: "16" },
+                          { id: 23, name: "Finalize Preliminary Design / Report", duration: "", start: "", finish: "", predecessor: "17,18,19,20,21,22" },
+                          { id: 24, name: "Client Comments / Approval on Preliminary Design", duration: "", start: "", finish: "", predecessor: "23" },
+                          { id: 25, name: "Submission to LDA / CDA or Other Authority", duration: "", start: "", finish: "", predecessor: "24" },
+                          { id: 26, name: "Prepare Submission Drawings", duration: "", start: "", finish: "", predecessor: "25" },
+                          { id: 27, name: "Submit Application for Stage I Approval", duration: "", start: "", finish: "", predecessor: "26" },
+                          { id: 28, name: "LDA/CDA/Other Authority Approval Process", duration: "", start: "", finish: "", predecessor: "27" },
+                          { id: 29, name: "LDA/CDA/Other Authority Stage I Approval", duration: "", start: "", finish: "", predecessor: "28" },
+                          { id: 30, name: "Detailed Design and Draft Tender", duration: "", start: "", finish: "", predecessor: "29" },
+                          { id: 31, name: "Detailed Architectural Design", duration: "", start: "", finish: "", predecessor: "30" },
+                          { id: 32, name: "Detailed Interior Layouts", duration: "", start: "", finish: "", predecessor: "30" },
+                          { id: 33, name: "Detailed Engineering Design", duration: "", start: "", finish: "", predecessor: "30" },
+                          { id: 34, name: "Draft Conditions of Contract", duration: "", start: "", finish: "", predecessor: "30" },
+                          { id: 35, name: "Draft BOQ and Specifications", duration: "", start: "", finish: "", predecessor: "30" },
+                          { id: 36, name: "Client Comments / Approval Final Design", duration: "", start: "", finish: "", predecessor: "31,32,33,34,35" },
+                          { id: 37, name: "Construction Drawings and Final Tender", duration: "", start: "", finish: "", predecessor: "36" },
+                          { id: 38, name: "Architectural Construction Drawings", duration: "", start: "", finish: "", predecessor: "37" },
+                          { id: 39, name: "Engineering Construction Drawings", duration: "", start: "", finish: "", predecessor: "37" },
+                          { id: 40, name: "Final Tender Documents", duration: "", start: "", finish: "", predecessor: "38,39" },
+                          { id: 41, name: "Client Comments / Approval on Final Tender Documents", duration: "", start: "", finish: "", predecessor: "40" },
+                          { id: 42, name: "Incorporate Comments in Tender Documents", duration: "", start: "", finish: "", predecessor: "41" },
+                          { id: 43, name: "Tender Documents Ready", duration: "", start: "", finish: "", predecessor: "42" },
+                          { id: 44, name: "Final Interior Design", duration: "", start: "", finish: "", predecessor: "36" },
+                          { id: 45, name: "Interior Layouts working details", duration: "", start: "", finish: "", predecessor: "44" },
+                          { id: 46, name: "Interior Thematic Mood Board + Color Scheme", duration: "", start: "", finish: "", predecessor: "44" },
+                          { id: 47, name: "Ceiling Details Design Drawings", duration: "", start: "", finish: "", predecessor: "44" },
+                          { id: 48, name: "Built-in Feature Details", duration: "", start: "", finish: "", predecessor: "44" },
+                          { id: 49, name: "Partition Pattern Details Drawings", duration: "", start: "", finish: "", predecessor: "44" },
+                          { id: 50, name: "Draft Interior design Tender", duration: "", start: "", finish: "", predecessor: "45,46,47,48,49" },
+                          { id: 51, name: "Client Comments / Approval of Interior Design Tender", duration: "", start: "", finish: "", predecessor: "50" },
+                          { id: 52, name: "Incorporate Comments in Interior Design Tender", duration: "", start: "", finish: "", predecessor: "51" },
+                          { id: 53, name: "Interior Design Tender Complete", duration: "", start: "", finish: "", predecessor: "52" },
+                          { id: 54, name: "Procurement of Main Contractor", duration: "", start: "", finish: "", predecessor: "43" },
+                          { id: 55, name: "Construction Period ____ Months - Top Supervision by IH&SA and ____________________", duration: "", start: "", finish: "", predecessor: "54" },
+                      ].map((task) => (
+                        <TableRow key={task.id}>
+                            <TableCell>{task.id}</TableCell>
+                            <TableCell>{task.name}</TableCell>
+                            <TableCell>{task.duration}</TableCell>
+                            <TableCell>{task.start}</TableCell>
+                            <TableCell>{task.finish}</TableCell>
+                            <TableCell>{task.predecessor}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </CardContent>
+    </Card>
+));
+Section18.displayName = 'Section18';
+
+const Section19 = React.memo(() => (
+    <Card>
+        <CardHeader><CardTitle>PROJECT APPLICATION SUMMARY</CardTitle></CardHeader>
+        <CardContent>
+            <div className="space-y-4">
+                <div className="flex justify-between">
+                    <FormField label="Application Number:" value=""/>
+                    <FormField label="Application Date :" value=""/>
+                </div>
+                <div className="flex justify-between">
+                    <FormField label="Period From:" value=""/>
+                    <FormField label="To:" value=""/>
+                </div>
+                <FormField label="Architect's Project No:" value=""/>
+                <p>In tabulations below, amounts are stated to the nearest rupee.</p>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Contractor Name or Portion of Work</TableHead>
+                            <TableHead>Totals this Page</TableHead>
+                            <TableHead>all Pages</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow><TableCell>A Original Contract Sum</TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>B Net Change Orders to Date</TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>C Contract Sum to Date</TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>D Work In Place to Date</TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>E Stored Materials (Not in D or I)</TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>F Total Completed & Stored to Date (D+E)</TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>G Retainage Percentage</TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>H Retainage Amount</TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>I Previous Payments</TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>J Current Payment Due (F-H-I)</TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>K Balance to Finish (C-E)</TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>L Percent Complete (F÷C)</TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                    </TableBody>
+                </Table>
+            </div>
+        </CardContent>
+    </Card>
+));
+Section19.displayName = 'Section19';
+
+const Section20 = React.memo(() => (
+    <Card>
+        <CardHeader><CardTitle>CONTINUATION SHEET</CardTitle></CardHeader>
+        <CardContent>
+            <div className="space-y-4">
+                <div className="flex justify-between">
+                    <FormField label="Application Number:" value=""/>
+                    <FormField label="Application Date :" value=""/>
+                </div>
+                <div className="flex justify-between">
+                    <FormField label="Period To:" value=""/>
+                    <FormField label="Architect's Project No:" value=""/>
+                </div>
+                <p>In tabulations below, amounts are stated to the nearest rupee. Use Column I on Contracts where variable retainage for line items may apply.</p>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>A Item No.</TableHead>
+                            <TableHead>B Description of Work</TableHead>
+                            <TableHead>C Scheduled Value</TableHead>
+                            <TableHead>D Work Completed From Previous Application (D+E)</TableHead>
+                            <TableHead>E Work Completed This Period</TableHead>
+                            <TableHead>F Materials Presently Stored (not in D or E)</TableHead>
+                            <TableHead>G Total Completed and Stored to Date (D+E+F)</TableHead>
+                            <TableHead>H % (G÷C)</TableHead>
+                            <TableHead>I Balance to Finish (C-G)</TableHead>
+                            <TableHead>J Retainage</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {[...Array(10)].map((_, i) => (
+                             <TableRow key={i}>
+                                <TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+        </CardContent>
+    </Card>
+));
+Section20.displayName = 'Section20';
+
+const Section21 = React.memo(() => (
+    <Card>
+        <CardHeader><CardTitle>Construction Activity schedule</CardTitle></CardHeader>
+        <CardContent>
+             <div className="space-y-4">
+                <h3 className="text-xl font-bold text-center">Construction Time Line</h3>
+                <div className="grid grid-cols-4 gap-4">
+                    <FormField label="Client" value=""/>
+                    <FormField label="Title" value=""/>
+                    <FormField label="Project" value=""/>
+                    <FormField label="Type" value=""/>
+                    <FormField label="Covered Area" value=""/>
+                    <FormField label="Location" value=""/>
+                    <FormField label="Project Number" value=""/>
+                    <FormField label="Date" value=""/>
+                </div>
+                 <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Sr.No/ Code</TableHead>
+                            <TableHead>Task</TableHead>
+                            <TableHead>Duration Given By the Contract</TableHead>
+                            <TableHead>Plan Start</TableHead>
+                            <TableHead>Plan Finish</TableHead>
+                            <TableHead>Actual Start</TableHead>
+                            <TableHead>Actual Finish</TableHead>
+                            <TableHead>Progress Plan</TableHead>
+                            <TableHead>Progress Actual</TableHead>
+                            <TableHead>Variance</TableHead>
+                            <TableHead>Remarks</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {[...Array(15)].map((_, i) => (
+                             <TableRow key={i}>
+                                <TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+        </CardContent>
+    </Card>
+));
+Section21.displayName = 'Section21';
+
+const Section22 = React.memo(() => (
+    <Card>
+        <CardHeader><CardTitle>PRELIMINARY PROJECT BUDGET</CardTitle></CardHeader>
+        <CardContent>
+            <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-4">
+                    <FormField label="Project:" value=""/>
+                    <FormField label="Project No:" value=""/>
+                    <FormField label="Date:" value=""/>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                    <FormField label="Job:" value=""/>
+                    <FormField label="Rev. No:" value=""/>
+                    <FormField label="Date:" value=""/>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                    <FormField label="Location:" value=""/>
+                    <FormField label="Prepared by:" value=""/>
+                    <p></p>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                    <FormField label="Gross Area:" value=""/>
+                    <FormField label="Rental Area:" value=""/>
+                    <FormField label="Efficiency:" value="%"/>
+                </div>
+
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Item</TableHead>
+                            <TableHead>Rs. per sft.</TableHead>
+                            <TableHead>Gross Area</TableHead>
+                            <TableHead>Total Rs.</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow><TableCell>1. Site Work</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>2. Structural Frame</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>3. Exterior Finish</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>4. Interior Finish</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>5. Mechanical Vert. Transportation</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>6. Electrical Work</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>7. Heating, Ventilating, Air -conditioning</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>8. Plumbing</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>9. Fire Protection</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell className="font-bold">Basic Building Costs</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>10. Unusual Site Conditions</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>11. Unusual Soil Conditions</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>12. Off-Site Work</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>13. Provisions for Future Expansion</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>14. Special Equipment</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>15. Construction-Time Schedule</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>16. Type of Bidding and Contract</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell className="font-bold">Unusual Building Costs</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+                        <TableRow><TableCell>17. Landscaping</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>18. Art and Sign Program</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>19. Tenant Allowances (standard)</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>20. Self-liquidation Items</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell className="font-bold">Additional Budget Items</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell className="font-bold">Sub-Total</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>21. Professional Fees @270/Sqr.Ft</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>22. Surveys and Insurance Costs</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>23. Land Cost</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>24. Legal and Accounting Costs</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>25. Leasing and Advertising Costs</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>26. Financing Costs and Taxes</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>27. Promotion</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>28. Pre- Opening Expenses</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>29. Owner's Administration Costs</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell>30. Concessions to Major Tenants (above standards)</TableCell><TableCell>Rs.</TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell className="font-bold">Owner's Budget Items</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                        <TableRow><TableCell className="font-bold text-lg">TOTAL PROJECT BUDGET</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell>Rs.</TableCell></TableRow>
+                    </TableBody>
+                </Table>
+            </div>
+        </CardContent>
+    </Card>
+));
+Section22.displayName = 'Section22';
+
+const Section23 = React.memo(() => (
+    <Card>
+        <CardHeader>
+            <CardTitle className="text-center">BILL OF QUANTITY</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <p className="text-center mb-4">ISBAH HASSAN & ASSOCIATES</p>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Sr. No</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Unit</TableHead>
+                        <TableHead>Qty</TableHead>
+                        <TableHead>Rate</TableHead>
+                        <TableHead>Amount (Rs)</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    <TableRow><TableCell colSpan={6} className="font-bold">1 EXCAVATION</TableCell></TableRow>
+                    <TableRow>
+                        <TableCell></TableCell>
+                        <TableCell>Excavation for isolated, stripe/combined & Brick foundations in clay and sandy soil including cost of dressing, leveling and compaction in approved manners and disposal of surplus excavated soil away from site, all excavated area will be proof rolled as directed by the Consultant/Engineer incharge.</TableCell>
+                        <TableCell>C.FT</TableCell><TableCell>59,972</TableCell><TableCell>-</TableCell><TableCell></TableCell>
+                    </TableRow>
+                     <TableRow>
+                        <TableCell></TableCell>
+                        <TableCell>Basement</TableCell>
+                        <TableCell>C.FT</TableCell><TableCell>225</TableCell><TableCell>-</TableCell><TableCell></TableCell>
+                    </TableRow>
+                    <TableRow><TableCell colSpan={6} className="font-bold">2 BACK FILLING</TableCell></TableRow>
+                     <TableRow>
+                        <TableCell></TableCell>
+                        <TableCell>Back Filling including watering and compaction in layers not exceeding 150mm compacted thickness to dry Compaction Test (ASTM D-1557) upto 95% Modified AASHTO by using the borrowed local sand from the local nearby site, as directed by the Consultant/Engineer incharge</TableCell>
+                        <TableCell>C.FT</TableCell><TableCell>12,000</TableCell><TableCell>-</TableCell><TableCell></TableCell>
+                    </TableRow>
+                    <TableRow><TableCell colSpan={6} className="font-bold">3 TERMITE PROOFING</TableCell></TableRow>
+                     <TableRow>
+                        <TableCell></TableCell>
+                        <TableCell>Providing and applying of Termite Control by spraying FMC Biflex or Mirage 5% SC by Ali Akbar Group in clear water under all floors, excavation including side walls and bottom of all pits & trenches, for footing and under floors.</TableCell>
+                        <TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell>
+                    </TableRow>
+                     <TableRow>
+                        <TableCell>a</TableCell><TableCell>Basement</TableCell><TableCell>S.ft</TableCell><TableCell>5,452</TableCell><TableCell>-</TableCell><TableCell></TableCell>
+                    </TableRow>
+                     <TableRow>
+                        <TableCell>b</TableCell><TableCell>Ground Floor</TableCell><TableCell>S.ft</TableCell><TableCell>6,222</TableCell><TableCell>-</TableCell><TableCell></TableCell>
+                    </TableRow>
+                     <TableRow>
+                        <TableCell>c</TableCell><TableCell>First Floor</TableCell><TableCell>S.ft</TableCell><TableCell>4,986</TableCell><TableCell>-</TableCell><TableCell></TableCell>
+                    </TableRow>
+                    <TableRow><TableCell colSpan={6} className="font-bold">4 PLAIN CEMENT CONCRETE UNDER FOUNDATIONS/FLOOR</TableCell></TableRow>
+                     <TableRow>
+                        <TableCell></TableCell>
+                        <TableCell>Providing and laying P.C.C plain cement concrete (1:4:8) using ordinary Portland cement chenab sand and Dina stone 1.5'' down as blinding layer under foundations/floor & swimming pool including confining, leveling, compacting and curing etc. complete in all respect finished smooth as directed by the Consultant/Engineer incharge.</TableCell>
+                        <TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell>
+                    </TableRow>
+                    <TableRow><TableCell>i</TableCell><TableCell>Basement</TableCell><TableCell>C.FT</TableCell><TableCell>5,452</TableCell><TableCell>-</TableCell><TableCell></TableCell></TableRow>
+                    <TableRow><TableCell>ii</TableCell><TableCell>Column Foundation</TableCell><TableCell>C.ft</TableCell><TableCell>125</TableCell><TableCell>-</TableCell><TableCell></TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="font-bold">5 Water Stopper</TableCell></TableRow>
+                    <TableRow>
+                        <TableCell></TableCell>
+                        <TableCell>Providing and fixing of water stopper 4mm thick and 229 mm wide poly vinyl chloride ribbed bar by Marflex or approved equivalent installed in the centre of x-section of the concrete structure joint of retaining walls, water tanks and expansion joints complete in all respect as per drawings and as directed by the consultant / Engineer. (9" Decora)</TableCell>
+                        <TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell>
+                    </TableRow>
+                    <TableRow><TableCell>i</TableCell><TableCell>Basement Wall</TableCell><TableCell>R.ft</TableCell><TableCell>525</TableCell><TableCell>-</TableCell><TableCell></TableCell></TableRow>
+                    <TableRow><TableCell>ii</TableCell><TableCell>O.H.W.T</TableCell><TableCell>R.ft</TableCell><TableCell>60</TableCell><TableCell>-</TableCell><TableCell></TableCell></TableRow>
+                    
+                    <TableRow><TableCell colSpan={6} className="font-bold">6 Reinforced Cement Concrete Work (3000 Psi)</TableCell></TableRow>
+                    <TableRow>
+                        <TableCell></TableCell>
+                        <TableCell>Providing, laying, vibrating, compacting, finishing and curing etc. straight or curved, cast in situ reinforced cement concrete at any floor/height/depth, from ready mix plant, 3000 Psi minimum cylinder compressive strength at 28 days, mix using Ordinary Portland Grey Cement, fine aggregate (100% clean lawrence pur sand ) and sargodah crushed coarse aggregate 3/4'' down graded with approved quality admixture by Sika/Imporient or approved equivalent, including laying through pump, vibrating through electro mechanical vibrators, placing of all pipes and embedded items before concreting curing finishing complete but excluding the cost of steel reinforcement complete in all respect as per drawings and as directed by the Consultant/Engineer incharge</TableCell>
+                        <TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell>
+                    </TableRow>
+                    {[
+                        { "no": "6.1", "desc": "Basement Retaining Walls", "unit": "C.ft", "qty": "4,050" },
+                        { "no": "6.2", "desc": "Basement Pool Walls", "unit": "C.ft", "qty": "1,335" },
+                        { "no": "6.3", "desc": "Basement Pool Base", "unit": "C.ft", "qty": "473" },
+                        { "no": "6.4", "desc": "Basement water body walls & Base", "unit": "C.ft", "qty": "230" },
+                        { "no": "6.5", "desc": "Basement Column Foundations", "unit": "C.ft", "qty": "1,664" },
+                        { "no": "6.6", "desc": "Basement Basement Coulumn", "unit": "C.ft", "qty": "340" },
+                        { "no": "6.7", "desc": "Basement Lintel", "unit": "C.ft", "qty": "495" },
+                        { "no": "6.8", "desc": "Basement Slab & Beam", "unit": "C.ft", "qty": "4,224" },
+                        { "no": "6.9", "desc": "Ground Floor Column Foundations", "unit": "C.ft", "qty": "36" },
+                        { "no": "6.10", "desc": "Ground Floor Coulumn", "unit": "C.ft", "qty": "425" },
+                        { "no": "6.11", "desc": "Ground Floor Lintel", "unit": "C.ft", "qty": "375" },
+                        { "no": "6.12", "desc": "Ground Floor Slab & Beam", "unit": "C.ft", "qty": "4,800" },
+                        { "no": "6.13", "desc": "First Floor Coulumn", "unit": "C.ft", "qty": "375" },
+                        { "no": "6.14", "desc": "First Floor Lintel", "unit": "C.ft", "qty": "165" },
+                        { "no": "6.15", "desc": "First Floor Slab & Beam", "unit": "C.ft", "qty": "3,314" },
+                        { "no": "6.16", "desc": "Baement to first Floor Stair", "unit": "C.ft", "qty": "400" },
+                        { "no": "6.17", "desc": "O.H.W.T Base and walls", "unit": "C.ft", "qty": "583" },
+                        { "no": "6.18", "desc": "U.G.W.T Base and walls", "unit": "C.ft", "qty": "252" },
+                        { "no": "6.19", "desc": "Septic Tank", "unit": "C.ft", "qty": "185" },
+                    ].map(item => <TableRow key={item.no}><TableCell>{item.no}</TableCell><TableCell>{item.desc}</TableCell><TableCell>{item.unit}</TableCell><TableCell>{item.qty}</TableCell><TableCell>-</TableCell><TableCell></TableCell></TableRow>)}
+
+                    <TableRow><TableCell colSpan={6} className="font-bold">7 STEEL REINFORCEMENT</TableCell></TableRow>
+                    <TableRow>
+                        <TableCell></TableCell>
+                        <TableCell>Providing fabricating, laying, fixing, Mild Steel deformed bars (non-TMT) grade 60 with minimum yield stress conforming to ASTM specifications A-615. including cost of cutting, bending, placing, binded annealed binding wire 16 guage, removal of rest from bars if any, in specified overlaps, chairs, sports, spacers, wastage, etc. Complete in all respects by an approved source such as Afco steel, Prime steel, Ittefaq steel, Model Steel, City Steel UAE ( if not available, client will specify the alternate brand. Only the lengths shown on Drawings shall be paid for in accordance with the Bar bending schedule prepared the contractors from the drawings and submitted well in advance to the Engineer for the approval, steel lengths from the site multiply by the standard weights will used for the purpose of payment and duly approved by the consultant/Engineer Incharge.</TableCell>
+                        <TableCell>Ton</TableCell><TableCell>75</TableCell><TableCell>-</TableCell><TableCell></TableCell>
+                    </TableRow>
+
+                    <TableRow><TableCell colSpan={6} className="font-bold">8 Brick Work</TableCell></TableRow>
+                    <TableRow>
+                        <TableCell>8.1</TableCell>
+                        <TableCell>Providing and laying first class burnt brick work 9"and above thickness to in cement sand mortar (1:5) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer</TableCell>
+                        <TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell>
+                    </TableRow>
+                     {[
+                        { "no": "8.1.1", "desc": "Basement 9\" Thick Wall", "unit": "C.ft", "qty": "414" },
+                        { "no": "8.1.2", "desc": "Basement 13.50\" Thick Wall", "unit": "C.ft", "qty": "1,384" },
+                        { "no": "8.1.3", "desc": "Ground Floor 15\" Thick Wall", "unit": "C.ft", "qty": "900" },
+                        { "no": "8.1.4", "desc": "Ground Floor 13.50\" Thick Wall", "unit": "C.ft", "qty": "1,814" },
+                        { "no": "8.1.5", "desc": "Ground Floor 9\" Thick Wall", "unit": "C.ft", "qty": "1,206" },
+                        { "no": "8.1.6", "desc": "First Floor 15\" Thick Wall", "unit": "C.ft", "qty": "825" },
+                        { "no": "8.1.7", "desc": "First Floor 13.50\" Thick Wall", "unit": "C.ft", "qty": "354" },
+                        { "no": "8.1.8", "desc": "First Floor 9\" Thick Wall", "unit": "C.ft", "qty": "2,175" },
+                     ].map(item => <TableRow key={item.no}><TableCell>{item.no}</TableCell><TableCell>{item.desc}</TableCell><TableCell>{item.unit}</TableCell><TableCell>{item.qty}</TableCell><TableCell>-</TableCell><TableCell></TableCell></TableRow>)}
+                     <TableRow>
+                        <TableCell>8.2</TableCell>
+                        <TableCell>Providing and laying first class burnt brick work 4½" thickness to in cement sand mortar (1:4) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer.</TableCell>
+                        <TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell>
+                    </TableRow>
+                     {[
+                        { "no": "8.2.1", "desc": "Basement Floor", "unit": "S.ft", "qty": "3,264" },
+                        { "no": "8.2.2", "desc": "Ground Floor", "unit": "S.ft", "qty": "960" },
+                        { "no": "8.2.3", "desc": "First Floor", "unit": "S.ft", "qty": "528" },
+                        { "no": "8.2.4", "desc": "Boundary Wall", "unit": "S.ft", "qty": "3,960" },
+                     ].map(item => <TableRow key={item.no}><TableCell>{item.no}</TableCell><TableCell>{item.desc}</TableCell><TableCell>{item.unit}</TableCell><TableCell>{item.qty}</TableCell><TableCell>-</TableCell><TableCell></TableCell></TableRow>)}
+
+                    <TableRow><TableCell colSpan={6} className="font-bold">9 Plaster Work</TableCell></TableRow>
+                    <TableRow>
+                        <TableCell>9.1</TableCell>
+                        <TableCell>Supply, mix, apply and cure Cement sand plaster of any height, includes making sharp corners, edges, grooves, all scaffolding. complete in all respects as per drawing, specifications, and or as directed by the</TableCell>
+                        <TableCell>S.ft</TableCell><TableCell>27,890</TableCell><TableCell>-</TableCell><TableCell></TableCell>
+                    </TableRow>
+                     <TableRow><TableCell colSpan={2}>Internal & External Plaster</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
+
+                     <TableRow><TableCell colSpan={6} className="font-bold">10 Brick Blast</TableCell></TableRow>
+                     {[
+                         { "no": "10.1", "desc": "Basement Floor", "unit": "C.ft", "qty": "1,799" },
+                         { "no": "10.2", "desc": "Ground Floor", "unit": "C.ft", "qty": "2,053" },
+                         { "no": "10.3", "desc": "First Floor", "unit": "C.ft", "qty": "1,645" },
+                     ].map(item => <TableRow key={item.no}><TableCell>{item.no}</TableCell><TableCell>{item.desc}</TableCell><TableCell>{item.unit}</TableCell><TableCell>{item.qty}</TableCell><TableCell>-</TableCell><TableCell></TableCell></TableRow>)}
+
+                    <TableRow><TableCell colSpan={6} className="font-bold">11 PCC SUB FLOOR</TableCell></TableRow>
+                    <TableRow>
+                        <TableCell></TableCell>
+                        <TableCell>Cement Concrete (1:2:4), including placing, compacting, finishing and curing complete. (Screed Under Floor)</TableCell>
+                        <TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell>
+                    </TableRow>
+                     {[
+                         { "no": "11.1", "desc": "Basement Floor", "unit": "C.ft", "qty": "1,799" },
+                         { "no": "11.2", "desc": "Ground Floor", "unit": "C.ft", "qty": "2,053" },
+                         { "no": "11.3", "desc": "First Floor", "unit": "C.ft", "qty": "1,645" },
+                     ].map(item => <TableRow key={item.no}><TableCell>{item.no}</TableCell><TableCell>{item.desc}</TableCell><TableCell>{item.unit}</TableCell><TableCell>{item.qty}</TableCell><TableCell>-</TableCell><TableCell></TableCell></TableRow>)}
+
+                    <TableRow><TableCell colSpan={6} className="font-bold">12 Roof insulation and water proofing</TableCell></TableRow>
+                    <TableRow>
+                        <TableCell></TableCell>
+                        <TableCell>Providing and laying Roof insulation and water proofing to roof consisting of given below of as directed by the Engineer incharge. - Bituminous primer coat. - 2-coats of cold applied rubberized bitumen - One layer of polythene 500 gauge - 1½” thick "extruded polystyrene board" 1½" thick. (density 34 Kg/m³) - One layer of polythene 500 gauge - 4” thick average mud (compacted thickness). - Brick tiles 9”x4-1/2”x1-1/2” laid in cement sand mortar 1:4 and grouted with cement sand mortar 1:3 using 1-part of OPC and 3-parts of clean approved quality sand, complete as per drawings, specifications and instructions of the Consultant.</TableCell>
+                        <TableCell>S.ft</TableCell><TableCell>6,561</TableCell><TableCell>-</TableCell><TableCell></TableCell>
+                    </TableRow>
+
+                    <TableRow><TableCell colSpan={6} className="font-bold">13 D.P.C</TableCell></TableRow>
+                    <TableRow>
+                        <TableCell></TableCell>
+                        <TableCell>Supply, mix, place, cure, compact concrete (1:2:4) 1-1/2" horizontal damp proof course on brick masonry wall includes form work & mixing of rhombic 707 manufactured by MBT in concrete & application of one coat of same chemical on masonry surface before pouring of mixed concrete according to drawings and manufacturers instructions or As directed by the consultant.</TableCell>
+                        <TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell>
+                    </TableRow>
+                    <TableRow><TableCell>i</TableCell><TableCell>Ground Floor</TableCell><TableCell>S.ft</TableCell><TableCell>654</TableCell><TableCell>-</TableCell><TableCell></TableCell></TableRow>
+
+                    <TableRow><TableCell colSpan={5} className="font-bold text-right">TOTAL AMOUNT RS</TableCell><TableCell></TableCell></TableRow>
+                </TableBody>
+            </Table>
+        </CardContent>
+    </Card>
+));
+Section23.displayName = 'Section23';
+
+const Section24 = React.memo(() => (
+    <Card>
+        <CardHeader><CardTitle>RATE ANALYSIS</CardTitle></CardHeader>
+        <CardContent>
+            <div className="border p-4">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                    <FormField label="DESCRIPTION OF ITEM:" value=""/>
+                    <FormField label="Item No." value=""/>
+                </div>
+                <div className="grid grid-cols-2 gap-8">
+                    <div>
+                        <Subtitle>MATERIAL</Subtitle>
+                        <Table>
+                            <TableBody>
+                                <TableRow><TableCell>1</TableCell><TableCell>0.00</TableCell></TableRow>
+                                <TableRow><TableCell>2</TableCell><TableCell>0.00</TableCell></TableRow>
+                                <TableRow><TableCell>3</TableCell><TableCell>0.00</TableCell></TableRow>
+                                <TableRow><TableCell>4</TableCell><TableCell>0.00</TableCell></TableRow>
+                                <TableRow><TableCell>5</TableCell><TableCell>0.00</TableCell></TableRow>
+                                <TableRow><TableCell className="font-bold">6 Total</TableCell><TableCell>0.00</TableCell></TableRow>
+                                <TableRow><TableCell>7 Contractor's Profit, & Overheads</TableCell><TableCell>Percent 0.00% 0.00</TableCell></TableRow>
+                                <TableRow><TableCell>8 Tax</TableCell><TableCell>Percent 0.00%</TableCell></TableRow>
+                                <TableRow><TableCell className="font-bold">9 Total</TableCell><TableCell>0.00</TableCell></TableRow>
+                            </TableBody>
+                        </Table>
+                    </div>
+                    <div>
+                         <Subtitle>LABOUR</Subtitle>
+                        <Table>
+                            <TableBody>
+                                <TableRow><TableCell>1</TableCell><TableCell></TableCell></TableRow>
+                                <TableRow><TableCell>2</TableCell><TableCell></TableCell></TableRow>
+                                <TableRow><TableCell>3</TableCell><TableCell></TableCell></TableRow>
+                                <TableRow><TableCell>4</TableCell><TableCell></TableCell></TableRow>
+                                <TableRow><TableCell>5 Contractor's Profit' & Overheads</TableCell><TableCell>Percent 0.00% 0.00</TableCell></TableRow>
+                                <TableRow><TableCell>6 Income Tax 7.50%</TableCell><TableCell>Percent 0.00% 0.00</TableCell></TableRow>
+                                <TableRow><TableCell className="font-bold">7 Total</TableCell><TableCell>0.00</TableCell></TableRow>
+                            </TableBody>
+                        </Table>
+                    </div>
+                </div>
+
+                <div className="mt-8">
+                     <Subtitle>ITEM RATES</Subtitle>
+                    <FormField label="Labour rate per 100 Cft / Sft" value="Rs. - Say 0.00"/>
+                    <FormField label="Composite rate per 100 Cft / Sft" value="Rs. - Say 0.00"/>
+                    <FormField label="Composite rate per Cum / Sq.m" value="Rs. - Say 0.00"/>
+                </div>
+            </div>
+            <div className="border p-4 mt-4">
+                <FormField label="Specification of Item" value=""/>
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField label="Detail Unit" value="Rate per 100 SFT/CFT"/>
+                    <FormField label="Rate Per Unit" value=""/>
+                </div>
+                <FormField label="Rate Per Sft/Cft" value=""/>
+            </div>
+        </CardContent>
+    </Card>
+));
+Section24.displayName = 'Section24';
+
+const Section25 = React.memo(() => (
+    <Card>
+        <CardHeader><CardTitle>CHANGE ORDER</CardTitle></CardHeader>
+        <CardContent>
+            <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField label="Project:" value=""/>
+                    <FormField label="Field Report No." value=""/>
+                </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <FormField label="(Name, Address)" value=""/>
+                    <FormField label="Date:" value=""/>
+                </div>
+                <FormField label="Architects Project No:" value=""/>
+
+                <div className="mt-4">
+                    <FormField label="To: (Contractor)" value=""/>
+                    <FormField label="Contract For:" value=""/>
+                    <FormField label="Contract Date:" value=""/>
+                </div>
+
+                <p className="mt-4">This Contract is change as follows:</p>
+                <div className="border h-24"></div>
+
+                <p className="mt-4">Not Valid until signed by the Owner, Architect and Contractor.</p>
+                
+                <div className="space-y-1 mt-4 text-sm">
+                    <p>The original (Contract Sum) (Guaranteed Maximum Price) was .......................................................... Rs.</p>
+                    <p>Net change by previously authorized Change Orders .......................................................... Rs.</p>
+                    <p>The (Contract Sum) (Guaranteed Maximum Price) prior to this Change Order was ................................ Rs.</p>
+                    <p>The (Contract Sum) (Guaranteed Maximum Price) will be (increased) (decreased) (changed) by this Change Order in the amount of ......................................................... Rs.</p>
+                    <p>The new (Contract Sum) (Guaranteed Maximum Price) including this Change Order will be ................... Rs.</p>
+                    <p>The Contract Time will be (increased) (decreased) by (_______) days.</p>
+                    <p>the date of Substantial Completion as the date of this Change Order therefore is:</p>
+                </div>
+                
+                <p className="text-xs mt-4">NOTE: This summary does not reflect changes in the Contract Sum, Contract Time or Guaranteed Maximum Price which have been authorized by Contraction Change Directive.</p>
+
+                <div className="grid grid-cols-3 gap-8 mt-8 pt-8 border-t">
+                    <div><p>Architect</p><FormField label="Address" value=""/><FormField label="By" value=""/><FormField label="Date" value=""/></div>
+                    <div><p>Contractor</p><FormField label="Address" value=""/><FormField label="By" value=""/><FormField label="Date" value=""/></div>
+                    <div><p>Owner</p><FormField label="Address" value=""/><FormField label="By" value=""/><FormField label="Date" value=""/></div>
+                </div>
+
+                 <div className="flex justify-around mt-4">
+                    <span>Owner</span>
+                    <span>Architect</span>
+                    <span>Contractor</span>
+                    <span>Field</span>
+                    <span>Other</span>
+                </div>
+            </div>
+        </CardContent>
+    </Card>
+));
+Section25.displayName = 'Section25';
+
+const Section26 = React.memo(() => (<Card><CardHeader><CardTitle>Application and Certificate for Payment</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section26.displayName = 'Section26';
+const Section27 = React.memo(() => (<Card><CardHeader><CardTitle>Instruction Sheet</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section27.displayName = 'Section27';
+const Section28 = React.memo(() => (<Card><CardHeader><CardTitle>Certificate Substantial Summary</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section28.displayName = 'Section28';
+const Section29 = React.memo(() => (<Card><CardHeader><CardTitle>Other Provisions</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section29.displayName = 'Section29';
+const Section30 = React.memo(() => (<Card><CardHeader><CardTitle>Consent of Surety</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section30.displayName = 'Section30';
+const Section31 = React.memo(() => (<Card><CardHeader><CardTitle>Total Package of Project</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section31.displayName = 'Section31';
+const Section32 = React.memo(() => (<Card><CardHeader><CardTitle>Architects Supplemental Instructions</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section32.displayName = 'Section32';
+const Section33 = React.memo(() => (<Card><CardHeader><CardTitle>Construction Change Director</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section33.displayName = 'Section33';
+
+const sections: { [key: string]: React.FC } = {
+    Section1, Section2, Section3, Section4, Section5, Section6, Section7, Section8, Section9, Section10,
+    Section11, Section12, Section13, Section14, Section15, Section16, Section17, Section18, Section19, Section20,
+    Section21, Section22, Section23, Section24, Section25, Section26, Section27, Section28, Section29, Section30,
+    Section31, Section32, Section33
+};
+
+const BankPage = () => {
+    return (
+        <main className="p-4 md:p-6 lg:p-8">
+            <div className="flex justify-between items-center mb-6 no-print">
+                <Button variant="outline" asChild>
+                    <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+                </Button>
+                <h1 className="text-2xl font-bold">Bank Branches Forms</h1>
+                <Button variant="outline" onClick={() => window.print()}>
+                    <Printer className="mr-2 h-4 w-4" /> Print
+                </Button>
+            </div>
+            
+            <Accordion type="single" collapsible className="w-full">
+                {fileIndexItems.map(item => {
+                    const SectionComponent = sections[item.component];
+                    if (!SectionComponent) return null;
+                    return (
+                        <AccordionItem value={item.id} key={item.id}>
+                            <AccordionTrigger className="text-lg font-semibold">{item.no}. {item.title}</AccordionTrigger>
+                            <AccordionContent>
+                                <SectionComponent />
+                            </AccordionContent>
+                        </AccordionItem>
+                    )
+                })}
+            </Accordion>
+        </main>
+    )
+};
+
+export default BankPage;
+
+    
