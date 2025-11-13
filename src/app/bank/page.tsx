@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -1894,7 +1895,109 @@ const Section18 = React.memo(() => {
 });
 Section18.displayName = 'Section18';
 
-const Section19 = React.memo(() => (<Card><CardHeader><CardTitle>Project Application Summary</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section19 = React.memo(() => (
+    <Card>
+        <CardHeader>
+            <CardTitle className="text-center">PROJECT APPLICATION SUMMARY</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField label="Application Number" value="" />
+                    <FormField label="Application Date" value="" />
+                    <FormField label="Period From" value="" />
+                    <FormField label="To" value="" />
+                    <FormField label="Architect's Project No" value="" />
+                </div>
+                <p className="text-sm text-muted-foreground">In tabulations below, amounts are stated to the nearest rupee.</p>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead></TableHead>
+                            <TableHead>Contractor Name</TableHead>
+                            <TableHead>Totals this Page or all Pages</TableHead>
+                            <TableHead>Portion of Work</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow>
+                            <TableCell className="font-bold">A</TableCell>
+                            <TableCell>Original Contract Sum</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell className="font-bold">B</TableCell>
+                            <TableCell>Net Change Orders to Date</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell className="font-bold">C</TableCell>
+                            <TableCell>Contract Sum to Date</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell className="font-bold">D</TableCell>
+                            <TableCell>Work In Place to Date</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell className="font-bold">E</TableCell>
+                            <TableCell>Stored Materials (Not in D or I)</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell className="font-bold">F</TableCell>
+                            <TableCell>Total Completed & Stored to Date (D+E)</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell className="font-bold">G</TableCell>
+                            <TableCell>Retainage Percentage</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell className="font-bold">H</TableCell>
+                            <TableCell>Retainage Amount</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell className="font-bold">I</TableCell>
+                            <TableCell>Previous Payments</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell className="font-bold">J</TableCell>
+                            <TableCell>Current Payment Due (F-H-I)</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell className="font-bold">K</TableCell>
+                            <TableCell>Balance to Finish (C-E)</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell className="font-bold">L</TableCell>
+                            <TableCell>Percent Complete (F÷C)</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </div>
+        </CardContent>
+    </Card>
+));
 Section19.displayName = 'Section19';
 
 const Section20 = React.memo(() => (<Card><CardHeader><CardTitle>Continuation Sheet</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
@@ -2051,3 +2154,4 @@ const BankBranchesPage: React.FC = () => {
 export default BankBranchesPage;
     
     
+
