@@ -2016,19 +2016,16 @@ const Section20 = React.memo(() => (
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead rowSpan={2}>A<br/>Item No.</TableHead>
-                            <TableHead rowSpan={2}>B<br/>Description of Work</TableHead>
-                            <TableHead rowSpan={2}>C<br/>Scheduled Value</TableHead>
-                            <TableHead colSpan={2}>D<br/>Work Completed</TableHead>
-                            <TableHead rowSpan={2}>F<br/>Materials Presently Stored (not in D or E)</TableHead>
-                            <TableHead rowSpan={2}>G<br/>Total Completed and Stored to Date (D+E+F)</TableHead>
-                            <TableHead rowSpan={2}>H<br/>% (G÷C)</TableHead>
-                            <TableHead rowSpan={2}>I<br/>Balance to Finish (C-G)</TableHead>
-                            <TableHead rowSpan={2}>Retainage</TableHead>
-                        </TableRow>
-                        <TableRow>
-                            <TableHead>From Previous Application (D+E)</TableHead>
-                            <TableHead>This Period</TableHead>
+                            <TableHead>A<br/>Item No.</TableHead>
+                            <TableHead>B<br/>Description of Work</TableHead>
+                            <TableHead>C<br/>Scheduled Value</TableHead>
+                            <TableHead>D<br/>Work Completed from Previous Application (D+E)</TableHead>
+                            <TableHead>E<br/>Work Completed this Period</TableHead>
+                            <TableHead>F<br/>Materials Presently Stored (not in D or E)</TableHead>
+                            <TableHead>G<br/>Total Completed and Stored to Date (D+E+F)</TableHead>
+                            <TableHead>H<br/>% (G÷C)</TableHead>
+                            <TableHead>I<br/>Balance to Finish (C-G)</TableHead>
+                            <TableHead>Retainage</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -2065,7 +2062,54 @@ const Section20 = React.memo(() => (
 ));
 Section20.displayName = 'Section20';
 
-const Section21 = React.memo(() => (<Card><CardHeader><CardTitle>Construction Activity schedule</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section21 = React.memo(() => (
+    <Card>
+        <CardHeader><CardTitle className="text-center">Construction Activity Schedule</CardTitle></CardHeader>
+        <CardContent>
+            <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <FormField label="Client" value="" />
+                    <FormField label="Title" value="" />
+                    <FormField label="Project Type" value="" />
+                    <FormField label="Covered Area" value="" />
+                    <FormField label="Location" value="" />
+                    <FormField label="Project Number" value="" />
+                    <FormField label="Date" value="" />
+                </div>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Sr.No/ Code</TableHead>
+                            <TableHead>Task</TableHead>
+                            <TableHead>Duration Given By the Contract</TableHead>
+                            <TableHead>Plan Start</TableHead>
+                            <TableHead>Plan Finish or Actual Start</TableHead>
+                            <TableHead>Actual Finish</TableHead>
+                            <TableHead>Progress</TableHead>
+                            <TableHead>Varian Plan Actual ce</TableHead>
+                            <TableHead>Remarks</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {[...Array(15)].map((_, i) => (
+                            <TableRow key={i}>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+        </CardContent>
+    </Card>
+));
 Section21.displayName = 'Section21';
 
 const Section22 = React.memo(() => (<Card><CardHeader><CardTitle>Preliminary Project Budget</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
@@ -2216,5 +2260,6 @@ const BankBranchesPage: React.FC = () => {
 export default BankBranchesPage;
     
     
+
 
 
