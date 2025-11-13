@@ -22,6 +22,7 @@ const menuItems = [
   { href: '/predesign-assessment', icon: ClipboardCheck, label: 'Predesign Assessment' },
   { href: '/project-timeline', icon: GanttChart, label: 'Project Timeline' },
   { href: '/bank-alfalah-timeline', icon: Landmark, label: 'Bank Alfalah Timeline' },
+  { href: '/ubl-timeline', icon: Landmark, label: 'UBL Timeline' },
 ];
 
 export function AppSidebar() {
