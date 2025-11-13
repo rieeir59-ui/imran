@@ -414,15 +414,15 @@ const Section3 = React.memo(() => (
             <div className="flex flex-row gap-8">
                 <div className="flex-1 space-y-2">
                     <h3 className="font-bold text-lg mb-2 underline">Human Factors</h3>
-                    {["Activities", "Behavior", "Objectives / Goals", "Organization", "Hierarchy", "Groups", "Positions", "Classifications", "Leadership", "Characteristics (Demographics)", "Social Forces", "Political Forces", "Interactions", "Communication", "Relationships", "Transfer of materials", "Policies / Codes", "Attitudes / Values", "Customs / Beliefs", "Perceptions", "Preferences", "Qualities", "Comfort", "Productivity", "Efficiency", "Security", "Safety", "Access", "Privacy", "Territory", "Control", "Convenience"].map((item, index) => <div key={`${item}-${index}`}>{item}</div>)}
+                    {["Activities", "Behavior", "Objectives / Goals", "Organization", "Hierarchy", "Groups", "Positions", "Classifications", "Leadership", "Characteristics (Demographics)", "Social Forces", "Political Forces", "Interactions", "Communication", "Relationships", "Transfer of materials", "Policies / Codes", "Attitudes / Values", "Customs / Beliefs", "Perceptions", "Preferences", "Qualities", "Comfort", "Productivity", "Efficiency", "Security", "Safety", "Access", "Privacy", "Territory", "Control", "Convenience"].map((item, index) => <div key={`human-${item}-${index}`}>{item}</div>)}
                 </div>
                 <div className="flex-1 space-y-2">
                     <h3 className="font-bold text-lg mb-2 underline">Physical Factors</h3>
-                    {["Location", "Region", "Locality", "Community", "Vicinity", "Site Conditions", "Building / Facility", "Envelope", "Structure", "Systems", "Engineering", "Communications", "Lighting", "Security", "Space", "Types", "Dimensions", "Relationship", "Equipment / Furnishings", "Materials / Finishes", "Support Services", "Storage", "Parking", "Access", "Waste removal", "Utilities (water, sewage, telephone)", "Operations", "Environment", "Comfort", "Visual", "Acoustical", "Energy Use / Conservation", "Durability / Flexibility"].map((item, index) => <div key={`${item}-${index}`}>{item}</div>)}
+                    {["Location", "Region", "Locality", "Community", "Vicinity", "Site Conditions", "Building / Facility", "Envelope", "Structure", "Systems", "Engineering", "Communications", "Lighting", "Security", "Space", "Types", "Dimensions", "Relationship", "Equipment / Furnishings", "Materials / Finishes", "Support Services", "Storage", "Parking", "Access", "Waste removal", "Utilities (water, sewage, telephone)", "Operations", "Environment", "Comfort", "Visual", "Acoustical", "Energy Use / Conservation", "Durability / Flexibility"].map((item, index) => <div key={`physical-${item}-${index}`}>{item}</div>)}
                 </div>
                 <div className="flex-1 space-y-2">
                     <h3 className="font-bold text-lg mb-2 underline">External Factors</h3>
-                    {["Legal Restrictions", "(Codes / Standards/Regulations)", "Building", "Land use", "Systems", "Energy", "Environment", "Materials", "Safety", "Solar access", "Topography", "Climate", "Ecology", "Resource Availability", "Energy Supplies / Prices", "Conventional", "Solar", "Alternatives", "Economy", "Financing", "Time", "Schedule", "Deadlines", "Operations", "Costs / Budget", "Construction", "Material", "Services", "Operations", "Cost / Benefits"].map((item, index) => <div key={`${item}-${index}`}>{item}</div>)}
+                    {["Legal Restrictions", "(Codes / Standards/Regulations)", "Building", "Land use", "Systems", "Energy", "Environment", "Materials", "Safety", "Solar access", "Topography", "Climate", "Ecology", "Resource Availability", "Energy Supplies / Prices", "Conventional", "Solar", "Alternatives", "Economy", "Financing", "Time", "Schedule", "Deadlines", "Operations", "Costs / Budget", "Construction", "Material", "Services", "Operations", "Cost / Benefits"].map((item, index) => <div key={`external-${item}-${index}`}>{item}</div>)}
                 </div>
             </div>
         </CardContent>
@@ -2044,7 +2044,7 @@ const Section20 = React.memo(() => (
                             </TableRow>
                         ))}
                          <TableRow>
-                            <TableCell colSpan={2} className="text-right font-bold">TOTALS</TableCell>
+                            <TableCell colSpan={3} className="text-right font-bold">TOTALS</TableCell>
                             <TableCell></TableCell>
                             <TableCell></TableCell>
                             <TableCell></TableCell>
@@ -2321,7 +2321,85 @@ const Section23 = React.memo(() => {
 });
 Section23.displayName = 'Section23';
 
-const Section24 = React.memo(() => (<Card><CardHeader><CardTitle>Rate Analysis</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section24 = React.memo(() => (
+    <Card>
+        <CardHeader><CardTitle>Rate Analysis</CardTitle></CardHeader>
+        <CardContent>
+            <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField label="DESCRIPTION OF ITEM:" value=""/>
+                    <FormField label="Item No." value=""/>
+                    <FormField label="Qty" value=""/>
+                    <FormField label="Amount (Rs.)" value=""/>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8">
+                    <div>
+                        <Subtitle>MATERIAL</Subtitle>
+                        <div className="space-y-2">
+                            <div className="grid grid-cols-2 gap-2"><p>1</p><p>0.00</p></div>
+                            <div className="grid grid-cols-2 gap-2"><p>2</p><p>0.00</p></div>
+                            <div className="grid grid-cols-2 gap-2"><p>3</p><p>0.00</p></div>
+                            <div className="grid grid-cols-2 gap-2"><p>4</p><p>0.00</p></div>
+                            <div className="grid grid-cols-2 gap-2"><p>5</p><p>0.00</p></div>
+                            <div className="grid grid-cols-2 gap-2 font-bold"><p>6 Total</p><p>0.00</p></div>
+                            <div className="grid grid-cols-3 gap-2"><p>7 Contractor's Profit, & Overheads</p><p>0.00%</p><p>0.00</p></div>
+                            <div className="grid grid-cols-2 gap-2"><p>8 Tax Percent</p><p>0.00%</p></div>
+                            <div className="grid grid-cols-2 gap-2 font-bold"><p>9 Total</p><p>0.00</p></div>
+                        </div>
+                    </div>
+                    <div>
+                        <Subtitle>LABOUR</Subtitle>
+                        <div className="space-y-2">
+                           <div className="grid grid-cols-1 gap-2"><p>1</p></div>
+                           <div className="grid grid-cols-1 gap-2"><p>2</p></div>
+                           <div className="grid grid-cols-1 gap-2"><p>3</p></div>
+                           <div className="grid grid-cols-1 gap-2"><p>4</p></div>
+                           <div className="grid grid-cols-3 gap-2"><p>5 Contractor's Profit' & Overheads</p><p>0.00%</p><p>0.00</p></div>
+                           <div className="grid grid-cols-3 gap-2"><p>6 Income Tax 7.50%</p><p>0.00%</p><p>0.00</p></div>
+                           <div className="grid grid-cols-2 gap-2 font-bold"><p>7 Total</p><p>0.00</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <Subtitle>ITEM RATES</Subtitle>
+                    <div className="space-y-2">
+                        <p>Labour rate per 100 Cft / Sft Rs. - Say 0.00</p>
+                        <p>Composite rate per 100 Cft / Sft Rs. - Say 0.00</p>
+                        <p>Composite rate per Cum / Sq.m Rs. - Say 0.00</p>
+                    </div>
+                </div>
+                 <div>
+                    <Subtitle>Specification of Item</Subtitle>
+                     <div className="border h-32"></div>
+                </div>
+                 <div>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Detail</TableHead>
+                                <TableHead>Unit</TableHead>
+                                <TableHead>Rate per 100 SFT/CFT</TableHead>
+                                <TableHead>Rate Per Unit</TableHead>
+                                <TableHead>Rate Per Sft/Cft</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+            </div>
+        </CardContent>
+    </Card>
+));
 Section24.displayName = 'Section24';
 
 const Section25 = React.memo(() => (<Card><CardHeader><CardTitle>Change Order</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
@@ -2463,6 +2541,7 @@ const BankBranchesPage: React.FC = () => {
 export default BankBranchesPage;
     
     
+
 
 
 
