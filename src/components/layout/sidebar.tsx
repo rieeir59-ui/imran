@@ -8,7 +8,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton
 } from "@/components/ui/sidebar";
-import { Building2, Home, Hotel, Landmark, BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck } from 'lucide-react';
+import { Building2, Home, Hotel, Landmark, BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 
@@ -20,6 +20,7 @@ const menuItems = [
   { href: '/bank', icon: Landmark, label: 'Bank Branches' },
   { href: '/projects', icon: FolderKanban, label: 'Project Information' },
   { href: '/predesign-assessment', icon: ClipboardCheck, label: 'Predesign Assessment' },
+  { href: '/project-timeline', icon: GanttChart, label: 'Project Timeline' },
 ];
 
 export function AppSidebar() {

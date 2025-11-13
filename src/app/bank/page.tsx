@@ -246,7 +246,7 @@ const Section1 = React.memo(() => (
             <SectionTitle>2: - Design</SectionTitle>
             {renderChecklist("Schematic Design Services: -", ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design/ Documentation", "Electrical Design/ Documentation", "Civil Design/ Documentation", "Landscape Design/ Documentation", "Interior Design/ Documentation", "Materials Research/ Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"])}
             {renderChecklist("Design Development Services:-", ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design / Documentation", "Electrical Design / Documentation", "Civil Design / Documentation", "Landscape Design / Documentation", "Interior Design / Documentation", "Materials Research / Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"])}
-            {renderChecklist("Construction Documents Services:-", ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design/ Documentation", "Electrical Design / Documentation", "Civil Design/ Documentation", "Landscape Design/ Documentation", "Interior Design/ Documentation", "Materials Research / Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"])}
+            {renderChecklist("Construction Documents Services:-", ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design/ Documentation", "Electrical Design/ Documentation", "Civil Design/ Documentation", "Landscape Design/ Documentation", "Interior Design/ Documentation", "Materials Research / Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"])}
             <SectionTitle>3: - Construction</SectionTitle>
             {renderChecklist("Bidding Or Negotiation Services:", ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Bidding Materials", "Addenda", "Bidding Negotiations", "Analysis Of Alternates/ Substitutions", "Special Bidding Services", "Bid Evaluation", "Construction Contract Agreements"])}
             {renderChecklist("Construction Contract Administration Services:-", ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Office Construction Administration", "Construction Field Observation", "Project Representation", "Inspection Coordination", "Supplemental Documents", "10.Quotation Requests/ Change Orders", "11.Project Schedule Monitoring", "12.Construction Cost Accounting", "13.Project Closeout"])}
@@ -422,7 +422,7 @@ const Section3 = React.memo(() => (
                 </div>
                 <div className="flex-1 space-y-2">
                     <h3 className="font-bold text-lg mb-2 underline">External Factors</h3>
-                    {["Legal Restrictions", "(Codes / Standards/Regulations)", "Building", "Land use", "Systems", "Energy", "Environment", "Materials", "Safety", "Solar access", "Topography", "Climate", "Ecology", "Resource Availability", "Energy Supplies / Prices", "Conventional", "Solar", "Alternatives", "Economy", "Financing", "Time", "Schedule", "Deadlines", "Operations", "Costs / Budget", "Construction", "Material", "Services", "Operations", "Cost / Benefits"].map((item, index) => <div key={`external-${item}-${index}`}>{item}</div>)}
+                    {["Legal Restrictions", "(Codes / Standards/Regulations)", "Building", "Land use", "Systems", "Energy", "Environment", "Materials", "Safety", "Solar access", "Topography", "Climate", "Ecology", "Resource Availability", "Energy Supplies / Prices", "Conventional", "Solar", "Alternatives", "Economy", "Financing", "Time", "Schedule", "Deadlines", "Operations", "Costs / Budget", "Construction", "Material", "Services", "Operations", "Cost / Benefits"].map((item, index) => <div key={`${item}-${index}`}>{item}</div>)}
                 </div>
             </div>
         </CardContent>
@@ -2623,10 +2623,3 @@ const BankBranchesPage: React.FC = () => {
 export default BankBranchesPage;
     
     
-
-
-
-
-
-
-
