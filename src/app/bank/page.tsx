@@ -2019,8 +2019,8 @@ const Section20 = React.memo(() => (
                             <TableHead>A<br/>Item No.</TableHead>
                             <TableHead>B<br/>Description of Work</TableHead>
                             <TableHead>C<br/>Scheduled Value</TableHead>
-                            <TableHead>D<br/>Work Completed from Previous Application (D+E)</TableHead>
-                            <TableHead>E<br/>Work Completed this Period</TableHead>
+                            <TableHead>D<br/>From Previous Application (D+E)</TableHead>
+                            <TableHead>E<br/>This Period</TableHead>
                             <TableHead>F<br/>Materials Presently Stored (not in D or E)</TableHead>
                             <TableHead>G<br/>Total Completed and Stored to Date (D+E+F)</TableHead>
                             <TableHead>H<br/>% (G÷C)</TableHead>
@@ -2115,7 +2115,134 @@ Section21.displayName = 'Section21';
 const Section22 = React.memo(() => (<Card><CardHeader><CardTitle>Preliminary Project Budget</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
 Section22.displayName = 'Section22';
 
-const Section23 = React.memo(() => (<Card><CardHeader><CardTitle>Bill Of Quantity</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section23 = React.memo(() => {
+    const boqData = [
+        { no: '1', description: 'EXCAVATION\nExcavation for isolated, stripe/combined & Brick foundations in clay and sandy soil including cost of dressing, leveling and compaction in approved manners and disposal of surplus excavated soil away from site, all excavated area will be proof rolled as directed by the Consultant/Engineer incharge.', subItems: [
+          { description: 'Basement', unit: 'C.FT', qty: '59,972', rate: '', amount: '' },
+          { description: 'Ground Floor', unit: 'C.FT', qty: '225', rate: '', amount: '' },
+        ]},
+        { no: '2', description: 'BACK FILLING\nBack Filling including watering and compaction in layers not exceeding 150mm compacted thickness to dry Compaction Test (ASTM D-1557) upto 95% Modified AASHTO by using the borrowed local sand from the local nearby site, as directed by the Consultant/Engineer incharge', unit: 'C.FT', qty: '12,000', rate: '', amount: '' },
+        { no: '3', description: 'TERMITE PROOFING\nProviding and applying of Termite Control by spraying FMC Biflex or Mirage 5% SC by Ali Akbar Group in clear water under all floors, excavation including side walls and bottom of all pits & trenches, for footing and under floors.', subItems: [
+          { description: 'Basement', unit: 'S.ft', qty: '5,452', rate: '', amount: '' },
+          { description: 'Ground Floor', unit: 'S.ft', qty: '6,222', rate: '', amount: '' },
+          { description: 'First Floor', unit: 'S.ft', qty: '4,986', rate: '', amount: '' },
+        ]},
+        { no: '4', description: 'PLAIN CEMENT CONCRETE UNDER FOUNDATIONS/FLOOR\nProviding and laying P.C.C plain cement concrete (1:4:8) using ordinary Portland cement chenab sand and Dina stone 1.5\'\' down as blinding layer under foundations/floor & swimming pool including confining, leveling, compacting and curing etc. complete in all respect finished smooth as directed by the Consultant/Engineer incharge.', subItems: [
+          { description: 'Basement', unit: 'C.FT', qty: '5,452', rate: '', amount: '' },
+          { description: 'Column Foundation', unit: 'C.ft', qty: '125', rate: '', amount: '' },
+        ]},
+        { no: '5', description: 'Water Stopper\nProviding and fixing of water stopper 4mm thick and 229 mm wide poly vinyl chloride ribbed bar by Marflex or approved equivalent installed in the centre of x-section of the concrete structure joint of retaining walls, water tanks and expansion joints complete in all respect as per drawings and as directed by the consultant / Engineer. (9" Decora)', subItems: [
+          { description: 'Basement Wall', unit: 'R.ft', qty: '525', rate: '', amount: '' },
+          { description: 'O.H.W.T', unit: 'R.ft', qty: '60', rate: '', amount: '' },
+        ]},
+        { no: '6', description: 'Reinforced Cement Concrete Work (3000 Psi)\nProviding, laying, vibrating, compacting, finishing and curing etc. straight or curved, cast in situ reinforced cement concrete at any floor/height/depth, from ready mix plant, 3000 Psi minimum cylinder compressive strength at 28 days, mix using Ordinary Portland Grey Cement, fine aggregate (100% clean lawrence pur sand ) and sargodah crushed coarse aggregate 3/4\'\' down graded with approved quality admixture by Sika/Imporient or approved equivalent, including laying through pump, vibrating through electro mechanical vibrators, placing of all pipes and embedded items before concreting curing finishing complete but excluding the cost of steel reinforcement complete in all respect as per drawings and as directed by the Consultant/Engineer incharge', subItems: [
+          { no: '6.1', description: 'Basement Retaining Walls', unit: 'C.ft', qty: '4,050', rate: '', amount: '' },
+          { no: '6.2', description: 'Basement Pool Walls', unit: 'C.ft', qty: '1,335', rate: '', amount: '' },
+          { no: '6.3', description: 'Basement Pool Base', unit: 'C.ft', qty: '473', rate: '', amount: '' },
+          { no: '6.4', description: 'Basement water body walls & Base', unit: 'C.ft', qty: '230', rate: '', amount: '' },
+          { no: '6.5', description: 'Basement Column Foundations', unit: 'C.ft', qty: '1,664', rate: '', amount: '' },
+          { no: '6.6', description: 'Basement Basement Coulumn', unit: 'C.ft', qty: '340', rate: '', amount: '' },
+          { no: '6.7', description: 'Basement Lintel', unit: 'C.ft', qty: '495', rate: '', amount: '' },
+          { no: '6.8', description: 'Basement Slab & Beam', unit: 'C.ft', qty: '4,224', rate: '', amount: '' },
+          { no: '6.9', description: 'Ground Floor Column Foundations', unit: 'C.ft', qty: '36', rate: '', amount: '' },
+          { no: '6.10', description: 'Ground Floor Coulumn', unit: 'C.ft', qty: '425', rate: '', amount: '' },
+          { no: '6.11', description: 'Ground Floor Lintel', unit: 'C.ft', qty: '375', rate: '', amount: '' },
+          { no: '6.12', description: 'Ground Floor Slab & Beam', unit: 'C.ft', qty: '4,800', rate: '', amount: '' },
+          { no: '6.13', description: 'First Floor Coulumn', unit: 'C.ft', qty: '375', rate: '', amount: '' },
+          { no: '6.14', description: 'First Floor Lintel', unit: 'C.ft', qty: '165', rate: '', amount: '' },
+          { no: '6.15', description: 'First Floor Slab & Beam', unit: 'C.ft', qty: '3,314', rate: '', amount: '' },
+          { no: '6.16', description: 'Baement to first Floor Stair', unit: 'C.ft', qty: '400', rate: '', amount: '' },
+          { no: '6.17', description: 'O.H.W.T Base and walls', unit: 'C.ft', qty: '583', rate: '', amount: '' },
+          { no: '6.18', description: 'U.G.W.T Base and walls', unit: 'C.ft', qty: '252', rate: '', amount: '' },
+          { no: '6.19', description: 'Septic Tank', unit: 'C.ft', qty: '185', rate: '', amount: '' },
+        ]},
+        { no: '7', description: 'STEEL REINFORCEMENT\nProviding fabricating, laying, fixing, Mild Steel deformed bars (non-TMT) grade 60 with minimum yield stress conforming to ASTM specifications A-615. including cost of cutting, bending, placing, binded annealed binding wire 16 guage, removal of rest from bars if any, in specified overlaps, chairs, sports, spacers, wastage, etc. Complete in all respects by an approved source such as Afco steel, Prime steel, Ittefaq steel, Model Steel, City Steel UAE ( if not available, client will specify the alternate brand. Only the lengths shown on Drawings shall be paid for in accordance with the Bar bending schedule prepared the contractors from the drawings and submitted well in advance to the Engineer for the approval, steel lengths from the site multiply by the standard weights will used for the purpose of payment and duly approved by the consultant/Engineer Incharge.', unit: 'Ton', qty: '75', rate: '', amount: '' },
+        { no: '8', description: 'Brick Work', subItems: [
+          { no: '8.1', description: 'Providing and laying first class burnt brick work 9"and above thickness to in cement sand mortar (1:5) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer', subItems: [
+            { no: '8.1.1', description: 'Basement 9" Thick Wall', unit: 'C.ft', qty: '414', rate: '', amount: '' },
+            { no: '8.1.2', description: 'Basement 13.50" Thick Wall', unit: 'C.ft', qty: '1,384', rate: '', amount: '' },
+            { no: '8.1.3', description: 'Ground Floor 15" Thick Wall', unit: 'C.ft', qty: '900', rate: '', amount: '' },
+            { no: '8.1.4', description: 'Ground Floor 13.50" Thick Wall', unit: 'C.ft', qty: '1,814', rate: '', amount: '' },
+            { no: '8.1.5', description: 'Ground Floor 9" Thick Wall', unit: 'C.ft', qty: '1,206', rate: '', amount: '' },
+            { no: '8.1.6', description: 'First Floor 15" Thick Wall', unit: 'C.ft', qty: '825', rate: '', amount: '' },
+            { no: '8.1.7', description: 'First Floor 13.50" Thick Wall', unit: 'C.ft', qty: '354', rate: '', amount: '' },
+            { no: '8.1.8', description: 'First Floor 9" Thick Wall', unit: 'C.ft', qty: '2,175', rate: '', amount: '' },
+          ]},
+          { no: '8.2', description: 'Providing and laying first class burnt brick work 4½" thickness to in cement sand mortar (1:4) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer.', subItems: [
+            { no: '8.2.1', description: 'Basement Floor', unit: 'S.ft', qty: '3,264', rate: '', amount: '' },
+            { no: '8.2.2', description: 'Ground Floor', unit: 'S.ft', qty: '960', rate: '', amount: '' },
+            { no: '8.2.3', description: 'First Floor', unit: 'S.ft', qty: '528', rate: '', amount: '' },
+            { no: '8.2.4', description: 'Boundary Wall', unit: 'S.ft', qty: '3,960', rate: '', amount: '' },
+          ]}
+        ]},
+        { no: '9', description: 'Plaster Work\nSupply, mix, apply and cure Cement sand plaster of any height, includes making sharp corners, edges, grooves, all scaffolding. complete in all respects as per drawing, specifications, and or as directed by the Engineer', subItems: [
+           { description: 'Internal & External Plaster', unit: 'S.ft', qty: '27,890', rate: '', amount: '' }
+        ]},
+        { no: '10', description: 'Brick Blast', subItems: [
+          { no: '10.1', description: 'Basement Floor', unit: 'C.ft', qty: '1,799', rate: '', amount: '' },
+          { no: '10.2', description: 'Ground Floor', unit: 'C.ft', qty: '2,053', rate: '', amount: '' },
+          { no: '10.3', description: 'First Floor', unit: 'C.ft', qty: '1,645', rate: '', amount: '' },
+        ]},
+        { no: '11', description: 'PCC SUB FLOOR\nCement Concrete (1:2:4), including placing, compacting, finishing and curing complete. (Screed Under Floor)', subItems: [
+          { no: '11.1', description: 'Baement Floor', unit: 'C.ft', qty: '1,799', rate: '', amount: '' },
+          { no: '11.2', description: 'Ground Floor', unit: 'C.ft', qty: '2,053', rate: '', amount: '' },
+          { no: '11.3', description: 'First Floor', unit: 'C.ft', qty: '1,645', rate: '', amount: '' },
+        ]},
+        { no: '12', description: 'Roof insulation and water proofing\nProviding and laying Roof insulation and water proofing to roof consisting of given below of as directed by the Engineer incharge. - Bituminous primer coat.\n- 2-coats of cold applied rubberized bitumen\n- One layer of polythene 500 gauge\n- 1½” thick "extruded polystyrene board" 1½" thick. (density 34 Kg/m³)\n- One layer of polythene 500 gauge\n- 4” thick average mud (compacted thickness).\n- Brick tiles 9”x4-1/2”x1-1/2” laid in cement sand mortar 1:4 and grouted with cement sand mortar 1:3 using 1-part of OPC and 3-parts of clean approved quality sand, complete as per drawings, specifications and instructions of the Consultant.', unit: 'S.ft', qty: '6,561', rate: '', amount: '' },
+        { no: '13', description: 'D.P.C\nSupply, mix, place, cure, compact concrete (1:2:4) 1-1/2" horizontal damp proof course on brick masonry wall includes form work & mixing of rhombic 707 manufactured by MBT in concrete & application of one coat of same chemical on masonry surface before pouring of mixed concrete according to drawings and manufacturers instructions or As directed by the consultant.', subItems: [
+          { description: 'Ground Floor', unit: 'S.ft', qty: '654', rate: '', amount: '' }
+        ]}
+    ];
+
+    const renderRow = (item: any, level = 0) => {
+        const isMainItem = !item.subItems;
+        const paddingLeft = level * 20;
+
+        return (
+            <React.Fragment key={item.no || item.description}>
+                <TableRow>
+                    <TableCell className="font-bold" style={{ paddingLeft: isMainItem ? paddingLeft : 0 }}>{item.no}</TableCell>
+                    <TableCell style={{ whiteSpace: 'pre-wrap', paddingLeft: isMainItem ? 0 : paddingLeft }}>{item.description}</TableCell>
+                    <TableCell>{item.unit}</TableCell>
+                    <TableCell>{item.qty}</TableCell>
+                    <TableCell>{item.rate}</TableCell>
+                    <TableCell>{item.amount}</TableCell>
+                </TableRow>
+                {item.subItems && item.subItems.map((subItem: any) => renderRow(subItem, level + 1))}
+            </React.Fragment>
+        );
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-center">BILL OF QUANTITY</CardTitle>
+                <p className="text-center font-bold">ISBAH HASSAN & ASSOCIATES</p>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Sr. No</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Unit</TableHead>
+                            <TableHead>Qty</TableHead>
+                            <TableHead>Rate</TableHead>
+                            <TableHead>Amount (Rs)</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {boqData.map((item) => renderRow(item))}
+                        <TableRow>
+                            <TableCell colSpan={5} className="text-right font-bold">TOTAL AMOUNT RS</TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    );
+});
 Section23.displayName = 'Section23';
 
 const Section24 = React.memo(() => (<Card><CardHeader><CardTitle>Rate Analysis</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
@@ -2260,6 +2387,7 @@ const BankBranchesPage: React.FC = () => {
 export default BankBranchesPage;
     
     
+
 
 
 
