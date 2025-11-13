@@ -1763,7 +1763,7 @@ const Section17 = React.memo(() => {
             {"Sr No.": 7, "Vendor's Name": "Phoenix Groups of Compines", "Contact Person": "", "Products": "Home Automation", "Address": "KHI.SUK P&O Plaza I.I. Chunrigar Road Khi", "Contact": "021-111288288"},
             {"Sr No.": 8, "Vendor's Name": "Synergy Technologies", "Contact Person": "", "Products": "Home Automation", "Address": "39-A Block D-1 Gulberg III Lahore", "Contact": "042-111900111"},
             {"Sr No.": 9, "Vendor's Name": "Tera Generation Solutions Pvt. Ltd.", "Contact Person": "", "Products": "Home Automation", "Address": "7-A, P Block Block P Gulberg 2, Lahore, Punjab", "Contact": "(042) 111 847 111"}
-        ]
+        ],
     };
     return (
         <Card>
@@ -2052,7 +2052,6 @@ const Section20 = React.memo(() => (
                             <TableCell></TableCell>
                             <TableCell></TableCell>
                             <TableCell></TableCell>
-                             <TableCell></TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
@@ -2402,7 +2401,90 @@ const Section24 = React.memo(() => (
 ));
 Section24.displayName = 'Section24';
 
-const Section25 = React.memo(() => (<Card><CardHeader><CardTitle>Change Order</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section25 = React.memo(() => (
+    <Card>
+        <CardHeader>
+            <CardTitle className="text-center">CHANGE ORDER</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                    <FormField label="Project:" value="" />
+                    <FormField label="Field Report No." value="" />
+                    <FormField label="(Name, Address)" value="" />
+                    <FormField label="Date:" value="" />
+                    <FormField label="Architects Project No:" value="" />
+                </div>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                    <FormField label="To: (Contractor)" value="" />
+                    <FormField label="Contract For:" value="" />
+                    <div className="col-span-2">
+                         <FormField label="Contract Date:" value="" />
+                    </div>
+                </div>
+
+                <Textarea placeholder="This Contract is change as follows:" rows={6} />
+
+                <p className="text-center font-semibold pt-4">Not Valid until signed by the Owner, Architect and Contractor.</p>
+                
+                <div className="space-y-2 text-sm pt-4">
+                    <div className="flex items-center">
+                        <p className="w-2/3">The original (Contract Sum) (Guaranteed Maximum Price) was</p>
+                        <p className="w-1/3 text-right">Rs. ____________</p>
+                    </div>
+                    <div className="flex items-center">
+                        <p className="w-2/3">Net change by previously authorized Change Orders</p>
+                        <p className="w-1/3 text-right">Rs. ____________</p>
+                    </div>
+                    <div className="flex items-center">
+                        <p className="w-2/3">The (Contract Sum) (Guaranteed Maximum Price) prior to this Change Order was</p>
+                        <p className="w-1/3 text-right">Rs. ____________</p>
+                    </div>
+                     <div className="flex items-center">
+                        <p className="w-2/3">The (Contract Sum) (Guaranteed Maximum Price) will be (increased) (decreased) (changed) by this Change Order in the amount of</p>
+                        <p className="w-1/3 text-right">Rs. ____________</p>
+                    </div>
+                     <div className="flex items-center">
+                        <p className="w-2/3">The new (Contract Sum) (Guaranteed Maximum Price) including this Change Order will be</p>
+                        <p className="w-1/3 text-right">Rs. ____________</p>
+                    </div>
+                     <p>The Contract Time will be (increased) (decreased) by (_______) days.</p>
+                     <p>the date of Substantial Completion as the date of this Change Order therefore is: ________________________</p>
+                </div>
+                <p className="text-xs text-muted-foreground pt-2">NOTE: This summary does not reflect changes in the Contract Sum, Contract Time or Guaranteed Maximum Price which have been authorized by Contraction Change Directive.</p>
+
+                <div className="flex justify-between pt-8">
+                    <div>
+                        <p>Architect</p>
+                        <FormField label="Address" value=""/>
+                        <FormField label="By" value=""/>
+                        <FormField label="Date" value=""/>
+                    </div>
+                     <div>
+                        <p>Contractor</p>
+                        <FormField label="Address" value=""/>
+                        <FormField label="By" value=""/>
+                        <FormField label="Date" value=""/>
+                    </div>
+                     <div>
+                        <p>Owner</p>
+                        <FormField label="Address" value=""/>
+                        <FormField label="By" value=""/>
+                        <FormField label="Date" value=""/>
+                    </div>
+                </div>
+
+                <div className="flex justify-end gap-4 text-sm pt-4">
+                    <span>Owner</span>
+                    <span>Architect</span>
+                    <span>Contractor</span>
+                    <span>Field</span>
+                    <span>Other</span>
+                </div>
+            </div>
+        </CardContent>
+    </Card>
+));
 Section25.displayName = 'Section25';
 
 const Section26 = React.memo(() => (<Card><CardHeader><CardTitle>Application and Certificate for Payment</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
@@ -2541,6 +2623,7 @@ const BankBranchesPage: React.FC = () => {
 export default BankBranchesPage;
     
     
+
 
 
 
