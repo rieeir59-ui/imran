@@ -2112,7 +2112,83 @@ const Section21 = React.memo(() => (
 ));
 Section21.displayName = 'Section21';
 
-const Section22 = React.memo(() => (<Card><CardHeader><CardTitle>Preliminary Project Budget</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section22 = React.memo(() => (
+    <Card>
+        <CardHeader>
+            <CardTitle className="text-center">PRELIMINARY PROJECT BUDGET</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <FormField label="Project" value=""/>
+                    <FormField label="Project No" value=""/>
+                    <FormField label="Date" value=""/>
+                    <FormField label="Job" value=""/>
+                    <FormField label="Rev. No" value=""/>
+                    <FormField label="Date" value=""/>
+                    <FormField label="Location" value=""/>
+                    <FormField label="Prepared by" value=""/>
+                    <FormField label="Gross Area" value=""/>
+                    <FormField label="Rental Area" value=""/>
+                    <FormField label="Efficiency" value="%"/>
+                </div>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-2/5">Item</TableHead>
+                            <TableHead className="text-right">Rs. per sft. Gross Area</TableHead>
+                            <TableHead className="text-right">Total Rs.</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow><TableCell colSpan={3} className="font-bold bg-muted">Basic Building Costs</TableCell></TableRow>
+                        {[
+                            "Site Work", "Structural Frame", "Exterior Finish", "Interior Finish", 
+                            "Mechanical Vert. Transportation", "Electrical Work", "Heating, Ventilating, Air -conditioning", 
+                            "Plumbing", "Fire Protection"
+                        ].map((item, i) => (
+                            <TableRow key={`basic-${i}`}>
+                                <TableCell>{i + 1}. {item}</TableCell><TableCell className="text-right"></TableCell><TableCell className="text-right"></TableCell>
+                            </TableRow>
+                        ))}
+                        <TableRow><TableCell colSpan={3} className="font-bold bg-muted">Unusual Building Costs</TableCell></TableRow>
+                        {[
+                            "Unusual Site Conditions", "Unusual Soil Conditions", "Off-Site Work", 
+                            "Provisions for Future Expansion", "Special Equipment", "Construction-Time Schedule",
+                            "Type of Bidding and Contract"
+                        ].map((item, i) => (
+                             <TableRow key={`unusual-${i}`}>
+                                <TableCell>{i + 10}. {item}</TableCell><TableCell className="text-right"></TableCell><TableCell className="text-right"></TableCell>
+                            </TableRow>
+                        ))}
+                        <TableRow><TableCell colSpan={3} className="font-bold bg-muted">Additional Budget Items</TableCell></TableRow>
+                        {[
+                            "Landscaping", "Art and Sign Program", "Tenant Allowances (standard)", "Self-liquidation Items"
+                        ].map((item, i) => (
+                             <TableRow key={`additional-${i}`}>
+                                <TableCell>{i + 17}. {item}</TableCell><TableCell className="text-right"></TableCell><TableCell className="text-right"></TableCell>
+                            </TableRow>
+                        ))}
+                        <TableRow className="font-bold"><TableCell>Sub-Total</TableCell><TableCell></TableCell><TableCell className="text-right">Rs.</TableCell></TableRow>
+
+                        <TableRow><TableCell colSpan={3} className="font-bold bg-muted">Owner's Budget Items</TableCell></TableRow>
+                        {[
+                            "Professional Fees @270/Sqr.Ft", "Surveys and Insurance Costs", "Land Cost", 
+                            "Legal and Accounting Costs", "Leasing and Advertising Costs", "Financing Costs and Taxes",
+                            "Promotion", "Pre- Opening Expenses", "Owner's Administration Costs",
+                            "Concessions to Major Tenants (above standards)"
+                        ].map((item, i) => (
+                             <TableRow key={`owner-${i}`}>
+                                <TableCell>{i + 21}. {item}</TableCell><TableCell className="text-right"></TableCell><TableCell className="text-right"></TableCell>
+                            </TableRow>
+                        ))}
+                        <TableRow className="font-bold border-t-2 border-black"><TableCell>TOTAL PROJECT BUDGET</TableCell><TableCell></TableCell><TableCell className="text-right">Rs.</TableCell></TableRow>
+                    </TableBody>
+                </Table>
+            </div>
+        </CardContent>
+    </Card>
+));
 Section22.displayName = 'Section22';
 
 const Section23 = React.memo(() => {
@@ -2387,6 +2463,7 @@ const BankBranchesPage: React.FC = () => {
 export default BankBranchesPage;
     
     
+
 
 
 
