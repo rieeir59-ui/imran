@@ -26,6 +26,7 @@ const menuItems = [
   { href: '/bank-al-habib-timeline', icon: Landmark, label: 'Bank Al Habib Timeline' },
   { href: '/hbl-timeline', icon: Landmark, label: 'HBL Timeline' },
   { href: '/dib-timeline', icon: Landmark, label: 'DIB Timeline' },
+  { href: '/fbl-timeline', icon: Landmark, label: 'FBL Timeline' },
 ];
 
 export function AppSidebar() {
