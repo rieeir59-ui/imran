@@ -14,7 +14,8 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Save, Loader2 } from 'lucide-react';
+import { Edit, Save, Loader2, Download, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 
 const initialProjectData = [
@@ -90,7 +91,23 @@ const DibTimelinePage = () => {
   
   return (
     <main className="p-4 md:p-6 lg:p-8">
-      <Card>
+      <div className="flex justify-between items-center mb-6 no-print">
+        <Button variant="outline" asChild>
+            <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back</Link>
+        </Button>
+        <h1 className="text-2xl font-bold">DIB Timeline</h1>
+        <div className="flex items-center gap-2">
+            <Button onClick={() => window.print()} variant="outline"><Download className="mr-2 h-4 w-4" /> Download</Button>
+            {isEditing ? (
+                <Button onClick={handleSave} disabled={isSaving}>
+                    {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />} Save
+                </Button>
+            ) : (
+                <Button onClick={() => setIsEditing(true)}><Edit className="mr-2" /> Edit</Button>
+            )}
+        </div>
+      </div>
+      <Card className="printable-card">
         <CardHeader>
           <div className="flex justify-between items-center">
             <div className="w-1/4"></div>
@@ -99,13 +116,6 @@ const DibTimelinePage = () => {
             </CardTitle>
             <div className="w-1/4 flex justify-end items-center gap-4">
               <span className="font-bold text-lg text-green-700">DIB</span>
-               {isEditing ? (
-                  <Button onClick={handleSave} disabled={isSaving}>
-                      {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
-                  </Button>
-              ) : (
-                  <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
-              )}
             </div>
           </div>
         </CardHeader>
