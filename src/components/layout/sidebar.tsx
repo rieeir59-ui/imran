@@ -8,13 +8,13 @@ import {
   SidebarMenuItem,
   SidebarMenuButton
 } from "@/components/ui/sidebar";
-import { Building2, Home, Hotel, Landmark, BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart } from 'lucide-react';
+import { Building2, Home, Hotel, Landmark, BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 
 const menuItems = [
   { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/commercial', icon: Building2, label: 'Commercial' },
+  { href: '/commercial', icon: Building, label: 'Commercial Projects' },
   { href: '/residential', icon: Home, label: 'Residential' },
   { href: '/hotel', icon: Hotel, label: 'Hotel' },
   { href: '/bank', icon: Landmark, label: 'Bank Branches' },
