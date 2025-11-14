@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -117,3 +118,7 @@ export default function ProjectTimelinePage() {
                         </TableBody>
                     </Table>
                 </CardContent>
+            </Card>
+        </main>
+    );
+}
