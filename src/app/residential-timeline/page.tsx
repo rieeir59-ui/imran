@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 const projectData = [
   {
@@ -126,6 +127,13 @@ const projectData = [
   },
 ];
 
+const overallStatus = [
+  { no: 1, text: 'Construction In Progress' },
+  { no: 2, text: 'Construction In Progress (bathroom revision)' },
+  { no: 3, text: 'Mep and submission drawing in progress' },
+  { no: 4, text: 'Basement Multi Purpose area is in process.' },
+];
+
 const ResidentialTimelinePage = () => {
   return (
     <main className="p-4 md:p-6 lg:p-8">
@@ -210,6 +218,26 @@ const ResidentialTimelinePage = () => {
                 ))}
               </TableBody>
             </Table>
+            <Separator className="my-4" />
+            <div className="p-4 border border-gray-400">
+              <h4 className="font-bold mb-2">OVERALL STATUS</h4>
+              <Table>
+                <TableBody>
+                  {overallStatus.map((status) => (
+                    <TableRow key={status.no}>
+                      <TableCell className="w-8">{status.no}.</TableCell>
+                      <TableCell>{status.text}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="p-4 border border-gray-400 border-t-0">
+              <div className="flex justify-between">
+                <p>Maam Isbah Remarks & Order</p>
+                <p>Date: </p>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
