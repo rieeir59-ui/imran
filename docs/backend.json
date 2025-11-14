@@ -331,6 +331,40 @@
           }
         }
       }
+    },
+    "TimelineProject": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TimelineProject",
+      "description": "A flexible schema for timeline project data.",
+      "type": "object",
+      "properties": {
+        "projectData": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "overallStatus": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "no": {"type": ["number", "string"]},
+              "text": {"type": "string"}
+            },
+            "additionalProperties": true
+          }
+        },
+        "remarks": {
+          "type": "object",
+          "properties": {
+            "text": {"type": "string"},
+            "date": {"type": "string"}
+          }
+        }
+      },
+      "additionalProperties": true
     }
   },
   "auth": {
@@ -464,9 +498,9 @@
       {
         "path": "/users/{userId}/projectTimelines/{timelineId}",
         "definition": {
-          "entityName": "ProjectTimeline",
+          "entityName": "TimelineProject",
           "schema": {
-            "$ref": "#/entities/ProjectTimeline"
+            "$ref": "#/entities/TimelineProject"
           },
           "description": "Stores project timeline data for a specific user."
         }

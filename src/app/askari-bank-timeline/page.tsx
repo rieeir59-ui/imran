@@ -14,9 +14,17 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Save, Loader2, Download, ArrowLeft } from 'lucide-react';
+import { Edit, Save, Loader2, Download, ArrowLeft, Terminal } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
+import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { DatePicker } from '@/components/ui/date-picker';
+import { addDays, format, parseISO } from 'date-fns';
+
+const TIMELINE_DOC_ID = "askari-bank-timeline";
 
 const initialProjectData = [
   {
@@ -24,15 +32,15 @@ const initialProjectData = [
     projectName: 'AKBL AWT SADDAR RWP',
     area: '14,000',
     projectHolder: 'Noman Asad Mohsin',
-    allocationDate: '6-Oct-25',
+    allocationDate: '2025-10-06',
     siteSurveyStart: '',
     siteSurveyEnd: '',
     contact: '',
     headCount: 'Received',
-    proposalStart: '14-Oct-25',
-    proposalEnd: '17-Oct-25',
-    '3dStart': '17-Oct-25',
-    '3dEnd': '21-Oct-25',
+    proposalStart: '2025-10-14',
+    proposalEnd: '2025-10-17',
+    '3dStart': '2025-10-17',
+    '3dEnd': '2025-10-21',
     tenderArchStart: '',
     tenderArchEnd: '',
     tenderMepStart: '',
@@ -52,15 +60,15 @@ const initialProjectData = [
     projectName: 'AKBL CHAKLALA GARRISON RWP',
     area: '4,831',
     projectHolder: 'Noman Asad Mohsin',
-    allocationDate: '13-Sep-25',
+    allocationDate: '2025-09-13',
     siteSurveyStart: '',
     siteSurveyEnd: '',
     contact: 'In-Progress',
     headCount: 'Recieved',
     proposalStart: '',
     proposalEnd: '',
-    '3dStart': '1-Oct-25',
-    '3dEnd': '3-Oct-25',
+    '3dStart': '2025-10-01',
+    '3dEnd': '2025-10-03',
     tenderArchStart: '',
     tenderArchEnd: '',
     tenderMepStart: '',
@@ -80,13 +88,13 @@ const initialProjectData = [
     projectName: 'AKBL Priority Lounge',
     area: '24,000.00',
     projectHolder: 'Noman Haseeb Mohsin',
-    allocationDate: '28-Mar-25',
+    allocationDate: '2025-03-28',
     siteSurveyStart: '',
     siteSurveyEnd: '',
     contact: 'DONE',
     headCount: 'Recevied',
-    proposalStart: '21-Apr-25',
-    proposalEnd: '28-Apr-25',
+    proposalStart: '2025-04-21',
+    proposalEnd: '2025-04-28',
     '3dStart': '',
     '3dEnd': '',
     tenderArchStart: '',
@@ -108,7 +116,7 @@ const initialProjectData = [
     projectName: 'AKBL Ocean Mall KHI',
     area: '430.00',
     projectHolder: 'Noman Asad Mohsin',
-    allocationDate: '10-Oct-25',
+    allocationDate: '2025-10-10',
     siteSurveyStart: '',
     siteSurveyEnd: '',
     contact: '',
@@ -142,14 +150,72 @@ const initialOverallStatus = [
 const AskariBankTimelinePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [projectData, setProjectData] = useState(initialProjectData);
   const [overallStatus, setOverallStatus] = useState(initialOverallStatus);
   const [remarks, setRemarks] = useState({ text: 'Maam Isbah Remarks & Order', date: '' });
   const { toast } = useToast();
 
-  const handleProjectDataChange = (index: number, field: string, value: string) => {
+  const firestore = useFirestore();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+
+  useEffect(() => {
+    if (!isUserLoading && !user && auth) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [isUserLoading, user, auth]);
+
+  const timelineDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, `users/${user.uid}/projectTimelines/${TIMELINE_DOC_ID}`);
+  }, [user, firestore]);
+
+  useEffect(() => {
+    if (!timelineDocRef) return;
+
+    setIsLoading(true);
+    getDoc(timelineDocRef)
+      .then((docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.projectData) setProjectData(data.projectData);
+          if (data.overallStatus) setOverallStatus(data.overallStatus);
+          if (data.remarks) setRemarks(data.remarks);
+        }
+      })
+      .catch(async (serverError) => {
+        console.error("Error fetching timeline data:", serverError);
+        const permissionError = new FirestorePermissionError({
+          path: timelineDocRef.path,
+          operation: 'get',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [timelineDocRef]);
+
+  const handleProjectDataChange = (index: number, field: string, value: any) => {
     const updatedData = [...projectData];
-    (updatedData[index] as any)[field] = value;
+    const task = updatedData[index] as any;
+    task[field] = value;
+
+    if ((field === 'duration' || field === 'start') && value) {
+        const startDate = task.start ? (typeof task.start === 'string' ? parseISO(task.start) : task.start) : null;
+        const duration = task.duration ? parseInt(task.duration, 10) : 0;
+
+        if (startDate && !isNaN(duration) && duration > 0) {
+            const finishDate = addDays(startDate, duration);
+            task.finish = format(finishDate, 'yyyy-MM-dd');
+        }
+    }
+    
+    if (field === 'start' && value instanceof Date) {
+        task.start = format(value, 'yyyy-MM-dd');
+    }
+
     setProjectData(updatedData);
   };
   
@@ -164,8 +230,13 @@ const AskariBankTimelinePage = () => {
   }
 
   const handleSave = () => {
+    if (!timelineDocRef) {
+      toast({ variant: "destructive", title: "Save Failed", description: "User not authenticated." });
+      return;
+    }
     setIsSaving(true);
-    // Simulate API call
+    const dataToSave = { projectData, overallStatus, remarks };
+    setDocumentNonBlocking(timelineDocRef, dataToSave, { merge: true });
     setTimeout(() => {
       setIsSaving(false);
       setIsEditing(false);
@@ -176,8 +247,43 @@ const AskariBankTimelinePage = () => {
     }, 1000);
   };
 
-  const renderCell = (value: string, onChange: (val: string) => void) => {
-    return isEditing ? <Input value={value} onChange={(e) => onChange(e.target.value)} className="h-8" /> : value;
+  const renderCell = (value: string | undefined, onChange: (val: any) => void) => {
+    return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8" /> : (value || '');
+  }
+
+  const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
+      const date = value ? new Date(value) : undefined;
+      return isEditing ? (
+          <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />
+      ) : (
+          value ? format(new Date(value), 'd-MMM-yy') : ''
+      )
+  }
+
+  if (isUserLoading || isLoading) {
+    return (
+        <div className="flex h-full w-full items-center justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="ml-2">Loading Timeline...</p>
+        </div>
+    );
+  }
+
+  if (!user && !isUserLoading) {
+      return (
+        <main className="p-4 md:p-6 lg:p-8">
+         <Card>
+           <CardHeader><CardTitle>Authentication Required</CardTitle></CardHeader>
+           <CardContent>
+             <Alert variant="destructive">
+               <Terminal className="h-4 w-4" />
+               <AlertTitle>Unable to Authenticate</AlertTitle>
+               <AlertDescription>We could not sign you in. Please refresh the page to try again.</AlertDescription>
+             </Alert>
+           </CardContent>
+         </Card>
+       </main>
+     )
   }
 
   return (
@@ -217,247 +323,72 @@ const AskariBankTimelinePage = () => {
             <Table className="min-w-full border-collapse border border-gray-400">
               <TableHeader>
                 <TableRow>
-                  <TableHead
-                    rowSpan={2}
-                    className="border border-gray-400 text-center align-middle"
-                  >
-                    Sr.No
-                  </TableHead>
-                  <TableHead
-                    rowSpan={2}
-                    className="border border-gray-400 text-center align-middle"
-                  >
-                    Project Name
-                  </TableHead>
-                  <TableHead
-                    rowSpan={2}
-                    className="border border-gray-400 text-center align-middle"
-                  >
-                    Area in Sft
-                  </TableHead>
-                  <TableHead
-                    rowSpan={2}
-                    className="border border-gray-400 text-center align-middle"
-                  >
-                    Project Holder
-                  </TableHead>
-                  <TableHead
-                    rowSpan={2}
-                    className="border border-gray-400 text-center align-middle"
-                  >
-                    Allocation Date / RFP
-                  </TableHead>
-                  <TableHead
-                    colSpan={2}
-                    className="border border-gray-400 text-center"
-                  >
-                    Site Survey
-                  </TableHead>
-                  <TableHead
-                    rowSpan={2}
-                    className="border border-gray-400 text-center align-middle"
-                  >
-                    Contact
-                  </TableHead>
-                  <TableHead
-                    rowSpan={2}
-                    className="border border-gray-400 text-center align-middle"
-                  >
-                    Head Count / Requirment
-                  </TableHead>
-                  <TableHead
-                    colSpan={2}
-                    className="border border-gray-400 text-center"
-                  >
-                    Proposal / Design Development
-                  </TableHead>
-                  <TableHead
-                    colSpan={2}
-                    className="border border-gray-400 text-center"
-                  >
-                    3D's
-                  </TableHead>
-                  <TableHead
-                    colSpan={2}
-                    className="border border-gray-400 text-center"
-                  >
-                    Tender Package Architectural
-                  </TableHead>
-                  <TableHead
-                    colSpan={2}
-                    className="border border-gray-400 text-center"
-                  >
-                    Tender Package MEP
-                  </TableHead>
-                  <TableHead
-                    colSpan={2}
-                    className="border border-gray-400 text-center"
-                  >
-                    BOQ
-                  </TableHead>
-                  <TableHead
-                    rowSpan={2}
-                    className="border border-gray-400 text-center align-middle"
-                  >
-                    Tender Status
-                  </TableHead>
-                  <TableHead
-                    rowSpan={2}
-                    className="border border-gray-400 text-center align-middle"
-                  >
-                    Comparative
-                  </TableHead>
-                  <TableHead
-                    colSpan={2}
-                    className="border border-gray-400 text-center"
-                  >
-                    Working Drawings
-                  </TableHead>
-                  <TableHead
-                    rowSpan={2}
-                    className="border border-gray-400 text-center align-middle"
-                  >
-                    Site Visit
-                  </TableHead>
-                  <TableHead
-                    rowSpan={2}
-                    className="border border-gray-400 text-center align-middle"
-                  >
-                    Final Bill
-                  </TableHead>
-                  <TableHead
-                    rowSpan={2}
-                    className="border border-gray-400 text-center align-middle"
-                  >
-                    Project Closure
-                  </TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle">Sr.No</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle">Project Name</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle">Area in Sft</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle">Project Holder</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle">Allocation Date / RFP</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center">Site Survey</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle">Contact</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle">Head Count / Requirment</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center">Proposal / Design Development</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center">3D's</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center">Tender Package Architectural</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center">Tender Package MEP</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center">BOQ</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle">Tender Status</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle">Comparative</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center">Working Drawings</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle">Site Visit</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle">Final Bill</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle">Project Closure</TableHead>
                 </TableRow>
                 <TableRow>
-                  <TableHead className="border border-gray-400 text-center">
-                    Start Date
-                  </TableHead>
-                  <TableHead className="border border-gray-400 text-center">
-                    End Date
-                  </TableHead>
-                  <TableHead className="border border-gray-400 text-center">
-                    Start Date
-                  </TableHead>
-                  <TableHead className="border border-gray-400 text-center">
-                    End Date
-                  </TableHead>
-                  <TableHead className="border border-gray-400 text-center">
-                    Start Date
-                  </TableHead>
-                  <TableHead className="border border-gray-400 text-center">
-                    End Date
-                  </TableHead>
-                  <TableHead className="border border-gray-400 text-center">
-                    Start Date
-                  </TableHead>
-                  <TableHead className="border border-gray-400 text-center">
-                    End Date
-                  </TableHead>
-                  <TableHead className="border border-gray-400 text-center">
-                    Start Date
-                  </TableHead>
-                  <TableHead className="border border-gray-400 text-center">
-                    End Date
-                  </TableHead>
-                  <TableHead className="border border-gray-400 text-center">
-                    Start Date
-                  </TableHead>
-                  <TableHead className="border border-gray-400 text-center">
-                    End Date
-                  </TableHead>
-                  <TableHead className="border border-gray-400 text-center">
-                    Start Date
-                  </TableHead>
-                  <TableHead className="border border-gray-400 text-center">
-                    End Date
-                  </TableHead>
+                  <TableHead className="border border-gray-400 text-center">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center">End Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center">End Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center">End Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center">End Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center">End Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center">End Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center">End Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {projectData.map((project, index) => (
                   <TableRow key={project.srNo}>
-                    <TableCell className="border border-gray-400 text-center">
-                      {project.srNo}
-                    </TableCell>
-                    <TableCell className="border border-gray-400">
-                      {renderCell(project.projectName, (val) => handleProjectDataChange(index, 'projectName', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.area, (val) => handleProjectDataChange(index, 'area', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400">
-                      {renderCell(project.projectHolder, (val) => handleProjectDataChange(index, 'projectHolder', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.allocationDate, (val) => handleProjectDataChange(index, 'allocationDate', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.siteSurveyStart, (val) => handleProjectDataChange(index, 'siteSurveyStart', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.siteSurveyEnd, (val) => handleProjectDataChange(index, 'siteSurveyEnd', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.contact, (val) => handleProjectDataChange(index, 'contact', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.headCount, (val) => handleProjectDataChange(index, 'headCount', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.proposalStart, (val) => handleProjectDataChange(index, 'proposalStart', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.proposalEnd, (val) => handleProjectDataChange(index, 'proposalEnd', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project['3dStart'], (val) => handleProjectDataChange(index, '3dStart', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project['3dEnd'], (val) => handleProjectDataChange(index, '3dEnd', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.tenderArchStart, (val) => handleProjectDataChange(index, 'tenderArchStart', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.tenderArchEnd, (val) => handleProjectDataChange(index, 'tenderArchEnd', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.tenderMepStart, (val) => handleProjectDataChange(index, 'tenderMepStart', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.tenderMepEnd, (val) => handleProjectDataChange(index, 'tenderMepEnd', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.boqStart, (val) => handleProjectDataChange(index, 'boqStart', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.boqEnd, (val) => handleProjectDataChange(index, 'boqEnd', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.tenderStatus, (val) => handleProjectDataChange(index, 'tenderStatus', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.comparative, (val) => handleProjectDataChange(index, 'comparative', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.workingDrawingsStart, (val) => handleProjectDataChange(index, 'workingDrawingsStart', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.workingDrawingsEnd, (val) => handleProjectDataChange(index, 'workingDrawingsEnd', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.siteVisit, (val) => handleProjectDataChange(index, 'siteVisit', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.finalBill, (val) => handleProjectDataChange(index, 'finalBill', val))}
-                    </TableCell>
-                    <TableCell className="border border-gray-400 text-center">
-                      {renderCell(project.projectClosure, (val) => handleProjectDataChange(index, 'projectClosure', val))}
-                    </TableCell>
+                    <TableCell className="border border-gray-400 text-center">{project.srNo}</TableCell>
+                    <TableCell className="border border-gray-400">{renderCell(project.projectName, (val) => handleProjectDataChange(index, 'projectName', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderCell(project.area, (val) => handleProjectDataChange(index, 'area', val))}</TableCell>
+                    <TableCell className="border border-gray-400">{renderCell(project.projectHolder, (val) => handleProjectDataChange(index, 'projectHolder', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.allocationDate, (val) => handleProjectDataChange(index, 'allocationDate', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.siteSurveyStart, (val) => handleProjectDataChange(index, 'siteSurveyStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.siteSurveyEnd, (val) => handleProjectDataChange(index, 'siteSurveyEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderCell(project.contact, (val) => handleProjectDataChange(index, 'contact', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderCell(project.headCount, (val) => handleProjectDataChange(index, 'headCount', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.proposalStart, (val) => handleProjectDataChange(index, 'proposalStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.proposalEnd, (val) => handleProjectDataChange(index, 'proposalEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project['3dStart'], (val) => handleProjectDataChange(index, '3dStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project['3dEnd'], (val) => handleProjectDataChange(index, '3dEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderArchStart, (val) => handleProjectDataChange(index, 'tenderArchStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderArchEnd, (val) => handleProjectDataChange(index, 'tenderArchEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderMepStart, (val) => handleProjectDataChange(index, 'tenderMepStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderMepEnd, (val) => handleProjectDataChange(index, 'tenderMepEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.boqStart, (val) => handleProjectDataChange(index, 'boqStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.boqEnd, (val) => handleProjectDataChange(index, 'boqEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderStatus, (val) => handleProjectDataChange(index, 'tenderStatus', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderCell(project.comparative, (val) => handleProjectDataChange(index, 'comparative', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.workingDrawingsStart, (val) => handleProjectDataChange(index, 'workingDrawingsStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.workingDrawingsEnd, (val) => handleProjectDataChange(index, 'workingDrawingsEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderCell(project.siteVisit, (val) => handleProjectDataChange(index, 'siteVisit', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderCell(project.finalBill, (val) => handleProjectDataChange(index, 'finalBill', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderCell(project.projectClosure, (val) => handleProjectDataChange(index, 'projectClosure', val))}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -490,3 +421,5 @@ const AskariBankTimelinePage = () => {
 };
 
 export default AskariBankTimelinePage;
+
+    
