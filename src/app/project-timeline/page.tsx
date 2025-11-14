@@ -20,6 +20,8 @@ import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking
 import { doc, getDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { DatePicker } from '@/components/ui/date-picker';
+import { addDays, format, parseISO } from 'date-fns';
 
 const DEFAULT_TIMELINE_ID = "main-project-timeline";
 
@@ -171,9 +173,25 @@ export default function ProjectTimelinePage() {
         setHeaderData(prev => ({...prev, [name]: value}));
     };
 
-    const handleTaskChange = (index: number, field: string, value: string) => {
+    const handleTaskChange = (index: number, field: string, value: any) => {
         const updatedTasks = [...timelineTasks];
-        (updatedTasks[index] as any)[field] = value;
+        const task = updatedTasks[index] as any;
+        task[field] = value;
+
+        if (field === 'duration' || field === 'start') {
+            const startDate = task.start ? (typeof task.start === 'string' ? parseISO(task.start) : task.start) : null;
+            const duration = task.duration ? parseInt(task.duration, 10) : 0;
+
+            if (startDate && !isNaN(duration) && duration > 0) {
+                const finishDate = addDays(startDate, duration);
+                task.finish = format(finishDate, 'yyyy-MM-dd');
+            }
+        }
+        
+        if (field === 'start' && value instanceof Date) {
+            task.start = format(value, 'yyyy-MM-dd');
+        }
+
         setTimelineTasks(updatedTasks);
     };
 
@@ -230,6 +248,15 @@ export default function ProjectTimelinePage() {
     const renderCell = (value: string, onChange: (val: string) => void) => {
         return isEditing ? <Input value={value} onChange={(e) => onChange(e.target.value)} className="h-8" /> : value;
     }
+    
+    const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
+        const date = value ? new Date(value) : undefined;
+        return isEditing ? (
+            <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />
+        ) : (
+            value ? format(new Date(value), 'PP') : ''
+        )
+    }
 
     return (
         <main className="p-4 md:p-6 lg:p-8">
@@ -277,7 +304,7 @@ export default function ProjectTimelinePage() {
                                     <TableCell>{task.id}</TableCell>
                                     <TableCell>{renderCell(task.name, (val) => handleTaskChange(index, 'name', val))}</TableCell>
                                     <TableCell>{renderCell(task.duration, (val) => handleTaskChange(index, 'duration', val))}</TableCell>
-                                    <TableCell>{renderCell(task.start, (val) => handleTaskChange(index, 'start', val))}</TableCell>
+                                    <TableCell>{renderDateCell(task.start, (val) => handleTaskChange(index, 'start', val))}</TableCell>
                                     <TableCell>{renderCell(task.finish, (val) => handleTaskChange(index, 'finish', val))}</TableCell>
                                     <TableCell>{renderCell(task.predecessor, (val) => handleTaskChange(index, 'predecessor', val))}</TableCell>
                                 </TableRow>
@@ -289,5 +316,3 @@ export default function ProjectTimelinePage() {
         </main>
     );
 }
-
-    

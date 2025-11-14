@@ -21,7 +21,9 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
+import { DatePicker } from '@/components/ui/date-picker';
+import { addDays, format, parseISO } from 'date-fns';
 
 
 const fileIndexItems = [
@@ -1346,10 +1348,10 @@ const Section8 = React.memo(() => {
                     <div>
                         <Label>Property Utilization</Label>
                         <div className="flex flex-wrap gap-4 mt-2">
-                             <div className="flex items-center space-x-2"><Checkbox id="pu-res" /><Label htmlFor="pu-res">Fully residential</Label></div>
-                             <div className="flex items-center space-x-2"><Checkbox id="pu-com" /><Label htmlFor="pu-com">Fully Commercial</Label></div>
-                             <div className="flex items-center space-x-2"><Checkbox id="pu-dual" /><Label htmlFor="pu-dual">Dual use</Label></div>
-                             <div className="flex items-center space-x-2"><Checkbox id="pu-ind" /><Label htmlFor="pu-ind">Industrial</Label></div>
+                           <div className="flex items-center space-x-2"><Checkbox id="pu-res" /><Label htmlFor="pu-res">Fully residential</Label></div>
+                           <div className="flex items-center space-x-2"><Checkbox id="pu-com" /><Label htmlFor="pu-com">Fully Commercial</Label></div>
+                           <div className="flex items-center space-x-2"><Checkbox id="pu-dual" /><Label htmlFor="pu-dual">Dual use</Label></div>
+                           <div className="flex items-center space-x-2"><Checkbox id="pu-ind" /><Label htmlFor="pu-ind">Industrial</Label></div>
                         </div>
                     </div>
                     <Input placeholder="Building plinth level from the road"/>
