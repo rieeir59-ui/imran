@@ -28,6 +28,7 @@ const menuItems = [
   { href: '/dib-timeline', icon: Landmark, label: 'DIB Timeline' },
   { href: '/fbl-timeline', icon: Landmark, label: 'FBL Timeline' },
   { href: '/mcb-timeline', icon: Landmark, label: 'MCB Timeline' },
+  { href: '/cbd-timeline', icon: Landmark, label: 'CBD Timeline' },
 ];
 
 export function AppSidebar() {
