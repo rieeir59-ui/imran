@@ -133,5 +133,17 @@ service cloud.firestore {
     match /users/{userId}/predesignAssessments/{assessmentId} {
         allow read, write: if isOwner(userId);
     }
+
+    /**
+     * @description Enforces ownership for project timelines.
+     * @path /users/{userId}/projectTimelines/{timelineId}
+     * @allow (create, get, update, delete) - Authenticated user can manage their own project timeline.
+     * @deny - All other access is denied.
+     */
+    match /users/{userId}/projectTimelines/{timelineId} {
+      allow read, write: if isOwner(userId);
+    }
   }
 }
+
+    

@@ -1,21 +1,29 @@
 
-"use client";
+'use client';
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import React, { useState, useEffect } from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Edit, Save, Loader2, Download, ArrowLeft, Terminal } from 'lucide-react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-const FormField = ({ label, value }: { label: string, value?: string }) => (
-    <div>
-        <span className="font-semibold">{label}</span>
-        <span>{value || '___________________________'}</span>
-    </div>
-);
+const DEFAULT_TIMELINE_ID = "main-project-timeline";
 
-const timelineTasks = [
+const initialTimelineTasks = [
     { id: 1, name: "Project Name:", duration: "", start: "", finish: "", predecessor: "" },
     { id: 2, name: "Conceptual Design", duration: "", start: "", finish: "", predecessor: "" },
     { id: 3, name: "Client Brief", duration: "", start: "", finish: "", predecessor: "2" },
@@ -73,25 +81,184 @@ const timelineTasks = [
     { id: 55, name: "Construction Period ____ Months - Top Supervision by IH&SA and ____________________", duration: "", start: "", finish: "", predecessor: "54" },
 ];
 
+const FormField = ({ label, value, isEditing, onChange, name }: { label: string, value?: string, isEditing?: boolean, onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void, name?: string }) => (
+    <div>
+        <span className="font-semibold">{label}</span>
+        {isEditing ? 
+            <Input name={name} value={value} onChange={onChange} className="inline-block w-auto" /> : 
+            <span>{value || '___________________________'}</span>
+        }
+    </div>
+);
+
+
 export default function ProjectTimelinePage() {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [timelineTasks, setTimelineTasks] = useState(initialTimelineTasks);
+    const [headerData, setHeaderData] = useState({
+        project: "",
+        architect: "IH&SA",
+        nameAddress: "",
+        architectProjectNo: "",
+        projectDate: ""
+    });
+
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const auth = useAuth();
+    const { user, isUserLoading } = useUser();
+    
+    useEffect(() => {
+        if (!isUserLoading && !user && auth) {
+            initiateAnonymousSignIn(auth);
+        }
+    }, [isUserLoading, user, auth]);
+
+    const timelineDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectTimelines/${DEFAULT_TIMELINE_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!timelineDocRef) return;
+
+        setIsLoading(true);
+        getDoc(timelineDocRef)
+            .then((docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    setHeaderData({
+                        project: data.project || "",
+                        architect: data.architect || "IH&SA",
+                        nameAddress: data.nameAddress || "",
+                        architectProjectNo: data.architectProjectNo || "",
+                        projectDate: data.projectDate || ""
+                    });
+                    if (data.tasks && Array.isArray(data.tasks) && data.tasks.length === initialTimelineTasks.length) {
+                       setTimelineTasks(data.tasks);
+                    } else {
+                       setTimelineTasks(initialTimelineTasks);
+                    }
+                } else {
+                    // Set default if no doc exists
+                    setHeaderData({
+                        project: "",
+                        architect: "IH&SA",
+                        nameAddress: "",
+                        architectProjectNo: "",
+                        projectDate: ""
+                    });
+                    setTimelineTasks(initialTimelineTasks);
+                }
+            })
+            .catch(async (serverError) => {
+                console.error("Error fetching timeline data:", serverError);
+                 const permissionError = new FirestorePermissionError({
+                  path: timelineDocRef.path,
+                  operation: 'get',
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
+    }, [timelineDocRef]);
+
+    const handleHeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setHeaderData(prev => ({...prev, [name]: value}));
+    };
+
+    const handleTaskChange = (index: number, field: string, value: string) => {
+        const updatedTasks = [...timelineTasks];
+        (updatedTasks[index] as any)[field] = value;
+        setTimelineTasks(updatedTasks);
+    };
+
+    const handleSave = () => {
+        if (!timelineDocRef) {
+            toast({
+                variant: "destructive",
+                title: "Save Failed",
+                description: "User not authenticated.",
+            });
+            return;
+        }
+
+        setIsSaving(true);
+        const dataToSave = { ...headerData, tasks: timelineTasks };
+        setDocumentNonBlocking(timelineDocRef, dataToSave, { merge: true });
+
+        setTimeout(() => {
+            setIsSaving(false);
+            setIsEditing(false);
+            toast({
+                title: "Timeline Saved",
+                description: "Your project timeline has been saved.",
+            });
+        }, 500);
+    };
+
+    if (isUserLoading || isLoading) {
+        return (
+            <div className="flex h-full w-full items-center justify-center p-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="ml-2">Loading Timeline...</p>
+            </div>
+        );
+    }
+    
+     if (!user && !isUserLoading) {
+        return (
+          <main className="p-4 md:p-6 lg:p-8">
+           <Card>
+             <CardHeader><CardTitle>Authentication Required</CardTitle></CardHeader>
+             <CardContent>
+               <Alert variant="destructive">
+                 <Terminal className="h-4 w-4" />
+                 <AlertTitle>Unable to Authenticate</AlertTitle>
+                 <AlertDescription>We could not sign you in. Please refresh the page to try again.</AlertDescription>
+               </Alert>
+             </CardContent>
+           </Card>
+         </main>
+       )
+    }
+
+    const renderCell = (value: string, onChange: (val: string) => void) => {
+        return isEditing ? <Input value={value} onChange={(e) => onChange(e.target.value)} className="h-8" /> : value;
+    }
+
     return (
         <main className="p-4 md:p-6 lg:p-8">
-             <div className="flex items-center gap-4 mb-4">
+             <div className="flex items-center justify-between gap-4 mb-4 no-print">
                 <Button variant="outline" asChild>
                     <Link href="/"><ArrowLeft /> Back to Dashboard</Link>
                 </Button>
+                <div className="flex items-center gap-2">
+                    <Button onClick={() => window.print()} variant="outline"><Download /> Download</Button>
+                    {isEditing ? (
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                        </Button>
+                    ) : (
+                        <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                    )}
+                </div>
             </div>
-            <Card>
+            <Card className="printable-card">
                 <CardHeader>
                     <CardTitle className="text-center">TIME LINE SCHEDULE</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-2 gap-4 mb-4">
-                        <FormField label="Project" value="" />
-                        <FormField label="Architect" value="IH&SA" />
-                        <FormField label="(Name, Address)" value="" />
-                        <FormField label="Architects Project No" value="" />
-                        <FormField label="Project Date" value="" />
+                        <FormField label="Project: " name="project" value={headerData.project} isEditing={isEditing} onChange={handleHeaderChange} />
+                        <FormField label="Architect: " name="architect" value={headerData.architect} isEditing={isEditing} onChange={handleHeaderChange} />
+                        <FormField label="(Name, Address): " name="nameAddress" value={headerData.nameAddress} isEditing={isEditing} onChange={handleHeaderChange} />
+                        <FormField label="Architects Project No: " name="architectProjectNo" value={headerData.architectProjectNo} isEditing={isEditing} onChange={handleHeaderChange} />
+                        <FormField label="Project Date: " name="projectDate" value={headerData.projectDate} isEditing={isEditing} onChange={handleHeaderChange} />
                     </div>
                     <Table>
                         <TableHeader>
@@ -105,14 +272,14 @@ export default function ProjectTimelinePage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {timelineTasks.map((task) => (
+                            {timelineTasks.map((task, index) => (
                                 <TableRow key={task.id}>
                                     <TableCell>{task.id}</TableCell>
-                                    <TableCell>{task.name}</TableCell>
-                                    <TableCell>{task.duration}</TableCell>
-                                    <TableCell>{task.start}</TableCell>
-                                    <TableCell>{task.finish}</TableCell>
-                                    <TableCell>{task.predecessor}</TableCell>
+                                    <TableCell>{renderCell(task.name, (val) => handleTaskChange(index, 'name', val))}</TableCell>
+                                    <TableCell>{renderCell(task.duration, (val) => handleTaskChange(index, 'duration', val))}</TableCell>
+                                    <TableCell>{renderCell(task.start, (val) => handleTaskChange(index, 'start', val))}</TableCell>
+                                    <TableCell>{renderCell(task.finish, (val) => handleTaskChange(index, 'finish', val))}</TableCell>
+                                    <TableCell>{renderCell(task.predecessor, (val) => handleTaskChange(index, 'predecessor', val))}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -122,3 +289,5 @@ export default function ProjectTimelinePage() {
         </main>
     );
 }
+
+    
