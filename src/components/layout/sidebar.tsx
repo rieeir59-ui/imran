@@ -29,6 +29,7 @@ const menuItems = [
   { href: '/fbl-timeline', icon: Landmark, label: 'FBL Timeline' },
   { href: '/mcb-timeline', icon: Landmark, label: 'MCB Timeline' },
   { href: '/cbd-timeline', icon: Landmark, label: 'CBD Timeline' },
+  { href: '/askari-bank-timeline', icon: Landmark, label: 'Askari Bank Timeline' },
 ];
 
 export function AppSidebar() {
