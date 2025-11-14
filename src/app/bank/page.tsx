@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -7,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Printer } from 'lucide-react';
+import { ArrowLeft, Printer, Edit, Save, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -68,10 +69,14 @@ const Subtitle = ({ children }: { children: React.ReactNode }) => (
     <h3 className="text-xl font-semibold mt-6 mb-3">{children}</h3>
 );
 
-const FormField = ({ label, value, as, children }: { label: string, value?: string, as?: 'textarea', children?: React.ReactNode }) => (
+const FormField = ({ label, value, as, children, isEditing, onChange, name }: { label: string, value?: string, as?: 'textarea', children?: React.ReactNode, isEditing?: boolean, onChange?: (e: any) => void, name?: string }) => (
     <div className="flex flex-col space-y-1">
         <span className="font-semibold text-sm">{label}:</span>
-        {children ? children : (as === 'textarea' ? <div className="border rounded-md p-2 h-24 bg-gray-50">{value || ''}</div> : <div className="border-b">{value || '___________________________'}</div>)}
+        {isEditing ? (
+            as === 'textarea' ? <Textarea name={name} value={value || ''} onChange={onChange} /> : <Input name={name} value={value || ''} onChange={onChange} />
+        ) : children ? children : (
+             <div className="border-b min-h-[24px] py-1">{value || ''}</div>
+        )}
     </div>
 );
 
@@ -222,42 +227,131 @@ const DrawingsList = React.memo(() => {
 DrawingsList.displayName = 'DrawingsList';
 
 
-const renderChecklist = (title: string, items: string[]) => (
-    <div>
-        <Subtitle>{title}</Subtitle>
-        <ul className="list-decimal list-inside space-y-1">
-            {items.map((item, index) => <li key={index}>{item}</li>)}
-        </ul>
-    </div>
-);
+const Section1 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [formData, setFormData] = useState({
+        project: '',
+        nameAddress: '',
+        architect: '',
+        architectProjectNo: '',
+        projectDate: '',
+    });
+    const statuses = ['Not Started', 'In Progress', 'Completed'];
+    const getInitialChecklistState = (items: string[]) => {
+        return items.reduce((acc, item) => ({...acc, [item]: 'Not Started'}), {});
+    };
 
-const Section1 = React.memo(() => (
-    <Card>
-        <CardHeader><CardTitle>Project Checklist</CardTitle></CardHeader>
-        <CardContent>
-            <FormField label="Project" value="" />
-            <FormField label="Name, Address" value="" />
-            <FormField label="Architect" value="" />
-            <FormField label="Architect Project No" value="" />
-            <FormField label="Project Date" value="" />
-            <SectionTitle>1: - Predesign</SectionTitle>
-            {renderChecklist("Predesign Services:-", ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Programming", "Space Schematics/ Flow Diagrams", "Existing Facilities Surveys", "Presentations"])}
-            {renderChecklist("Site Analysis Services", ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Site Analysis and Selection", "Site Development and Planning", "Detailed Site Utilization Studies", "Onsite Utility Studies", "Offsite Utility Studies", "Zoning Processing Assistance", "Project Development Scheduling", "Project Budgeting", "Presentations"])}
-            <SectionTitle>2: - Design</SectionTitle>
-            {renderChecklist("Schematic Design Services: -", ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design/ Documentation", "Electrical Design/ Documentation", "Civil Design/ Documentation", "Landscape Design/ Documentation", "Interior Design/ Documentation", "Materials Research/ Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"])}
-            {renderChecklist("Design Development Services:-", ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design / Documentation", "Electrical Design / Documentation", "Civil Design / Documentation", "Landscape Design / Documentation", "Interior Design / Documentation", "Materials Research / Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"])}
-            {renderChecklist("Construction Documents Services:-", ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design/ Documentation", "Electrical Design/ Documentation", "Civil Design/ Documentation", "Landscape Design/ Documentation", "Interior Design/ Documentation", "Materials Research / Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"])}
-            <SectionTitle>3: - Construction</SectionTitle>
-            {renderChecklist("Bidding Or Negotiation Services:", ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Bidding Materials", "Addenda", "Bidding Negotiations", "Analysis Of Alternates/ Substitutions", "Special Bidding Services", "Bid Evaluation", "Construction Contract Agreements"])}
-            {renderChecklist("Construction Contract Administration Services:-", ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Office Construction Administration", "Construction Field Observation", "Project Representation", "Inspection Coordination", "Supplemental Documents", "10.Quotation Requests/ Change Orders", "11.Project Schedule Monitoring", "12.Construction Cost Accounting", "13.Project Closeout"])}
-            <SectionTitle>4: - Post</SectionTitle>
-            {renderChecklist("Post Construction Services:-", ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Maintenance And Operational Programming", "Start Up Assistance", "Record Drawings", "Warranty Review", "Post Construction Evaluation"])}
-            <SectionTitle>5: - Supplemental</SectionTitle>
-            {renderChecklist("Supplemental Services: -", ["Graphics Design", "Fine Arts and Crafts Services", "Special Furnishing Design", "Non-Building Equipment Selection"])}
-            {renderChecklist("List Of Materials:-", ["Conceptual Site and Building Plans/ Basic Layout", "Preliminary Sections and Elevations", "Air Conditioning/ H.V.A.C Design", "Plumbing", "Fire Protection", "Special Mechanical Systems", "General Space Requirements", "Power Services and Distribution", "Telephones", "Security Systems", "Special Electrical Systems", "Landscaping", "Materials", "Partition Sections", "Furniture Design", "Identification Of Potential Architectural Materials", "Specification Of a. Wall Finishes b. Floor Finishes c. Windows Coverings d. Carpeting", "Specialized Features Construction Details", "Project Administration", "Space Schematic Flow", "Existing Facilities Services", "Project Budgeting", "Presentation"])}
-        </CardContent>
-    </Card>
-));
+    const initialChecklists = {
+        predesign: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Programming", "Space Schematics/ Flow Diagrams", "Existing Facilities Surveys", "Presentations"]),
+        siteAnalysis: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Site Analysis and Selection", "Site Development and Planning", "Detailed Site Utilization Studies", "Onsite Utility Studies", "Offsite Utility Studies", "Zoning Processing Assistance", "Project Development Scheduling", "Project Budgeting", "Presentations"]),
+        schematicDesign: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design/ Documentation", "Electrical Design/ Documentation", "Civil Design/ Documentation", "Landscape Design/ Documentation", "Interior Design/ Documentation", "Materials Research/ Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"]),
+        designDevelopment: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design / Documentation", "Electrical Design / Documentation", "Civil Design / Documentation", "Landscape Design / Documentation", "Interior Design / Documentation", "Materials Research / Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"]),
+        constructionDocuments: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design/ Documentation", "Electrical Design/ Documentation", "Civil Design/ Documentation", "Landscape Design/ Documentation", "Interior Design/ Documentation", "Materials Research / Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"]),
+        bidding: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Bidding Materials", "Addenda", "Bidding Negotiations", "Analysis Of Alternates/ Substitutions", "Special Bidding Services", "Bid Evaluation", "Construction Contract Agreements"]),
+        constructionAdmin: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Office Construction Administration", "Construction Field Observation", "Project Representation", "Inspection Coordination", "Supplemental Documents", "10.Quotation Requests/ Change Orders", "11.Project Schedule Monitoring", "12.Construction Cost Accounting", "13.Project Closeout"]),
+        postConstruction: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Maintenance And Operational Programming", "Start Up Assistance", "Record Drawings", "Warranty Review", "Post Construction Evaluation"]),
+        supplemental: getInitialChecklistState(["Graphics Design", "Fine Arts and Crafts Services", "Special Furnishing Design", "Non-Building Equipment Selection"]),
+        materials: getInitialChecklistState(["Conceptual Site and Building Plans/ Basic Layout", "Preliminary Sections and Elevations", "Air Conditioning/ H.V.A.C Design", "Plumbing", "Fire Protection", "Special Mechanical Systems", "General Space Requirements", "Power Services and Distribution", "Telephones", "Security Systems", "Special Electrical Systems", "Landscaping", "Materials", "Partition Sections", "Furniture Design", "Identification Of Potential Architectural Materials", "Specification Of a. Wall Finishes b. Floor Finishes c. Windows Coverings d. Carpeting", "Specialized Features Construction Details", "Project Administration", "Space Schematic Flow", "Existing Facilities Services", "Project Budgeting", "Presentation"]),
+    };
+
+    const [checklists, setChecklists] = useState(initialChecklists);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({...prev, [name]: value}));
+    };
+    
+    const handleStatusChange = (category: keyof typeof initialChecklists, item: string) => {
+        if (!isEditing) return;
+        const currentStatus = checklists[category][item];
+        const nextIndex = (statuses.indexOf(currentStatus) + 1) % statuses.length;
+        const nextStatus = statuses[nextIndex];
+        setChecklists(prev => ({
+            ...prev,
+            [category]: {
+                ...prev[category],
+                [item]: nextStatus
+            }
+        }));
+    };
+    
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'Completed': return 'text-green-600 font-semibold';
+            case 'In Progress': return 'text-yellow-600 font-semibold';
+            default: return 'text-red-600 font-semibold';
+        }
+    };
+    
+    const handleSave = () => {
+        setIsSaving(true);
+        setTimeout(() => {
+            setIsSaving(false);
+            setIsEditing(false);
+        }, 1000);
+    }
+
+    const renderChecklist = (title: string, category: keyof typeof initialChecklists) => (
+        <div>
+            <Subtitle>{title}</Subtitle>
+            <ul className="list-decimal list-inside space-y-1">
+                {Object.keys(checklists[category]).map((item, index) => (
+                    <li key={index} className="flex justify-between items-center">
+                        <span>{item}</span>
+                        <span 
+                            onClick={() => handleStatusChange(category, item)} 
+                            className={cn("cursor-pointer", getStatusColor(checklists[category][item]))}
+                        >
+                            {checklists[category][item]}
+                        </span>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Project Checklist</CardTitle>
+                <div className="flex gap-2">
+                    {isEditing ? (
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                        </Button>
+                    ) : (
+                        <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField label="Project" name="project" value={formData.project} onChange={handleInputChange} isEditing={isEditing} />
+                    <FormField label="Name, Address" name="nameAddress" value={formData.nameAddress} onChange={handleInputChange} isEditing={isEditing} />
+                    <FormField label="Architect" name="architect" value={formData.architect} onChange={handleInputChange} isEditing={isEditing} />
+                    <FormField label="Architect Project No" name="architectProjectNo" value={formData.architectProjectNo} onChange={handleInputChange} isEditing={isEditing} />
+                    <FormField label="Project Date" name="projectDate" value={formData.projectDate} onChange={handleInputChange} isEditing={isEditing} />
+                </div>
+                <SectionTitle>1: - Predesign</SectionTitle>
+                {renderChecklist("Predesign Services:-", "predesign")}
+                {renderChecklist("Site Analysis Services", "siteAnalysis")}
+                <SectionTitle>2: - Design</SectionTitle>
+                {renderChecklist("Schematic Design Services: -", "schematicDesign")}
+                {renderChecklist("Design Development Services:-", "designDevelopment")}
+                {renderChecklist("Construction Documents Services:-", "constructionDocuments")}
+                <SectionTitle>3: - Construction</SectionTitle>
+                {renderChecklist("Bidding Or Negotiation Services:", "bidding")}
+                {renderChecklist("Construction Contract Administration Services:-", "constructionAdmin")}
+                <SectionTitle>4: - Post</SectionTitle>
+                {renderChecklist("Post Construction Services:-", "postConstruction")}
+                <SectionTitle>5: - Supplemental</SectionTitle>
+                {renderChecklist("Supplemental Services: -", "supplemental")}
+                {renderChecklist("List Of Materials:-", "materials")}
+            </CardContent>
+        </Card>
+    );
+});
 Section1.displayName = 'Section1';
 
 const Section2 = React.memo(() => (
@@ -1782,7 +1876,7 @@ const Section17 = React.memo(() => {
                             <TableBody>
                                 {vendorList.map((vendor, index) => (
                                     <TableRow key={index}>
-                                        {Object.values(vendor).map((value, i) => <TableCell key={i}>{value}</TableCell>)}
+                                        {Object.values(vendor).map((value, i) => <TableCell key={i}>{value as React.ReactNode}</TableCell>)}
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -2461,5 +2555,3 @@ const BankPage = () => {
 };
 
 export default BankPage;
-
-    
