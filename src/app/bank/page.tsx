@@ -61,8 +61,16 @@ const fileIndexItems = [
 ];
 
 
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-    <h2 className="text-2xl font-bold mt-8 mb-4 pt-4">{children}</h2>
+const SectionTitle = ({ children, isEditing, checked, onCheckedChange, id }: { children: React.ReactNode, isEditing?: boolean, checked?: boolean, onCheckedChange?: (checked: boolean | 'indeterminate') => void, id?: string }) => (
+    <div className="flex items-center gap-4">
+        <h2 className="text-2xl font-bold mt-8 mb-4 pt-4 flex-grow">{children}</h2>
+        {isEditing && id && (
+            <div className="flex items-center gap-2 pt-4">
+                <Checkbox id={id} checked={checked} onCheckedChange={onCheckedChange} />
+                <Label htmlFor={id}>Mark as Complete</Label>
+            </div>
+        )}
+    </div>
 );
 
 const Subtitle = ({ children }: { children: React.ReactNode }) => (
@@ -257,6 +265,21 @@ const Section1 = React.memo(() => {
 
     const [checklists, setChecklists] = useState(initialChecklists);
 
+    const [mainSectionCompletion, setMainSectionCompletion] = useState({
+        predesign: false,
+        design: false,
+        construction: false,
+        post: false,
+        supplemental: false
+    });
+
+    const handleMainSectionCheck = (section: keyof typeof mainSectionCompletion, checked: boolean | 'indeterminate') => {
+        if (typeof checked === 'boolean') {
+            setMainSectionCompletion(prev => ({...prev, [section]: checked}));
+        }
+    }
+
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({...prev, [name]: value}));
@@ -333,19 +356,54 @@ const Section1 = React.memo(() => {
                     <FormField label="Architect Project No" name="architectProjectNo" value={formData.architectProjectNo} onChange={handleInputChange} isEditing={isEditing} />
                     <FormField label="Project Date" name="projectDate" value={formData.projectDate} onChange={handleInputChange} isEditing={isEditing} />
                 </div>
-                <SectionTitle>1: - Predesign</SectionTitle>
+                 <SectionTitle 
+                    id="predesign-check"
+                    isEditing={isEditing} 
+                    checked={mainSectionCompletion.predesign} 
+                    onCheckedChange={(checked) => handleMainSectionCheck('predesign', checked)}
+                >
+                    1: - Predesign
+                </SectionTitle>
                 {renderChecklist("Predesign Services:-", "predesign")}
                 {renderChecklist("Site Analysis Services", "siteAnalysis")}
-                <SectionTitle>2: - Design</SectionTitle>
+                <SectionTitle 
+                    id="design-check"
+                    isEditing={isEditing} 
+                    checked={mainSectionCompletion.design} 
+                    onCheckedChange={(checked) => handleMainSectionCheck('design', checked)}
+                >
+                    2: - Design
+                </SectionTitle>
                 {renderChecklist("Schematic Design Services: -", "schematicDesign")}
                 {renderChecklist("Design Development Services:-", "designDevelopment")}
                 {renderChecklist("Construction Documents Services:-", "constructionDocuments")}
-                <SectionTitle>3: - Construction</SectionTitle>
+                <SectionTitle 
+                    id="construction-check"
+                    isEditing={isEditing} 
+                    checked={mainSectionCompletion.construction} 
+                    onCheckedChange={(checked) => handleMainSectionCheck('construction', checked)}
+                >
+                    3: - Construction
+                </SectionTitle>
                 {renderChecklist("Bidding Or Negotiation Services:", "bidding")}
                 {renderChecklist("Construction Contract Administration Services:-", "constructionAdmin")}
-                <SectionTitle>4: - Post</SectionTitle>
+                <SectionTitle 
+                    id="post-check"
+                    isEditing={isEditing} 
+                    checked={mainSectionCompletion.post} 
+                    onCheckedChange={(checked) => handleMainSectionCheck('post', checked)}
+                >
+                    4: - Post
+                </SectionTitle>
                 {renderChecklist("Post Construction Services:-", "postConstruction")}
-                <SectionTitle>5: - Supplemental</SectionTitle>
+                <SectionTitle 
+                    id="supplemental-check"
+                    isEditing={isEditing} 
+                    checked={mainSectionCompletion.supplemental} 
+                    onCheckedChange={(checked) => handleMainSectionCheck('supplemental', checked)}
+                >
+                    5: - Supplemental
+                </SectionTitle>
                 {renderChecklist("Supplemental Services: -", "supplemental")}
                 {renderChecklist("List Of Materials:-", "materials")}
             </CardContent>
