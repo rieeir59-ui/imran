@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -11,8 +11,13 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Edit, Save, Loader2 } from 'lucide-react';
 
-const projectData = [
+
+const initialProjectData = [
   {
     srNo: 1,
     projectName: 'Enertech Hydo-China Thar Sindh (Office Building)',
@@ -174,7 +179,7 @@ const projectData = [
   },
 ];
 
-const overallStatus = [
+const initialOverallStatus = [
   { no: 1, text: 'Overall Status for Office Building', status: 'Furniture BOQ & Lights BOQ in Progress.' },
   { no: 2, text: 'Overall Status for Officer Bungalow', status: 'Furniture BOQ & Lights BOQ in Progress.' },
   { no: 3, text: 'Overall Status for Guest House', status: 'Furniture BOQ & Lights BOQ in Progress.' },
@@ -189,13 +194,60 @@ const overallStatus = [
 ];
 
 const CommercialTimelinePage = () => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [projectData, setProjectData] = useState(initialProjectData);
+  const [overallStatus, setOverallStatus] = useState(initialOverallStatus);
+  const [remarks, setRemarks] = useState({ text: 'Maam Isbah Remarks & Order', date: '' });
+  const [queries, setQueries] = useState('Queries received');
+
+  const handleProjectDataChange = (index: number, field: string, value: string) => {
+    const updatedData = [...projectData];
+    (updatedData[index] as any)[field] = value;
+    setProjectData(updatedData);
+  };
+  
+  const handleStatusChange = (index: number, field: 'text' | 'status', value: string) => {
+    const updatedStatus = [...overallStatus];
+    (updatedStatus[index] as any)[field] = value;
+    setOverallStatus(updatedStatus);
+  };
+  
+  const handleRemarksChange = (field: 'text' | 'date', value: string) => {
+    setRemarks(prev => ({...prev, [field]: value}));
+  }
+
+  const handleSave = () => {
+    setIsSaving(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsSaving(false);
+      setIsEditing(false);
+    }, 1000);
+  };
+
+  const renderCell = (value: string | undefined, onChange: (val: string) => void) => {
+    return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8" /> : (value || '');
+  }
+
   return (
     <main className="p-4 md:p-6 lg:p-8">
       <Card>
         <CardHeader>
-          <CardTitle className="text-center text-xl font-bold">
-            Commercial Projects Progress Chart
-          </CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-center text-xl font-bold flex-1">
+              Commercial Projects Progress Chart
+            </CardTitle>
+            <div className="flex justify-end items-center gap-4">
+              {isEditing ? (
+                  <Button onClick={handleSave} disabled={isSaving}>
+                      {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                  </Button>
+              ) : (
+                  <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+              )}
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -240,41 +292,41 @@ const CommercialTimelinePage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {projectData.map((project) => (
+                {projectData.map((project, index) => (
                   <TableRow key={project.srNo}>
                     <TableCell className="border border-gray-400 text-center">{project.srNo}</TableCell>
-                    <TableCell className="border border-gray-400">{project.projectName}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{project.area}</TableCell>
-                    <TableCell className="border border-gray-400">{project.projectHolder}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{project.allocationDate}</TableCell>
+                    <TableCell className="border border-gray-400">{renderCell(project.projectName, (val) => handleProjectDataChange(index, 'projectName', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderCell(project.area, (val) => handleProjectDataChange(index, 'area', val))}</TableCell>
+                    <TableCell className="border border-gray-400">{renderCell(project.projectHolder, (val) => handleProjectDataChange(index, 'projectHolder', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderCell(project.allocationDate, (val) => handleProjectDataChange(index, 'allocationDate', val))}</TableCell>
                     
-                    {project.status ? (
+                    {(project as any).status ? (
                         <>
-                          <TableCell className="border border-gray-400 text-center" colSpan={19}>{project.status}</TableCell>
+                          <TableCell className="border border-gray-400 text-center" colSpan={19}>{renderCell((project as any).status, (val) => handleProjectDataChange(index, 'status', val))}</TableCell>
                         </>
                     ) : (
                         <>
-                            <TableCell className="border border-gray-400 text-center">{project.siteSurveyStart}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.siteSurveyEnd}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.contact}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.headCount}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.proposalStart}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.proposalEnd}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.exterior3dStart}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.exterior3dEnd}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.archStart}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.archEnd}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.mepStart}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.mepEnd}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.boqStart}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.boqEnd}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.tenderStatus}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.comparative}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.workingDrawingsStart}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.workingDrawingsEnd}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.siteVisit}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.finalBill}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{project.projectClosure}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).siteSurveyStart, (val) => handleProjectDataChange(index, 'siteSurveyStart', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).siteSurveyEnd, (val) => handleProjectDataChange(index, 'siteSurveyEnd', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).contact, (val) => handleProjectDataChange(index, 'contact', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).headCount, (val) => handleProjectDataChange(index, 'headCount', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).proposalStart, (val) => handleProjectDataChange(index, 'proposalStart', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).proposalEnd, (val) => handleProjectDataChange(index, 'proposalEnd', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).exterior3dStart, (val) => handleProjectDataChange(index, 'exterior3dStart', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).exterior3dEnd, (val) => handleProjectDataChange(index, 'exterior3dEnd', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).archStart, (val) => handleProjectDataChange(index, 'archStart', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).archEnd, (val) => handleProjectDataChange(index, 'archEnd', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).mepStart, (val) => handleProjectDataChange(index, 'mepStart', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).mepEnd, (val) => handleProjectDataChange(index, 'mepEnd', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).boqStart, (val) => handleProjectDataChange(index, 'boqStart', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).boqEnd, (val) => handleProjectDataChange(index, 'boqEnd', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).tenderStatus, (val) => handleProjectDataChange(index, 'tenderStatus', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).comparative, (val) => handleProjectDataChange(index, 'comparative', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).workingDrawingsStart, (val) => handleProjectDataChange(index, 'workingDrawingsStart', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).workingDrawingsEnd, (val) => handleProjectDataChange(index, 'workingDrawingsEnd', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).siteVisit, (val) => handleProjectDataChange(index, 'siteVisit', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).finalBill, (val) => handleProjectDataChange(index, 'finalBill', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).projectClosure, (val) => handleProjectDataChange(index, 'projectClosure', val))}</TableCell>
                         </>
                     )}
                   </TableRow>
@@ -285,11 +337,11 @@ const CommercialTimelinePage = () => {
             <div className="p-4 border border-gray-400">
               <Table>
                 <TableBody>
-                  {overallStatus.map((status) => (
+                  {overallStatus.map((status, index) => (
                     <TableRow key={status.no}>
                       <TableCell className="w-8">{status.no}</TableCell>
-                      <TableCell className="font-bold">{status.text}</TableCell>
-                      <TableCell>{status.status}</TableCell>
+                      <TableCell className="font-bold">{isEditing ? <Input value={status.text} onChange={e => handleStatusChange(index, 'text', e.target.value)} /> : status.text}</TableCell>
+                      <TableCell>{isEditing ? <Input value={status.status} onChange={e => handleStatusChange(index, 'status', e.target.value)} /> : status.status}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -297,10 +349,10 @@ const CommercialTimelinePage = () => {
             </div>
             <div className="p-4 border border-gray-400 border-t-0">
               <div className="flex justify-between">
-                <p>Maam Isbah Remarks & Order</p>
-                <p>Date: </p>
+                 {isEditing ? <Textarea value={remarks.text} onChange={e => handleRemarksChange('text', e.target.value)} /> : <p>{remarks.text}</p>}
+                 {isEditing ? <Input type="date" value={remarks.date} onChange={e => handleRemarksChange('date', e.target.value)} /> : <p>Date: {remarks.date}</p>}
               </div>
-               <p className="mt-4">Queries received</p>
+               {isEditing ? <Textarea value={queries} onChange={e => setQueries(e.target.value)} className="mt-4" /> : <p className="mt-4">{queries}</p>}
             </div>
           </div>
         </CardContent>
