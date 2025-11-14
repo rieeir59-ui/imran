@@ -6,36 +6,56 @@ import {
   SidebarContent,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarMenuButton
+  SidebarMenuButton,
+  SidebarGroup,
+  SidebarGroupLabel,
 } from "@/components/ui/sidebar";
-import { Building2, Home, Hotel, Landmark, BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building } from 'lucide-react';
+import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 
-const menuItems = [
+const mainMenuItems = [
   { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/commercial', icon: Building, label: 'Commercial Projects' },
-  { href: '/residential-timeline', icon: Home, label: 'Residential' },
-  { href: '/hotel', icon: Hotel, label: 'Hotel' },
-  { href: '/bank', icon: Landmark, label: 'Bank Branches' },
+];
+
+const projectFormsItems = [
   { href: '/projects', icon: FolderKanban, label: 'Project Information' },
   { href: '/predesign-assessment', icon: ClipboardCheck, label: 'Predesign Assessment' },
   { href: '/project-timeline', icon: GanttChart, label: 'Project Timeline' },
-  { href: '/bank-alfalah-timeline', icon: Landmark, label: 'Bank Alfalah Timeline' },
-  { href: '/ubl-timeline', icon: Landmark, label: 'UBL Timeline' },
-  { href: '/bank-al-habib-timeline', icon: Landmark, label: 'Bank Al Habib Timeline' },
-  { href: '/hbl-timeline', icon: Landmark, label: 'HBL Timeline' },
-  { href: '/dib-timeline', icon: Landmark, label: 'DIB Timeline' },
-  { href: '/fbl-timeline', icon: Landmark, label: 'FBL Timeline' },
-  { href: '/mcb-timeline', icon: Landmark, label: 'MCB Timeline' },
-  { href: '/cbd-timeline', icon: Landmark, label: 'CBD Timeline' },
-  { href: '/askari-bank-timeline', icon: Landmark, label: 'Askari Bank Timeline' },
+  { href: '/bank', icon: ScrollText, label: 'Bank Forms' },
 ];
+
+const timelineItems = [
+  { href: '/commercial-timeline', icon: Building, label: 'Commercial' },
+  { href: '/residential-timeline', icon: Home, label: 'Residential' },
+  { href: '/hotel', icon: Hotel, label: 'Hotel' },
+  { href: '/askari-bank-timeline', icon: Landmark, label: 'Askari Bank' },
+  { href: '/bank-alfalah-timeline', icon: Landmark, label: 'Bank Alfalah' },
+  { href: '/bank-al-habib-timeline', icon: Landmark, label: 'Bank Al Habib' },
+  { href: '/cbd-timeline', icon: Landmark, label: 'CBD' },
+  { href: '/dib-timeline', icon: Landmark, label: 'DIB' },
+  { href: '/fbl-timeline', icon: Landmark, label: 'FBL' },
+  { href: '/hbl-timeline', icon: Landmark, label: 'HBL' },
+  { href: '/mcb-timeline', icon: Landmark, label: 'MCB' },
+  { href: '/ubl-timeline', icon: Landmark, label: 'UBL' },
+];
+
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const pathname = usePathname();
   
+  const renderMenuItems = (items: typeof mainMenuItems) => {
+    return items.map((item) => (
+      <SidebarMenuItem key={item.href}>
+        <SidebarMenuButton href={item.href} tooltip={item.label} isActive={pathname === item.href}>
+          <item.icon />
+          <span>{item.label}</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    ));
+  };
+
   return (
     <Sidebar className="no-print">
       <SidebarHeader>
@@ -46,15 +66,22 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {menuItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton href={item.href} tooltip={item.label} isActive={pathname === item.href}>
-                <item.icon />
-                <span>{item.label}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {renderMenuItems(mainMenuItems)}
         </SidebarMenu>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Project Forms</SidebarGroupLabel>
+          <SidebarMenu>
+            {renderMenuItems(projectFormsItems)}
+          </SidebarMenu>
+        </SidebarGroup>
+        
+        <SidebarGroup>
+          <SidebarGroupLabel>Timelines</SidebarGroupLabel>
+          <SidebarMenu>
+            {renderMenuItems(timelineItems)}
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );
