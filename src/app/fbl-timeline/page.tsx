@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Edit, Save, Loader2, Download, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from "@/hooks/use-toast";
 
 const initialProjectData = [
   {
@@ -472,6 +473,7 @@ const FblTimelinePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [projectData, setProjectData] = useState(initialProjectData);
+  const { toast } = useToast();
 
   const handleProjectDataChange = (index: number, field: string, value: string) => {
     const updatedData = [...projectData];
@@ -485,6 +487,10 @@ const FblTimelinePage = () => {
     setTimeout(() => {
       setIsSaving(false);
       setIsEditing(false);
+      toast({
+        title: "Data Saved",
+        description: "Your changes have been saved successfully.",
+      });
     }, 1000);
   };
   

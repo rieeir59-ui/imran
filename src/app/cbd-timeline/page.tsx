@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Edit, Save, Loader2, Download, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from "@/hooks/use-toast";
 
 
 const initialProjectData = [
@@ -88,6 +89,7 @@ const CbdTimelinePage = () => {
   const [projectData, setProjectData] = useState(initialProjectData);
   const [overallStatus, setOverallStatus] = useState(initialOverallStatus);
   const [remarks, setRemarks] = useState({ text: 'Maam Isbah Remarks & Order', date: '' });
+  const { toast } = useToast();
 
   const handleProjectDataChange = (index: number, field: string, value: string) => {
     const updatedData = [...projectData];
@@ -111,6 +113,10 @@ const CbdTimelinePage = () => {
     setTimeout(() => {
       setIsSaving(false);
       setIsEditing(false);
+      toast({
+        title: "Data Saved",
+        description: "Your changes have been saved successfully.",
+      });
     }, 1000);
   };
 

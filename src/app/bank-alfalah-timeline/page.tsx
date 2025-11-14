@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Edit, Save, Loader2, Download, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from "@/hooks/use-toast";
 
 const initialProjectData = [
   {
@@ -116,6 +117,7 @@ const BankAlfalahTimelinePage = () => {
       'Shahdin manzil branch waiting from Bank for approval.'
   ]);
   const [remarks, setRemarks] = useState({text: 'Maam Isbah Remarks & Order', date: ''});
+  const { toast } = useToast();
   
   const handleProjectDataChange = (index: number, field: string, value: string) => {
     const updatedData = [...projectData];
@@ -139,6 +141,10 @@ const BankAlfalahTimelinePage = () => {
     setTimeout(() => {
       setIsSaving(false);
       setIsEditing(false);
+      toast({
+        title: "Data Saved",
+        description: "Your changes have been saved successfully.",
+      });
     }, 1000);
   };
 
