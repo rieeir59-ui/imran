@@ -14,13 +14,14 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Save, Loader2, Download, ArrowLeft, Terminal } from 'lucide-react';
+import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from 'next/link';
+import { exportDataToCsv } from '@/lib/utils';
 
 const TIMELINE_DOC_ID = "residential-timeline";
 
@@ -229,6 +230,10 @@ const ResidentialTimelinePage = () => {
       });
     }, 1000);
   };
+  
+  const handleDownloadCsv = () => {
+    exportDataToCsv(projectData, 'residential-timeline-data');
+  }
 
   const renderCell = (value: string, onChange: (val: string) => void) => {
     return isEditing ? <Input value={value} onChange={(e) => onChange(e.target.value)} className="h-8" /> : value;
@@ -268,6 +273,7 @@ const ResidentialTimelinePage = () => {
         </Button>
         <h1 className="text-2xl font-bold">Residential Projects</h1>
         <div className="flex items-center gap-2">
+            <Button onClick={handleDownloadCsv} variant="outline"><FileDown className="mr-2 h-4 w-4" /> Download CSV</Button>
             <Button onClick={() => window.print()} variant="outline"><Download className="mr-2 h-4 w-4" /> Download</Button>
             {isEditing ? (
                 <Button onClick={handleSave} disabled={isSaving}>

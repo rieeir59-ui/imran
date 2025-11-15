@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Save, Loader2, Download, ArrowLeft, Terminal } from 'lucide-react';
+import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
@@ -23,6 +23,7 @@ import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
 import { addDays, format, parseISO } from 'date-fns';
+import { exportDataToCsv } from '@/lib/utils';
 
 const TIMELINE_DOC_ID = "hbl-timeline";
 
@@ -418,6 +419,10 @@ const HblTimelinePage = () => {
       });
     }, 1000);
   };
+
+  const handleDownloadCsv = () => {
+    exportDataToCsv(projectData, 'hbl-timeline-data');
+  }
   
   const renderCell = (value: string | undefined, onChange: (val: string) => void) => {
     return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8" /> : (value || '');
@@ -466,6 +471,7 @@ const HblTimelinePage = () => {
         </Button>
         <h1 className="text-2xl font-bold">HBL Timeline</h1>
         <div className="flex items-center gap-2">
+            <Button onClick={handleDownloadCsv} variant="outline"><FileDown className="mr-2 h-4 w-4" /> Download CSV</Button>
             <Button onClick={() => window.print()} variant="outline"><Download className="mr-2 h-4 w-4" /> Download</Button>
             {isEditing ? (
                 <Button onClick={handleSave} disabled={isSaving}>
