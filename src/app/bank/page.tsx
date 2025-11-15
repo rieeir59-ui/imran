@@ -247,9 +247,12 @@ const Section1 = React.memo(() => {
         architectProjectNo: '',
         projectDate: '',
     });
-    const statuses = ['Not Started', 'In Progress', 'Completed'];
+    
     const getInitialChecklistState = (items: string[]) => {
-        return items.reduce((acc, item) => ({...acc, [item]: 'Not Started'}), {});
+        return items.reduce((acc, item) => {
+            const key = item.toLowerCase().replace(/[^a-z0-9]/g, '');
+            return {...acc, [key]: false};
+        }, {});
     };
 
     const initialChecklists = {
@@ -287,26 +290,15 @@ const Section1 = React.memo(() => {
         setFormData(prev => ({...prev, [name]: value}));
     };
     
-    const handleStatusChange = (category: keyof typeof initialChecklists, item: string) => {
-        if (!isEditing) return;
-        const currentStatus = checklists[category][item];
-        const nextIndex = (statuses.indexOf(currentStatus) + 1) % statuses.length;
-        const nextStatus = statuses[nextIndex];
+    const handleCheckboxChange = (category: keyof typeof initialChecklists, itemKey: string, checked: boolean | 'indeterminate') => {
+        if (!isEditing || typeof checked !== 'boolean') return;
         setChecklists(prev => ({
             ...prev,
             [category]: {
                 ...prev[category],
-                [item]: nextStatus
+                [itemKey]: checked
             }
         }));
-    };
-    
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'Completed': return 'text-green-600 font-semibold';
-            case 'In Progress': return 'text-yellow-600 font-semibold';
-            default: return 'text-red-600 font-semibold';
-        }
     };
     
     const handleSave = () => {
@@ -317,24 +309,34 @@ const Section1 = React.memo(() => {
         }, 1000);
     }
 
-    const renderChecklist = (title: string, category: keyof typeof initialChecklists) => (
-        <div>
-            <Subtitle>{title}</Subtitle>
-            <ul className="list-decimal list-inside space-y-1">
-                {Object.keys(checklists[category]).map((item, index) => (
-                    <li key={index} className="flex justify-between items-center">
-                        <span>{item}</span>
-                        <span 
-                            onClick={() => handleStatusChange(category, item)} 
-                            className={cn("cursor-pointer", getStatusColor(checklists[category][item]))}
-                        >
-                            {checklists[category][item]}
-                        </span>
-                    </li>
-                ))}
-            </ul>
-        </div>
-    );
+    const renderChecklist = (title: string, category: keyof typeof initialChecklists) => {
+        const items = Object.keys(initialChecklists[category]);
+        return (
+            <div>
+                <Subtitle>{title}</Subtitle>
+                <ul className="list-decimal list-inside space-y-2">
+                    {items.map((item, index) => {
+                         const itemKey = item.toLowerCase().replace(/[^a-z0-9]/g, '');
+                         return (
+                            <li key={index} className="flex items-center gap-2">
+                               {isEditing ? (
+                                    <Checkbox
+                                        id={`${category}-${itemKey}`}
+                                        checked={checklists[category][itemKey]}
+                                        onCheckedChange={(checked) => handleCheckboxChange(category, itemKey, checked)}
+                                    />
+                                ) : (
+                                    <span className="mr-2">{checklists[category][itemKey] ? '✅' : '🔲'}</span>
+                                )}
+                                <label htmlFor={`${category}-${itemKey}`} className="flex-grow">{item}</label>
+                            </li>
+                         );
+                    })}
+                </ul>
+            </div>
+        );
+    }
+
 
     return (
         <Card>
