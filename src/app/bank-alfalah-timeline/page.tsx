@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -15,9 +15,17 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Save, Loader2, Download, ArrowLeft } from 'lucide-react';
+import { Edit, Save, Loader2, Download, ArrowLeft, Terminal } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
+import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { DatePicker } from '@/components/ui/date-picker';
+import { addDays, format, parseISO } from 'date-fns';
+
+const TIMELINE_DOC_ID = "bank-alfalah-timeline";
 
 const initialProjectData = [
   {
@@ -25,18 +33,18 @@ const initialProjectData = [
     projectName: "BALF Currency Exchange Dolmen Mall Lahore",
     area: "800.00",
     projectHolder: "Haseeb",
-    allocationDate: "26-May-25",
-    siteSurveyStart: "4-Apr-25",
-    siteSurveyEnd: "4-Apr-25",
+    allocationDate: "2025-05-26",
+    siteSurveyStart: "2025-04-04",
+    siteSurveyEnd: "2025-04-04",
     contact: "",
     headCount: "Received",
-    proposalStart: "5-Apr-25",
-    proposalEnd: "11-Apr-25",
-    "3dStart": "14-Apr-25",
-    "3dEnd": "18-Apr-25",
+    proposalStart: "2025-04-05",
+    proposalEnd: "2025-04-11",
+    "3dStart": "2025-04-14",
+    "3dEnd": "2025-04-18",
     tenderArchStart: "",
     tenderArchEnd: "",
-    tenderMepStart: "10-Sep-25",
+    tenderMepStart: "2025-09-10",
     tenderMepEnd: "",
     boqStart: "",
     boqEnd: "",
@@ -53,16 +61,16 @@ const initialProjectData = [
     projectName: "Bank Al-Falah Brand Manual",
     area: "N/A",
     projectHolder: "Zain",
-    allocationDate: "2-Feb-25",
+    allocationDate: "2025-02-02",
     siteSurveyStart: "N/A",
     siteSurveyEnd: "N/A",
-    contact: "11-Feb-25",
+    contact: "2025-02-11",
     headCount: "N/A",
     proposalStart: "N/A",
     proposalEnd: "N/A",
     "3dStart": "N/A",
     "3dEnd": "N/A",
-    tenderArchStart: "5-Aug",
+    tenderArchStart: "2025-08-05",
     tenderArchEnd: "N/A",
     tenderMepStart: "",
     tenderMepEnd: "",
@@ -86,8 +94,8 @@ const initialProjectData = [
     siteSurveyEnd: "",
     contact: "",
     headCount: "Received",
-    proposalStart: "25-Sep-25",
-    proposalEnd: "21-Oct-25",
+    proposalStart: "2025-09-25",
+    proposalEnd: "2025-10-21",
     "3dStart": "",
     "3dEnd": "",
     tenderArchStart: "",
@@ -110,24 +118,71 @@ const initialProjectData = [
 const BankAlfalahTimelinePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [projectData, setProjectData] = useState(initialProjectData);
   const [overallStatus, setOverallStatus] = useState([
-      'Dolmen mall currency exchange Construction Started',
-      'Revision in brand manual requirements received from the bank; SENT',
-      'Shahdin manzil branch waiting from Bank for approval.'
+      {no: 1, text: 'Dolmen mall currency exchange Construction Started'},
+      {no: 2, text: 'Revision in brand manual requirements received from the bank; SENT'},
+      {no: 3, text: 'Shahdin manzil branch waiting from Bank for approval.'}
   ]);
   const [remarks, setRemarks] = useState({text: 'Maam Isbah Remarks & Order', date: ''});
   const { toast } = useToast();
   
-  const handleProjectDataChange = (index: number, field: string, value: string) => {
+  const firestore = useFirestore();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+
+  useEffect(() => {
+    if (!isUserLoading && !user && auth) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [isUserLoading, user, auth]);
+
+  const timelineDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, `users/${user.uid}/projectTimelines/${TIMELINE_DOC_ID}`);
+  }, [user, firestore]);
+
+  useEffect(() => {
+    if (!timelineDocRef) return;
+
+    setIsLoading(true);
+    getDoc(timelineDocRef)
+      .then((docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.projectData) setProjectData(data.projectData);
+          if (data.overallStatus) setOverallStatus(data.overallStatus);
+          if (data.remarks) setRemarks(data.remarks);
+        }
+      })
+      .catch(async (serverError) => {
+        console.error("Error fetching timeline data:", serverError);
+        const permissionError = new FirestorePermissionError({
+          path: timelineDocRef.path,
+          operation: 'get',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [timelineDocRef]);
+  
+  const handleProjectDataChange = (index: number, field: string, value: any) => {
     const updatedData = [...projectData];
-    (updatedData[index] as any)[field] = value;
+    const task = updatedData[index] as any;
+    task[field] = value;
+    
+    if (field === 'start' && value instanceof Date) {
+        task.start = format(value, 'yyyy-MM-dd');
+    }
     setProjectData(updatedData);
   };
   
   const handleStatusChange = (index: number, value: string) => {
     const updatedStatus = [...overallStatus];
-    updatedStatus[index] = value;
+    updatedStatus[index].text = value;
     setOverallStatus(updatedStatus);
   };
   
@@ -136,8 +191,13 @@ const BankAlfalahTimelinePage = () => {
   }
 
   const handleSave = () => {
+    if (!timelineDocRef) {
+      toast({ variant: "destructive", title: "Save Failed", description: "User not authenticated." });
+      return;
+    }
     setIsSaving(true);
-    // Simulate API call
+    const dataToSave = { projectData, overallStatus, remarks };
+    setDocumentNonBlocking(timelineDocRef, dataToSave, { merge: true });
     setTimeout(() => {
       setIsSaving(false);
       setIsEditing(false);
@@ -148,8 +208,43 @@ const BankAlfalahTimelinePage = () => {
     }, 1000);
   };
 
-  const renderCell = (value: string, onChange: (val: string) => void) => {
-    return isEditing ? <Input value={value} onChange={(e) => onChange(e.target.value)} className="h-8"/> : value;
+  const renderCell = (value: string | undefined, onChange: (val: string) => void) => {
+    return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8"/> : (value || '');
+  }
+
+  const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
+      const date = value ? new Date(value) : undefined;
+      return isEditing ? (
+          <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />
+      ) : (
+          value ? format(new Date(value), 'd-MMM-yy') : ''
+      )
+  }
+
+  if (isUserLoading || isLoading) {
+    return (
+        <div className="flex h-full w-full items-center justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="ml-2">Loading Timeline...</p>
+        </div>
+    );
+  }
+
+  if (!user && !isUserLoading) {
+      return (
+        <main className="p-4 md:p-6 lg:p-8">
+         <Card>
+           <CardHeader><CardTitle>Authentication Required</CardTitle></CardHeader>
+           <CardContent>
+             <Alert variant="destructive">
+               <Terminal className="h-4 w-4" />
+               <AlertTitle>Unable to Authenticate</AlertTitle>
+               <AlertDescription>We could not sign you in. Please refresh the page to try again.</AlertDescription>
+             </Alert>
+           </CardContent>
+         </Card>
+       </main>
+     )
   }
   
   return (
@@ -229,25 +324,25 @@ const BankAlfalahTimelinePage = () => {
                     <TableCell className="border border-gray-400">{renderCell(project.projectName, val => handleProjectDataChange(index, 'projectName', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.area, val => handleProjectDataChange(index, 'area', val))}</TableCell>
                     <TableCell className="border border-gray-400">{renderCell(project.projectHolder, val => handleProjectDataChange(index, 'projectHolder', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.allocationDate, val => handleProjectDataChange(index, 'allocationDate', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.siteSurveyStart, val => handleProjectDataChange(index, 'siteSurveyStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.siteSurveyEnd, val => handleProjectDataChange(index, 'siteSurveyEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.allocationDate, val => handleProjectDataChange(index, 'allocationDate', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.siteSurveyStart, val => handleProjectDataChange(index, 'siteSurveyStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.siteSurveyEnd, val => handleProjectDataChange(index, 'siteSurveyEnd', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.contact, val => handleProjectDataChange(index, 'contact', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.headCount, val => handleProjectDataChange(index, 'headCount', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.proposalStart, val => handleProjectDataChange(index, 'proposalStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.proposalEnd, val => handleProjectDataChange(index, 'proposalEnd', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project['3dStart'], val => handleProjectDataChange(index, '3dStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project['3dEnd'], val => handleProjectDataChange(index, '3dEnd', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderArchStart, val => handleProjectDataChange(index, 'tenderArchStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderArchEnd, val => handleProjectDataChange(index, 'tenderArchEnd', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderMepStart, val => handleProjectDataChange(index, 'tenderMepStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderMepEnd, val => handleProjectDataChange(index, 'tenderMepEnd', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.boqStart, val => handleProjectDataChange(index, 'boqStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.boqEnd, val => handleProjectDataChange(index, 'boqEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.proposalStart, val => handleProjectDataChange(index, 'proposalStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.proposalEnd, val => handleProjectDataChange(index, 'proposalEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project['3dStart'], val => handleProjectDataChange(index, '3dStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project['3dEnd'], val => handleProjectDataChange(index, '3dEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderArchStart, val => handleProjectDataChange(index, 'tenderArchStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderArchEnd, val => handleProjectDataChange(index, 'tenderArchEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderMepStart, val => handleProjectDataChange(index, 'tenderMepStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderMepEnd, val => handleProjectDataChange(index, 'tenderMepEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.boqStart, val => handleProjectDataChange(index, 'boqStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.boqEnd, val => handleProjectDataChange(index, 'boqEnd', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderStatus, val => handleProjectDataChange(index, 'tenderStatus', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.comparative, val => handleProjectDataChange(index, 'comparative', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.workingDrawingsStart, val => handleProjectDataChange(index, 'workingDrawingsStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.workingDrawingsEnd, val => handleProjectDataChange(index, 'workingDrawingsEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.workingDrawingsStart, val => handleProjectDataChange(index, 'workingDrawingsStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.workingDrawingsEnd, val => handleProjectDataChange(index, 'workingDrawingsEnd', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.siteVisit, val => handleProjectDataChange(index, 'siteVisit', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.finalBill, val => handleProjectDataChange(index, 'finalBill', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.projectClosure, val => handleProjectDataChange(index, 'projectClosure', val))}</TableCell>
@@ -258,17 +353,16 @@ const BankAlfalahTimelinePage = () => {
             <Separator className="my-4"/>
              <div className="p-4 border border-gray-400">
                 <h4 className="font-bold mb-2">Overall Status</h4>
-                {isEditing ? (
-                  <div className="space-y-2">
-                    {overallStatus.map((status, index) => <Input key={index} value={status} onChange={(e) => handleStatusChange(index, e.target.value)} />)}
-                  </div>
-                ) : (
-                  <>
-                    <p>{overallStatus[0]}</p>
-                    <p>{overallStatus[1]}</p>
-                    <p>{overallStatus[2]}</p>
-                  </>
-                )}
+                <Table>
+                    <TableBody>
+                        {overallStatus.map((status, index) => (
+                            <TableRow key={status.no}>
+                                <TableCell className="w-8">{status.no}</TableCell>
+                                <TableCell>{isEditing ? <Input value={status.text} onChange={e => handleStatusChange(index, e.target.value)} /> : status.text}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
             </div>
              <div className="p-4 border border-gray-400 border-t-0">
                 <div className="flex justify-between">

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -14,10 +14,17 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Save, Loader2, Download, ArrowLeft } from 'lucide-react';
+import { Edit, Save, Loader2, Download, ArrowLeft, Terminal } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
+import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { DatePicker } from '@/components/ui/date-picker';
+import { addDays, format, parseISO } from 'date-fns';
 
+const TIMELINE_DOC_ID = "mcb-timeline";
 
 const initialProjectData = [
     {
@@ -25,21 +32,21 @@ const initialProjectData = [
         projectName: 'MCB Emporium Branch Lahore',
         area: '3,200.00',
         projectHolder: 'Haseeb/Adnan',
-        allocationDate: '1-Dec-24',
+        allocationDate: '2024-12-01',
         siteSurveyStart: '',
         siteSurveyEnd: '',
         contact: 'General Contract done',
         headCount: 'Received',
-        proposalStart: '1-Dec-24',
-        proposalEnd: '24-Dec-24',
-        '3dStart': '23-Dec-24',
-        '3dEnd': '10-Jan-25',
-        tenderArchStart: '6-Dec-24',
-        tenderArchEnd: '18-Dec-24',
-        tenderMepStart: '7-Apr-25',
-        tenderMepEnd: '18-Apr-25',
-        boqStart: '20-Apr-25',
-        boqEnd: '23-Apr-25',
+        proposalStart: '2024-12-01',
+        proposalEnd: '2024-12-24',
+        '3dStart': '2024-12-23',
+        '3dEnd': '2025-01-10',
+        tenderArchStart: '2024-12-06',
+        tenderArchEnd: '2024-12-18',
+        tenderMepStart: '2025-04-07',
+        tenderMepEnd: '2025-04-18',
+        boqStart: '2025-04-20',
+        boqEnd: '2025-04-23',
         tenderStatus: 'Sent',
         comparative: '',
         workingDrawingsStart: '',
@@ -53,18 +60,18 @@ const initialProjectData = [
         projectName: 'MCB Islamic Dolmen Mall',
         area: '802.00',
         projectHolder: 'Haseeb',
-        allocationDate: '27-Jan-25',
+        allocationDate: '2025-01-27',
         siteSurveyStart: '',
         siteSurveyEnd: '',
         contact: 'General Contract done',
         headCount: 'Received',
-        proposalStart: '27-Jan-25',
-        proposalEnd: '18-Feb-25',
-        '3dStart': '24-Feb-25',
-        '3dEnd': '3-Mar-25',
-        tenderArchStart: '3-Mar-25',
-        tenderArchEnd: '10-Mar-25',
-        tenderMepStart: '25-Apr-25',
+        proposalStart: '2025-01-27',
+        proposalEnd: '2025-02-18',
+        '3dStart': '2025-02-24',
+        '3dEnd': '2025-03-03',
+        tenderArchStart: '2025-03-03',
+        tenderArchEnd: '2025-03-10',
+        tenderMepStart: '2025-04-25',
         tenderMepEnd: '',
         boqStart: '',
         boqEnd: '',
@@ -81,19 +88,19 @@ const initialProjectData = [
         projectName: 'MCB Islamic Gulberg',
         area: '72,270.00',
         projectHolder: 'Jabbar/Asad Shah',
-        allocationDate: '15-Apr-25',
-        siteSurveyStart: '22-Aug-25',
-        siteSurveyEnd: '23-Aug-25',
+        allocationDate: '2025-04-15',
+        siteSurveyStart: '2025-08-22',
+        siteSurveyEnd: '2025-08-23',
         contact: 'Done',
         headCount: 'Received',
-        proposalStart: '15-Apr-25',
-        proposalEnd: '30-Aug-25',
-        '3dStart': '15-Apr-25',
-        '3dEnd': '30-Aug-25',
-        tenderArchStart: '13-Sep-25',
+        proposalStart: '2025-04-15',
+        proposalEnd: '2025-08-30',
+        '3dStart': '2025-04-15',
+        '3dEnd': '2025-08-30',
+        tenderArchStart: '2025-09-13',
         tenderArchEnd: '',
-        tenderMepStart: '4-Oct-25',
-        tenderMepEnd: '8-Oct-25',
+        tenderMepStart: '2025-10-04',
+        tenderMepEnd: '2025-10-08',
         boqStart: '',
         boqEnd: '',
         tenderStatus: 'Sent',
@@ -115,14 +122,62 @@ const initialOverallStatus = [
 const McbTimelinePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [projectData, setProjectData] = useState(initialProjectData);
   const [overallStatus, setOverallStatus] = useState(initialOverallStatus);
   const [remarks, setRemarks] = useState({ text: 'Maam Isbah Remarks & Order', date: '' });
   const { toast } = useToast();
+  
+  const firestore = useFirestore();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
 
-  const handleProjectDataChange = (index: number, field: string, value: string) => {
+  useEffect(() => {
+    if (!isUserLoading && !user && auth) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [isUserLoading, user, auth]);
+
+  const timelineDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, `users/${user.uid}/projectTimelines/${TIMELINE_DOC_ID}`);
+  }, [user, firestore]);
+
+  useEffect(() => {
+    if (!timelineDocRef) return;
+
+    setIsLoading(true);
+    getDoc(timelineDocRef)
+      .then((docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.projectData) setProjectData(data.projectData);
+          if (data.overallStatus) setOverallStatus(data.overallStatus);
+          if (data.remarks) setRemarks(data.remarks);
+        }
+      })
+      .catch(async (serverError) => {
+        console.error("Error fetching timeline data:", serverError);
+        const permissionError = new FirestorePermissionError({
+          path: timelineDocRef.path,
+          operation: 'get',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [timelineDocRef]);
+
+  const handleProjectDataChange = (index: number, field: string, value: any) => {
     const updatedData = [...projectData];
-    (updatedData[index] as any)[field] = value;
+    const task = updatedData[index] as any;
+    task[field] = value;
+    
+    if (field === 'start' && value instanceof Date) {
+        task.start = format(value, 'yyyy-MM-dd');
+    }
+    
     setProjectData(updatedData);
   };
   
@@ -137,8 +192,13 @@ const McbTimelinePage = () => {
   }
 
   const handleSave = () => {
+    if (!timelineDocRef) {
+      toast({ variant: "destructive", title: "Save Failed", description: "User not authenticated." });
+      return;
+    }
     setIsSaving(true);
-    // Simulate API call
+    const dataToSave = { projectData, overallStatus, remarks };
+    setDocumentNonBlocking(timelineDocRef, dataToSave, { merge: true });
     setTimeout(() => {
       setIsSaving(false);
       setIsEditing(false);
@@ -149,8 +209,43 @@ const McbTimelinePage = () => {
     }, 1000);
   };
 
-  const renderCell = (value: string, onChange: (val: string) => void) => {
-    return isEditing ? <Input value={value} onChange={(e) => onChange(e.target.value)} className="h-8" /> : value;
+  const renderCell = (value: string | undefined, onChange: (val: string) => void) => {
+    return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8" /> : (value || '');
+  }
+
+  const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
+      const date = value ? new Date(value) : undefined;
+      return isEditing ? (
+          <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />
+      ) : (
+          value ? format(new Date(value), 'd-MMM-yy') : ''
+      )
+  }
+
+  if (isUserLoading || isLoading) {
+    return (
+        <div className="flex h-full w-full items-center justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="ml-2">Loading Timeline...</p>
+        </div>
+    );
+  }
+
+  if (!user && !isUserLoading) {
+      return (
+        <main className="p-4 md:p-6 lg:p-8">
+         <Card>
+           <CardHeader><CardTitle>Authentication Required</CardTitle></CardHeader>
+           <CardContent>
+             <Alert variant="destructive">
+               <Terminal className="h-4 w-4" />
+               <AlertTitle>Unable to Authenticate</AlertTitle>
+               <AlertDescription>We could not sign you in. Please refresh the page to try again.</AlertDescription>
+             </Alert>
+           </CardContent>
+         </Card>
+       </main>
+     )
   }
   
   return (
@@ -232,25 +327,25 @@ const McbTimelinePage = () => {
                     <TableCell className="border border-gray-400">{renderCell(project.projectName, (val) => handleProjectDataChange(index, 'projectName', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.area, (val) => handleProjectDataChange(index, 'area', val))}</TableCell>
                     <TableCell className="border border-gray-400">{renderCell(project.projectHolder, (val) => handleProjectDataChange(index, 'projectHolder', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.allocationDate, (val) => handleProjectDataChange(index, 'allocationDate', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.siteSurveyStart, (val) => handleProjectDataChange(index, 'siteSurveyStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.siteSurveyEnd, (val) => handleProjectDataChange(index, 'siteSurveyEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.allocationDate, (val) => handleProjectDataChange(index, 'allocationDate', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.siteSurveyStart, (val) => handleProjectDataChange(index, 'siteSurveyStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.siteSurveyEnd, (val) => handleProjectDataChange(index, 'siteSurveyEnd', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.contact, (val) => handleProjectDataChange(index, 'contact', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.headCount, (val) => handleProjectDataChange(index, 'headCount', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.proposalStart, (val) => handleProjectDataChange(index, 'proposalStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.proposalEnd, (val) => handleProjectDataChange(index, 'proposalEnd', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project['3dStart'], (val) => handleProjectDataChange(index, '3dStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project['3dEnd'], (val) => handleProjectDataChange(index, '3dEnd', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderArchStart, (val) => handleProjectDataChange(index, 'tenderArchStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderArchEnd, (val) => handleProjectDataChange(index, 'tenderArchEnd', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderMepStart, (val) => handleProjectDataChange(index, 'tenderMepStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderMepEnd, (val) => handleProjectDataChange(index, 'tenderMepEnd', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.boqStart, (val) => handleProjectDataChange(index, 'boqStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.boqEnd, (val) => handleProjectDataChange(index, 'boqEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.proposalStart, (val) => handleProjectDataChange(index, 'proposalStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.proposalEnd, (val) => handleProjectDataChange(index, 'proposalEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project['3dStart'], (val) => handleProjectDataChange(index, '3dStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project['3dEnd'], (val) => handleProjectDataChange(index, '3dEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderArchStart, (val) => handleProjectDataChange(index, 'tenderArchStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderArchEnd, (val) => handleProjectDataChange(index, 'tenderArchEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderMepStart, (val) => handleProjectDataChange(index, 'tenderMepStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderMepEnd, (val) => handleProjectDataChange(index, 'tenderMepEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.boqStart, (val) => handleProjectDataChange(index, 'boqStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.boqEnd, (val) => handleProjectDataChange(index, 'boqEnd', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderStatus, (val) => handleProjectDataChange(index, 'tenderStatus', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.comparative, (val) => handleProjectDataChange(index, 'comparative', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.workingDrawingsStart, (val) => handleProjectDataChange(index, 'workingDrawingsStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.workingDrawingsEnd, (val) => handleProjectDataChange(index, 'workingDrawingsEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.workingDrawingsStart, (val) => handleProjectDataChange(index, 'workingDrawingsStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.workingDrawingsEnd, (val) => handleProjectDataChange(index, 'workingDrawingsEnd', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.siteVisit, (val) => handleProjectDataChange(index, 'siteVisit', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.finalBill, (val) => handleProjectDataChange(index, 'finalBill', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.projectClosure, (val) => handleProjectDataChange(index, 'projectClosure', val))}</TableCell>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -13,9 +13,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Edit, Save, Loader2, Download, ArrowLeft } from 'lucide-react';
+import { Edit, Save, Loader2, Download, ArrowLeft, Terminal } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
+import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { DatePicker } from '@/components/ui/date-picker';
+import { addDays, format, parseISO } from 'date-fns';
+
+const TIMELINE_DOC_ID = "fbl-timeline";
 
 const initialProjectData = [
   {
@@ -23,13 +31,13 @@ const initialProjectData = [
     projectName: 'FBL-Finance Center-Gulberg LHR',
     area: '16500',
     projectHolder: 'Luqman',
-    allocationDate: '23-Oct-25',
-    siteSurveyStart: '24-Oct-25',
-    siteSurveyEnd: '24-Oct-25',
+    allocationDate: '2025-10-23',
+    siteSurveyStart: '2025-10-24',
+    siteSurveyEnd: '2025-10-24',
     contact: '',
     headCount: 'Received',
-    proposalStart: '24-Oct-25',
-    proposalEnd: '5-Nov-25',
+    proposalStart: '2025-10-24',
+    proposalEnd: '2025-11-05',
     '3dStart': '',
     '3dEnd': '',
     tenderArchStart: '',
@@ -51,13 +59,13 @@ const initialProjectData = [
     projectName: 'FBL-Finance Center-F10 Islamabad',
     area: '10100',
     projectHolder: 'Luqman',
-    allocationDate: '18-Oct-25',
-    siteSurveyStart: '20-Oct-25',
-    siteSurveyEnd: '20-Oct-25',
+    allocationDate: '2025-10-18',
+    siteSurveyStart: '2025-10-20',
+    siteSurveyEnd: '2025-10-20',
     contact: '',
     headCount: 'Received',
-    proposalStart: '27-Oct-25',
-    proposalEnd: '8-Nov-25',
+    proposalStart: '2025-10-27',
+    proposalEnd: '2025-11-08',
     '3dStart': '',
     '3dEnd': '',
     tenderArchStart: '',
@@ -79,25 +87,25 @@ const initialProjectData = [
     projectName: 'FBL JEHANGIRA NOWSHERA KPK',
     area: '2740',
     projectHolder: 'Luqman',
-    allocationDate: '16-Oct-25',
-    siteSurveyStart: '5-Oct-25',
-    siteSurveyEnd: '6-Oct-25',
+    allocationDate: '2025-10-16',
+    siteSurveyStart: '2025-10-05',
+    siteSurveyEnd: '2025-10-06',
     contact: '',
     headCount: 'Received',
-    proposalStart: '16-Oct-25',
-    proposalEnd: '18-Oct-25',
+    proposalStart: '2025-10-16',
+    proposalEnd: '2025-10-18',
     '3dStart': '',
     '3dEnd': '',
-    tenderArchStart: '20-Oct-25',
-    tenderArchEnd: '25-Oct-25',
-    tenderMepStart: '26-Oct-25',
-    tenderMepEnd: '4-Nov-25',
-    boqStart: '27-Oct-25',
-    boqEnd: '27-Oct-25',
+    tenderArchStart: '2025-10-20',
+    tenderArchEnd: '2025-10-25',
+    tenderMepStart: '2025-10-26',
+    tenderMepEnd: '2025-11-04',
+    boqStart: '2025-10-27',
+    boqEnd: '2025-10-27',
     tenderStatus: 'Sent',
     comparative: '',
-    workingDrawingsStart: '4-Nov-25',
-    workingDrawingsEnd: '8-Nov-25',
+    workingDrawingsStart: '2025-11-04',
+    workingDrawingsEnd: '2025-11-08',
     siteVisit: '',
     finalBill: '',
     projectClosure: '',
@@ -107,25 +115,25 @@ const initialProjectData = [
     projectName: 'FBL IBB Chinar Road Mansehra KPK',
     area: '2612',
     projectHolder: 'Luqman',
-    allocationDate: '24-Sep-25',
-    siteSurveyStart: '30-Sep-25',
-    siteSurveyEnd: '1-Oct-25',
+    allocationDate: '2025-09-24',
+    siteSurveyStart: '2025-09-30',
+    siteSurveyEnd: '2025-10-01',
     contact: 'Done',
     headCount: 'Received',
-    proposalStart: '2-Oct-25',
-    proposalEnd: '3-Oct-25',
+    proposalStart: '2025-10-02',
+    proposalEnd: '2025-10-03',
     '3dStart': '',
     '3dEnd': '',
-    tenderArchStart: '20-Oct-25',
-    tenderArchEnd: '25-Oct-25',
-    tenderMepStart: '30-Oct-25',
-    tenderMepEnd: '4-Nov-25',
-    boqStart: '27-Oct-25',
-    boqEnd: '27-Oct-25',
+    tenderArchStart: '2025-10-20',
+    tenderArchEnd: '2025-10-25',
+    tenderMepStart: '2025-10-30',
+    tenderMepEnd: '2025-11-04',
+    boqStart: '2025-10-27',
+    boqEnd: '2025-10-27',
     tenderStatus: 'Sent',
     comparative: '',
-    workingDrawingsStart: '8-Nov-25',
-    workingDrawingsEnd: '12-Nov-25',
+    workingDrawingsStart: '2025-11-08',
+    workingDrawingsEnd: '2025-11-12',
     siteVisit: '',
     finalBill: '',
     projectClosure: '',
@@ -135,21 +143,21 @@ const initialProjectData = [
     projectName: 'FBL Jameel Chowk Peshawar',
     area: '2259',
     projectHolder: 'Luqman',
-    allocationDate: '22-Sep-25',
-    siteSurveyStart: '1-Oct-25',
-    siteSurveyEnd: '2-Oct-25',
+    allocationDate: '2025-09-22',
+    siteSurveyStart: '2025-10-01',
+    siteSurveyEnd: '2025-10-02',
     contact: 'Done',
     headCount: 'Received',
-    proposalStart: '2-Oct-25',
-    proposalEnd: '4-Oct-25',
+    proposalStart: '2025-10-02',
+    proposalEnd: '2025-10-04',
     '3dStart': '',
     '3dEnd': '',
-    tenderArchStart: '20-Oct-25',
-    tenderArchEnd: '25-Oct-25',
-    tenderMepStart: '30-Oct-25',
-    tenderMepEnd: '4-Nov-25',
-    boqStart: '27-Oct-25',
-    boqEnd: '27-Oct-25',
+    tenderArchStart: '2025-10-20',
+    tenderArchEnd: '2025-10-25',
+    tenderMepStart: '2025-10-30',
+    tenderMepEnd: '2025-11-04',
+    boqStart: '2025-10-27',
+    boqEnd: '2025-10-27',
     tenderStatus: 'Sent',
     comparative: '',
     workingDrawingsStart: '',
@@ -163,25 +171,25 @@ const initialProjectData = [
     projectName: 'FBL Jhangi Branch Gujranwala',
     area: '2270',
     projectHolder: 'Luqman Mujahid',
-    allocationDate: '8-Sep-25',
-    siteSurveyStart: '4-Sep-25',
-    siteSurveyEnd: '5-Sep-25',
+    allocationDate: '2025-09-08',
+    siteSurveyStart: '2025-09-04',
+    siteSurveyEnd: '2025-09-05',
     contact: 'Done',
     headCount: 'Received',
-    proposalStart: '8-Sep-25',
-    proposalEnd: '11-Sep-25',
+    proposalStart: '2025-09-08',
+    proposalEnd: '2025-09-11',
     '3dStart': '',
     '3dEnd': '',
-    tenderArchStart: '15-Sep-25',
-    tenderArchEnd: '24-Sep-25',
-    tenderMepStart: '10-Oct-25',
-    tenderMepEnd: '12-Oct-25',
-    boqStart: '2-Oct-25',
-    boqEnd: '4-Oct-25',
+    tenderArchStart: '2025-09-15',
+    tenderArchEnd: '2025-09-24',
+    tenderMepStart: '2025-10-10',
+    tenderMepEnd: '2025-10-12',
+    boqStart: '2025-10-02',
+    boqEnd: '2025-10-04',
     tenderStatus: 'Sent',
     comparative: 'Done',
-    workingDrawingsStart: '21-Oct-25',
-    workingDrawingsEnd: '25-Oct-25',
+    workingDrawingsStart: '2025-10-21',
+    workingDrawingsEnd: '2025-10-25',
     siteVisit: '',
     finalBill: '',
     projectClosure: '',
@@ -191,25 +199,25 @@ const initialProjectData = [
     projectName: 'FBL Ferozpur Road Lahore',
     area: '2492',
     projectHolder: 'Luqman Mujahid',
-    allocationDate: '8-Sep-25',
-    siteSurveyStart: '5-Sep-25',
-    siteSurveyEnd: '6-Sep-25',
+    allocationDate: '2025-09-08',
+    siteSurveyStart: '2025-09-05',
+    siteSurveyEnd: '2025-09-06',
     contact: 'Done',
     headCount: 'Received',
-    proposalStart: '8-Sep-25',
-    proposalEnd: '12-Sep-25',
+    proposalStart: '2025-09-08',
+    proposalEnd: '2025-09-12',
     '3dStart': '',
     '3dEnd': '',
-    tenderArchStart: '13-Sep-25',
-    tenderArchEnd: '24-Sep-25',
-    tenderMepStart: '10-Oct-25',
-    tenderMepEnd: '14-Oct-25',
-    boqStart: '2-Oct-25',
-    boqEnd: '4-Oct-25',
+    tenderArchStart: '2025-09-13',
+    tenderArchEnd: '2025-09-24',
+    tenderMepStart: '2025-10-10',
+    tenderMepEnd: '2025-10-14',
+    boqStart: '2025-10-02',
+    boqEnd: '2025-10-04',
     tenderStatus: 'Sent',
     comparative: '',
-    workingDrawingsStart: '2-Nov-25',
-    workingDrawingsEnd: '5-Nov-25',
+    workingDrawingsStart: '2025-11-02',
+    workingDrawingsEnd: '2025-11-05',
     siteVisit: '',
     finalBill: '',
     projectClosure: '',
@@ -219,25 +227,25 @@ const initialProjectData = [
     projectName: 'FBL Park View City Lahore',
     area: '2,900.00',
     projectHolder: 'Luqman Mujahid',
-    allocationDate: '5-Sep-25',
-    siteSurveyStart: '3-Sep-25',
-    siteSurveyEnd: '4-Sep-25',
+    allocationDate: '2025-09-05',
+    siteSurveyStart: '2025-09-03',
+    siteSurveyEnd: '2025-09-04',
     contact: 'Done',
     headCount: 'Received',
-    proposalStart: '5-Sep-25',
-    proposalEnd: '12-Sep-25',
+    proposalStart: '2025-09-05',
+    proposalEnd: '2025-09-12',
     '3dStart': '',
     '3dEnd': '',
-    tenderArchStart: '15-Sep-25',
-    tenderArchEnd: '24-Sep-25',
-    tenderMepStart: '2-Oct-25',
-    tenderMepEnd: '4-Oct-25',
-    boqStart: '25-Sep-25',
-    boqEnd: '27-Sep-25',
+    tenderArchStart: '2025-09-15',
+    tenderArchEnd: '2025-09-24',
+    tenderMepStart: '2025-10-02',
+    tenderMepEnd: '2025-10-04',
+    boqStart: '2025-09-25',
+    boqEnd: '2025-09-27',
     tenderStatus: 'Sent',
     comparative: '',
-    workingDrawingsStart: '6-Nov-25',
-    workingDrawingsEnd: '9-Nov-25',
+    workingDrawingsStart: '2025-11-06',
+    workingDrawingsEnd: '2025-11-09',
     siteVisit: '',
     finalBill: '',
     projectClosure: '',
@@ -247,13 +255,13 @@ const initialProjectData = [
     projectName: 'FBL CPC-KHARIAN-BRANCH',
     area: '1,635.00',
     projectHolder: 'Luqman Mujahid',
-    allocationDate: '20-Aug-25',
-    siteSurveyStart: '21-Aug-25',
-    siteSurveyEnd: '22-Aug-25',
+    allocationDate: '2025-08-20',
+    siteSurveyStart: '2025-08-21',
+    siteSurveyEnd: '2025-08-22',
     contact: '',
     headCount: 'Received',
-    proposalStart: '5-Sep-25',
-    proposalEnd: '11-Sep-25',
+    proposalStart: '2025-09-05',
+    proposalEnd: '2025-09-11',
     '3dStart': '',
     '3dEnd': '',
     tenderArchStart: '',
@@ -276,15 +284,15 @@ const initialProjectData = [
     area: '2,183.00',
     projectHolder: 'Luqman Mujahid',
     allocationDate: '',
-    siteSurveyStart: '16-Jul-25',
-    siteSurveyEnd: '17-Jul-25',
+    siteSurveyStart: '2025-07-16',
+    siteSurveyEnd: '2025-07-17',
     contact: '',
     headCount: 'Received',
-    proposalStart: '9-Aug-25',
+    proposalStart: '2025-08-09',
     proposalEnd: '',
     '3dStart': '',
     '3dEnd': '',
-    tenderArchStart: '25-Aug-25',
+    tenderArchStart: '2025-08-25',
     tenderArchEnd: '',
     tenderMepStart: '',
     tenderMepEnd: '',
@@ -303,9 +311,9 @@ const initialProjectData = [
     projectName: 'FBL Peer-Wadahi Road Branch Rawalpindi',
     area: '2,098.00',
     projectHolder: 'Noman',
-    allocationDate: '23-Apr-25',
-    siteSurveyStart: '24-Apr-25',
-    siteSurveyEnd: '25-Apr-25',
+    allocationDate: '2025-04-23',
+    siteSurveyStart: '2025-04-24',
+    siteSurveyEnd: '2025-04-25',
     contact: 'N/A',
     headCount: 'N/A',
     proposalStart: 'N/A',
@@ -331,21 +339,21 @@ const initialProjectData = [
     projectName: 'FBL Gulbahar, Peshawer',
     area: '2,000.00',
     projectHolder: 'Noman',
-    allocationDate: '24-Oct-24',
-    siteSurveyStart: '4-Nov-24',
-    siteSurveyEnd: '5-Nov-24',
+    allocationDate: '2024-10-24',
+    siteSurveyStart: '2024-11-04',
+    siteSurveyEnd: '2024-11-05',
     contact: 'Done',
     headCount: 'Received',
-    proposalStart: '8-Nov-24',
-    proposalEnd: '12-Nov-24',
-    '3dStart': '13-Nov-24',
-    '3dEnd': '15-Nov-24',
-    tenderArchStart: '16-Nov-24',
-    tenderArchEnd: '24-Nov-24',
-    tenderMepStart: '15-Nov-24',
-    tenderMepEnd: '22-Nov-24',
-    boqStart: '23-Nov-24',
-    boqEnd: '26-Nov-24',
+    proposalStart: '2024-11-08',
+    proposalEnd: '2024-11-12',
+    '3dStart': '2024-11-13',
+    '3dEnd': '2024-11-15',
+    tenderArchStart: '2024-11-16',
+    tenderArchEnd: '2024-11-24',
+    tenderMepStart: '2024-11-15',
+    tenderMepEnd: '2024-11-22',
+    boqStart: '2024-11-23',
+    boqEnd: '2024-11-26',
     tenderStatus: 'sent',
     comparative: 'Done',
     workingDrawingsStart: '',
@@ -359,21 +367,21 @@ const initialProjectData = [
     projectName: 'FBL Guest House DHA Phase-4 Lahore',
     area: '4,500.00',
     projectHolder: 'Noman',
-    allocationDate: '1-Aug-24',
-    siteSurveyStart: '6-Aug-24',
-    siteSurveyEnd: '7-Aug-24',
+    allocationDate: '2024-08-01',
+    siteSurveyStart: '2024-08-06',
+    siteSurveyEnd: '2024-08-07',
     contact: 'Done',
     headCount: 'N/A',
-    proposalStart: '22-Aug-24',
-    proposalEnd: '16-Sep-24',
+    proposalStart: '2024-08-22',
+    proposalEnd: '2024-09-16',
     '3dStart': 'N/A',
     '3dEnd': 'N/A',
-    tenderArchStart: '1-Oct-24',
-    tenderArchEnd: '26-Oct-24',
+    tenderArchStart: '2024-10-01',
+    tenderArchEnd: '2024-10-26',
     tenderMepStart: '',
     tenderMepEnd: '',
-    boqStart: '28-Feb-25',
-    boqEnd: '1-Mar-25',
+    boqStart: '2025-02-28',
+    boqEnd: '2025-03-01',
     tenderStatus: 'sent',
     comparative: 'Done',
     workingDrawingsStart: '',
@@ -387,19 +395,19 @@ const initialProjectData = [
     projectName: 'FBL Shahdara',
     area: '2,678.00',
     projectHolder: 'Adnan',
-    allocationDate: '11-Jun-25',
-    siteSurveyStart: '11-Jun-25',
-    siteSurveyEnd: '13-Jun-25',
+    allocationDate: '2025-06-11',
+    siteSurveyStart: '2025-06-11',
+    siteSurveyEnd: '2025-06-13',
     contact: 'Done',
     headCount: '',
     proposalStart: '',
     proposalEnd: '',
     '3dStart': '',
     '3dEnd': '',
-    tenderArchStart: '16-Jun-25',
-    tenderArchEnd: '21-Jun-25',
-    tenderMepStart: '22-Jun-25',
-    tenderMepEnd: '26-Jun-25',
+    tenderArchStart: '2025-06-16',
+    tenderArchEnd: '2025-06-21',
+    tenderMepStart: '2025-06-22',
+    tenderMepEnd: '2025-06-26',
     boqStart: '',
     boqEnd: '',
     tenderStatus: 'sent',
@@ -420,11 +428,11 @@ const initialProjectData = [
     siteSurveyEnd: '',
     contact: 'Done',
     headCount: '',
-    proposalStart: '28-Aug-25',
+    proposalStart: '2025-08-28',
     proposalEnd: '',
     '3dStart': '',
     '3dEnd': '',
-    tenderArchStart: '28-Aug-25',
+    tenderArchStart: '2025-08-28',
     tenderArchEnd: '',
     tenderMepStart: '',
     tenderMepEnd: '',
@@ -472,18 +480,69 @@ const initialProjectData = [
 const FblTimelinePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [projectData, setProjectData] = useState(initialProjectData);
   const { toast } = useToast();
+  
+  const firestore = useFirestore();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
 
-  const handleProjectDataChange = (index: number, field: string, value: string) => {
+  useEffect(() => {
+    if (!isUserLoading && !user && auth) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [isUserLoading, user, auth]);
+
+  const timelineDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, `users/${user.uid}/projectTimelines/${TIMELINE_DOC_ID}`);
+  }, [user, firestore]);
+
+  useEffect(() => {
+    if (!timelineDocRef) return;
+
+    setIsLoading(true);
+    getDoc(timelineDocRef)
+      .then((docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.projectData) setProjectData(data.projectData);
+        }
+      })
+      .catch(async (serverError) => {
+        console.error("Error fetching timeline data:", serverError);
+        const permissionError = new FirestorePermissionError({
+          path: timelineDocRef.path,
+          operation: 'get',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [timelineDocRef]);
+
+  const handleProjectDataChange = (index: number, field: string, value: any) => {
     const updatedData = [...projectData];
-    (updatedData[index] as any)[field] = value;
+    const task = updatedData[index] as any;
+    task[field] = value;
+    
+    if (field === 'start' && value instanceof Date) {
+        task.start = format(value, 'yyyy-MM-dd');
+    }
+
     setProjectData(updatedData);
   };
   
   const handleSave = () => {
+    if (!timelineDocRef) {
+      toast({ variant: "destructive", title: "Save Failed", description: "User not authenticated." });
+      return;
+    }
     setIsSaving(true);
-    // Simulate API call
+    const dataToSave = { projectData };
+    setDocumentNonBlocking(timelineDocRef, dataToSave, { merge: true });
     setTimeout(() => {
       setIsSaving(false);
       setIsEditing(false);
@@ -494,8 +553,43 @@ const FblTimelinePage = () => {
     }, 1000);
   };
   
-  const renderCell = (value: string, onChange: (val: string) => void) => {
-    return isEditing ? <Input value={value} onChange={(e) => onChange(e.target.value)} className="h-8"/> : value;
+  const renderCell = (value: string | undefined, onChange: (val: string) => void) => {
+    return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8"/> : (value || '');
+  }
+
+  const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
+      const date = value ? new Date(value) : undefined;
+      return isEditing ? (
+          <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />
+      ) : (
+          value ? format(new Date(value), 'd-MMM-yy') : ''
+      )
+  }
+
+  if (isUserLoading || isLoading) {
+    return (
+        <div className="flex h-full w-full items-center justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="ml-2">Loading Timeline...</p>
+        </div>
+    );
+  }
+
+  if (!user && !isUserLoading) {
+      return (
+        <main className="p-4 md:p-6 lg:p-8">
+         <Card>
+           <CardHeader><CardTitle>Authentication Required</CardTitle></CardHeader>
+           <CardContent>
+             <Alert variant="destructive">
+               <Terminal className="h-4 w-4" />
+               <AlertTitle>Unable to Authenticate</AlertTitle>
+               <AlertDescription>We could not sign you in. Please refresh the page to try again.</AlertDescription>
+             </Alert>
+           </CardContent>
+         </Card>
+       </main>
+     )
   }
 
   return (
@@ -577,25 +671,25 @@ const FblTimelinePage = () => {
                     <TableCell className="border border-gray-400">{renderCell(project.projectName, val => handleProjectDataChange(index, 'projectName', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.area, val => handleProjectDataChange(index, 'area', val))}</TableCell>
                     <TableCell className="border border-gray-400">{renderCell(project.projectHolder, val => handleProjectDataChange(index, 'projectHolder', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.allocationDate, val => handleProjectDataChange(index, 'allocationDate', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.siteSurveyStart, val => handleProjectDataChange(index, 'siteSurveyStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.siteSurveyEnd, val => handleProjectDataChange(index, 'siteSurveyEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.allocationDate, val => handleProjectDataChange(index, 'allocationDate', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.siteSurveyStart, val => handleProjectDataChange(index, 'siteSurveyStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.siteSurveyEnd, val => handleProjectDataChange(index, 'siteSurveyEnd', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.contact, val => handleProjectDataChange(index, 'contact', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.headCount, val => handleProjectDataChange(index, 'headCount', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.proposalStart, val => handleProjectDataChange(index, 'proposalStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.proposalEnd, val => handleProjectDataChange(index, 'proposalEnd', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project['3dStart'], val => handleProjectDataChange(index, '3dStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project['3dEnd'], val => handleProjectDataChange(index, '3dEnd', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderArchStart, val => handleProjectDataChange(index, 'tenderArchStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderArchEnd, val => handleProjectDataChange(index, 'tenderArchEnd', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderMepStart, val => handleProjectDataChange(index, 'tenderMepStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderMepEnd, val => handleProjectDataChange(index, 'tenderMepEnd', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.boqStart, val => handleProjectDataChange(index, 'boqStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.boqEnd, val => handleProjectDataChange(index, 'boqEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.proposalStart, val => handleProjectDataChange(index, 'proposalStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.proposalEnd, val => handleProjectDataChange(index, 'proposalEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project['3dStart'], val => handleProjectDataChange(index, '3dStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project['3dEnd'], val => handleProjectDataChange(index, '3dEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderArchStart, val => handleProjectDataChange(index, 'tenderArchStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderArchEnd, val => handleProjectDataChange(index, 'tenderArchEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderMepStart, val => handleProjectDataChange(index, 'tenderMepStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.tenderMepEnd, val => handleProjectDataChange(index, 'tenderMepEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.boqStart, val => handleProjectDataChange(index, 'boqStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.boqEnd, val => handleProjectDataChange(index, 'boqEnd', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.tenderStatus, val => handleProjectDataChange(index, 'tenderStatus', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.comparative, val => handleProjectDataChange(index, 'comparative', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.workingDrawingsStart, val => handleProjectDataChange(index, 'workingDrawingsStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.workingDrawingsEnd, val => handleProjectDataChange(index, 'workingDrawingsEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.workingDrawingsStart, val => handleProjectDataChange(index, 'workingDrawingsStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.workingDrawingsEnd, val => handleProjectDataChange(index, 'workingDrawingsEnd', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.siteVisit, val => handleProjectDataChange(index, 'siteVisit', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.finalBill, val => handleProjectDataChange(index, 'finalBill', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.projectClosure, val => handleProjectDataChange(index, 'projectClosure', val))}</TableCell>
