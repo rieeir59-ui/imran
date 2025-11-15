@@ -35,7 +35,7 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
 );
 
 export default function ProjectsPage() {
-  const [isEditing, setIsEditing] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<any>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -65,8 +65,6 @@ export default function ProjectsPage() {
         if (docSnap.exists()) {
           setFormData(docSnap.data() || {});
         }
-        // Always start in editing mode, regardless of whether data exists.
-        setIsEditing(true);
       })
       .catch(async (serverError) => {
         console.error("Error fetching project data:", serverError);
@@ -114,7 +112,7 @@ export default function ProjectsPage() {
         title: "Project Saved",
         description: "Your project information has been saved.",
       });
-    }, 500);
+    }, 1000);
   };
 
   if (isUserLoading || isLoading) {
@@ -183,10 +181,10 @@ export default function ProjectsPage() {
     return (
         <div key={slug} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-center">
             <p>{type}</p>
-            <div className="flex items-center gap-1">{renderCheckbox(`consultant_${slug}_basic`)} {renderInput(`consultant_${slug}_basic_text`)}</div>
-            <div className="flex items-center gap-1">{renderCheckbox(`consultant_${slug}_additional`)} {renderInput(`consultant_${slug}_additional_text`)}</div>
-            <div className="flex items-center gap-1">{renderCheckbox(`consultant_${slug}_architect`)} {renderInput(`consultant_${slug}_architect_text`)}</div>
-            <div className="flex items-center gap-1">{renderCheckbox(`consultant_${slug}_owner`)} {renderInput(`consultant_${slug}_owner_text`)}</div>
+            <div className="flex items-center justify-center">{renderCheckbox(`consultant_${slug}_basic`)}</div>
+            <div className="flex items-center justify-center">{renderCheckbox(`consultant_${slug}_additional`)}</div>
+            <div className="flex items-center justify-center">{renderCheckbox(`consultant_${slug}_architect`)}</div>
+            <div className="flex items-center justify-center">{renderCheckbox(`consultant_${slug}_owner`)}</div>
         </div>
     )
   }
@@ -297,17 +295,17 @@ export default function ProjectsPage() {
                 <FormRow label="Other Major Projects Milestone Dates:">{renderTextarea("date_other_milestones")}</FormRow>
 
                 <SectionTitle>Provided by Owner</SectionTitle>
-                <FormRow label="Program:">{renderCheckbox("provided_program", "")}</FormRow>
-                <FormRow label="Suggested Schedule:">{renderCheckbox("provided_schedule", "")}</FormRow>
-                <FormRow label="Legal Site Description & Other Concerned Documents:">{renderCheckbox("provided_legal", "")}</FormRow>
-                <FormRow label="Land Survey Report:">{renderCheckbox("provided_survey", "")}</FormRow>
-                <FormRow label="Geo-Technical, Tests and Other Site Information:">{renderCheckbox("provided_geo", "")}</FormRow>
-                <FormRow label="Existing Structure's Drawings:">{renderCheckbox("provided_drawings", "")}</FormRow>
+                <FormRow label="">{renderCheckbox("provided_program", "Program:")}</FormRow>
+                <FormRow label="">{renderCheckbox("provided_schedule", "Suggested Schedule:")}</FormRow>
+                <FormRow label="">{renderCheckbox("provided_legal", "Legal Site Description & Other Concerned Documents:")}</FormRow>
+                <FormRow label="">{renderCheckbox("provided_survey", "Land Survey Report:")}</FormRow>
+                <FormRow label="">{renderCheckbox("provided_geo", "Geo-Technical, Tests and Other Site Information:")}</FormRow>
+                <FormRow label="">{renderCheckbox("provided_drawings", "Existing Structure's Drawings:")}</FormRow>
 
                 <SectionTitle>Compensation</SectionTitle>
                 <FormRow label="Initial Payment:">{renderInput("comp_initial_payment")}</FormRow>
                 <FormRow label="Basic Services (% of Cost of Construction):">{renderInput("comp_basic_services_pct")}</FormRow>
-                <div className="pl-4">
+                <div className="pl-4 md:pl-8">
                     <p className="font-medium mb-2">Breakdown by Phase:</p>
                     <FormRow label="Schematic Design %:">{renderInput("comp_schematic_pct")}</FormRow>
                     <FormRow label="Design Development %:">{renderInput("comp_dev_pct")}</FormRow>
