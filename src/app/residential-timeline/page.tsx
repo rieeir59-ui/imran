@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -14,7 +14,15 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Save, Loader2 } from 'lucide-react';
+import { Edit, Save, Loader2, Download, ArrowLeft, Terminal } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
+import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import Link from 'next/link';
+
+const TIMELINE_DOC_ID = "residential-timeline";
 
 const initialProjectData = [
   {
@@ -141,9 +149,52 @@ const initialOverallStatus = [
 const ResidentialTimelinePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [projectData, setProjectData] = useState(initialProjectData);
   const [overallStatus, setOverallStatus] = useState(initialOverallStatus);
   const [remarks, setRemarks] = useState({ text: 'Maam Isbah Remarks & Order', date: '' });
+  const { toast } = useToast();
+
+  const firestore = useFirestore();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+
+  useEffect(() => {
+    if (!isUserLoading && !user && auth) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [isUserLoading, user, auth]);
+
+  const timelineDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, `users/${user.uid}/projectTimelines/${TIMELINE_DOC_ID}`);
+  }, [user, firestore]);
+
+  useEffect(() => {
+    if (!timelineDocRef) return;
+
+    setIsLoading(true);
+    getDoc(timelineDocRef)
+      .then((docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.projectData) setProjectData(data.projectData);
+          if (data.overallStatus) setOverallStatus(data.overallStatus);
+          if (data.remarks) setRemarks(data.remarks);
+        }
+      })
+      .catch(async (serverError) => {
+        console.error("Error fetching timeline data:", serverError);
+        const permissionError = new FirestorePermissionError({
+          path: timelineDocRef.path,
+          operation: 'get',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [timelineDocRef]);
 
   const handleProjectDataChange = (index: number, field: string, value: string) => {
     const updatedData = [...projectData];
@@ -162,11 +213,20 @@ const ResidentialTimelinePage = () => {
   }
 
   const handleSave = () => {
+    if (!timelineDocRef) {
+      toast({ variant: "destructive", title: "Save Failed", description: "User not authenticated." });
+      return;
+    }
     setIsSaving(true);
-    // Simulate API call
+    const dataToSave = { projectData, overallStatus, remarks };
+    setDocumentNonBlocking(timelineDocRef, dataToSave, { merge: true });
     setTimeout(() => {
       setIsSaving(false);
       setIsEditing(false);
+      toast({
+        title: "Data Saved",
+        description: "Your changes have been saved successfully.",
+      });
     }, 1000);
   };
 
@@ -174,23 +234,56 @@ const ResidentialTimelinePage = () => {
     return isEditing ? <Input value={value} onChange={(e) => onChange(e.target.value)} className="h-8" /> : value;
   }
   
+  if (isUserLoading || isLoading) {
+    return (
+        <div className="flex h-full w-full items-center justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="ml-2">Loading Timeline...</p>
+        </div>
+    );
+  }
+
+  if (!user && !isUserLoading) {
+      return (
+        <main className="p-4 md:p-6 lg:p-8">
+         <Card>
+           <CardHeader><CardTitle>Authentication Required</CardTitle></CardHeader>
+           <CardContent>
+             <Alert variant="destructive">
+               <Terminal className="h-4 w-4" />
+               <AlertTitle>Unable to Authenticate</AlertTitle>
+               <AlertDescription>We could not sign you in. Please refresh the page to try again.</AlertDescription>
+             </Alert>
+           </CardContent>
+         </Card>
+       </main>
+     )
+  }
+
   return (
     <main className="p-4 md:p-6 lg:p-8">
-      <Card>
+       <div className="flex justify-between items-center mb-6 no-print">
+        <Button variant="outline" asChild>
+            <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back</Link>
+        </Button>
+        <h1 className="text-2xl font-bold">Residential Projects</h1>
+        <div className="flex items-center gap-2">
+            <Button onClick={() => window.print()} variant="outline"><Download className="mr-2 h-4 w-4" /> Download</Button>
+            {isEditing ? (
+                <Button onClick={handleSave} disabled={isSaving}>
+                    {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />} Save
+                </Button>
+            ) : (
+                <Button onClick={() => setIsEditing(true)}><Edit className="mr-2" /> Edit</Button>
+            )}
+        </div>
+      </div>
+      <Card className="printable-card">
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle className="text-center text-xl font-bold flex-1">
               Residential Projects Progress Chart
             </CardTitle>
-            <div className="flex justify-end items-center gap-4">
-              {isEditing ? (
-                  <Button onClick={handleSave} disabled={isSaving}>
-                      {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
-                  </Button>
-              ) : (
-                  <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
-              )}
-            </div>
           </div>
         </CardHeader>
         <CardContent>
