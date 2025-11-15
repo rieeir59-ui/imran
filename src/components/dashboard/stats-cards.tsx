@@ -28,6 +28,7 @@ export default function StatsCards() {
     { title: 'Commercial', icon: Building2, count: commercialCount, value: commercialValue, href: '/commercial' },
     { title: 'Residential', icon: Home, count: residentialCount, value: residentialValue, href: '/residential' },
     { title: 'Hotel', icon: Hotel, count: hotelCount, value: hotelValue, href: '/hotel' },
+    { title: 'Bank Branch', icon: Landmark, count: bankCount, value: bankValue, href: '/bank' },
   ];
 
   return (
