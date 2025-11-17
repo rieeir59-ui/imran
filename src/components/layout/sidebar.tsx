@@ -28,7 +28,6 @@ const projectFormsItems = [
 const timelineItems = [
   { href: '/commercial-timeline', icon: Building, label: 'Commercial' },
   { href: '/residential-timeline', icon: Home, label: 'Residential' },
-  { href: '/hotel', icon: Hotel, label: 'Hotel' },
   { href: '/askari-bank-timeline', icon: Landmark, label: 'Askari Bank' },
   { href: '/bank-alfalah-timeline', icon: Landmark, label: 'Bank Alfalah' },
   { href: '/bank-al-habib-timeline', icon: Landmark, label: 'Bank Al Habib' },
