@@ -181,10 +181,10 @@ export default function ProjectsPage() {
     return (
         <div key={slug} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-center">
             <p>{type}</p>
-            <div className="flex items-center justify-center">{renderCheckbox(`consultant_${slug}_basic`)}</div>
-            <div className="flex items-center justify-center">{renderCheckbox(`consultant_${slug}_additional`)}</div>
-            <div className="flex items-center justify-center">{renderCheckbox(`consultant_${slug}_architect`)}</div>
-            <div className="flex items-center justify-center">{renderCheckbox(`consultant_${slug}_owner`)}</div>
+            <div className="flex items-center justify-center">{renderInput(`consultant_${slug}_basic`)}</div>
+            <div className="flex items-center justify-center">{renderInput(`consultant_${slug}_additional`)}</div>
+            <div className="flex items-center justify-center">{renderInput(`consultant_${slug}_architect`)}</div>
+            <div className="flex items-center justify-center">{renderInput(`consultant_${slug}_owner`)}</div>
         </div>
     )
   }
