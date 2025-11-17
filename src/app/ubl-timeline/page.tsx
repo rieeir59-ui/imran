@@ -22,7 +22,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
-import { addDays, format, parseISO } from 'date-fns';
+import { addDays, format, parseISO, isValid } from 'date-fns';
 import { exportDataToCsv } from '@/lib/utils';
 
 const TIMELINE_DOC_ID = "ubl-timeline";
@@ -277,11 +277,11 @@ const UblTimelinePage = () => {
   }
 
   const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
-      const date = value ? new Date(value) : undefined;
+      const date = value && isValid(new Date(value)) ? new Date(value) : undefined;
       return isEditing ? (
           <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />
       ) : (
-          value ? format(new Date(value), 'd-MMM-yy') : ''
+          date ? format(date, 'd-MMM-yy') : (value || '')
       )
   }
   
@@ -445,3 +445,5 @@ const UblTimelinePage = () => {
 };
 
 export default UblTimelinePage;
+
+    

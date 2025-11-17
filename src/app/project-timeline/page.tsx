@@ -21,7 +21,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
-import { addDays, format, parseISO } from 'date-fns';
+import { addDays, format, parseISO, isValid } from 'date-fns';
 
 const DEFAULT_TIMELINE_ID = "main-project-timeline";
 
@@ -182,7 +182,7 @@ export default function ProjectTimelinePage() {
             const startDate = task.start ? (typeof task.start === 'string' ? parseISO(task.start) : task.start) : null;
             const duration = task.duration ? parseInt(task.duration, 10) : 0;
 
-            if (startDate && !isNaN(duration) && duration > 0) {
+            if (startDate && isValid(startDate) && !isNaN(duration) && duration > 0) {
                 const finishDate = addDays(startDate, duration);
                 task.finish = format(finishDate, 'yyyy-MM-dd');
             }
@@ -250,11 +250,11 @@ export default function ProjectTimelinePage() {
     }
     
     const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
-        const date = value ? new Date(value) : undefined;
+        const date = value && isValid(new Date(value)) ? new Date(value) : undefined;
         return isEditing ? (
             <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />
         ) : (
-            value ? format(new Date(value), 'PP') : ''
+            date ? format(date, 'PP') : (value || '')
         )
     }
 
@@ -316,3 +316,5 @@ export default function ProjectTimelinePage() {
         </main>
     );
 }
+
+    
