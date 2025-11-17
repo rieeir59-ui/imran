@@ -286,41 +286,41 @@ const BankAlfalahTimelinePage = () => {
             <Table className="min-w-full border-collapse border border-gray-400 text-xs">
               <TableHeader>
                 <TableRow>
-                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[50px]">Sr.No</TableHead>
-                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[150px]">Project Name</TableHead>
-                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[80px]">Area In Sft</TableHead>
-                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[120px]">Project Holder</TableHead>
-                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[100px]">Allocation Date / RFP</TableHead>
-                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[200px]">Site Survey</TableHead>
-                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[80px]">Contract</TableHead>
-                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[100px]">Head Count / Requirment</TableHead>
-                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[240px]">Proposal / Design Development</TableHead>
-                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[200px]">3D's</TableHead>
-                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[240px]">Tender Package Architectural</TableHead>
-                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[240px]">Tender Package MEP</TableHead>
-                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[200px]">BOQ</TableHead>
-                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[80px]">Tender Status</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[30px]">Sr.No</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[120px]">Project Name</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[60px]">Area In Sft</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[90px]">Project Holder</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[70px]">Allocation Date / RFP</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[140px]">Site Survey</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[60px]">Contract</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[70px]">Head Count / Requirment</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[200px]">Proposal / Design Development</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[140px]">3D's</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[160px]">Tender Package Architectural</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[160px]">Tender Package MEP</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[140px]">BOQ</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[60px]">Tender Status</TableHead>
                   <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[60px]">Comparative</TableHead>
-                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[200px]">Working Drawings</TableHead>
-                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[80px]">Site Visit</TableHead>
-                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[80px]">Final Bill</TableHead>
-                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[80px]">Project Closure</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[140px]">Working Drawings</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[60px]">Site Visit</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[60px]">Final Bill</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[60px]">Project Closure</TableHead>
                 </TableRow>
                 <TableRow>
+                  <TableHead className="border border-gray-400 text-center w-[70px]">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[70px]">End Date</TableHead>
                   <TableHead className="border border-gray-400 text-center w-[100px]">Start Date</TableHead>
                   <TableHead className="border border-gray-400 text-center w-[100px]">End Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[120px]">Start Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[120px]">End Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">Start Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">End Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[120px]">Start Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[120px]">End Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[120px]">Start Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[120px]">End Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">Start Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">End Date</TableHead>
-                   <TableHead className="border border-gray-400 text-center w-[100px]">Start Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">End Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[70px]">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[70px]">End Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[80px]">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[80px]">End Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[80px]">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[80px]">End Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[70px]">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[70px]">End Date</TableHead>
+                   <TableHead className="border border-gray-400 text-center w-[70px]">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[70px]">End Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

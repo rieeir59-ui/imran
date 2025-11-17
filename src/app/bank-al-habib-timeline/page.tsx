@@ -264,85 +264,85 @@ const BankAlHabibTimelinePage = () => {
                 <TableRow>
                   <TableHead
                     rowSpan={2}
-                    className="border border-gray-400 text-center align-middle w-[50px]"
+                    className="border border-gray-400 text-center align-middle w-[30px]"
                   >
                     Sr.No
                   </TableHead>
                   <TableHead
                     rowSpan={2}
-                    className="border border-gray-400 text-center align-middle w-[150px]"
+                    className="border border-gray-400 text-center align-middle w-[120px]"
                   >
                     Project Name
                   </TableHead>
                   <TableHead
                     rowSpan={2}
-                    className="border border-gray-400 text-center align-middle w-[80px]"
+                    className="border border-gray-400 text-center align-middle w-[60px]"
                   >
                     Area in Sft
                   </TableHead>
                   <TableHead
                     rowSpan={2}
-                    className="border border-gray-400 text-center align-middle w-[120px]"
+                    className="border border-gray-400 text-center align-middle w-[90px]"
                   >
                     Project Holder
                   </TableHead>
                   <TableHead
                     rowSpan={2}
-                    className="border border-gray-400 text-center align-middle w-[100px]"
+                    className="border border-gray-400 text-center align-middle w-[70px]"
                   >
                     Allocation Date / RFP
                   </TableHead>
                   <TableHead
                     colSpan={2}
-                    className="border border-gray-400 text-center w-[200px]"
+                    className="border border-gray-400 text-center w-[140px]"
                   >
                     Site Survey
                   </TableHead>
                   <TableHead
                     rowSpan={2}
-                    className="border border-gray-400 text-center align-middle w-[80px]"
+                    className="border border-gray-400 text-center align-middle w-[60px]"
                   >
                     Contact
                   </TableHead>
                   <TableHead
                     rowSpan={2}
-                    className="border border-gray-400 text-center align-middle w-[100px]"
+                    className="border border-gray-400 text-center align-middle w-[70px]"
                   >
                     Head Count / Requirment
                   </TableHead>
                   <TableHead
                     colSpan={2}
-                    className="border border-gray-400 text-center w-[240px]"
+                    className="border border-gray-400 text-center w-[200px]"
                   >
                     Proposal / Design Development
                   </TableHead>
                   <TableHead
                     colSpan={2}
-                    className="border border-gray-400 text-center w-[200px]"
+                    className="border border-gray-400 text-center w-[140px]"
                   >
                     3D's
                   </TableHead>
                   <TableHead
                     colSpan={2}
-                    className="border border-gray-400 text-center w-[240px]"
+                    className="border border-gray-400 text-center w-[160px]"
                   >
                     Tender Package Architectural
                   </TableHead>
                   <TableHead
                     colSpan={2}
-                    className="border border-gray-400 text-center w-[240px]"
+                    className="border border-gray-400 text-center w-[160px]"
                   >
                     Tender Package MEP
                   </TableHead>
                   <TableHead
                     colSpan={2}
-                    className="border border-gray-400 text-center w-[200px]"
+                    className="border border-gray-400 text-center w-[140px]"
                   >
                     BOQ
                   </TableHead>
                   <TableHead
                     rowSpan={2}
-                    className="border border-gray-400 text-center align-middle w-[80px]"
+                    className="border border-gray-400 text-center align-middle w-[60px]"
                   >
                     Tender Status
                   </TableHead>
@@ -354,40 +354,34 @@ const BankAlHabibTimelinePage = () => {
                   </TableHead>
                   <TableHead
                     colSpan={2}
-                    className="border border-gray-400 text-center w-[200px]"
+                    className="border border-gray-400 text-center w-[140px]"
                   >
                     Working Drawings
                   </TableHead>
                   <TableHead
                     rowSpan={2}
-                    className="border border-gray-400 text-center align-middle w-[80px]"
+                    className="border border-gray-400 text-center align-middle w-[60px]"
                   >
                     Site Visit
                   </TableHead>
                   <TableHead
                     rowSpan={2}
-                    className="border border-gray-400 text-center align-middle w-[80px]"
+                    className="border border-gray-400 text-center align-middle w-[60px]"
                   >
                     Final Bill
                   </TableHead>
                   <TableHead
                     rowSpan={2}
-                    className="border border-gray-400 text-center align-middle w-[80px]"
+                    className="border border-gray-400 text-center align-middle w-[60px]"
                   >
                     Project Closure
                   </TableHead>
                 </TableRow>
                 <TableRow>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">
+                  <TableHead className="border border-gray-400 text-center w-[70px]">
                     Start Date
                   </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">
-                    End Date
-                  </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[120px]">
-                    Start Date
-                  </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[120px]">
+                  <TableHead className="border border-gray-400 text-center w-[70px]">
                     End Date
                   </TableHead>
                   <TableHead className="border border-gray-400 text-center w-[100px]">
@@ -396,28 +390,34 @@ const BankAlHabibTimelinePage = () => {
                   <TableHead className="border border-gray-400 text-center w-[100px]">
                     End Date
                   </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[120px]">
+                  <TableHead className="border border-gray-400 text-center w-[70px]">
                     Start Date
                   </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[120px]">
+                  <TableHead className="border border-gray-400 text-center w-[70px]">
                     End Date
                   </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[120px]">
+                  <TableHead className="border border-gray-400 text-center w-[80px]">
                     Start Date
                   </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[120px]">
+                  <TableHead className="border border-gray-400 text-center w-[80px]">
                     End Date
                   </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">
+                  <TableHead className="border border-gray-400 text-center w-[80px]">
                     Start Date
                   </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">
+                  <TableHead className="border border-gray-400 text-center w-[80px]">
                     End Date
                   </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">
+                  <TableHead className="border border-gray-400 text-center w-[70px]">
                     Start Date
                   </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">
+                  <TableHead className="border border-gray-400 text-center w-[70px]">
+                    End Date
+                  </TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[70px]">
+                    Start Date
+                  </TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[70px]">
                     End Date
                   </TableHead>
                 </TableRow>
