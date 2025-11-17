@@ -18,8 +18,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
-import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { useAuth, useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
@@ -186,8 +186,7 @@ const AskariBankTimelinePage = () => {
           if (data.remarks) setRemarks(data.remarks);
         }
       })
-      .catch(async (serverError) => {
-        console.error("Error fetching timeline data:", serverError);
+      .catch((serverError) => {
         const permissionError = new FirestorePermissionError({
           path: timelineDocRef.path,
           operation: 'get',
@@ -238,15 +237,25 @@ const AskariBankTimelinePage = () => {
     }
     setIsSaving(true);
     const dataToSave = { projectData, overallStatus, remarks };
-    setDocumentNonBlocking(timelineDocRef, dataToSave, { merge: true });
-    setTimeout(() => {
-      setIsSaving(false);
-      setIsEditing(false);
-      toast({
-        title: "Data Saved",
-        description: "Your changes have been saved successfully.",
+    
+    setDoc(timelineDocRef, dataToSave, { merge: true })
+      .then(() => {
+        setIsSaving(false);
+        setIsEditing(false);
+        toast({
+          title: "Data Saved",
+          description: "Your changes have been saved successfully.",
+        });
+      })
+      .catch((serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: timelineDocRef.path,
+          operation: 'write',
+          requestResourceData: dataToSave,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        setIsSaving(false);
       });
-    }, 1000);
   };
   
   const handleDownloadCsv = () => {
@@ -433,3 +442,5 @@ const AskariBankTimelinePage = () => {
 };
 
 export default AskariBankTimelinePage;
+
+    

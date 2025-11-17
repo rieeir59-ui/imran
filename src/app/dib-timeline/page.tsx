@@ -18,12 +18,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
-import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { useAuth, useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
-import { addDays, format, parseISO } from 'date-fns';
+import { addDays, format, parseISO, isValid } from 'date-fns';
 import { exportDataToCsv } from '@/lib/utils';
 
 const TIMELINE_DOC_ID = "dib-timeline";
@@ -101,8 +101,7 @@ const DibTimelinePage = () => {
           if (data.remarks) setRemarks(data.remarks);
         }
       })
-      .catch(async (serverError) => {
-        console.error("Error fetching timeline data:", serverError);
+      .catch((serverError) => {
         const permissionError = new FirestorePermissionError({
           path: timelineDocRef.path,
           operation: 'get',
@@ -143,15 +142,24 @@ const DibTimelinePage = () => {
     }
     setIsSaving(true);
     const dataToSave = { projectData, overallStatus, remarks };
-    setDocumentNonBlocking(timelineDocRef, dataToSave, { merge: true });
-    setTimeout(() => {
-      setIsSaving(false);
-      setIsEditing(false);
-      toast({
-        title: "Data Saved",
-        description: "Your changes have been saved successfully.",
+    setDoc(timelineDocRef, dataToSave, { merge: true })
+      .then(() => {
+        setIsSaving(false);
+        setIsEditing(false);
+        toast({
+          title: "Data Saved",
+          description: "Your changes have been saved successfully.",
+        });
+      })
+      .catch((serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: timelineDocRef.path,
+          operation: 'write',
+          requestResourceData: dataToSave,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        setIsSaving(false);
       });
-    }, 1000);
   };
 
   const handleDownloadCsv = () => {
@@ -163,11 +171,11 @@ const DibTimelinePage = () => {
   }
 
   const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
-      const date = value ? new Date(value) : undefined;
+      const date = value && isValid(new Date(value)) ? new Date(value) : undefined;
       return isEditing ? (
           <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />
       ) : (
-          value ? format(new Date(value), 'd-MMM-yy') : ''
+          date ? format(date, 'd-MMM-yy') : (value || '')
       )
   }
 
@@ -331,3 +339,5 @@ const DibTimelinePage = () => {
 };
 
 export default DibTimelinePage;
+
+    
