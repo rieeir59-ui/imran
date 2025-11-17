@@ -542,5 +542,3 @@ const CbdTimelinePage = () => {
 };
 
 export default CbdTimelinePage;
-
-    

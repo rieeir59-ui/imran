@@ -470,5 +470,3 @@ const CommercialTimelinePage = () => {
 };
 
 export default CommercialTimelinePage;
-
-    

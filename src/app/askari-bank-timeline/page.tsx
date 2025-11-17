@@ -442,5 +442,3 @@ const AskariBankTimelinePage = () => {
 };
 
 export default AskariBankTimelinePage;
-
-    

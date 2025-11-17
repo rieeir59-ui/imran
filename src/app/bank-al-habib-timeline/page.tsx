@@ -543,5 +543,3 @@ const BankAlHabibTimelinePage = () => {
 };
 
 export default BankAlHabibTimelinePage;
-
-    

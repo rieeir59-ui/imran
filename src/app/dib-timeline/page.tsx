@@ -339,5 +339,3 @@ const DibTimelinePage = () => {
 };
 
 export default DibTimelinePage;
-
-    

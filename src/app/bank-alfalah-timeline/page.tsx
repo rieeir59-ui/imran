@@ -392,5 +392,3 @@ const BankAlfalahTimelinePage = () => {
 };
 
 export default BankAlfalahTimelinePage;
-
-    
