@@ -17,7 +17,7 @@ export default function Home() {
 
   return (
     <main className="p-4 md:p-6 lg:p-8 space-y-8">
-      <div>
+      <div className="animate-fade-in">
         <h1 className="text-3xl font-bold">Welcome to Dashboard</h1>
         <p className="text-muted-foreground">Isbah Hassan and Associates</p>
       </div>
