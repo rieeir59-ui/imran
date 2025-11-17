@@ -21,14 +21,16 @@ const Section = ({ title, items, formData, handleInputChange, isEditing }: { tit
     <div className="flex-1 space-y-2">
         <h3 className="font-bold text-lg mb-2 underline">{title}</h3>
         {items.map(item => {
+            const sectionPrefix = title.toLowerCase().replace(/ /g, '-');
             const fieldName = item.toLowerCase().replace(/ \/ /g, '-').replace(/ /g, '-');
+            const uniqueFieldName = `${sectionPrefix}-${fieldName}`;
             return (
-                <div key={fieldName} className="flex flex-col">
-                    <Label htmlFor={fieldName} className="mb-1 text-sm">{item}</Label>
+                <div key={uniqueFieldName} className="flex flex-col">
+                    <Label htmlFor={uniqueFieldName} className="mb-1 text-sm">{item}</Label>
                     <Input 
-                        id={fieldName}
-                        name={fieldName}
-                        value={formData[fieldName] || ''}
+                        id={uniqueFieldName}
+                        name={uniqueFieldName}
+                        value={formData[uniqueFieldName] || ''}
                         onChange={handleInputChange}
                         disabled={!isEditing}
                         className="h-8"
@@ -197,5 +199,3 @@ export default function PredesignAssessmentPage() {
         </main>
     );
 }
-
-    
