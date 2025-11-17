@@ -105,28 +105,25 @@
       border: 1px solid #ccc !important;
   }
   
-  /* Hide interactive elements, show their values */
   .printable-content input,
-  .printable-content textarea {
-    display: none;
+  .printable-content textarea,
+  .printable-content button {
+    display: none !important;
   }
   
   .printable-content .form-value {
-    display: block;
+    display: block !important;
     min-height: 24px;
     padding-top: 2px;
     padding-bottom: 2px;
     border-bottom: 1px solid #ddd;
     color: black;
-  }
-  
-  .printable-content input:disabled,
-  .printable-content textarea:disabled {
-     display: none;
+    white-space: pre-wrap; /* to respect newlines in textareas */
   }
 
   .printable-content .form-value::after {
     content: attr(data-value);
+    color: black !important;
   }
 
   /* Specific fix for timeline pages */

@@ -38,7 +38,7 @@ const Section = ({ title, items, formData, handleInputChange, isEditing }: { tit
                             className="h-8"
                         />
                     ) : (
-                        <div className="form-value" data-value={value}></div>
+                        <div className="form-value" data-value={value}>{value}</div>
                     )}
                 </div>
             )
@@ -177,19 +177,19 @@ export default function PredesignAssessmentPage() {
                     <div className="grid grid-cols-2 gap-4 mb-4">
                         <div className="flex items-center gap-2">
                             <Label>Project (Name, Address):</Label>
-                            {isEditing ? <Input name="project_name_address" value={formData.project_name_address || ''} onChange={handleInputChange} /> : <div className="form-value" data-value={formData.project_name_address || ''}></div>}
+                            {isEditing ? <Input name="project_name_address" value={formData.project_name_address || ''} onChange={handleInputChange} /> : <div className="form-value" data-value={formData.project_name_address || ''}>{formData.project_name_address}</div>}
                         </div>
                         <div className="flex items-center gap-2">
                             <Label>Architect:</Label>
-                            {isEditing ? <Input name="architect" value={formData.architect || ''} onChange={handleInputChange} /> : <div className="form-value" data-value={formData.architect || ''}></div>}
+                            {isEditing ? <Input name="architect" value={formData.architect || ''} onChange={handleInputChange} /> : <div className="form-value" data-value={formData.architect || ''}>{formData.architect}</div>}
                         </div>
                          <div className="flex items-center gap-2">
                             <Label>Architects Project No:</Label>
-                            {isEditing ? <Input name="architect_project_no" value={formData.architect_project_no || ''} onChange={handleInputChange} /> : <div className="form-value" data-value={formData.architect_project_no || ''}></div>}
+                            {isEditing ? <Input name="architect_project_no" value={formData.architect_project_no || ''} onChange={handleInputChange} /> : <div className="form-value" data-value={formData.architect_project_no || ''}>{formData.architect_project_no}</div>}
                         </div>
                         <div className="flex items-center gap-2">
                             <Label>Project Date:</Label>
-                            {isEditing ? <Input name="project_date" value={formData.project_date || ''} onChange={handleInputChange} placeholder="YYYY-MM-DD" /> : <div className="form-value" data-value={formData.project_date || ''}></div>}
+                            {isEditing ? <Input name="project_date" value={formData.project_date || ''} onChange={handleInputChange} placeholder="YYYY-MM-DD" /> : <div className="form-value" data-value={formData.project_date || ''}>{formData.project_date}</div>}
                         </div>
                     </div>
                     <Separator className="my-6"/>
