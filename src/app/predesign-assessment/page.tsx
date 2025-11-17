@@ -20,10 +20,10 @@ const DEFAULT_ASSESSMENT_ID = "main-predesign-assessment";
 const Section = ({ title, items, formData, handleInputChange, isEditing }: { title: string, items: string[], formData: any, handleInputChange: any, isEditing: boolean }) => (
     <div className="flex-1 space-y-2">
         <h3 className="font-bold text-lg mb-2 underline">{title}</h3>
-        {items.map(item => {
+        {items.map((item, index) => {
             const sectionPrefix = title.toLowerCase().replace(/ /g, '-');
             const fieldName = item.toLowerCase().replace(/ \/ /g, '-').replace(/ /g, '-');
-            const uniqueFieldName = `${sectionPrefix}-${fieldName}`;
+            const uniqueFieldName = `${sectionPrefix}-${fieldName}-${index}`;
             return (
                 <div key={uniqueFieldName} className="flex flex-col">
                     <Label htmlFor={uniqueFieldName} className="mb-1 text-sm">{item}</Label>
