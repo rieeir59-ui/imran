@@ -252,18 +252,23 @@ const AskariBankTimelinePage = () => {
     exportDataToCsv(projectData, 'askari-bank-timeline-data');
   }
 
-  const renderCell = (value: string | undefined, onChange: (val: any) => void) => {
-    return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8" /> : (value || '');
+  const renderCell = (value: string, onChange: (val: any) => void) => {
+    if (isEditing) {
+      return <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8" />;
+    }
+    return <span className="cell-value">{value || ''}</span>;
   }
 
   const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
-      const date = value && isValid(new Date(value)) ? new Date(value) : undefined;
-      return isEditing ? (
-          <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />
-      ) : (
-          date ? format(date, 'd-MMM-yy') : (value || '')
-      )
+    const date = value && isValid(new Date(value)) ? new Date(value) : undefined;
+    const formattedDate = date ? format(date, 'd-MMM-yy') : (value || '');
+
+    if (isEditing) {
+      return <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />;
+    }
+    return <span className="cell-value">{formattedDate}</span>;
   }
+
 
   if (isUserLoading || isLoading) {
     return (
@@ -427,5 +432,3 @@ const AskariBankTimelinePage = () => {
 };
 
 export default AskariBankTimelinePage;
-
-    

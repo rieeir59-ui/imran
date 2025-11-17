@@ -87,6 +87,8 @@
   body {
     background: white !important;
     color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .no-print {
     display: none !important;
@@ -103,21 +105,40 @@
       border: 1px solid #ccc !important;
   }
   
-  input, label {
-    color: black !important;
+  /* Hide interactive elements, show their values */
+  .printable-content input,
+  .printable-content textarea {
+    display: none;
+  }
+  
+  .printable-content .form-value {
+    display: block;
+    min-height: 24px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    border-bottom: 1px solid #ddd;
+    color: black;
+  }
+  
+  .printable-content input:disabled,
+  .printable-content textarea:disabled {
+     display: none;
   }
 
-  input {
-    border-color: #ccc !important;
-    -webkit-print-color-adjust: exact; 
-    print-color-adjust: exact;
+  .printable-content .form-value::after {
+    content: attr(data-value);
   }
 
-  input:disabled {
-    background-color: #f0f0f0 !important;
-    opacity: 1 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  /* Specific fix for timeline pages */
+  .printable-card table input,
+  .printable-card table button,
+  .printable-card table .lucide-calendar {
+    display: none !important;
+  }
+
+  .printable-card table .cell-value {
+    display: block !important;
+    padding: 8px; /* Match TableCell padding */
   }
 
   /* Ensure checkbox state is visible */

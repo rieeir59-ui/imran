@@ -141,25 +141,35 @@ export default function ProjectsPage() {
     )
   }
 
-  const renderInput = (name: string, placeholder = "") => (
-    <Input
-      name={name}
-      value={formData[name] || ''}
-      onChange={handleInputChange}
-      disabled={!isEditing}
-      placeholder={placeholder}
-    />
-  );
+  const renderInput = (name: string, placeholder = "") => {
+    const value = formData[name] || '';
+    if (isEditing) {
+      return (
+        <Input
+          name={name}
+          value={value}
+          onChange={handleInputChange}
+          placeholder={placeholder}
+        />
+      );
+    }
+    return <div className="form-value" data-value={value}></div>;
+  };
   
-  const renderTextarea = (name: string, placeholder = "") => (
-      <Textarea
-        name={name}
-        value={formData[name] || ''}
-        onChange={handleInputChange}
-        disabled={!isEditing}
-        placeholder={placeholder}
-      />
-  );
+  const renderTextarea = (name: string, placeholder = "") => {
+    const value = formData[name] || '';
+    if (isEditing) {
+      return (
+        <Textarea
+          name={name}
+          value={value}
+          onChange={handleInputChange}
+          placeholder={placeholder}
+        />
+      );
+    }
+    return <div className="form-value" data-value={value}></div>;
+  };
 
   const renderCheckbox = (name: string, label?: string) => (
       <div className="flex items-center gap-2">

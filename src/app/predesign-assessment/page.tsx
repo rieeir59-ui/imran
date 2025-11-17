@@ -24,17 +24,22 @@ const Section = ({ title, items, formData, handleInputChange, isEditing }: { tit
             const sectionPrefix = title.toLowerCase().replace(/ /g, '-');
             const fieldName = item.toLowerCase().replace(/ \/ /g, '-').replace(/ /g, '-');
             const uniqueFieldName = `${sectionPrefix}-${fieldName}-${index}`;
+            const value = formData[uniqueFieldName] || '';
+            
             return (
                 <div key={uniqueFieldName} className="flex flex-col">
                     <Label htmlFor={uniqueFieldName} className="mb-1 text-sm">{item}</Label>
-                    <Input 
-                        id={uniqueFieldName}
-                        name={uniqueFieldName}
-                        value={formData[uniqueFieldName] || ''}
-                        onChange={handleInputChange}
-                        disabled={!isEditing}
-                        className="h-8"
-                    />
+                    {isEditing ? (
+                        <Input 
+                            id={uniqueFieldName}
+                            name={uniqueFieldName}
+                            value={value}
+                            onChange={handleInputChange}
+                            className="h-8"
+                        />
+                    ) : (
+                        <div className="form-value" data-value={value}></div>
+                    )}
                 </div>
             )
         })}
@@ -42,7 +47,7 @@ const Section = ({ title, items, formData, handleInputChange, isEditing }: { tit
 );
 
 export default function PredesignAssessmentPage() {
-    const [isEditing, setIsEditing] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState<any>({});
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -72,7 +77,6 @@ export default function PredesignAssessmentPage() {
                 if (docSnap.exists()) {
                     setFormData(docSnap.data() || {});
                 }
-                setIsEditing(true); 
             })
             .catch(async (serverError) => {
                 console.error("Error fetching assessment data:", serverError);
@@ -169,23 +173,23 @@ export default function PredesignAssessmentPage() {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="printable-content">
                     <div className="grid grid-cols-2 gap-4 mb-4">
                         <div className="flex items-center gap-2">
                             <Label>Project (Name, Address):</Label>
-                            <Input name="project_name_address" value={formData.project_name_address || ''} onChange={handleInputChange} disabled={!isEditing} />
+                            {isEditing ? <Input name="project_name_address" value={formData.project_name_address || ''} onChange={handleInputChange} /> : <div className="form-value" data-value={formData.project_name_address || ''}></div>}
                         </div>
                         <div className="flex items-center gap-2">
                             <Label>Architect:</Label>
-                            <Input name="architect" value={formData.architect || ''} onChange={handleInputChange} disabled={!isEditing} />
+                            {isEditing ? <Input name="architect" value={formData.architect || ''} onChange={handleInputChange} /> : <div className="form-value" data-value={formData.architect || ''}></div>}
                         </div>
                          <div className="flex items-center gap-2">
                             <Label>Architects Project No:</Label>
-                            <Input name="architect_project_no" value={formData.architect_project_no || ''} onChange={handleInputChange} disabled={!isEditing} />
+                            {isEditing ? <Input name="architect_project_no" value={formData.architect_project_no || ''} onChange={handleInputChange} /> : <div className="form-value" data-value={formData.architect_project_no || ''}></div>}
                         </div>
                         <div className="flex items-center gap-2">
                             <Label>Project Date:</Label>
-                            <Input name="project_date" value={formData.project_date || ''} onChange={handleInputChange} disabled={!isEditing} placeholder="YYYY-MM-DD" />
+                            {isEditing ? <Input name="project_date" value={formData.project_date || ''} onChange={handleInputChange} placeholder="YYYY-MM-DD" /> : <div className="form-value" data-value={formData.project_date || ''}></div>}
                         </div>
                     </div>
                     <Separator className="my-6"/>
