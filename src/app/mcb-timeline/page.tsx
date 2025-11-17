@@ -297,13 +297,13 @@ const McbTimelinePage = () => {
                   <TableHead colSpan={2} className="border border-gray-400 text-center w-[200px]">Site Survey</TableHead>
                   <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[80px]">Contact</TableHead>
                   <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[100px]">Head Count / Requirment</TableHead>
-                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[200px]">Proposal / Design Development</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[240px]">Proposal / Design Development</TableHead>
                   <TableHead colSpan={2} className="border border-gray-400 text-center w-[200px]">3D's</TableHead>
-                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[200px]">Tender Package Architectural</TableHead>
-                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[200px]">Tender Package MEP</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[240px]">Tender Package Architectural</TableHead>
+                  <TableHead colSpan={2} className="border border-gray-400 text-center w-[240px]">Tender Package MEP</TableHead>
                   <TableHead colSpan={2} className="border border-gray-400 text-center w-[200px]">BOQ</TableHead>
                   <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[80px]">Tender Status</TableHead>
-                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[80px]">Comparative</TableHead>
+                  <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[60px]">Comparative</TableHead>
                   <TableHead colSpan={2} className="border border-gray-400 text-center w-[200px]">Working Drawings</TableHead>
                   <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[80px]">Site Visit</TableHead>
                   <TableHead rowSpan={2} className="border border-gray-400 text-center align-middle w-[80px]">Final Bill</TableHead>
@@ -312,14 +312,14 @@ const McbTimelinePage = () => {
                 <TableRow>
                   <TableHead className="border border-gray-400 text-center w-[100px]">Start Date</TableHead>
                   <TableHead className="border border-gray-400 text-center w-[100px]">End Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[120px]">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[120px]">End Date</TableHead>
                   <TableHead className="border border-gray-400 text-center w-[100px]">Start Date</TableHead>
                   <TableHead className="border border-gray-400 text-center w-[100px]">End Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">Start Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">End Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">Start Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">End Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">Start Date</TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">End Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[120px]">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[120px]">End Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[120px]">Start Date</TableHead>
+                  <TableHead className="border border-gray-400 text-center w-[120px]">End Date</TableHead>
                   <TableHead className="border border-gray-400 text-center w-[100px]">Start Date</TableHead>
                   <TableHead className="border border-gray-400 text-center w-[100px]">End Date</TableHead>
                   <TableHead className="border border-gray-400 text-center w-[100px]">Start Date</TableHead>

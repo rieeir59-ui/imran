@@ -310,7 +310,7 @@ const CbdTimelinePage = () => {
                   </TableHead>
                   <TableHead
                     colSpan={2}
-                    className="border border-gray-400 text-center w-[200px]"
+                    className="border border-gray-400 text-center w-[240px]"
                   >
                     Proposal / Design Development
                   </TableHead>
@@ -322,13 +322,13 @@ const CbdTimelinePage = () => {
                   </TableHead>
                   <TableHead
                     colSpan={2}
-                    className="border border-gray-400 text-center w-[200px]"
+                    className="border border-gray-400 text-center w-[240px]"
                   >
                     Tender Package Architectural
                   </TableHead>
                   <TableHead
                     colSpan={2}
-                    className="border border-gray-400 text-center w-[200px]"
+                    className="border border-gray-400 text-center w-[240px]"
                   >
                     Tender Package MEP
                   </TableHead>
@@ -346,7 +346,7 @@ const CbdTimelinePage = () => {
                   </TableHead>
                   <TableHead
                     rowSpan={2}
-                    className="border border-gray-400 text-center align-middle w-[80px]"
+                    className="border border-gray-400 text-center align-middle w-[60px]"
                   >
                     Comparative
                   </TableHead>
@@ -382,10 +382,10 @@ const CbdTimelinePage = () => {
                   <TableHead className="border border-gray-400 text-center w-[100px]">
                     End Date
                   </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">
+                  <TableHead className="border border-gray-400 text-center w-[120px]">
                     Start Date
                   </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">
+                  <TableHead className="border border-gray-400 text-center w-[120px]">
                     End Date
                   </TableHead>
                   <TableHead className="border border-gray-400 text-center w-[100px]">
@@ -394,16 +394,16 @@ const CbdTimelinePage = () => {
                   <TableHead className="border border-gray-400 text-center w-[100px]">
                     End Date
                   </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">
+                  <TableHead className="border border-gray-400 text-center w-[120px]">
                     Start Date
                   </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">
+                  <TableHead className="border border-gray-400 text-center w-[120px]">
                     End Date
                   </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">
+                  <TableHead className="border border-gray-400 text-center w-[120px]">
                     Start Date
                   </TableHead>
-                  <TableHead className="border border-gray-400 text-center w-[100px]">
+                  <TableHead className="border border-gray-400 text-center w-[120px]">
                     End Date
                   </TableHead>
                   <TableHead className="border border-gray-400 text-center w-[100px]">
