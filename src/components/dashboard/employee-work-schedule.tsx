@@ -65,12 +65,6 @@ export default function EmployeeWorkSchedule() {
             </Card>
         )
     }
-    
-    const addEmployeeSchedule = () => {
-        // For now, this just links to the generic weekly schedule page.
-        // In the future, this could open a dialog to create a new named schedule.
-    };
-
 
     return (
         <Card>
@@ -111,7 +105,7 @@ export default function EmployeeWorkSchedule() {
                     )
                 })}
                  <Link href="/weekly-schedule" passHref>
-                    <Button variant="outline" className="w-full h-full flex flex-col items-center justify-center p-4 border-dashed">
+                    <Button variant="outline" className="w-full h-full flex flex-col items-center justify-center p-4 border-dashed hover:bg-accent hover:border-solid">
                         <PlusCircle className="h-8 w-8 text-muted-foreground mb-2" />
                         <span className="text-muted-foreground">Add Employee Schedule</span>
                     </Button>
