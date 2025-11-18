@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -591,12 +592,12 @@ const Section4 = React.memo(() => {
             y += 10;
         }
     
-        const addCheckbox = (label: string, value: boolean | undefined) => {
+        const addCheckbox = (label: string, value: boolean | undefined, options: { xOffset?: number } = {}) => {
             if (y > 280) {
                 doc.addPage();
                 y = 15;
             }
-            doc.text(`${value ? '[X]' : '[ ]'} ${label}`, 14, y);
+            doc.text(`${value ? '[X]' : '[ ]'} ${label}`, options.xOffset || 14, y);
             y += 7;
         };
     
@@ -688,9 +689,9 @@ const Section4 = React.memo(() => {
         addTitle("Method of Handling");
         addCheckbox("Single Contract", formData.method_single);
         y -= 7;
-        doc.text("", 105, y); // Hack to reset x position
-        addCheckbox("Separate Contracts", formData.method_separate);
+        addCheckbox("Separate Contracts", formData.method_separate, { xOffset: 70 });
         y += 7;
+
         addDualField("Negotiated/Bid", formData.negotiatedBid, "Stipulated Sum", formData.stipulatedSum);
         addDualField("Cost Plus Fee", formData.costPlusFee, "Equipment", formData.equipment);
         addDualField("Landscaping", formData.landscaping, undefined, undefined);
