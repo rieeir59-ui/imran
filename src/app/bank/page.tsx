@@ -555,17 +555,18 @@ const Section4 = React.memo(() => {
         const doc = new jsPDF();
         let y = 15;
     
-        const addField = (label: string, value: string | undefined, options: { isTextarea?: boolean } = {}) => {
+        const addField = (label: string, value: string | undefined, options: { isTextarea?: boolean, xOffset?: number } = {}) => {
             if (y > 270) {
                 doc.addPage();
                 y = 15;
             }
             doc.setFont('helvetica', 'bold');
-            doc.text(label, 14, y);
+            doc.text(label, options.xOffset || 14, y);
+            y+=5;
             doc.setFont('helvetica', 'normal');
             
-            const text = value || '';
-            const splitText = doc.splitTextToSize(text, 170);
+            const text = value || '____________________';
+            const splitText = doc.splitTextToSize(text, options.isTextarea ? 180 : 80);
             const textHeight = doc.getTextDimensions(splitText).h;
 
             if (y + textHeight > 280) {
@@ -573,9 +574,20 @@ const Section4 = React.memo(() => {
                  y = 15;
             }
 
-            doc.text(splitText, 14, y + 5);
-            y += textHeight + (options.isTextarea ? 8 : 4);
+            doc.text(splitText, options.xOffset || 14, y);
+            y += options.isTextarea ? textHeight + 4 : 0;
+            if (!options.isTextarea) y += -5; // Move back up for next field in multi-column layout
         };
+
+        const addDualField = (label1: string, value1: string | undefined, label2: string, value2: string | undefined) => {
+            if (y > 270) {
+                doc.addPage();
+                y = 15;
+            }
+            addField(label1, value1);
+            addField(label2, value2, { xOffset: 105 });
+            y += 10;
+        }
     
         const addCheckbox = (label: string, value: boolean | undefined) => {
             if (y > 280) {
@@ -592,55 +604,63 @@ const Section4 = React.memo(() => {
                 y = 15;
             }
             doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
             doc.text(title, 14, y);
             y += 10;
             doc.setFontSize(10);
         };
     
-        doc.setFontSize(16);
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
         doc.text("Project Data", 105, y, { align: 'center' });
-        y += 10;
+        y += 15;
     
-        addField("Project", formData.project);
-        addField("Address", formData.address);
-        addField("Owner", formData.owner);
-        addField("Architect's Project No.", formData.architectsProjectNo);
-        addField("Date", formData.date);
-        addField("Tel", formData.tel);
-        addField("Business Address", formData.businessAddress);
-        addField("Home Address", formData.homeAddress);
+        addDualField("Project", formData.project, "Architect's Project No.", formData.architectsProjectNo);
+        addDualField("Address", formData.address, "Date", formData.date);
+        addDualField("Owner", formData.owner, "Tel", formData.tel);
+        addDualField("Business Address", formData.businessAddress, "Home Address", formData.homeAddress);
+        
+        y += 5;
         addField("Proposed Improvements", formData.proposedImprovements, { isTextarea: true });
-        addField("Building Dept. Classification", formData.buildingDeptClassification);
-        addField("Set Backs", formData.setBacks);
-        addField("Cost", formData.cost);
-        addField("Stories", formData.stories);
-        addField("Fire Zone", formData.fireZone);
+        y += 10;
+
+        addDualField("Building Dept. Classification", formData.buildingDeptClassification, "Set Backs", formData.setBacks);
+        addDualField("Cost", formData.cost, "Stories", formData.stories);
+        addDualField("Fire Zone", formData.fireZone, "", undefined);
+        y += 5;
+
         addField("Other Agency Standards or Approvals Required", formData.otherAgencyStandards, { isTextarea: true });
+        y += 10;
         addField("Site Legal Description", formData.siteLegalDescription, { isTextarea: true });
+        y += 10;
         addField("Deed recorded in", formData.deedRecorded);
+        y += 10;
+
         addField("Restrictions", formData.restrictions, { isTextarea: true });
+        y += 10;
         addField("Easements", formData.easements, { isTextarea: true });
+        y += 10;
         addField("Liens, Leases", formData.liensLeases, { isTextarea: true });
-        addField("Lot Dimensions", formData.lotDimensions);
+        y += 10;
+
+        addDualField("Lot Dimensions", formData.lotDimensions, "", undefined);
+        y += 5;
         addField("Adjacent property use", formData.adjacentPropertyUse, { isTextarea: true });
-        addField("Owners: Name", formData.ownerName);
-        addField("Designated Representative", formData.designatedRep);
-        addField("Address", formData.repAddress);
-        addField("Tel", formData.repTel);
-        addField("Attorney at Law", formData.attorney);
-        addField("Insurance Advisor", formData.insuranceAdvisor);
-        addField("Consultant on", formData.consultantOn);
+        y += 10;
         
-        y += 5;
-        addTitle("Site Information Sources:");
-        addField("Property Survey by", formData.propertySurveyBy);
-        addField("Topographic Survey by", formData.topographicSurveyBy);
-        addField("Soils Tests by", formData.soilsTestsBy);
-        addField("Aerial Photos by", formData.aerialPhotosBy);
-        addField("Maps", formData.maps);
-        
-        y += 5;
-        addTitle("Public Services:");
+        addDualField("Owners: Name", formData.ownerName, "Designated Representative", formData.designatedRep);
+        addDualField("Address", formData.repAddress, "Tel", formData.repTel);
+        addDualField("Attorney at Law", formData.attorney, "Insurance Advisor", formData.insuranceAdvisor);
+        addDualField("Consultant on", formData.consultantOn, "", undefined);
+
+        y += 10;
+        addTitle("Site Information Sources");
+        addDualField("Property Survey by", formData.propertySurveyBy, "Topographic Survey by", formData.topographicSurveyBy);
+        addDualField("Soils Tests by", formData.soilsTestsBy, "Aerial Photos by", formData.aerialPhotosBy);
+        addDualField("Maps", formData.maps, "", undefined);
+
+        y += 10;
+        addTitle("Public Services");
         autoTable(doc, {
             startY: y,
             head: [['Company', 'Name and Address', 'Representative', 'Tel']],
@@ -650,36 +670,33 @@ const Section4 = React.memo(() => {
                 ['Telephone Co', formData.telco_address, formData.telco_rep, formData.telco_tel],
             ],
             theme: 'grid',
-            styles: { fontSize: 8 }
+            styles: { fontSize: 9 }
         });
         y = (doc as any).lastAutoTable.finalY + 7;
-        addField("Sewers", formData.sewers);
-        addField("Water", formData.water);
+        addDualField("Sewers", formData.sewers, "Water", formData.water);
 
-        y += 5;
-        addTitle("Financial Data:");
-        addField("Loan Amount", formData.loanAmount);
-        addField("Loan by", formData.loanBy);
-        addField("Bonds or Liens", formData.bondsOrLiens);
-        addField("Grant Amount", formData.grantAmount);
-        addField("Grant from", formData.grantFrom);
-
-        y += 5;
-        addTitle("Method of Handling:");
-        addCheckbox("Single Contract", formData.method_single);
-        addCheckbox("Separate Contracts", formData.method_separate);
-        y -= 7; // to align next fields
-        addField("Negotiated/Bid", formData.negotiatedBid);
-        addField("Stipulated Sum", formData.stipulatedSum);
-        addField("Cost Plus Fee", formData.costPlusFee);
-        addField("Equipment", formData.equipment);
-        addField("Landscaping", formData.landscaping);
-
-        y += 5;
-        addTitle("Sketch of Property:");
-        doc.text("Notations on existing improvements, disposal thereof, utilities, tree, etc.; indicated North; notations on other Project provision:", 14, y);
         y += 10;
-        doc.rect(14, y, 180, 60); // Draw a box for the sketch
+        addTitle("Financial Data");
+        addDualField("Loan Amount", formData.loanAmount, "Loan by", formData.loanBy);
+        addDualField("Bonds or Liens", formData.bondsOrLiens, "Grant Amount", formData.grantAmount);
+        addDualField("Grant from", formData.grantFrom, "", undefined);
+
+        y += 10;
+        addTitle("Method of Handling");
+        addCheckbox("Single Contract", formData.method_single);
+        y -= 7;
+        addCheckbox("Separate Contracts", formData.method_separate);
+        y += 7;
+        addDualField("Negotiated/Bid", formData.negotiatedBid, "Stipulated Sum", formData.stipulatedSum);
+        addDualField("Cost Plus Fee", formData.costPlusFee, "Equipment", formData.equipment);
+        addDualField("Landscaping", formData.landscaping, "", undefined);
+
+        y += 10;
+        addTitle("Sketch of Property");
+        doc.setFontSize(9);
+        doc.text("Notations on existing improvements, disposal thereof, utilities, tree, etc.; indicated North; notations on other Project provision:", 14, y);
+        y += 5;
+        doc.rect(14, y, 180, 50);
     
         doc.save("project-data.pdf");
         toast({ title: "Download started", description: "Your PDF is being generated." });
@@ -1969,7 +1986,7 @@ const Section17 = React.memo(() => {
         "GLASS VENDORS": [
             {"Sr No": 1, "Company": "Ghani Glass Limited", "Contact Person": "Adeel Ilyas", "Products": "Double Glazed Glass,Tempered Glass,Float Glass", "Address": "40-L Model Town,Ext,Lahore", "Contact": "042-35169049,0321-8488394"},
             {"Sr No": 2, "Company": "Innovative Marketing Company", "Contact Person": "Nayer Mirza", "Products": "Double Glazed Glass,Tempered Glass,Float Glass", "Address": "9-A Beadon Road Lahore", "Contact": "0300-8162728"},
-            {"Sr No": 3, "Company": "Al-Fatah Toughened Glass Industries(pvt) Ltd", "Contact Person": "Tanveer Saeed", "Products": "Double Glazed Glass,Tempered Glass,Float Glass", "Address": "Office#411, 4th Floor,Alqadeer Heights,1-Babar Block New Garden Town,Lahore", "Contact": "0300/0302-8459142"},
+            {"Sr No": 3, "Company Name": "Al-Fatah Toughened Glass Industries(pvt) Ltd", "Contact Person": "Tanveer Saeed", "Products": "Double Glazed Glass,Tempered Glass,Float Glass", "Address": "Office#411, 4th Floor,Alqadeer Heights,1-Babar Block New Garden Town,Lahore", "Contact": "0300/0302-8459142"},
             {"Sr No": 4, "Company Name": "Guardian Glass", "Contact Person": "", "Products": "Double Glazed Glass,Tempered Glass,Float Glass", "Address": "PLANT 13 KM SHEIKHUPURA ROAD, LAHORE, PAKISTAN", "Contact": ""},
             {"Sr No": 5, "Company Name": "Pilkington glass", "Contact Person": "", "Products": "Double Glazed Glass,Tempered Glass,Float Glass", "Address": "9 ROYAL PARK, NEAR HAMID CENTRE LAHORE-PAKISTAN", "Contact": ""}
         ],
