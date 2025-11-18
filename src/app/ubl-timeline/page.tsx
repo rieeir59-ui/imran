@@ -258,15 +258,24 @@ const UblTimelinePage = () => {
     }
     setIsSaving(true);
     const dataToSave = { projectData, overallStatus, remarks };
-    setDocumentNonBlocking(timelineDocRef, dataToSave, { merge: true });
-    setTimeout(() => {
-      setIsSaving(false);
-      setIsEditing(false);
-      toast({
-        title: "Data Saved",
-        description: "Your changes have been saved successfully.",
+    setDoc(timelineDocRef, dataToSave, { merge: true })
+      .then(() => {
+        setIsSaving(false);
+        setIsEditing(false);
+        toast({
+          title: "Data Saved",
+          description: "Your changes have been saved successfully.",
+        });
+      })
+      .catch((serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: timelineDocRef.path,
+          operation: 'write',
+          requestResourceData: dataToSave,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        setIsSaving(false);
       });
-    }, 1000);
   };
 
   const handleDownloadCsv = () => {

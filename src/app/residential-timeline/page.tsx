@@ -22,7 +22,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from 'next/link';
-import { exportDataToCsv } from '@/lib/utils';
+import { exportDataToCsv, exportDataToPdf } from '@/lib/utils';
 
 const TIMELINE_DOC_ID = "residential-timeline";
 
@@ -221,19 +221,32 @@ const ResidentialTimelinePage = () => {
     }
     setIsSaving(true);
     const dataToSave = { projectData, overallStatus, remarks };
-    setDocumentNonBlocking(timelineDocRef, dataToSave, { merge: true });
-    setTimeout(() => {
-      setIsSaving(false);
-      setIsEditing(false);
-      toast({
-        title: "Data Saved",
-        description: "Your changes have been saved successfully.",
+    setDoc(timelineDocRef, dataToSave, { merge: true })
+      .then(() => {
+        setIsSaving(false);
+        setIsEditing(false);
+        toast({
+          title: "Data Saved",
+          description: "Your changes have been saved successfully.",
+        });
+      })
+      .catch((serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: timelineDocRef.path,
+          operation: 'write',
+          requestResourceData: dataToSave,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        setIsSaving(false);
       });
-    }, 1000);
   };
   
   const handleDownloadCsv = () => {
     exportDataToCsv(projectData, 'residential-timeline-data');
+  }
+
+  const handleDownloadPdf = () => {
+    exportDataToPdf('Residential Projects Progress Chart', projectData, 'residential-timeline');
   }
 
   const renderCell = (value: string, onChange: (val: string) => void) => {
@@ -275,7 +288,7 @@ const ResidentialTimelinePage = () => {
         <h1 className="text-2xl font-bold">Residential Projects</h1>
         <div className="flex items-center gap-2">
             <Button onClick={handleDownloadCsv} variant="outline"><FileDown className="mr-2 h-4 w-4" /> Download CSV</Button>
-            <Button onClick={() => window.print()} variant="outline"><Download className="mr-2 h-4 w-4" /> Download</Button>
+            <Button onClick={handleDownloadPdf} variant="outline"><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
             {isEditing ? (
                 <Button onClick={handleSave} disabled={isSaving}>
                     {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />} Save

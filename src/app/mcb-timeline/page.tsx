@@ -23,7 +23,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
-import { addDays, format, parseISO } from 'date-fns';
+import { addDays, format, parseISO, isValid } from 'date-fns';
 import { exportDataToCsv, exportDataToPdf } from '@/lib/utils';
 
 const TIMELINE_DOC_ID = "mcb-timeline";
@@ -200,15 +200,24 @@ const McbTimelinePage = () => {
     }
     setIsSaving(true);
     const dataToSave = { projectData, overallStatus, remarks };
-    setDocumentNonBlocking(timelineDocRef, dataToSave, { merge: true });
-    setTimeout(() => {
-      setIsSaving(false);
-      setIsEditing(false);
-      toast({
-        title: "Data Saved",
-        description: "Your changes have been saved successfully.",
+    setDoc(timelineDocRef, dataToSave, { merge: true })
+      .then(() => {
+        setIsSaving(false);
+        setIsEditing(false);
+        toast({
+          title: "Data Saved",
+          description: "Your changes have been saved successfully.",
+        });
+      })
+      .catch((serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: timelineDocRef.path,
+          operation: 'write',
+          requestResourceData: dataToSave,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        setIsSaving(false);
       });
-    }, 1000);
   };
 
   const handleDownloadCsv = () => {
@@ -224,11 +233,11 @@ const McbTimelinePage = () => {
   }
 
   const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
-      const date = value ? new Date(value) : undefined;
+      const date = value && isValid(new Date(value)) ? new Date(value) : undefined;
       return isEditing ? (
           <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />
       ) : (
-          value ? format(new Date(value), 'd-MMM-yy') : ''
+          date ? format(date, 'd-MMM-yy') : (value || '')
       )
   }
 
