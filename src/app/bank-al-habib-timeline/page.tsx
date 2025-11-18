@@ -194,7 +194,7 @@ const BankAlHabibTimelinePage = () => {
   }
 
   const handleDownloadPdf = () => {
-    exportDataToPdf('Bank Al Habib Project Progress Chart', projectData, 'bank-al-habib-timeline');
+    exportDataToPdf('Bank Al Habib Project Progress Chart', projectData, 'bank-al-habib-timeline', overallStatus, remarks);
   }
 
   const renderCell = (value: string | undefined, onChange: (val: string) => void) => {

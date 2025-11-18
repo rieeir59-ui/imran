@@ -195,7 +195,7 @@ const CbdTimelinePage = () => {
   }
 
   const handleDownloadPdf = () => {
-    exportDataToPdf('CBD Project Progress Chart', projectData, 'cbd-timeline');
+    exportDataToPdf('CBD Project Progress Chart', projectData, 'cbd-timeline', overallStatus, remarks);
   }
 
   const renderCell = (value: string | undefined, onChange: (val: string) => void) => {

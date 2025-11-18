@@ -19,7 +19,7 @@ import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown } from 'lu
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
@@ -225,7 +225,7 @@ const McbTimelinePage = () => {
   }
 
   const handleDownloadPdf = () => {
-    exportDataToPdf('MCB Project Progress Chart', projectData, 'mcb-timeline');
+    exportDataToPdf('MCB Project Progress Chart', projectData, 'mcb-timeline', overallStatus, remarks);
   }
 
   const renderCell = (value: string | undefined, onChange: (val: string) => void) => {

@@ -19,7 +19,7 @@ import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown } from 'lu
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
@@ -435,7 +435,7 @@ const HblTimelinePage = () => {
   }
 
   const handleDownloadPdf = () => {
-    exportDataToPdf('HBL Project Progress Chart', projectData, 'hbl-timeline');
+    exportDataToPdf('HBL Project Progress Chart', projectData, 'hbl-timeline', undefined, remarks);
   }
   
   const renderCell = (value: string | undefined, onChange: (val: string) => void) => {

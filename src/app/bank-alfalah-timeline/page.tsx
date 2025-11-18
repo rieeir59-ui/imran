@@ -222,7 +222,7 @@ const BankAlfalahTimelinePage = () => {
   }
 
   const handleDownloadPdf = () => {
-    exportDataToPdf('Bank Alfalah Project Progress Chart', projectData, 'bank-alfalah-timeline');
+    exportDataToPdf('Bank Alfalah Project Progress Chart', projectData, 'bank-alfalah-timeline', overallStatus, remarks);
   }
 
   const renderCell = (value: string | undefined, onChange: (val: string) => void) => {

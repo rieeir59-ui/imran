@@ -167,7 +167,7 @@ const DibTimelinePage = () => {
   }
 
   const handleDownloadPdf = () => {
-    exportDataToPdf('DIB Project Progress Chart', projectData, 'dib-timeline');
+    exportDataToPdf('DIB Project Progress Chart', projectData, 'dib-timeline', overallStatus, remarks);
   }
   
   const renderCell = (value: string | undefined, onChange: (val: string) => void) => {

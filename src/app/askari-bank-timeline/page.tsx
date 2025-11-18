@@ -263,7 +263,7 @@ const AskariBankTimelinePage = () => {
   }
 
   const handleDownloadPdf = () => {
-    exportDataToPdf('Askari Bank Project Progress Chart', projectData, 'askari-bank-timeline');
+    exportDataToPdf('Askari Bank Project Progress Chart', projectData, 'askari-bank-timeline', overallStatus, remarks);
   }
 
   const renderCell = (value: string, onChange: (val: any) => void) => {
