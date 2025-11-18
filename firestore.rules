@@ -166,12 +166,15 @@ service cloud.firestore {
 
     /**
      * @description Enforces ownership for weekly work schedules.
+     * Allows public read access for link sharing, but write access is restricted to the owner.
      * @path /users/{userId}/weeklySchedules/{scheduleId}
-     * @allow (create, get, update, delete) - Authenticated user can manage their own weekly schedule.
+     * @allow (get) - Anyone can read a specific schedule.
+     * @allow (list, create, update, delete) - Authenticated user can manage their own weekly schedules.
      * @deny - All other access is denied.
      */
     match /users/{userId}/weeklySchedules/{scheduleId} {
-        allow read, write: if isOwner(userId);
+        allow get: if true;
+        allow list, write: if isOwner(userId);
     }
   }
 }
