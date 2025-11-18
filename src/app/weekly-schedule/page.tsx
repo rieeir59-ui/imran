@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown, PlusCircle, Trash2 } from 'lucide-react';
+import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown, PlusCircle, Trash2, CheckCircle, XCircle, CircleDotDashed } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
@@ -21,16 +21,17 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
-import { format, isValid } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 import { exportDataToCsv } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 const SCHEDULE_DOC_ID = "weekly-work-schedule";
 
 const initialScheduleData = [
-  { id: 1, employeeName: '', projectName: '', details: '', status: '', startDate: '', endDate: '' },
+  { id: 1, projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '' },
 ];
 
 const WeeklySchedulePage = () => {
@@ -39,6 +40,8 @@ const WeeklySchedulePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [schedules, setSchedules] = useState(initialScheduleData);
   const [remarks, setRemarks] = useState('');
+  const [scheduleDates, setScheduleDates] = useState({ start: '', end: '' });
+
   const { toast } = useToast();
 
   const firestore = useFirestore();
@@ -66,6 +69,7 @@ const WeeklySchedulePage = () => {
           const data = docSnap.data();
           if (data.schedules && data.schedules.length > 0) setSchedules(data.schedules);
           if (data.remarks) setRemarks(data.remarks);
+          if (data.scheduleDates) setScheduleDates(data.scheduleDates);
         }
       })
       .catch((serverError) => {
@@ -95,13 +99,17 @@ const WeeklySchedulePage = () => {
     setSchedules(updatedSchedules);
   };
   
+  const handleDateRangeChange = (field: 'start' | 'end', value: Date | undefined) => {
+      setScheduleDates(prev => ({...prev, [field]: value ? format(value, 'yyyy-MM-dd') : ''}))
+  }
+
   const handleSave = () => {
     if (!scheduleDocRef) {
       toast({ variant: "destructive", title: "Save Failed", description: "User not authenticated." });
       return;
     }
     setIsSaving(true);
-    const dataToSave = { schedules, remarks };
+    const dataToSave = { schedules, remarks, scheduleDates };
     
     setDoc(scheduleDocRef, dataToSave, { merge: true })
       .then(() => {
@@ -129,13 +137,14 @@ const WeeklySchedulePage = () => {
 
   const handleDownloadPdf = () => {
     const doc = new jsPDF();
-    doc.text("Weekly Work Schedule", 14, 15);
+    doc.text("Weekly Work Schedule for MUJAHID", 14, 15);
+    doc.text(`Schedule: ${scheduleDates.start} to ${scheduleDates.end}`, 14, 22);
     autoTable(doc, {
-        head: [['Employee Name', 'Project Name', 'Details', 'Status', 'Start Date', 'End Date']],
-        body: schedules.map(s => [s.employeeName, s.projectName, s.details, s.status, s.startDate, s.endDate]),
-        startY: 20,
+        head: [['Project Name', 'Details', 'Status', 'Start Date', 'End Date']],
+        body: schedules.map(s => [s.projectName, s.details, s.status, s.startDate, s.endDate]),
+        startY: 30,
     });
-    const finalY = (doc as any).lastAutoTable.finalY || 20;
+    const finalY = (doc as any).lastAutoTable.finalY || 30;
     if (remarks) {
         doc.text("Remarks", 14, finalY + 10);
         doc.text(remarks, 14, finalY + 15);
@@ -144,24 +153,33 @@ const WeeklySchedulePage = () => {
   }
   
   const addRow = () => {
-    setSchedules([...schedules, { id: schedules.length + 1, employeeName: '', projectName: '', details: '', status: '', startDate: '', endDate: '' }]);
+    setSchedules([...schedules, { id: schedules.length + 1, projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '' }]);
   }
 
   const removeRow = (index: number) => {
     const updatedSchedules = schedules.filter((_, i) => i !== index);
     setSchedules(updatedSchedules);
   }
+  
+  const getStatusIcon = (status: string) => {
+      switch (status) {
+          case 'Completed': return <CheckCircle className="text-green-500" />;
+          case 'In Progress': return <CircleDotDashed className="text-blue-500" />;
+          case 'Incomplete': return <XCircle className="text-red-500" />;
+          default: return null;
+      }
+  }
 
   const renderCell = (value: string | undefined, onChange: (val: any) => void) => {
-    return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8" /> : (value || '');
+    return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8" /> : <span className="p-2 block">{value || ''}</span>;
   }
 
   const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
-    const date = value && isValid(new Date(value)) ? new Date(value) : undefined;
+    const date = value && isValid(parseISO(value)) ? parseISO(value) : undefined;
     if (isEditing) {
       return <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />;
     }
-    return <span className="cell-value">{date ? format(date, 'd-MMM-yy') : (value || '')}</span>;
+    return <span className="p-2 block">{date ? format(date, 'd-MMM-yy') : (value || '')}</span>;
   }
 
   if (isUserLoading || isLoading) {
@@ -194,12 +212,11 @@ const WeeklySchedulePage = () => {
     <main className="p-4 md:p-6 lg:p-8">
       <div className="flex justify-between items-center mb-6 no-print">
         <Button variant="outline" asChild>
-            <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back</Link>
+            <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
         </Button>
-        <h1 className="text-2xl font-bold">Weekly Work Schedule</h1>
         <div className="flex items-center gap-2">
-            <Button onClick={handleDownloadCsv} variant="outline"><FileDown className="mr-2 h-4 w-4" /> Download CSV</Button>
-            <Button onClick={handleDownloadPdf} variant="outline"><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
+            <Button onClick={handleDownloadCsv} variant="outline"><FileDown className="mr-2 h-4 w-4" /> CSV</Button>
+            <Button onClick={handleDownloadPdf} variant="outline"><Download className="mr-2 h-4 w-4" /> PDF</Button>
             {isEditing ? (
                 <>
                     <Button onClick={addRow} variant="outline"><PlusCircle className="mr-2 h-4 w-4" /> Add Row</Button>
@@ -213,32 +230,68 @@ const WeeklySchedulePage = () => {
         </div>
       </div>
       <Card className="printable-card">
-        <CardHeader>
-            <CardTitle>Weekly Work Schedule</CardTitle>
+        <CardHeader className="flex flex-col md:flex-row justify-between md:items-center">
+            <div className='flex items-center gap-4'>
+                <Avatar className="h-16 w-16">
+                    <AvatarImage src="https://picsum.photos/seed/muj/200" alt="MUJAHID" />
+                    <AvatarFallback>M</AvatarFallback>
+                </Avatar>
+                <div>
+                    <CardTitle className="text-2xl font-bold">MUJAHID</CardTitle>
+                    <p className="text-muted-foreground">Weekly Work Schedule</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-2 mt-4 md:mt-0">
+                {isEditing ? (
+                    <>
+                        <DatePicker date={scheduleDates.start ? parseISO(scheduleDates.start) : undefined} onDateChange={(date) => handleDateRangeChange('start', date)} />
+                        <span className="mx-2">to</span>
+                        <DatePicker date={scheduleDates.end ? parseISO(scheduleDates.end) : undefined} onDateChange={(date) => handleDateRangeChange('end', date)} />
+                    </>
+                ) : (
+                    <p className="text-sm font-medium">
+                        {scheduleDates.start && format(parseISO(scheduleDates.start), 'PPP')} - {scheduleDates.end && format(parseISO(scheduleDates.end), 'PPP')}
+                    </p>
+                )}
+            </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Employee Name</TableHead>
                   <TableHead>Project Name</TableHead>
                   <TableHead>Details</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Start Date</TableHead>
                   <TableHead>End Date</TableHead>
+                  <TableHead>Tick</TableHead>
                   {isEditing && <TableHead className="w-12"></TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {schedules.map((schedule, index) => (
                   <TableRow key={index}>
-                    <TableCell>{renderCell(schedule.employeeName, (val) => handleScheduleChange(index, 'employeeName', val))}</TableCell>
                     <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
                     <TableCell>{renderCell(schedule.details, (val) => handleScheduleChange(index, 'details', val))}</TableCell>
-                    <TableCell>{renderCell(schedule.status, (val) => handleScheduleChange(index, 'status', val))}</TableCell>
+                    <TableCell>
+                      {isEditing ? (
+                        <select
+                          value={schedule.status}
+                          onChange={(e) => handleScheduleChange(index, 'status', e.target.value)}
+                          className="form-select block w-full h-8 border-gray-300 rounded-md"
+                        >
+                          <option>In Progress</option>
+                          <option>Completed</option>
+                          <option>Incomplete</option>
+                        </select>
+                      ) : (
+                        <span className="p-2 block">{schedule.status}</span>
+                      )}
+                    </TableCell>
                     <TableCell>{renderDateCell(schedule.startDate, (val) => handleScheduleChange(index, 'startDate', val))}</TableCell>
                     <TableCell>{renderDateCell(schedule.endDate, (val) => handleScheduleChange(index, 'endDate', val))}</TableCell>
+                    <TableCell>{getStatusIcon(schedule.status)}</TableCell>
                     {isEditing && 
                         <TableCell>
                             <Button variant="ghost" size="icon" onClick={() => removeRow(index)}>
@@ -259,7 +312,7 @@ const WeeklySchedulePage = () => {
                         placeholder="Add any overall remarks here..."
                     />
                 ) : (
-                    <p className="text-sm text-muted-foreground">{remarks || 'No remarks.'}</p>
+                    <p className="text-sm text-muted-foreground p-2">{remarks || 'No remarks.'}</p>
                 )}
             </div>
           </div>
