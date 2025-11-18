@@ -132,7 +132,16 @@ const WeeklySchedulePage = () => {
   };
 
   const handleDownloadCsv = () => {
-    exportDataToCsv(schedules, 'weekly-work-schedule');
+    const dataToExport = schedules.map(s => ({
+        projectNo: s.id,
+        employeeName: s.employeeName,
+        projectName: s.projectName,
+        details: s.details,
+        status: s.status,
+        startDate: s.startDate,
+        endDate: s.endDate,
+    }));
+    exportDataToCsv(dataToExport, 'weekly-work-schedule');
   }
 
   const handleDownloadPdf = () => {
@@ -141,8 +150,8 @@ const WeeklySchedulePage = () => {
     doc.text(`Weekly Work Schedule for ${employeeName}`, 14, 15);
     doc.text(`Schedule: ${scheduleDates.start} to ${scheduleDates.end}`, 14, 22);
     autoTable(doc, {
-        head: [['Employee', 'Project Name', 'Details', 'Status', 'Start Date', 'End Date']],
-        body: schedules.map(s => [s.employeeName, s.projectName, s.details, s.status, s.startDate, s.endDate]),
+        head: [['Project No.', 'Employee', 'Project Name', 'Details', 'Status', 'Start Date', 'End Date']],
+        body: schedules.map(s => [s.id, s.employeeName, s.projectName, s.details, s.status, s.startDate, s.endDate]),
         startY: 30,
     });
     const finalY = (doc as any).lastAutoTable.finalY || 30;
@@ -154,7 +163,7 @@ const WeeklySchedulePage = () => {
   }
   
   const addRow = () => {
-    setSchedules([...schedules, { id: schedules.length + 1, employeeName: schedules[0]?.employeeName || 'MUJAHID', projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '' }]);
+    setSchedules([...schedules, { id: schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1, employeeName: schedules[0]?.employeeName || 'MUJAHID', projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '' }]);
   }
 
   const removeRow = (index: number) => {
@@ -242,7 +251,19 @@ const WeeklySchedulePage = () => {
                     <AvatarFallback>{schedules[0]?.employeeName?.charAt(0) || 'E'}</AvatarFallback>
                 </Avatar>
                 <div>
-                    <CardTitle className="text-2xl font-bold">{schedules[0]?.employeeName || 'Employee'}</CardTitle>
+                    {isEditing ? (
+                        <Input
+                            value={schedules[0]?.employeeName || ''}
+                            onChange={(e) => {
+                                const newName = e.target.value;
+                                setSchedules(schedules.map(s => ({ ...s, employeeName: newName })));
+                            }}
+                            className="text-2xl font-bold p-0 border-0 h-auto focus-visible:ring-0"
+                            placeholder="Employee Name"
+                        />
+                    ) : (
+                        <CardTitle className="text-2xl font-bold">{schedules[0]?.employeeName || 'Employee'}</CardTitle>
+                    )}
                     <p className="text-muted-foreground">Weekly Work Schedule</p>
                 </div>
             </div>
@@ -265,7 +286,7 @@ const WeeklySchedulePage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Employee Name</TableHead>
+                  <TableHead className="w-20">Project No.</TableHead>
                   <TableHead>Project Name</TableHead>
                   <TableHead>Details</TableHead>
                   <TableHead>Status</TableHead>
@@ -278,7 +299,7 @@ const WeeklySchedulePage = () => {
               <TableBody>
                 {schedules.map((schedule, index) => (
                   <TableRow key={index}>
-                    <TableCell>{renderCell(schedule.employeeName, (val) => handleScheduleChange(index, 'employeeName', val))}</TableCell>
+                    <TableCell>{renderCell(String(schedule.id), (val) => handleScheduleChange(index, 'id', Number(val) || 0))}</TableCell>
                     <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
                     <TableCell>{renderCell(schedule.details, (val) => handleScheduleChange(index, 'details', val))}</TableCell>
                     <TableCell>
