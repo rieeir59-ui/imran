@@ -163,12 +163,16 @@ const WeeklySchedulePage = () => {
   }
   
   const getStatusIcon = (status: string) => {
-      switch (status) {
-          case 'Completed': return <CheckCircle className="text-green-500" />;
-          case 'In Progress': return <CircleDotDashed className="text-blue-500" />;
-          case 'Incomplete': return <XCircle className="text-red-500" />;
-          default: return null;
-      }
+    switch (status) {
+      case 'Completed':
+        return <CheckCircle className="text-green-500" />;
+      case 'In Progress':
+        return <CircleDotDashed className="text-blue-500" />;
+      case 'Incomplete':
+        return <XCircle className="text-red-500" />;
+      default:
+        return null;
+    }
   }
 
   const renderCell = (value: string | undefined, onChange: (val: any) => void) => {
