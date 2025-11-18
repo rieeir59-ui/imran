@@ -202,93 +202,7 @@
       "title": "ProjectInformation",
       "type": "object",
       "description": "Represents a comprehensive project information form.",
-      "properties": {
-        "project_name": {"type": "string"},
-        "project_address": {"type": "string"},
-        "project_no": {"type": "string"},
-        "prepared_by": {"type": "string"},
-        "prepared_date": {"type": "string"},
-        "owner_name": {"type": "string"},
-        "owner_office_address": {"type": "string"},
-        "owner_res_address": {"type": "string"},
-        "owner_office_phone": {"type": "string"},
-        "owner_res_phone": {"type": "string"},
-        "owner_rep_name": {"type": "string"},
-        "owner_rep_office_address": {"type": "string"},
-        "owner_rep_res_address": {"type": "string"},
-        "owner_rep_office_phone": {"type": "string"},
-        "owner_rep_res_phone": {"type": "string"},
-        "project_about_address": {"type": "string"},
-        "req_architectural": {"type": "boolean"},
-        "req_interior": {"type": "boolean"},
-        "req_landscaping": {"type": "boolean"},
-        "req_turnkey": {"type": "boolean"},
-        "req_other": {"type": "boolean"},
-        "type_commercial": {"type": "boolean"},
-        "type_residential": {"type": "boolean"},
-        "status_new": {"type": "boolean"},
-        "status_addition": {"type": "boolean"},
-        "status_rehab": {"type": "boolean"},
-        "project_area": {"type": "string"},
-        "project_special_reqs": {"type": "string"},
-        "cost_architectural": {"type": "boolean"},
-        "cost_interior": {"type": "boolean"},
-        "cost_landscaping": {"type": "boolean"},
-        "cost_construction": {"type": "boolean"},
-        "cost_turnkey": {"type": "boolean"},
-        "cost_other": {"type": "boolean"},
-        "date_first_info": {"type": "string"},
-        "date_first_meeting": {"type": "string"},
-        "date_first_working": {"type": "string"},
-        "date_proposal1_start": {"type": "string"},
-        "date_proposal1_completion": {"type": "string"},
-        "date_proposal2_start": {"type": "string"},
-        "date_proposal2_completion": {"type": "string"},
-        "date_final_proposal": {"type": "string"},
-        "date_revised_presentation": {"type": "string"},
-        "date_quotation": {"type": "string"},
-        "date_drawings_start": {"type": "string"},
-        "date_drawings_completion": {"type": "string"},
-        "date_other_milestones": {"type": "string"},
-        "provided_program": {"type": "boolean"},
-        "provided_schedule": {"type": "boolean"},
-        "provided_legal": {"type": "boolean"},
-        "provided_survey": {"type": "boolean"},
-        "provided_geo": {"type": "boolean"},
-        "provided_drawings": {"type": "boolean"},
-        "comp_initial_payment": {"type": "string"},
-        "comp_basic_services_pct": {"type": "string"},
-        "comp_schematic_pct": {"type": "string"},
-        "comp_dev_pct": {"type": "string"},
-        "comp_docs_pct": {"type": "string"},
-        "comp_bidding_pct": {"type": "string"},
-        "comp_admin_pct": {"type": "string"},
-        "comp_additional_services": {"type": "string"},
-        "comp_reimbursable": {"type": "string"},
-        "comp_other": {"type": "string"},
-        "comp_confidential": {"type": "string"},
-        "misc_notes": {"type": "string"},
-        "req_residence_nos": {"type": "string"},
-        "req_plot_size": {"type": "string"},
-        "req_bedrooms": {"type": "string"},
-        "req_specifications": {"type": "string"},
-        "req_dressing_rooms": {"type": "string"},
-        "req_bathrooms": {"type": "string"},
-        "req_living_rooms": {"type": "string"},
-        "req_breakfast": {"type": "string"},
-        "req_dinning": {"type": "string"},
-        "req_servant_kitchen": {"type": "string"},
-        "req_kitchenette": {"type": "string"},
-        "req_garage": {"type": "string"},
-        "req_servant_quarters": {"type": "string"},
-        "req_guard_room": {"type": "string"},
-        "req_study_room": {"type": "string"},
-        "req_stores": {"type": "string"},
-        "req_entertainment": {"type": "string"},
-        "req_patio": {"type": "string"},
-        "req_atrium": {"type": "string"},
-        "req_remarks": {"type": "string"}
-      },
+      "properties": {},
       "additionalProperties": {
         "anyOf": [
           { "type": "string" },
@@ -391,6 +305,31 @@
         }
       },
       "additionalProperties": true
+    },
+    "WeeklyWorkSchedule": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WeeklyWorkSchedule",
+      "description": "Represents the data for the weekly work schedule.",
+      "type": "object",
+      "properties": {
+        "schedules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+                "id": { "type": "number" },
+                "employeeName": { "type": "string" },
+                "projectName": { "type": "string" },
+                "details": { "type": "string" },
+                "status": { "type": "string" },
+                "startDate": { "type": "string" },
+                "endDate": { "type": "string" }
+            },
+            "required": ["id"]
+          }
+        },
+        "remarks": { "type": "string" }
+      }
     }
   },
   "auth": {
@@ -549,6 +488,16 @@
             "$ref": "#/entities/ProjectData"
           },
           "description": "Stores project data form for a specific user."
+        }
+      },
+      {
+        "path": "/users/{userId}/weeklySchedules/{scheduleId}",
+        "definition": {
+          "entityName": "WeeklyWorkSchedule",
+          "schema": {
+            "$ref": "#/entities/WeeklyWorkSchedule"
+          },
+          "description": "Stores weekly work schedule data for a specific user."
         }
       }
     ],

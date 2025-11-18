@@ -163,7 +163,15 @@ service cloud.firestore {
     match /users/{userId}/projectData/{dataId} {
         allow read, write: if isOwner(userId);
     }
+
+    /**
+     * @description Enforces ownership for weekly work schedules.
+     * @path /users/{userId}/weeklySchedules/{scheduleId}
+     * @allow (create, get, update, delete) - Authenticated user can manage their own weekly schedule.
+     * @deny - All other access is denied.
+     */
+    match /users/{userId}/weeklySchedules/{scheduleId} {
+        allow read, write: if isOwner(userId);
+    }
   }
 }
-
-    
