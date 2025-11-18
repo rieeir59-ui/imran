@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -17,7 +18,8 @@ import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown, PlusCircl
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, addDoc } from "firebase/firestore";
+import { useSearchParams } from 'next/navigation';
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
@@ -27,8 +29,6 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-
-const SCHEDULE_DOC_ID = "weekly-work-schedule";
 
 const initialScheduleData = [
   { id: 1, employeeName: 'MUJAHID', projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '' },
@@ -41,12 +41,25 @@ const WeeklySchedulePage = () => {
   const [schedules, setSchedules] = useState(initialScheduleData);
   const [remarks, setRemarks] = useState('');
   const [scheduleDates, setScheduleDates] = useState({ start: '', end: '' });
+  const [scheduleId, setScheduleId] = useState<string | null>(null);
 
   const { toast } = useToast();
 
   const firestore = useFirestore();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const id = searchParams.get('id');
+    if (id) {
+        setScheduleId(id);
+    } else {
+        // If no ID, it's a new schedule
+        setIsEditing(true);
+        setSchedules(initialScheduleData);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!isUserLoading && !user && auth) {
@@ -55,12 +68,15 @@ const WeeklySchedulePage = () => {
   }, [isUserLoading, user, auth]);
 
   const scheduleDocRef = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return doc(firestore, `users/${user.uid}/weeklySchedules/${SCHEDULE_DOC_ID}`);
-  }, [user, firestore]);
+    if (!user || !firestore || !scheduleId) return null;
+    return doc(firestore, `users/${user.uid}/weeklySchedules/${scheduleId}`);
+  }, [user, firestore, scheduleId]);
 
   useEffect(() => {
-    if (!scheduleDocRef) return;
+    if (!scheduleDocRef) {
+        setIsLoading(false);
+        return;
+    };
 
     setIsLoading(true);
     getDoc(scheduleDocRef)
@@ -70,6 +86,10 @@ const WeeklySchedulePage = () => {
           if (data.schedules && data.schedules.length > 0) setSchedules(data.schedules);
           if (data.remarks) setRemarks(data.remarks);
           if (data.scheduleDates) setScheduleDates(data.scheduleDates);
+        } else {
+            // Document doesn't exist, treat as new.
+            setScheduleId(null);
+            setIsEditing(true);
         }
       })
       .catch((serverError) => {
@@ -103,32 +123,40 @@ const WeeklySchedulePage = () => {
       setScheduleDates(prev => ({...prev, [field]: value ? format(value, 'yyyy-MM-dd') : ''}))
   }
 
-  const handleSave = () => {
-    if (!scheduleDocRef) {
+  const handleSave = async () => {
+    if (!user || !firestore) {
       toast({ variant: "destructive", title: "Save Failed", description: "User not authenticated." });
       return;
     }
     setIsSaving(true);
     const dataToSave = { schedules, remarks, scheduleDates };
     
-    setDoc(scheduleDocRef, dataToSave, { merge: true })
-      .then(() => {
+    try {
+        if (scheduleId) {
+            const docRef = doc(firestore, `users/${user.uid}/weeklySchedules/${scheduleId}`);
+            await setDoc(docRef, dataToSave, { merge: true });
+        } else {
+            const collectionRef = collection(firestore, `users/${user.uid}/weeklySchedules`);
+            const newDocRef = await addDoc(collectionRef, dataToSave);
+            setScheduleId(newDocRef.id);
+        }
+
         setIsSaving(false);
         setIsEditing(false);
         toast({
           title: "Data Saved",
           description: "Your weekly schedule has been saved successfully.",
         });
-      })
-      .catch((serverError) => {
+
+    } catch (serverError) {
         const permissionError = new FirestorePermissionError({
-          path: scheduleDocRef.path,
+          path: scheduleId ? `users/${user.uid}/weeklySchedules/${scheduleId}`: `users/${user.uid}/weeklySchedules`,
           operation: 'write',
           requestResourceData: dataToSave,
         });
         errorEmitter.emit('permission-error', permissionError);
         setIsSaving(false);
-      });
+    }
   };
 
   const handleDownloadCsv = () => {
@@ -196,7 +224,7 @@ const WeeklySchedulePage = () => {
     return <span className="p-2 block">{date ? format(date, 'd-MMM-yy') : (value || '')}</span>;
   }
 
-  if (isUserLoading || isLoading) {
+  if (isUserLoading || isLoading && scheduleId) {
     return (
         <div className="flex h-full w-full items-center justify-center p-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
