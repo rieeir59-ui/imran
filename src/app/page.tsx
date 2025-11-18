@@ -2,7 +2,6 @@
 
 import StatsCards from "@/components/dashboard/stats-cards";
 import EmployeeWorkSchedule from "@/components/dashboard/employee-work-schedule";
-import ComparativeAnalysis from "@/components/dashboard/comparative-analysis";
 
 export default function Home() {
   return (
@@ -12,9 +11,8 @@ export default function Home() {
         <p className="text-muted-foreground">ISBAH HASSAN & ASSOCIATES</p>
       </div>
       <StatsCards />
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid gap-8">
         <EmployeeWorkSchedule />
-        <ComparativeAnalysis />
       </div>
     </main>
   );
