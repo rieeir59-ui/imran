@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -455,138 +456,7 @@ const Section2 = React.memo(() => (
     <Card>
         <CardHeader><CardTitle>Project Information</CardTitle></CardHeader>
         <CardContent>
-             <div className="space-y-4">
-                <FormField label="Project" value="" />
-                <FormField label="Address" value="" />
-                <FormField label="Project No" value="" />
-                <FormField label="Prepared By" value="" />
-                <FormField label="Prepared Date" value="" />
-
-                <Subtitle>About Owner:</Subtitle>
-                <FormField label="Full Name" value="" />
-                <FormField label="Address (Office)" value="" />
-                <FormField label="Address (Res.)" value="" />
-                <FormField label="Phone (Office)" value="" />
-                <FormField label="Phone (Res.)" value="" />
-                <FormField label="Owner's Project Representative Name" value="" />
-                <FormField label="Address (Office)" value="" />
-                <FormField label="Address (Res.)" value="" />
-                <FormField label="Phone (Office)" value="" />
-                <FormField label="Phone (Res.)" value="" />
-
-                <Subtitle>About Project:</Subtitle>
-                <FormField label="Address" value="" />
-                <FormField label="Project Reqt.">
-                    <ul className="list-roman list-inside pl-4">
-                        <li>Architectural Designing</li>
-                        <li>Interior Decoration</li>
-                        <li>Landscaping</li>
-                        <li>Turnkey</li>
-                        <li>Other</li>
-                    </ul>
-                </FormField>
-                 <FormField label="Project Type:">
-                    <ul className="list-roman list-inside pl-4">
-                        <li>Commercial</li>
-                        <li>Residential</li>
-                    </ul>
-                </FormField>
-                <FormField label="Project Status">
-                     <ul className="list-roman list-inside pl-4">
-                        <li>New</li>
-                        <li>Addition</li>
-                        <li>Rehabilitation/Renovation</li>
-                    </ul>
-                </FormField>
-                <FormField label="Project Area" value="" />
-                <FormField label="Special Requirments of Project" as="textarea" value="" />
-                <FormField label="Project's Cost:">
-                    <ul className="list-roman list-inside pl-4">
-                        <li>Architectural Designing</li>
-                        <li>Interior Decoration</li>
-                        <li>Landscaping</li>
-                        <li>Construction</li>
-                        <li>Turnkey</li>
-                        <li>Other</li>
-                    </ul>
-                </FormField>
-                
-                <Subtitle>Dates Concerned with Project:</Subtitle>
-                <FormField label="First Information about Project" value="" />
-                <FormField label="First Meeting" value="" />
-                <FormField label="First Working on Project" value="" />
-                <FormField label="First Proposal" value="i.. Start ii..  Completion" />
-                <FormField label="Second Proposal" value="i.. Start ii..  Completion" />
-                <FormField label="First Information" value="" />
-                <FormField label="Working on Finalized Proposal" value="" />
-                <FormField label="Revised Presentation" value="" />
-                <FormField label="Quotation" value="" />
-                <FormField label="Drawings" value="i.. Start ii..  Completion" />
-                <FormField label="Other Major Projects Milestone Dates" as="textarea" value="" />
-
-                <Subtitle>Provided by Owner:</Subtitle>
-                <FormField label="Program" value="" />
-                <FormField label="Suggested Schedule" value="" />
-                <FormField label="Legal Site Description & Other Concerned Documents" value="" />
-                <FormField label="Land Survey Report" value="" />
-                <FormField label="Geo-Technical, Tests and Other Site Information" value="" />
-                <FormField label="Existing Structure's Drawings" value="" />
-
-                <Subtitle>Compensation:</Subtitle>
-                <FormField label="Initial Payment" value="" />
-                <FormField label="Basic Services" value="% of Cost of Construction" />
-                <div className="pl-8">
-                    <FormField label="Breakdown by Phase: Schematic Design" value="%" />
-                    <FormField label="Design Development" value="%" />
-                    <FormField label="Construction Doc's" value="%" />
-                    <FormField label="Bidding / Negotiation" value="%" />
-                    <FormField label="Construction Contract Admin" value="%" />
-                </div>
-                <FormField label="Additional Services" value="Multiple of Times Direct Cost to Architect" />
-                <FormField label="Reimbursable Expenses" value="" />
-                <FormField label="Other" value="" />
-                <FormField label="Special Confindential Requirements" as="textarea" value="" />
-
-                <Subtitle>Miscellaneous Notes:</Subtitle>
-                <div className="border-b h-20"></div>
-                
-                <Subtitle>Consultants:</Subtitle>
-                <Table>
-                    <TableHeader><TableRow><TableHead>Type</TableHead><TableHead>Within Basic Fee</TableHead><TableHead>Additional Fee</TableHead><TableHead>Architect</TableHead><TableHead>Owner</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                        {["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Solar", "Construction Cost", "Other", "...", "...", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"].map((item, index) => (
-                            <TableRow key={`${item}-${index}`}><TableCell>{item}</TableCell><TableCell>...</TableCell><TableCell>...</TableCell><TableCell>...</TableCell><TableCell>...</TableCell></TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-                
-                <Subtitle>Retained and Paid by Owner, Co ordination By Retained by Architect</Subtitle>
-
-                <Subtitle>Requirements:</Subtitle>
-                <FormField label="Residence" value="" />
-                <FormField label="Nos." value="" />
-                <ul className="list-roman list-inside space-y-2 pl-4">
-                    <li>Size of plot</li>
-                    <li>Number of Bedrooms</li>
-                    <li>Specifications</li>
-                    <li>Number of Dressing Rooms</li>
-                    <li>Number of Bath Rooms</li>
-                    <li>Living Rooms</li>
-                    <li>Breakfast</li>
-                    <li>Dinning</li>
-                    <li>Servant Kitchen</li>
-                    <li>Self Kitchenett</li>
-                    <li>Garage</li>
-                    <li>Servant Quarters</li>
-                    <li>Guard Room</li>
-                    <li>Study Room</li>
-                    <li>Stores</li>
-                    <li>Entertainment Area</li>
-                    <li>Partio</li>
-                    <li>Atrium</li>
-                    <li>Remarks</li>
-                </ul>
-            </div>
+             <p>This form can be filled out on the <Link href="/projects" className="text-primary underline">Project Information page</Link>.</p>
         </CardContent>
     </Card>
 ));
@@ -596,26 +466,7 @@ const Section3 = React.memo(() => (
     <Card>
         <CardHeader><CardTitle>Predesign general assessment</CardTitle></CardHeader>
         <CardContent>
-            <div className="grid grid-cols-3 gap-4 mb-4">
-                <FormField label="Project (Name, Address)" value="" />
-                <FormField label="Architect" value="" />
-                <FormField label="Architects Project No" value="" />
-                <FormField label="Project Date" value="" />
-            </div>
-            <div className="flex flex-row gap-8">
-                <div className="flex-1 space-y-2">
-                    <h3 className="font-bold text-lg mb-2 underline">Human Factors</h3>
-                    {["Activities", "Behavior", "Objectives / Goals", "Organization", "Hierarchy", "Groups", "Positions", "Classifications", "Leadership", "Characteristics (Demographics)", "Social Forces", "Political Forces", "Interactions", "Communication", "Relationships", "Transfer of materials", "Policies / Codes", "Attitudes / Values", "Customs / Beliefs", "Perceptions", "Preferences", "Qualities", "Comfort", "Productivity", "Efficiency", "Security", "Safety", "Access", "Privacy", "Territory", "Control", "Convenience"].map((item, index) => <div key={`human-${item}-${index}`}>{item}</div>)}
-                </div>
-                <div className="flex-1 space-y-2">
-                    <h3 className="font-bold text-lg mb-2 underline">Physical Factors</h3>
-                    {["Location", "Region", "Locality", "Community", "Vicinity", "Site Conditions", "Building / Facility", "Envelope", "Structure", "Systems", "Engineering", "Communications", "Lighting", "Security", "Space", "Types", "Dimensions", "Relationship", "Equipment / Furnishings", "Materials / Finishes", "Support Services", "Storage", "Parking", "Access", "Waste removal", "Utilities (water, sewage, telephone)", "Operations", "Environment", "Comfort", "Visual", "Acoustical", "Energy Use / Conservation", "Durability / Flexibility"].map((item, index) => <div key={`physical-${item}-${index}`}>{item}</div>)}
-                </div>
-                <div className="flex-1 space-y-2">
-                    <h3 className="font-bold text-lg mb-2 underline">External Factors</h3>
-                    {["Legal Restrictions", "(Codes / Standards/Regulations)", "Building", "Land use", "Systems", "Energy", "Environment", "Materials", "Safety", "Solar access", "Topography", "Climate", "Ecology", "Resource Availability", "Energy Supplies / Prices", "Conventional", "Solar", "Alternatives", "Economy", "Financing", "Time", "Schedule", "Deadlines", "Operations", "Costs / Budget", "Construction", "Material", "Services", "Operations", "Cost / Benefits"].map((item, index) => <div key={`${item}-${index}`}>{item}</div>)}
-                </div>
-            </div>
+             <p>This form can be filled out on the <Link href="/predesign-assessment" className="text-primary underline">Predesign Assessment page</Link>.</p>
         </CardContent>
     </Card>
 ));
@@ -2058,3 +1909,5 @@ const BankPage = () => {
 };
 
 export default BankPage;
+
+    

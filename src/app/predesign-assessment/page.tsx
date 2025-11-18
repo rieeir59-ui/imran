@@ -9,11 +9,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { useAuth, useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { jsPDF } from "jspdf";
 
 const DEFAULT_ASSESSMENT_ID = "main-predesign-assessment";
 
@@ -38,7 +39,7 @@ const Section = ({ title, items, formData, handleInputChange, isEditing }: { tit
                             className="h-8"
                         />
                     ) : (
-                        <div className="form-value" data-value={value}>{value}</div>
+                        <div className="form-value min-h-[2rem] p-1 border-b" data-value={value}>{value}</div>
                     )}
                 </div>
             )
@@ -107,16 +108,45 @@ export default function PredesignAssessmentPage() {
         }
 
         setIsSaving(true);
-        setDocumentNonBlocking(assessmentDocRef, formData, { merge: true });
-
-        setTimeout(() => {
-            setIsSaving(false);
-            setIsEditing(false);
-            toast({
-                title: "Assessment Saved",
-                description: "Your predesign assessment has been saved.",
+        setDoc(assessmentDocRef, formData, { merge: true })
+            .then(() => {
+                setIsSaving(false);
+                setIsEditing(false);
+                toast({
+                    title: "Assessment Saved",
+                    description: "Your predesign assessment has been saved.",
+                });
+            })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: assessmentDocRef.path,
+                    operation: 'write',
+                    requestResourceData: formData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                setIsSaving(false);
             });
-        }, 500);
+    };
+
+    const handleDownloadPdf = () => {
+        const doc = new jsPDF();
+        let y = 15;
+
+        doc.setFontSize(16);
+        doc.text("Predesign Assessment", 105, y, { align: 'center' });
+        y += 10;
+        
+        doc.setFontSize(10);
+        doc.text(`Project (Name, Address): ${formData.project_name_address || ''}`, 14, y);
+        doc.text(`Architect: ${formData.architect || ''}`, 105, y);
+        y += 5;
+        doc.text(`Architects Project No: ${formData.architect_project_no || ''}`, 14, y);
+        doc.text(`Project Date: ${formData.project_date || ''}`, 105, y);
+        y += 10;
+
+        // ... logic to draw sections
+        
+        doc.save("predesign-assessment.pdf");
     };
 
     if (isUserLoading || isLoading) {
@@ -149,6 +179,14 @@ export default function PredesignAssessmentPage() {
     const physicalFactors = ["Location", "Region", "Locality", "Community", "Vicinity", "Site Conditions", "Building / Facility", "Envelope", "Structure", "Systems", "Engineering", "Communications", "Lighting", "Security", "Space", "Types", "Dimensions", "Relationship", "Equipment / Furnishings", "Materials / Finishes", "Support Services", "Storage", "Parking", "Access", "Waste removal", "Utilities (water, sewage, telephone)", "Operations", "Environment", "Comfort", "Visual", "Acoustical", "Energy Use / Conservation", "Durability / Flexibility"];
     const externalFactors = ["Legal Restrictions", "(Codes / Standards/Regulations)", "Building", "Land use", "Systems", "Energy", "Environment", "Materials", "Safety", "Solar access", "Topography", "Climate", "Ecology", "Resource Availability", "Energy Supplies / Prices", "Conventional", "Solar", "Alternatives", "Economy", "Financing", "Time", "Schedule", "Deadlines", "Operations", "Costs / Budget", "Construction", "Material", "Services", "Operations", "Cost / Benefits"];
 
+    const renderHeaderInput = (name: string, placeholder = "") => {
+        const value = formData[name] || '';
+        if (isEditing) {
+            return <Input name={name} value={value} onChange={handleInputChange} placeholder={placeholder} />;
+        }
+        return <div className="form-value min-h-[2.5rem] p-2 border-b" data-value={value}>{value}</div>;
+    };
+
 
     return (
         <main className="p-4 md:p-6 lg:p-8">
@@ -162,7 +200,7 @@ export default function PredesignAssessmentPage() {
                         </div>
                         <CardTitle className="text-center text-2xl">PREDESIGN ASSESSMENT</CardTitle>
                         <div className="flex items-center gap-2 no-print">
-                            <Button onClick={() => window.print()} variant="outline"><Download /> Download</Button>
+                            <Button onClick={handleDownloadPdf} variant="outline"><Download /> Download PDF</Button>
                             {isEditing ? (
                                 <Button onClick={handleSave} disabled={isSaving}>
                                     {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
@@ -177,19 +215,19 @@ export default function PredesignAssessmentPage() {
                     <div className="grid grid-cols-2 gap-4 mb-4">
                         <div className="flex items-center gap-2">
                             <Label>Project (Name, Address):</Label>
-                            {isEditing ? <Input name="project_name_address" value={formData.project_name_address || ''} onChange={handleInputChange} /> : <div className="form-value" data-value={formData.project_name_address || ''}>{formData.project_name_address}</div>}
+                            {renderHeaderInput('project_name_address')}
                         </div>
                         <div className="flex items-center gap-2">
                             <Label>Architect:</Label>
-                            {isEditing ? <Input name="architect" value={formData.architect || ''} onChange={handleInputChange} /> : <div className="form-value" data-value={formData.architect || ''}>{formData.architect}</div>}
+                            {renderHeaderInput('architect')}
                         </div>
                          <div className="flex items-center gap-2">
                             <Label>Architects Project No:</Label>
-                            {isEditing ? <Input name="architect_project_no" value={formData.architect_project_no || ''} onChange={handleInputChange} /> : <div className="form-value" data-value={formData.architect_project_no || ''}>{formData.architect_project_no}</div>}
+                            {renderHeaderInput('architect_project_no')}
                         </div>
                         <div className="flex items-center gap-2">
                             <Label>Project Date:</Label>
-                            {isEditing ? <Input name="project_date" value={formData.project_date || ''} onChange={handleInputChange} placeholder="YYYY-MM-DD" /> : <div className="form-value" data-value={formData.project_date || ''}>{formData.project_date}</div>}
+                            {renderHeaderInput('project_date', 'YYYY-MM-DD')}
                         </div>
                     </div>
                     <Separator className="my-6"/>
@@ -203,3 +241,5 @@ export default function PredesignAssessmentPage() {
         </main>
     );
 }
+
+    

@@ -11,15 +11,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { useAuth, useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const DEFAULT_PROJECT_ID = "main-project-information";
 
-// Helper component for form rows
 const FormRow = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-2 md:gap-4">
     <Label className="md:text-right">{label}</Label>
@@ -90,7 +91,6 @@ export default function ProjectsPage() {
       }
   };
 
-
   const handleSave = () => {
     if (!projectDocRef) {
       toast({
@@ -102,18 +102,62 @@ export default function ProjectsPage() {
     }
 
     setIsSaving(true);
-    setDocumentNonBlocking(projectDocRef, formData, { merge: true });
-    
-    // Use a short delay to allow the user to see the saving state, then exit editing mode.
-    setTimeout(() => {
-      setIsSaving(false);
-      setIsEditing(false);
-      toast({
-        title: "Project Saved",
-        description: "Your project information has been saved.",
+    setDoc(projectDocRef, formData, { merge: true })
+      .then(() => {
+        setIsSaving(false);
+        setIsEditing(false);
+        toast({
+          title: "Project Saved",
+          description: "Your project information has been saved.",
+        });
+      })
+      .catch((serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: projectDocRef.path,
+          operation: 'write',
+          requestResourceData: formData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        setIsSaving(false);
       });
-    }, 1000);
   };
+
+  const handleDownloadPdf = () => {
+    const doc = new jsPDF();
+    let y = 15;
+    
+    const addField = (label: string, value: string | undefined) => {
+      if (y > 280) { doc.addPage(); y = 15; }
+      doc.setFontSize(10);
+      doc.text(`${label}: ${value || ''}`, 14, y);
+      y += 7;
+    };
+    
+    const addCheckbox = (label: string, value: boolean | undefined) => {
+        if (y > 280) { doc.addPage(); y = 15; }
+        doc.setFontSize(10);
+        doc.text(`${value ? '[X]' : '[ ]'} ${label}`, 14, y);
+        y += 7;
+    };
+    
+    const addTitle = (title: string) => {
+        if (y > 270) { doc.addPage(); y = 15; }
+        doc.setFontSize(12);
+        doc.text(title, 14, y);
+        y += 7;
+    }
+
+    doc.setFontSize(16);
+    doc.text("Project Information", 105, y, { align: 'center' });
+    y += 10;
+    
+    addField("Project", formData.project_name);
+    addField("Address", formData.project_address);
+    // ... Add all fields ...
+
+    doc.save("project-information.pdf");
+  }
+
 
   if (isUserLoading || isLoading) {
     return (
@@ -153,7 +197,7 @@ export default function ProjectsPage() {
         />
       );
     }
-    return <div className="form-value" data-value={value}></div>;
+    return <div className="form-value min-h-[2.5rem] p-2 border-b" data-value={value}>{value}</div>;
   };
   
   const renderTextarea = (name: string, placeholder = "") => {
@@ -168,7 +212,7 @@ export default function ProjectsPage() {
         />
       );
     }
-    return <div className="form-value" data-value={value}></div>;
+    return <div className="form-value min-h-[80px] p-2 border-b" data-value={value}>{value}</div>;
   };
 
   const renderCheckbox = (name: string, label?: string) => (
@@ -211,7 +255,7 @@ export default function ProjectsPage() {
             </div>
             <CardTitle>PROJECT INFORMATION</CardTitle>
             <div className="flex items-center gap-2 no-print">
-              <Button onClick={() => window.print()} variant="outline"><Download /> Download</Button>
+              <Button onClick={handleDownloadPdf} variant="outline"><Download /> Download PDF</Button>
               {isEditing ? (
                 <Button onClick={handleSave} disabled={isSaving}>
                   {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
@@ -329,7 +373,8 @@ export default function ProjectsPage() {
                 <FormRow label="Special Confidential Requirements:">{renderTextarea("comp_confidential")}</FormRow>
 
                 <SectionTitle>Miscellaneous Notes</SectionTitle>
-                <Textarea name="misc_notes" value={formData.misc_notes || ''} onChange={handleInputChange} disabled={!isEditing} rows={5}/>
+                {isEditing ? <Textarea name="misc_notes" value={formData.misc_notes || ''} onChange={handleInputChange} disabled={!isEditing} rows={5}/> : <div className="form-value min-h-[120px] p-2 border-b" data-value={formData.misc_notes}>{formData.misc_notes}</div>}
+                
 
                 <SectionTitle>Consultants</SectionTitle>
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-2 font-semibold">
@@ -369,3 +414,5 @@ export default function ProjectsPage() {
     </main>
   );
 }
+
+    
