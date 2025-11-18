@@ -317,6 +317,19 @@
         ]
       }
     },
+    "ProjectData": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ProjectData",
+      "type": "object",
+      "description": "Represents a project data form.",
+      "properties": {},
+      "additionalProperties": {
+        "anyOf": [
+          { "type": "string" },
+          { "type": "boolean" }
+        ]
+      }
+    },
     "ProjectTimeline": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "ProjectTimeline",
@@ -526,6 +539,16 @@
             "$ref": "#/entities/ProjectChecklist"
           },
           "description": "Stores project checklist data for a specific user."
+        }
+      },
+      {
+        "path": "/users/{userId}/projectData/{dataId}",
+        "definition": {
+          "entityName": "ProjectData",
+          "schema": {
+            "$ref": "#/entities/ProjectData"
+          },
+          "description": "Stores project data form for a specific user."
         }
       }
     ],

@@ -27,6 +27,7 @@ import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const PROJECT_CHECKLIST_DOC_ID = "project-checklist";
+const PROJECT_DATA_DOC_ID = "main-project-data";
 
 
 const fileIndexItems = [
@@ -472,80 +473,212 @@ const Section3 = React.memo(() => (
 ));
 Section3.displayName = 'Section3';
 
-const Section4 = React.memo(() => (
-    <Card>
-        <CardHeader><CardTitle>Project Data</CardTitle></CardHeader>
-        <CardContent>
-            <div className="space-y-4">
-                <FormField label="Project" value=""/>
-                <FormField label="Address" value=""/>
-                <FormField label="Owner" value=""/>
-                <FormField label="Architect's Project No." value=""/>
-                <FormField label="Date" value=""/>
-                <FormField label="Tel" value=""/>
-                <FormField label="Business Address" value=""/>
-                <FormField label="Home Address" value=""/>
-                <FormField label="Proposed Improvements" value=""/>
-                <FormField label="Building Dept. Classification" value=""/>
-                <FormField label="Set Backs" value="N____E____S____W____Coverage__________"/>
-                <FormField label="Cost" value=""/>
-                <FormField label="Stories" value=""/>
-                <FormField label="Fire Zone" value=""/>
-                <FormField label="Other Agency Standards or Approvals Required" value=""/>
-                <FormField label="Site Legal Description" value=""/>
-                <FormField label="Deed recorded in" value="Vol. _______Page_____at_____________________________________________ to____________________________________________ Date: ________________________"/>
-                <FormField label="Restrictions" value=""/>
-                <FormField label="Easements" value=""/>
-                <FormField label="Liens, Leases" value=""/>
-                <FormField label="Lot Dimensions" value="_______________________  Facing:  __________ Value: __________________"/>
-                <FormField label="Adjacent property use" value=""/>
-                <FormField label="Owners: Name" value=""/>
-                <FormField label="Designated Representative" value=""/>
-                <FormField label="Address" value=""/>
-                <FormField label="Tel" value=""/>
-                <FormField label="Attorney at Law" value=""/>
-                <FormField label="Insurance Advisor" value=""/>
-                <FormField label="Consultant on" value=""/>
-                <Subtitle>Site Information Sources:</Subtitle>
-                <FormField label="Property Survey by" value="_______________________________________ Date: ____________"/>
-                <FormField label="Topographic Survey by" value="_______________________________________ Date: ____________"/>
-                <FormField label="Soils Tests by" value="_______________________________________ Date: ____________"/>
-                <FormField label="Aerial Photos by" value="_______________________________________ Date: ____________"/>
-                <FormField label="Maps" value=""/>
-                <Subtitle>Public Services:</Subtitle>
-                <Table>
-                    <TableHeader><TableRow><TableHead>Company</TableHead><TableHead>Name and Address</TableHead><TableHead>Representative</TableHead><TableHead>Tel</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                        <TableRow><TableCell>Gas Company</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
-                        <TableRow><TableCell>Electric Co</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
-                        <TableRow><TableCell>Telephone Co</TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>
-                    </TableBody>
-                </Table>
-                <FormField label="Sewers" value=""/>
-                <FormField label="Water" value=""/>
-                <Subtitle>Financial Data:</Subtitle>
-                <FormField label="Loan Amount" value="__________________ Type: _________________ Rate: ______"/>
-                <FormField label="Loan by" value="___________________________ Representative: _______________ Tel:_______________"/>
-                <FormField label="Bonds or Liens" value=""/>
-                <FormField label="Grant Amount" value="____________________________ Limitations: ________________________"/>
-                <FormField label="Grant from" value="___________________ Representative: ________________Tel:______________"/>
-                <Subtitle>Method of Handling:</Subtitle>
-                <div>
-                    <Checkbox id="single" /> <Label htmlFor="single">Single</Label>
-                    <Checkbox id="separate" /> <Label htmlFor="separate">Separate</Label> Contracts
+const Section4 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({});
+
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const auth = useAuth();
+    const { user, isUserLoading } = useUser();
+    
+    const projectDataDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectData/${PROJECT_DATA_DOC_ID}`);
+    }, [user, firestore]);
+
+    useEffect(() => {
+        if (!projectDataDocRef) return;
+
+        setIsLoading(true);
+        getDoc(projectDataDocRef)
+            .then((docSnap) => {
+                if (docSnap.exists()) {
+                    setFormData(docSnap.data() || {});
+                }
+            })
+            .catch((serverError) => {
+                 const permissionError = new FirestorePermissionError({
+                    path: projectDataDocRef.path,
+                    operation: 'get',
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
+    }, [projectDataDocRef]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        if (!isEditing) return;
+        const { name, value } = e.target;
+        setFormData((prev: any) => ({ ...prev, [name]: value }));
+    };
+
+    const handleCheckboxChange = (name: string, checked: boolean | 'indeterminate') => {
+        if (!isEditing || typeof checked !== 'boolean') return;
+        setFormData((prev: any) => ({ ...prev, [name]: checked }));
+    };
+
+    const handleSave = () => {
+        if (!projectDataDocRef) {
+          toast({ variant: "destructive", title: "Save Failed", description: "User not authenticated." });
+          return;
+        }
+        setIsSaving(true);
+        setDoc(projectDataDocRef, formData, { merge: true })
+          .then(() => {
+            setIsSaving(false);
+            setIsEditing(false);
+            toast({
+              title: "Project Data Saved",
+              description: "Your changes have been saved successfully.",
+            });
+          })
+          .catch((serverError) => {
+            const permissionError = new FirestorePermissionError({
+              path: projectDataDocRef.path,
+              operation: 'write',
+              requestResourceData: formData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            setIsSaving(false);
+          });
+    };
+
+    const handleDownload = () => {
+        // PDF Download logic will go here
+        toast({ title: "Download started", description: "Your PDF is being generated." });
+    }
+
+    const renderInput = (name: string, label: string) => (
+        <FormField label={label} name={name} value={formData[name]} onChange={handleInputChange} isEditing={isEditing} />
+    );
+
+    const renderTextarea = (name: string, label: string) => (
+        <FormField label={label} as="textarea" name={name} value={formData[name]} onChange={handleInputChange} isEditing={isEditing} />
+    );
+    
+    const renderCheckbox = (name: string, label: string) => (
+         <div className="flex items-center space-x-2">
+            <Checkbox id={name} name={name} checked={formData[name] || false} onCheckedChange={(checked) => handleCheckboxChange(name, checked)} disabled={!isEditing}/>
+            <Label htmlFor={name}>{label}</Label>
+        </div>
+    );
+    
+    if (isLoading || isUserLoading) {
+        return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+    }
+
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Project Data</CardTitle>
+                <div className="flex gap-2">
+                    <Button onClick={handleDownload} variant="outline"><Download /> Download PDF</Button>
+                    {isEditing ? (
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                        </Button>
+                    ) : (
+                        <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                    )}
                 </div>
-                <FormField label="Negotiated" value="__________________________ Bid: ______________________________"/>
-                <FormField label="Stipulated Sum" value=""/>
-                <FormField label="Cost Plus Fee" value="___________________________  Force Amount: _______________________"/>
-                <FormField label="Equipment" value="Fixed ____________ Movable ______________ Interiors ________________________"/>
-                <FormField label="Landscaping" value=""/>
-                <Subtitle>Sketch of Property:</Subtitle>
-                <p>Notations on existing improvements, disposal thereof, utilities, tree, etc.; indicated North; notations on other Project provision:</p>
-                <div className="border h-48 mt-2"></div>
-            </div>
-        </CardContent>
-    </Card>
-));
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-4">
+                    {renderInput("project", "Project")}
+                    {renderInput("address", "Address")}
+                    {renderInput("owner", "Owner")}
+                    {renderInput("architectsProjectNo", "Architect's Project No.")}
+                    {renderInput("date", "Date")}
+                    {renderInput("tel", "Tel")}
+                    {renderInput("businessAddress", "Business Address")}
+                    {renderInput("homeAddress", "Home Address")}
+                    {renderTextarea("proposedImprovements", "Proposed Improvements")}
+                    {renderInput("buildingDeptClassification", "Building Dept. Classification")}
+                    {renderInput("setBacks", "Set Backs")}
+                    {renderInput("cost", "Cost")}
+                    {renderInput("stories", "Stories")}
+                    {renderInput("fireZone", "Fire Zone")}
+                    {renderTextarea("otherAgencyStandards", "Other Agency Standards or Approvals Required")}
+                    {renderTextarea("siteLegalDescription", "Site Legal Description")}
+                    {renderInput("deedRecorded", "Deed recorded in")}
+                    {renderTextarea("restrictions", "Restrictions")}
+                    {renderTextarea("easements", "Easements")}
+                    {renderTextarea("liensLeases", "Liens, Leases")}
+                    {renderInput("lotDimensions", "Lot Dimensions")}
+                    {renderTextarea("adjacentPropertyUse", "Adjacent property use")}
+                    {renderInput("ownerName", "Owners: Name")}
+                    {renderInput("designatedRep", "Designated Representative")}
+                    {renderInput("repAddress", "Address")}
+                    {renderInput("repTel", "Tel")}
+                    {renderInput("attorney", "Attorney at Law")}
+                    {renderInput("insuranceAdvisor", "Insurance Advisor")}
+                    {renderInput("consultantOn", "Consultant on")}
+                    
+                    <Subtitle>Site Information Sources:</Subtitle>
+                    {renderInput("propertySurveyBy", "Property Survey by")}
+                    {renderInput("topographicSurveyBy", "Topographic Survey by")}
+                    {renderInput("soilsTestsBy", "Soils Tests by")}
+                    {renderInput("aerialPhotosBy", "Aerial Photos by")}
+                    {renderInput("maps", "Maps")}
+                    
+                    <Subtitle>Public Services:</Subtitle>
+                    <Table>
+                        <TableHeader><TableRow><TableHead>Company</TableHead><TableHead>Name and Address</TableHead><TableHead>Representative</TableHead><TableHead>Tel</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell>Gas Company</TableCell>
+                                <TableCell>{isEditing ? <Input name="gas_address" value={formData.gas_address || ''} onChange={handleInputChange} /> : formData.gas_address}</TableCell>
+                                <TableCell>{isEditing ? <Input name="gas_rep" value={formData.gas_rep || ''} onChange={handleInputChange} /> : formData.gas_rep}</TableCell>
+                                <TableCell>{isEditing ? <Input name="gas_tel" value={formData.gas_tel || ''} onChange={handleInputChange} /> : formData.gas_tel}</TableCell>
+                            </TableRow>
+                             <TableRow>
+                                <TableCell>Electric Co</TableCell>
+                                <TableCell>{isEditing ? <Input name="electric_address" value={formData.electric_address || ''} onChange={handleInputChange} /> : formData.electric_address}</TableCell>
+                                <TableCell>{isEditing ? <Input name="electric_rep" value={formData.electric_rep || ''} onChange={handleInputChange} /> : formData.electric_rep}</TableCell>
+                                <TableCell>{isEditing ? <Input name="electric_tel" value={formData.electric_tel || ''} onChange={handleInputChange} /> : formData.electric_tel}</TableCell>
+                            </TableRow>
+                             <TableRow>
+                                <TableCell>Telephone Co</TableCell>
+                                <TableCell>{isEditing ? <Input name="telco_address" value={formData.telco_address || ''} onChange={handleInputChange} /> : formData.telco_address}</TableCell>
+                                <TableCell>{isEditing ? <Input name="telco_rep" value={formData.telco_rep || ''} onChange={handleInputChange} /> : formData.telco_rep}</TableCell>
+                                <TableCell>{isEditing ? <Input name="telco_tel" value={formData.telco_tel || ''} onChange={handleInputChange} /> : formData.telco_tel}</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                    {renderInput("sewers", "Sewers")}
+                    {renderInput("water", "Water")}
+                    
+                    <Subtitle>Financial Data:</Subtitle>
+                    {renderInput("loanAmount", "Loan Amount")}
+                    {renderInput("loanBy", "Loan by")}
+                    {renderInput("bondsOrLiens", "Bonds or Liens")}
+                    {renderInput("grantAmount", "Grant Amount")}
+                    {renderInput("grantFrom", "Grant from")}
+                    
+                    <Subtitle>Method of Handling:</Subtitle>
+                    <div className="flex gap-4">
+                        {renderCheckbox("method_single", "Single Contract")}
+                        {renderCheckbox("method_separate", "Separate Contracts")}
+                    </div>
+                    {renderInput("negotiatedBid", "Negotiated/Bid")}
+                    {renderInput("stipulatedSum", "Stipulated Sum")}
+                    {renderInput("costPlusFee", "Cost Plus Fee")}
+                    {renderInput("equipment", "Equipment")}
+                    {renderInput("landscaping", "Landscaping")}
+                    
+                    <Subtitle>Sketch of Property:</Subtitle>
+                    <p>Notations on existing improvements, disposal thereof, utilities, tree, etc.; indicated North; notations on other Project provision:</p>
+                    <div className="border h-48 mt-2"></div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+});
 Section4.displayName = 'Section4';
 
 const Section5 = React.memo(() => (
@@ -762,7 +895,7 @@ const Section5 = React.memo(() => (
                     <li>Basic services will be as mentioned</li>
                     <li>Subsequent payments will be as mentioned</li>
                     <li>Compensation for additional services</li>
-                    <li>For additional services compensation will be as mentioned</li>
+<li>For additional services compensation will be as mentioned</li>
                     <li>Travel expenses of Architect, Engineer, Sub-Engineer and Sub Consultant will be separately billed</li>
                     <li>Computer Animation will be charged at the normal market rates</li>
                     <li>The rate of interest past due payments will be 15 % per month</li>
@@ -1005,6 +1138,9 @@ const Section7 = React.memo(() => {
         )
     }
 
+    const consultantTypes = ["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Construction Cost", "Other", " ", "  ", "   ", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"];
+
+
     return (
         <Card>
             <CardHeader><CardTitle>Requirement Performa (for Residential and Commercial Project)</CardTitle></CardHeader>
@@ -1105,7 +1241,7 @@ const Section7 = React.memo(() => {
                     <div className="grid grid-cols-5 gap-2 font-semibold text-center border-b pb-2">
                         <p className="text-left">Type</p><p>Within Basic Fee</p><p>Additional Fee</p><p>Architect</p><p>Owner</p>
                     </div>
-                    {["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Construction Cost", "Other", " ", " ", " ", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"].map(renderConsultantRow)}
+                    {consultantTypes.map(renderConsultantRow)}
                     <p>Retained and Paid by Owner, Co ordination By Retained by Architect</p>
 
 
@@ -1909,7 +2045,3 @@ const BankPage = () => {
 };
 
 export default BankPage;
-
-    
-
-    

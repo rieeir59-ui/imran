@@ -153,6 +153,16 @@ service cloud.firestore {
     match /users/{userId}/projectChecklists/{checklistId} {
         allow read, write: if isOwner(userId);
     }
+
+    /**
+     * @description Enforces ownership for project data.
+     * @path /users/{userId}/projectData/{dataId}
+     * @allow (create, get, update, delete) - Authenticated user can manage their own project data.
+     * @deny - All other access is denied.
+     */
+    match /users/{userId}/projectData/{dataId} {
+        allow read, write: if isOwner(userId);
+    }
   }
 }
 
