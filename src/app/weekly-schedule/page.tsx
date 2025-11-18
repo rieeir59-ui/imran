@@ -224,7 +224,7 @@ const WeeklySchedulePage = () => {
     return <span className="p-2 block">{date ? format(date, 'd-MMM-yy') : (value || '')}</span>;
   }
 
-  if (isUserLoading || isLoading && scheduleId) {
+  if (isUserLoading || (isLoading && scheduleId)) {
     return (
         <div className="flex h-full w-full items-center justify-center p-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -379,3 +379,5 @@ const WeeklySchedulePage = () => {
 };
 
 export default WeeklySchedulePage;
+
+    
