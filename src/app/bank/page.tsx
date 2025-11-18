@@ -1406,7 +1406,7 @@ Section10.displayName = 'Section10';
 
 const Section11 = React.memo(() => (
     <Card>
-        <CardHeader><CardTitle>Drawings (Architectural / Interiors / submission)</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Drawings (Architectural / Interiors / submission)</CardHeader>
         <CardContent>
             <DrawingsList />
         </CardContent>
@@ -1909,5 +1909,7 @@ const BankPage = () => {
 };
 
 export default BankPage;
+
+    
 
     
