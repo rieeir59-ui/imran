@@ -24,7 +24,7 @@ import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
 import { addDays, format, parseISO, isValid } from 'date-fns';
-import { exportDataToCsv } from '@/lib/utils';
+import { exportDataToCsv, exportDataToPdf } from '@/lib/utils';
 
 const TIMELINE_DOC_ID = "dib-timeline";
 
@@ -165,6 +165,10 @@ const DibTimelinePage = () => {
   const handleDownloadCsv = () => {
     exportDataToCsv(projectData, 'dib-timeline-data');
   }
+
+  const handleDownloadPdf = () => {
+    exportDataToPdf('DIB Project Progress Chart', projectData, 'dib-timeline');
+  }
   
   const renderCell = (value: string | undefined, onChange: (val: string) => void) => {
     return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8" /> : (value || '');
@@ -214,7 +218,7 @@ const DibTimelinePage = () => {
         <h1 className="text-2xl font-bold">DIB Timeline</h1>
         <div className="flex items-center gap-2">
             <Button onClick={handleDownloadCsv} variant="outline"><FileDown className="mr-2 h-4 w-4" /> Download CSV</Button>
-            <Button onClick={() => window.print()} variant="outline"><Download className="mr-2 h-4 w-4" /> Download</Button>
+            <Button onClick={handleDownloadPdf} variant="outline"><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
             {isEditing ? (
                 <Button onClick={handleSave} disabled={isSaving}>
                     {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />} Save
