@@ -992,10 +992,10 @@ const Section7 = React.memo(() => {
             <label htmlFor={name}>{label}</label>
         </div>
     );
-    const renderConsultantRow = (type: string) => {
+    const renderConsultantRow = (type: string, index: number) => {
         const slug = type.toLowerCase().replace(/ /g, '_').replace(/\//g, '_');
         return (
-            <div key={slug} className="grid grid-cols-5 gap-2 items-center border-b pb-2">
+            <div key={`${slug}-${index}`} className="grid grid-cols-5 gap-2 items-center border-b pb-2">
                 <p>{type}</p>
                 <div className="flex items-center justify-center">{renderCheckbox(`consultant_${slug}_basic`, "")}</div>
                 <div className="flex items-center justify-center">{renderCheckbox(`consultant_${slug}_additional`, "")}</div>
