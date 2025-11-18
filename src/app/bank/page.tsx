@@ -25,6 +25,9 @@ import { useAuth, useFirestore, useUser, useMemoFirebase, FirestorePermissionErr
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 
 const PROJECT_CHECKLIST_DOC_ID = "project-checklist";
 const PROJECT_DATA_DOC_ID = "main-project-data";
@@ -112,7 +115,7 @@ const DrawingsList = React.memo(() => {
         { code: 'AR-21', desc: 'Front elevation' }, { code: 'AR-22', desc: 'Right Side Elevation' }, { code: 'AR-23', desc: 'Rear Side Elevation' }, { code: 'AR-24', desc: 'Left Side Elevation' },
         { code: 'AR-25', desc: 'Section A-A' }, { code: 'AR-26', desc: 'Section B-B' }, { code: 'AR-27', desc: 'Section C-C' }, { code: 'AR-28', desc: 'Section D-D' },
         { code: 'AR-29', desc: 'Parapet & Slab Sectional Details' }, { code: 'AR-30', desc: 'Lift Section' }, { code: 'AR-31', desc: 'Elevation Blow up Detail' }, { code: 'AR-32', desc: 'Exterior Wall Cladding Detail' },
-        { code: 'AR-33', desc: '' }, { code: 'AR-34', desc: '' }, { code_AI: 'AR-35', desc: '' }, { code: 'AR-36', desc: '' }, { code: 'AR-37', desc: '' }, { code: 'AR-38', desc: '' }, { code: 'AR-39', desc: '' }, { code: 'AR-40', desc: '' },
+        { code: 'AR-33', desc: '' }, { code: 'AR-34', desc: '' }, { code: 'AR-35', desc: '' }, { code: 'AR-36', desc: '' }, { code: 'AR-37', desc: '' }, { code: 'AR-38', desc: '' }, { code: 'AR-39', desc: '' }, { code: 'AR-40', desc: '' },
     ];
 
     const sampleList2 = [
@@ -549,7 +552,136 @@ const Section4 = React.memo(() => {
     };
 
     const handleDownload = () => {
-        // PDF Download logic will go here
+        const doc = new jsPDF();
+        let y = 15;
+    
+        const addField = (label: string, value: string | undefined, options: { isTextarea?: boolean } = {}) => {
+            if (y > 270) {
+                doc.addPage();
+                y = 15;
+            }
+            doc.setFont('helvetica', 'bold');
+            doc.text(label, 14, y);
+            doc.setFont('helvetica', 'normal');
+            
+            const text = value || '';
+            const splitText = doc.splitTextToSize(text, 170);
+            const textHeight = doc.getTextDimensions(splitText).h;
+
+            if (y + textHeight > 280) {
+                 doc.addPage();
+                 y = 15;
+            }
+
+            doc.text(splitText, 14, y + 5);
+            y += textHeight + (options.isTextarea ? 8 : 4);
+        };
+    
+        const addCheckbox = (label: string, value: boolean | undefined) => {
+            if (y > 280) {
+                doc.addPage();
+                y = 15;
+            }
+            doc.text(`${value ? '[X]' : '[ ]'} ${label}`, 14, y);
+            y += 7;
+        };
+    
+        const addTitle = (title: string) => {
+            if (y > 260) {
+                doc.addPage();
+                y = 15;
+            }
+            doc.setFontSize(14);
+            doc.text(title, 14, y);
+            y += 10;
+            doc.setFontSize(10);
+        };
+    
+        doc.setFontSize(16);
+        doc.text("Project Data", 105, y, { align: 'center' });
+        y += 10;
+    
+        addField("Project", formData.project);
+        addField("Address", formData.address);
+        addField("Owner", formData.owner);
+        addField("Architect's Project No.", formData.architectsProjectNo);
+        addField("Date", formData.date);
+        addField("Tel", formData.tel);
+        addField("Business Address", formData.businessAddress);
+        addField("Home Address", formData.homeAddress);
+        addField("Proposed Improvements", formData.proposedImprovements, { isTextarea: true });
+        addField("Building Dept. Classification", formData.buildingDeptClassification);
+        addField("Set Backs", formData.setBacks);
+        addField("Cost", formData.cost);
+        addField("Stories", formData.stories);
+        addField("Fire Zone", formData.fireZone);
+        addField("Other Agency Standards or Approvals Required", formData.otherAgencyStandards, { isTextarea: true });
+        addField("Site Legal Description", formData.siteLegalDescription, { isTextarea: true });
+        addField("Deed recorded in", formData.deedRecorded);
+        addField("Restrictions", formData.restrictions, { isTextarea: true });
+        addField("Easements", formData.easements, { isTextarea: true });
+        addField("Liens, Leases", formData.liensLeases, { isTextarea: true });
+        addField("Lot Dimensions", formData.lotDimensions);
+        addField("Adjacent property use", formData.adjacentPropertyUse, { isTextarea: true });
+        addField("Owners: Name", formData.ownerName);
+        addField("Designated Representative", formData.designatedRep);
+        addField("Address", formData.repAddress);
+        addField("Tel", formData.repTel);
+        addField("Attorney at Law", formData.attorney);
+        addField("Insurance Advisor", formData.insuranceAdvisor);
+        addField("Consultant on", formData.consultantOn);
+        
+        y += 5;
+        addTitle("Site Information Sources:");
+        addField("Property Survey by", formData.propertySurveyBy);
+        addField("Topographic Survey by", formData.topographicSurveyBy);
+        addField("Soils Tests by", formData.soilsTestsBy);
+        addField("Aerial Photos by", formData.aerialPhotosBy);
+        addField("Maps", formData.maps);
+        
+        y += 5;
+        addTitle("Public Services:");
+        autoTable(doc, {
+            startY: y,
+            head: [['Company', 'Name and Address', 'Representative', 'Tel']],
+            body: [
+                ['Gas Company', formData.gas_address, formData.gas_rep, formData.gas_tel],
+                ['Electric Co', formData.electric_address, formData.electric_rep, formData.electric_tel],
+                ['Telephone Co', formData.telco_address, formData.telco_rep, formData.telco_tel],
+            ],
+            theme: 'grid',
+            styles: { fontSize: 8 }
+        });
+        y = (doc as any).lastAutoTable.finalY + 7;
+        addField("Sewers", formData.sewers);
+        addField("Water", formData.water);
+
+        y += 5;
+        addTitle("Financial Data:");
+        addField("Loan Amount", formData.loanAmount);
+        addField("Loan by", formData.loanBy);
+        addField("Bonds or Liens", formData.bondsOrLiens);
+        addField("Grant Amount", formData.grantAmount);
+        addField("Grant from", formData.grantFrom);
+
+        y += 5;
+        addTitle("Method of Handling:");
+        addCheckbox("Single Contract", formData.method_single);
+        addCheckbox("Separate Contracts", formData.method_separate);
+        y -= 7; // to align next fields
+        addField("Negotiated/Bid", formData.negotiatedBid);
+        addField("Stipulated Sum", formData.stipulatedSum);
+        addField("Cost Plus Fee", formData.costPlusFee);
+        addField("Equipment", formData.equipment);
+        addField("Landscaping", formData.landscaping);
+
+        y += 5;
+        addTitle("Sketch of Property:");
+        doc.text("Notations on existing improvements, disposal thereof, utilities, tree, etc.; indicated North; notations on other Project provision:", 14, y);
+        y += 10;
+        doc.rect(14, y, 180, 60); // Draw a box for the sketch
+    
+        doc.save("project-data.pdf");
         toast({ title: "Download started", description: "Your PDF is being generated." });
     }
 
@@ -1838,8 +1970,8 @@ const Section17 = React.memo(() => {
             {"Sr No": 1, "Company": "Ghani Glass Limited", "Contact Person": "Adeel Ilyas", "Products": "Double Glazed Glass,Tempered Glass,Float Glass", "Address": "40-L Model Town,Ext,Lahore", "Contact": "042-35169049,0321-8488394"},
             {"Sr No": 2, "Company": "Innovative Marketing Company", "Contact Person": "Nayer Mirza", "Products": "Double Glazed Glass,Tempered Glass,Float Glass", "Address": "9-A Beadon Road Lahore", "Contact": "0300-8162728"},
             {"Sr No": 3, "Company": "Al-Fatah Toughened Glass Industries(pvt) Ltd", "Contact Person": "Tanveer Saeed", "Products": "Double Glazed Glass,Tempered Glass,Float Glass", "Address": "Office#411, 4th Floor,Alqadeer Heights,1-Babar Block New Garden Town,Lahore", "Contact": "0300/0302-8459142"},
-            {"Sr No": 4, "Company": "Guardian Glass", "Contact Person": "", "Products": "Double Glazed Glass,Tempered Glass,Float Glass", "Address": "PLANT 13 KM SHEIKHUPURA ROAD, LAHORE, PAKISTAN", "Contact": ""},
-            {"Sr No": 5, "Company": "Pilkington glass", "Contact Person": "", "Products": "Double Glazed Glass,Tempered Glass,Float Glass", "Address": "9 ROYAL PARK, NEAR HAMID CENTRE LAHORE-PAKISTAN", "Contact": ""}
+            {"Sr No": 4, "Company Name": "Guardian Glass", "Contact Person": "", "Products": "Double Glazed Glass,Tempered Glass,Float Glass", "Address": "PLANT 13 KM SHEIKHUPURA ROAD, LAHORE, PAKISTAN", "Contact": ""},
+            {"Sr No": 5, "Company Name": "Pilkington glass", "Contact Person": "", "Products": "Double Glazed Glass,Tempered Glass,Float Glass", "Address": "9 ROYAL PARK, NEAR HAMID CENTRE LAHORE-PAKISTAN", "Contact": ""}
         ],
         "List of Paint Vendors": [
             {"Sr No.": 1, "Company": "ICI", "Contact Person": "", "Products": "PAINTS", "Address": "346 Ferozepur Road,Lahore", "Contact Number": "02132313717-22"},
@@ -2045,3 +2177,4 @@ const BankPage = () => {
 };
 
 export default BankPage;
+
