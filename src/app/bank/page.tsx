@@ -2,7 +2,7 @@
 
 'use client';
 
-import React, 'useState', 'useEffect', 'useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -527,6 +527,11 @@ const Section4 = React.memo(() => {
         setFormData((prev: any) => ({ ...prev, [name]: checked }));
     };
 
+    const handleRadioChange = (name: string, value: string) => {
+        if (!isEditing) return;
+        setFormData((prev: any) => ({ ...prev, [name]: value }));
+    };
+
     const handleSave = () => {
         if (!projectDataDocRef) {
           toast({ variant: "destructive", title: "Save Failed", description: "User not authenticated." });
@@ -598,6 +603,7 @@ const Section4 = React.memo(() => {
                 doc.addPage();
                 y = 15;
             }
+            doc.setFontSize(10);
             doc.text(`${value ? '[X]' : '[ ]'} ${label}`, options.xOffset || 14, y);
             if (!options.xOffset) {
                  y += 7;
@@ -613,11 +619,9 @@ const Section4 = React.memo(() => {
             doc.setFont('helvetica', 'bold');
             doc.text(title, 14, y);
             y += 8;
-            doc.setFontSize(10);
         };
     
         doc.setFontSize(14);
-        doc.setFont('helvetica', 'bold');
         doc.text("Project Data", 105, y, { align: 'center' });
         y += 15;
         doc.setFontSize(10);
@@ -691,23 +695,21 @@ const Section4 = React.memo(() => {
         y += 10;
         addTitle("Method of Handling", 11);
         addCheckbox("Single Contract", formData.method_single);
-        y -= 7;
         addCheckbox("Separate Contracts", formData.method_separate, { xOffset: 70 });
+        y += 7;
         
         addTitle("Bidding", 10);
         addCheckbox("Negotiated", formData.negotiatedBid === "negotiated");
-        y -= 7;
         addCheckbox("Bid", formData.negotiatedBid === "bid", { xOffset: 70 });
+        y += 7;
 
         addTitle("Contract", 10);
         addCheckbox("Stipulated Sum", formData.stipulatedSum);
-        y -= 7;
         addCheckbox("Cost Plus Fee", formData.costPlusFee, { xOffset: 70 });
         y += 7;
 
         addTitle("Scope", 10);
         addCheckbox("Equipment", formData.equipment);
-        y -= 7;
         addCheckbox("Landscaping", formData.landscaping, { xOffset: 70 });
 
         y += 10;
@@ -737,6 +739,23 @@ const Section4 = React.memo(() => {
         </div>
     );
     
+    const renderRadioGroup = (name: string, labels: string[]) => (
+        <RadioGroup
+            name={name}
+            value={formData[name]}
+            onValueChange={(value) => handleRadioChange(name, value)}
+            className="flex gap-4"
+            disabled={!isEditing}
+        >
+            {labels.map(label => (
+                 <div key={label} className="flex items-center space-x-2">
+                    <RadioGroupItem value={label.toLowerCase()} id={`${name}-${label.toLowerCase()}`} />
+                    <Label htmlFor={`${name}-${label.toLowerCase()}`}>{label}</Label>
+                </div>
+            ))}
+        </RadioGroup>
+    );
+
     if (isLoading || isUserLoading) {
         return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
     }
@@ -830,15 +849,25 @@ const Section4 = React.memo(() => {
                     {renderInput("grantFrom", "Grant from")}
                     
                     <Subtitle>Method of Handling:</Subtitle>
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 items-center">
+                        <Label>Contract Type:</Label>
                         {renderCheckbox("method_single", "Single Contract")}
                         {renderCheckbox("method_separate", "Separate Contracts")}
                     </div>
-                    {renderInput("negotiatedBid", "Negotiated/Bid")}
-                    {renderInput("stipulatedSum", "Stipulated Sum")}
-                    {renderInput("costPlusFee", "Cost Plus Fee")}
-                    {renderInput("equipment", "Equipment")}
-                    {renderInput("landscaping", "Landscaping")}
+                     <div className="flex gap-4 items-center">
+                        <Label>Bidding:</Label>
+                        {renderRadioGroup("negotiatedBid", ["Negotiated", "Bid"])}
+                    </div>
+                     <div className="flex gap-4 items-center">
+                        <Label>Contract:</Label>
+                        {renderCheckbox("stipulatedSum", "Stipulated Sum")}
+                        {renderCheckbox("costPlusFee", "Cost Plus Fee")}
+                    </div>
+                     <div className="flex gap-4 items-center">
+                        <Label>Scope:</Label>
+                        {renderCheckbox("equipment", "Equipment")}
+                        {renderCheckbox("landscaping", "Landscaping")}
+                    </div>
                     
                     <Subtitle>Sketch of Property:</Subtitle>
                     <p>Notations on existing improvements, disposal thereof, utilities, tree, etc.; indicated North; notations on other Project provision:</p>
