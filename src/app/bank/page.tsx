@@ -2,7 +2,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, 'useState', 'useEffect', 'useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -32,6 +32,7 @@ import autoTable from 'jspdf-autotable';
 
 const PROJECT_CHECKLIST_DOC_ID = "project-checklist";
 const PROJECT_DATA_DOC_ID = "main-project-data";
+const PROJECT_AGREEMENT_DOC_ID = "project-agreement";
 
 
 const fileIndexItems = [
@@ -580,7 +581,7 @@ const Section4 = React.memo(() => {
             if (!options.isTextarea) y += -5;
         };
 
-        const addDualField = (label1: string, value1: string | undefined, label2: string, value2: string | undefined) => {
+        const addDualField = (label1: string, value1: string | undefined, label2: string | undefined, value2: string | undefined) => {
             if (y > 270) {
                 doc.addPage();
                 y = 15;
@@ -598,18 +599,20 @@ const Section4 = React.memo(() => {
                 y = 15;
             }
             doc.text(`${value ? '[X]' : '[ ]'} ${label}`, options.xOffset || 14, y);
-            y += 7;
+            if (!options.xOffset) {
+                 y += 7;
+            }
         };
     
-        const addTitle = (title: string) => {
+        const addTitle = (title: string, size = 12) => {
             if (y > 260) {
                 doc.addPage();
                 y = 15;
             }
-            doc.setFontSize(12);
+            doc.setFontSize(size);
             doc.setFont('helvetica', 'bold');
             doc.text(title, 14, y);
-            y += 10;
+            y += 8;
             doc.setFontSize(10);
         };
     
@@ -658,13 +661,13 @@ const Section4 = React.memo(() => {
         addDualField("Consultant on", formData.consultantOn, undefined, undefined);
 
         y += 10;
-        addTitle("Site Information Sources");
+        addTitle("Site Information Sources", 11);
         addDualField("Property Survey by", formData.propertySurveyBy, "Topographic Survey by", formData.topographicSurveyBy);
         addDualField("Soils Tests by", formData.soilsTestsBy, "Aerial Photos by", formData.aerialPhotosBy);
         addDualField("Maps", formData.maps, undefined, undefined);
 
         y += 10;
-        addTitle("Public Services");
+        addTitle("Public Services", 11);
         autoTable(doc, {
             startY: y,
             head: [['Company', 'Name and Address', 'Representative', 'Tel']],
@@ -680,25 +683,37 @@ const Section4 = React.memo(() => {
         addDualField("Sewers", formData.sewers, "Water", formData.water);
 
         y += 10;
-        addTitle("Financial Data");
+        addTitle("Financial Data", 11);
         addDualField("Loan Amount", formData.loanAmount, "Loan by", formData.loanBy);
         addDualField("Bonds or Liens", formData.bondsOrLiens, "Grant Amount", formData.grantAmount);
         addDualField("Grant from", formData.grantFrom, undefined, undefined);
 
         y += 10;
-        addTitle("Method of Handling");
+        addTitle("Method of Handling", 11);
         addCheckbox("Single Contract", formData.method_single);
         y -= 7;
         addCheckbox("Separate Contracts", formData.method_separate, { xOffset: 70 });
+        
+        addTitle("Bidding", 10);
+        addCheckbox("Negotiated", formData.negotiatedBid === "negotiated");
+        y -= 7;
+        addCheckbox("Bid", formData.negotiatedBid === "bid", { xOffset: 70 });
+
+        addTitle("Contract", 10);
+        addCheckbox("Stipulated Sum", formData.stipulatedSum);
+        y -= 7;
+        addCheckbox("Cost Plus Fee", formData.costPlusFee, { xOffset: 70 });
         y += 7;
 
-        addDualField("Negotiated/Bid", formData.negotiatedBid, "Stipulated Sum", formData.stipulatedSum);
-        addDualField("Cost Plus Fee", formData.costPlusFee, "Equipment", formData.equipment);
-        addDualField("Landscaping", formData.landscaping, undefined, undefined);
+        addTitle("Scope", 10);
+        addCheckbox("Equipment", formData.equipment);
+        y -= 7;
+        addCheckbox("Landscaping", formData.landscaping, { xOffset: 70 });
 
         y += 10;
-        addTitle("Sketch of Property");
+        addTitle("Sketch of Property", 11);
         doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
         doc.text("Notations on existing improvements, disposal thereof, utilities, tree, etc.; indicated North; notations on other Project provision:", 14, y);
         y += 5;
         doc.rect(14, y, 180, 50);
@@ -835,241 +850,336 @@ const Section4 = React.memo(() => {
 });
 Section4.displayName = 'Section4';
 
-const Section5 = React.memo(() => (
-    <Card>
-        <CardHeader><CardTitle>Project Agreement</CardTitle></CardHeader>
-        <CardContent>
-            <h2 className="text-xl font-bold text-center mb-4">COMMERCIAL AGREEMENT</h2>
-            <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-x-8">
-                    <div>
-                        <p>Made as of the day</p>
-                        <p>Between the Owner</p>
-                        <p>And the Firm</p>
-                        <p>For the Design of</p>
-                        <p>Address</p>
-                        <p>Covered Area of Project</p>
-                        <p>Consultancy Charges @ Rs ___/Sft</p>
-                        <p>Sales Tax @ 16%</p>
-                        <p>Withholding Tax @ 10%</p>
-                        <p>Final Consultancy Charges</p>
-                    </div>
-                    <div>
-                        <p>: _________________________</p>
-                        <p>: _________________________</p>
-                        <p>: Isbah Hassan & Associates</p>
-                        <p>: _________________________</p>
-                        <p>: _________________________</p>
-                        <p>: _________________________</p>
-                        <p>: _________________________</p>
-                        <p>: _________________________</p>
-                        <p>: _________________________</p>
-                        <p>: _________________________</p>
-                    </div>
+const Section5 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({});
+    
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+    
+    const agreementDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectAgreements/${PROJECT_AGREEMENT_DOC_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!agreementDocRef) return;
+        setIsLoading(true);
+        getDoc(agreementDocRef)
+            .then(docSnap => {
+                if (docSnap.exists()) {
+                    setFormData(docSnap.data());
+                }
+            })
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: agreementDocRef.path,
+                    operation: 'get',
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => setIsLoading(false));
+    }, [agreementDocRef]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSave = () => {
+        if (!agreementDocRef) {
+            toast({ variant: 'destructive', title: 'Error', description: 'User not authenticated.' });
+            return;
+        }
+        setIsSaving(true);
+        setDoc(agreementDocRef, formData, { merge: true })
+            .then(() => {
+                toast({ title: 'Success', description: 'Project Agreement saved.' });
+                setIsEditing(false);
+            })
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: agreementDocRef.path,
+                    operation: 'write',
+                    requestResourceData: formData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => setIsSaving(false));
+    };
+
+    const handleDownloadPdf = () => {
+        const doc = new jsPDF();
+        // This is a placeholder. A full implementation would require
+        // drawing the entire static form and then filling in the formData.
+        doc.text("Project Agreement", 10, 10);
+        doc.text(`Made as of the day: ${formData.day || '____'}`, 10, 20);
+        doc.save("project-agreement.pdf");
+        toast({ title: 'Download Started', description: 'Project Agreement PDF is being generated.' });
+    };
+    
+    const renderField = (name: string) => {
+        if (isEditing) {
+            return <Input name={name} value={formData[name] || ''} onChange={handleInputChange} className="inline-block w-48 h-6" />;
+        }
+        return <span className="border-b border-gray-400 inline-block min-w-[100px]">{formData[name] || ''}</span>;
+    };
+    
+    if (isLoading || isUserLoading) {
+        return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+    }
+
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Project Agreement</CardTitle>
+                <div className="flex gap-2">
+                    <Button onClick={handleDownloadPdf} variant="outline"><Download /> PDF</Button>
+                    {isEditing ? (
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                        </Button>
+                    ) : (
+                        <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                    )}
                 </div>
-
-                <Subtitle>PAYMENT SCHEDULE:</Subtitle>
-                <div className="grid grid-cols-2 gap-x-8">
-                    <div>
-                        <p>On mobilization (advance payment)</p>
-                        <p>On approval of schematic designs & 3D’s</p>
-                        <p>On completion of submission drawings</p>
-                        <p>On start of construction drawings</p>
-                        <p>On completion of construction drawings</p>
-                        <p>On completion of interior drawings</p>
-                        <p>On preparation of detailed BOQ</p>
+            </CardHeader>
+            <CardContent>
+                <h2 className="text-xl font-bold text-center mb-4">COMMERCIAL AGREEMENT</h2>
+                <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-x-8">
+                        <div>
+                            <p>Made as of the day</p>
+                            <p>Between the Owner</p>
+                            <p>And the Firm</p>
+                            <p>For the Design of</p>
+                            <p>Address</p>
+                            <p>Covered Area of Project</p>
+                            <p>Consultancy Charges @ Rs ___/Sft</p>
+                            <p>Sales Tax @ 16%</p>
+                            <p>Withholding Tax @ 10%</p>
+                            <p>Final Consultancy Charges</p>
+                        </div>
+                        <div>
+                            <p>: {renderField("day")}</p>
+                            <p>: {renderField("owner")}</p>
+                            <p>: Isbah Hassan & Associates</p>
+                            <p>: {renderField("designOf")}</p>
+                            <p>: {renderField("address")}</p>
+                            <p>: {renderField("coveredArea")}</p>
+                            <p>: {renderField("consultancyCharges")}</p>
+                            <p>: {renderField("salesTax")}</p>
+                            <p>: {renderField("withholdingTax")}</p>
+                            <p>: {renderField("finalCharges")}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p>: 20 %</p>
-                        <p>: 15%</p>
-                        <p>: 15%</p>
-                        <p>: 15%</p>
-                        <p>: 10%</p>
-                        <p>: 10%</p>
-                        <p>: 10%</p>
+    
+                    <Subtitle>PAYMENT SCHEDULE:</Subtitle>
+                    <div className="grid grid-cols-2 gap-x-8">
+                        <div>
+                            <p>On mobilization (advance payment)</p>
+                            <p>On approval of schematic designs & 3D’s</p>
+                            <p>On completion of submission drawings</p>
+                            <p>On start of construction drawings</p>
+                            <p>On completion of construction drawings</p>
+                            <p>On completion of interior drawings</p>
+                            <p>On preparation of detailed BOQ</p>
+                        </div>
+                        <div>
+                            <p>: 20 %</p>
+                            <p>: 15%</p>
+                            <p>: 15%</p>
+                            <p>: 15%</p>
+                            <p>: 10%</p>
+                            <p>: 10%</p>
+                            <p>: 10%</p>
+                        </div>
                     </div>
+                    
+                    <Subtitle>Project Management:</Subtitle>
+                    <h4 className="font-semibold">Top Supervision:</h4>
+                    <ul className="list-disc pl-5 space-y-2">
+                        <li>Please find attached the site visit schedule for the project please intimate the office one week in advance before the required visit for timely surveillance. Any Unscheduled visits would be charged as under.</li>
+                        <li>For out of station visits, the travelling by air and lodging in a five-star hotel will be paid by the client.
+                            <ul className="list-disc pl-5">
+                                <li>Rs. 50,000 for Principal Architect's site visit per day.</li>
+                                <li>Rs. 30,000 for Associate Architect's site visit per day.</li>
+                            </ul>
+                        </li>
+                        <li>For International visits, the travelling by air and lodging in a five-star hotel will be paid by the client.
+                             <ul className="list-disc pl-5">
+                                <li>Rs. 150,000 for Principal Architect' s fee per day.</li>
+                                <li>Rs. 30,000 for Associate Architect' s fee per day.</li>
+                            </ul>
+                        </li>
+                    </ul>
+    
+                    <h4 className="font-semibold mt-4">Detailed Supervision:</h4>
+                    <p>The fee for detailed supervision will be Rs. 300,000 /- per month, which will ensure daily progress at the site.</p>
+                    
+                    <h4 className="font-semibold mt-4">Please Note:</h4>
+                    <ul className="list-disc pl-5 space-y-2">
+                        <li>The above quoted rates do not include any kind of tax.</li>
+                        <li>The contract value is lumpsum for the area between 90,000 to 120,000 Sft, if however, the area increases the above amount only the sub-consultants fee @ Rs. 70/Sft will be charged.</li>
+                        <li>The above consultancy charges quoted are valid for only two months.</li>
+                    </ul>
+    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                        <div>
+                            <Subtitle>Architectural Design Services:</Subtitle>
+                            <ol className="list-decimal pl-5 space-y-1">
+                                <li>Space Planning</li>
+                                <li>Design Concept</li>
+                                <li>Design Development & 3Ds (Facade)</li>
+                                <li>Budgeting Bil of Quantity’s.</li>
+                                <li>Work Drawings
+                                    <ul className="list-[circle] pl-5">
+                                        <li>Site Plan</li>
+                                        <li>Ground Floor Plan</li>
+                                        <li>Mezzanine Floor Plan</li>
+                                        <li>Elevation NE</li>
+                                        <li>Elevation NW</li>
+                                        <li>Elevation SW</li>
+                                        <li>Sections</li>
+                                        <li>Stair Details</li>
+                                        <li>Kitchen Details</li>
+                                        <li>Bath Details</li>
+                                        <li>Schedules</li>
+                                    </ul>
+                                </li>
+                                <li>Structure Drawing
+                                    <ul className="list-[circle] pl-5">
+                                        <li>Foundation Plan</li>
+                                        <li>Floor Framing Plan</li>
+                                        <li>Wall Elev. & Slab Section</li>
+                                        <li>Wall section & Details</li>
+                                        <li>Stair Details</li>
+                                        <li>Schedules</li>
+                                        <li>Specs of Concrete</li>
+                                    </ul>
+                                </li>
+                                <li>Electrification Drawings
+                                    <ul className="list-[circle] pl-5">
+                                        <li>Power Plan</li>
+                                        <li>Lighting Plans</li>
+                                        <li>Section & Details</li>
+                                        <li>Communication Plan</li>
+                                    </ul>
+                                </li>
+                                <li>Plumbing Drawings
+                                    <ul className="list-[circle] pl-5">
+                                        <li>Water Protect System</li>
+                                        <li>Soil Protect System</li>
+                                        <li>Ventilation System</li>
+                                        <li>Fire Protection System</li>
+                                    </ul>
+                                </li>
+                                <li>Miscelaneous Services
+                                    <ul className="list-[circle] pl-5">
+                                        <li>Roof air Conditioning</li>
+                                        <li>H.V.A.C</li>
+                                        <li>Material Specifications</li>
+                                    </ul>
+                                </li>
+                                <li>Extra Services
+                                     <ul className="list-[circle] pl-5">
+                                        <li>Landscaping</li>
+                                        <li>Acoustical</li>
+                                        <li>Land Survey</li>
+                                        <li>Geo-Technical Survey</li>
+                                        <li>Graphic design</li>
+                                    </ul>
+                                </li>
+                            </ol>
+                        </div>
+                        <div>
+                            <Subtitle>Interior Design Services:</Subtitle>
+                            <h4 className="font-semibold">Design Details:</h4>
+                            <ul className="list-disc pl-5 space-y-1">
+                                <li>Flooring</li>
+                                <li>Wood Work</li>
+                                <li>Doors</li>
+                                <li>Windows</li>
+                                <li>False Ceiling</li>
+                                <li>Lighting</li>
+                                <li>Bath Details</li>
+                                <li>Kitchen Details</li>
+                                <li>Wall Textures.</li>
+                                <li>Stairways</li>
+                                <li>Built-in Features Fire Places</li>
+                                <li>Patios</li>
+                                <li>Water bodies</li>
+                                <li>Trellis</li>
+                                <li>Skylights</li>
+                                <li>Furniture</li>
+                                <li>Partitioning</li>
+                            </ul>
+                            <p className="mt-4"><strong>Note:</strong> The item number 9& 10 is under the head of extra services if the client requests these services, the extra charges wil be as mentioned above.</p>
+                        </div>
+                    </div>
+    
+                    <Subtitle>Architect's Responsibilities.</Subtitle>
+                    <ol className="list-decimal pl-5 space-y-2">
+                        <li>The architect will produce a maximum of two proposals are revisions for the client for the said amount of consultancy every proposal or revision after this will be charged @ Rs. 500,000 /- per Proposal.</li>
+                        <li>The architect will require a minimum period of one month for the design development. 2 months will be required for work drawings.</li>
+                        <li>The architect will represent the owner and will advise and consult with the owner regarding construction.</li>
+                        <li>The architect will be responsible for checking the contractor's progress and giving the approval for payments due to the contractor.</li>
+                        <li>The architect is to prepare a maximum of 2 design proposals for the proposal stage for the client. If one proposal is developed, it can be revised two times, free of cost to the client. If, however, 2 design proposals are made, the second proposal can be revised three times, free of cost to the client. If the client wishes for another revision of the proposal, the architect will be paid Rs. 300,000 in advance for each drawing. If the client wishes to develop a third proposal, the architect will be paid Rs. 500,000 as advance payment for the task and Rs. 300,000 per revision of the third proposal.</li>
+                        <li>No revision will be made after the Issuance of Construction Drawings. If client wants the revision, he will have to pay for the amount ascertained in the contract.</li>
+                        <li>No revision will be made for working drawings. If client wants the revision, he will be required to pay the amount.</li>
+                        <li>Project supervision will include visits as mentioned in Construction Activity Schedule.</li>
+                        <li>The Architect will provide 3 Sets of working drawings to the client. For additional sets of working drawings Rs. 50,000 per set will be charged.</li>
+                        <li>The Architect will provide only two options/revisions of 3Ds for the Facade after which any option/revision wil be charged based on normal market rates. For Interior renderings Rs. 500,000/- will be charged.</li>
+                    </ol>
+    
+                    <h4 className="font-semibold mt-4">The Architect will not be responsible for the following things:</h4>
+                    <ol className="list-decimal pl-5 space-y-2">
+                        <li>Continuous site supervision.</li>
+                        <li>Technical sequences and procedures of the contractors.</li>
+                        <li>Change of acts and omissions of the contractor. These are the contractor's responsibilities.</li>
+                        <li>Changes and omissions made on the owner's directions.</li>
+                    </ol>
+                    
+                    <Subtitle>ARTICLE-1: Termination of the Agreement</Subtitle>
+                     <ol className="list-decimal pl-5 space-y-2">
+                        <li>The agreement may be terminated by any of the parties on 7 days written notice. The other party will substantially perform in accordance with its items though no fault of the party initiating the termination.</li>
+                        <li>The owner at least on 7 days’ notice to the designer may terminate the agreement in the event that the project is permanently abandoned.</li>
+                        <li>In the event of termination not the fault of the design builder, the design builder will be compensated for services performed till termination date.</li>
+                        <li>No reimbursable then due and termination expenses. The termination expenses are the expenses directly attributable to the termination including a reasonable amount of overhead and profit for which the design/builder is not otherwise compensated under this agreement.</li>
+                    </ol>
+    
+                    <Subtitle>ARTICLE-2: Bases of Compensation</Subtitle>
+                    <p>The owner will compensate the design/builder in accordance with this agreement, payments, and the other provisions of this agreement as described below.</p>
+                    <ul className="list-disc pl-5 space-y-2">
+                        <li>Compensation for basic services</li>
+                        <li>Basic services will be as mentioned</li>
+                        <li>Subsequent payments will be as mentioned</li>
+                        <li>Compensation for additional services</li>
+                        <li>For additional services compensation will be as mentioned</li>
+                        <li>Travel expenses of Architect, Engineer, Sub-Engineer and Sub Consultant will be separately billed</li>
+                        <li>Computer Animation will be charged at the normal market rates</li>
+                        <li>The rate of interest past due payments will be 15 % per month</li>
+                    </ul>
+                    
+                    <div className="flex justify-between mt-8 pt-8 border-t">
+                        <div>
+                            <p>______________</p>
+                            <p>Architect</p>
+                        </div>
+                        <div>
+                            <p>_______________</p>
+                            <p>Client</p>
+                        </div>
+                    </div>
+    
                 </div>
-                
-                <Subtitle>Project Management:</Subtitle>
-                <h4 className="font-semibold">Top Supervision:</h4>
-                <ul className="list-disc pl-5 space-y-2">
-                    <li>Please find attached the site visit schedule for the project please intimate the office one week in advance before the required visit for timely surveillance. Any Unscheduled visits would be charged as under.</li>
-                    <li>For out of station visits, the travelling by air and lodging in a five-star hotel will be paid by the client.
-                        <ul className="list-disc pl-5">
-                            <li>Rs. 50,000 for Principal Architect's site visit per day.</li>
-                            <li>Rs. 30,000 for Associate Architect's site visit per day.</li>
-                        </ul>
-                    </li>
-                    <li>For International visits, the travelling by air and lodging in a five-star hotel will be paid by the client.
-                         <ul className="list-disc pl-5">
-                            <li>Rs. 150,000 for Principal Architect' s fee per day.</li>
-                            <li>Rs. 30,000 for Associate Architect' s fee per day.</li>
-                        </ul>
-                    </li>
-                </ul>
-
-                <h4 className="font-semibold mt-4">Detailed Supervision:</h4>
-                <p>The fee for detailed supervision will be Rs. 300,000 /- per month, which will ensure daily progress at the site.</p>
-                
-                <h4 className="font-semibold mt-4">Please Note:</h4>
-                <ul className="list-disc pl-5 space-y-2">
-                    <li>The above quoted rates do not include any kind of tax.</li>
-                    <li>The contract value is lumpsum for the area between 90,000 to 120,000 Sft, if however, the area increases the above amount only the sub-consultants fee @ Rs. 70/Sft will be charged.</li>
-                    <li>The above consultancy charges quoted are valid for only two months.</li>
-                </ul>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
-                    <div>
-                        <Subtitle>Architectural Design Services:</Subtitle>
-                        <ol className="list-decimal pl-5 space-y-1">
-                            <li>Space Planning</li>
-                            <li>Design Concept</li>
-                            <li>Design Development & 3Ds (Facade)</li>
-                            <li>Budgeting Bil of Quantity’s.</li>
-                            <li>Work Drawings
-                                <ul className="list-[circle] pl-5">
-                                    <li>Site Plan</li>
-                                    <li>Ground Floor Plan</li>
-                                    <li>Mezzanine Floor Plan</li>
-                                    <li>Elevation NE</li>
-                                    <li>Elevation NW</li>
-                                    <li>Elevation SW</li>
-                                    <li>Sections</li>
-                                    <li>Stair Details</li>
-                                    <li>Kitchen Details</li>
-                                    <li>Bath Details</li>
-                                    <li>Schedules</li>
-                                </ul>
-                            </li>
-                            <li>Structure Drawing
-                                <ul className="list-[circle] pl-5">
-                                    <li>Foundation Plan</li>
-                                    <li>Floor Framing Plan</li>
-                                    <li>Wall Elev. & Slab Section</li>
-                                    <li>Wall section & Details</li>
-                                    <li>Stair Details</li>
-                                    <li>Schedules</li>
-                                    <li>Specs of Concrete</li>
-                                </ul>
-                            </li>
-                            <li>Electrification Drawings
-                                <ul className="list-[circle] pl-5">
-                                    <li>Power Plan</li>
-                                    <li>Lighting Plans</li>
-                                    <li>Section & Details</li>
-                                    <li>Communication Plan</li>
-                                </ul>
-                            </li>
-                            <li>Plumbing Drawings
-                                <ul className="list-[circle] pl-5">
-                                    <li>Water Protect System</li>
-                                    <li>Soil Protect System</li>
-                                    <li>Ventilation System</li>
-                                    <li>Fire Protection System</li>
-                                </ul>
-                            </li>
-                            <li>Miscelaneous Services
-                                <ul className="list-[circle] pl-5">
-                                    <li>Roof air Conditioning</li>
-                                    <li>H.V.A.C</li>
-                                    <li>Material Specifications</li>
-                                </ul>
-                            </li>
-                            <li>Extra Services
-                                 <ul className="list-[circle] pl-5">
-                                    <li>Landscaping</li>
-                                    <li>Acoustical</li>
-                                    <li>Land Survey</li>
-                                    <li>Geo-Technical Survey</li>
-                                    <li>Graphic design</li>
-                                </ul>
-                            </li>
-                        </ol>
-                    </div>
-                    <div>
-                        <Subtitle>Interior Design Services:</Subtitle>
-                        <h4 className="font-semibold">Design Details:</h4>
-                        <ul className="list-disc pl-5 space-y-1">
-                            <li>Flooring</li>
-                            <li>Wood Work</li>
-                            <li>Doors</li>
-                            <li>Windows</li>
-                            <li>False Ceiling</li>
-                            <li>Lighting</li>
-                            <li>Bath Details</li>
-                            <li>Kitchen Details</li>
-                            <li>Wall Textures.</li>
-                            <li>Stairways</li>
-                            <li>Built-in Features Fire Places</li>
-                            <li>Patios</li>
-                            <li>Water bodies</li>
-                            <li>Trellis</li>
-                            <li>Skylights</li>
-                            <li>Furniture</li>
-                            <li>Partitioning</li>
-                        </ul>
-                        <p className="mt-4"><strong>Note:</strong> The item number 9& 10 is under the head of extra services if the client requests these services, the extra charges wil be as mentioned above.</p>
-                    </div>
-                </div>
-
-                <Subtitle>Architect's Responsibilities.</Subtitle>
-                <ol className="list-decimal pl-5 space-y-2">
-                    <li>The architect will produce a maximum of two proposals are revisions for the client for the said amount of consultancy every proposal or revision after this will be charged @ Rs. 500,000 /- per Proposal.</li>
-                    <li>The architect will require a minimum period of one month for the design development. 2 months will be required for work drawings.</li>
-                    <li>The architect will represent the owner and will advise and consult with the owner regarding construction.</li>
-                    <li>The architect will be responsible for checking the contractor's progress and giving the approval for payments due to the contractor.</li>
-                    <li>The architect is to prepare a maximum of 2 design proposals for the proposal stage for the client. If one proposal is developed, it can be revised two times, free of cost to the client. If, however, 2 design proposals are made, the second proposal can be revised three times, free of cost to the client. If the client wishes for another revision of the proposal, the architect will be paid Rs. 300,000 in advance for each drawing. If the client wishes to develop a third proposal, the architect will be paid Rs. 500,000 as advance payment for the task and Rs. 300,000 per revision of the third proposal.</li>
-                    <li>No revision will be made after the Issuance of Construction Drawings. If client wants the revision, he will have to pay for the amount ascertained in the contract.</li>
-                    <li>No revision will be made for working drawings. If client wants the revision, he will be required to pay the amount.</li>
-                    <li>Project supervision will include visits as mentioned in Construction Activity Schedule.</li>
-                    <li>The Architect will provide 3 Sets of working drawings to the client. For additional sets of working drawings Rs. 50,000 per set will be charged.</li>
-                    <li>The Architect will provide only two options/revisions of 3Ds for the Facade after which any option/revision wil be charged based on normal market rates. For Interior renderings Rs. 500,000/- will be charged.</li>
-                </ol>
-
-                <h4 className="font-semibold mt-4">The Architect will not be responsible for the following things:</h4>
-                <ol className="list-decimal pl-5 space-y-2">
-                    <li>Continuous site supervision.</li>
-                    <li>Technical sequences and procedures of the contractors.</li>
-                    <li>Change of acts and omissions of the contractor. These are the contractor's responsibilities.</li>
-                    <li>Changes and omissions made on the owner's directions.</li>
-                </ol>
-                
-                <Subtitle>ARTICLE-1: Termination of the Agreement</Subtitle>
-                 <ol className="list-decimal pl-5 space-y-2">
-                    <li>The agreement may be terminated by any of the parties on 7 days written notice. The other party will substantially perform in accordance with its items though no fault of the party initiating the termination.</li>
-                    <li>The owner at least on 7 days’ notice to the designer may terminate the agreement in the event that the project is permanently abandoned.</li>
-                    <li>In the event of termination not the fault of the design builder, the design builder will be compensated for services performed till termination date.</li>
-                    <li>No reimbursable then due and termination expenses. The termination expenses are the expenses directly attributable to the termination including a reasonable amount of overhead and profit for which the design/builder is not otherwise compensated under this agreement.</li>
-                </ol>
-
-                <Subtitle>ARTICLE-2: Bases of Compensation</Subtitle>
-                <p>The owner will compensate the design/builder in accordance with this agreement, payments, and the other provisions of this agreement as described below.</p>
-                <ul className="list-disc pl-5 space-y-2">
-                    <li>Compensation for basic services</li>
-                    <li>Basic services will be as mentioned</li>
-                    <li>Subsequent payments will be as mentioned</li>
-                    <li>Compensation for additional services</li>
-<li>For additional services compensation will be as mentioned</li>
-                    <li>Travel expenses of Architect, Engineer, Sub-Engineer and Sub Consultant will be separately billed</li>
-                    <li>Computer Animation will be charged at the normal market rates</li>
-                    <li>The rate of interest past due payments will be 15 % per month</li>
-                </ul>
-                
-                <div className="flex justify-between mt-8 pt-8 border-t">
-                    <div>
-                        <p>______________</p>
-                        <p>Architect</p>
-                    </div>
-                    <div>
-                        <p>_______________</p>
-                        <p>Client</p>
-                    </div>
-                </div>
-
-            </div>
-        </CardContent>
-    </Card>
-));
+            </CardContent>
+        </Card>
+    );
+});
 Section5.displayName = 'Section5';
 
 const Section6 = React.memo(() => (
@@ -2199,3 +2309,5 @@ const BankPage = () => {
 };
 
 export default BankPage;
+
+    
