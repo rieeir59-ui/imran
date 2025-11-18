@@ -562,21 +562,21 @@ const Section4 = React.memo(() => {
             }
             doc.setFont('helvetica', 'bold');
             doc.text(label, options.xOffset || 14, y);
-            y+=5;
-            doc.setFont('helvetica', 'normal');
             
+            doc.setFont('helvetica', 'normal');
+            const textY = y + 5;
             const text = value || '____________________';
             const splitText = doc.splitTextToSize(text, options.isTextarea ? 180 : 80);
             const textHeight = doc.getTextDimensions(splitText).h;
 
-            if (y + textHeight > 280) {
+            if (textY + textHeight > 280) {
                  doc.addPage();
                  y = 15;
             }
 
-            doc.text(splitText, options.xOffset || 14, y);
-            y += options.isTextarea ? textHeight + 4 : 0;
-            if (!options.isTextarea) y += -5; // Move back up for next field in multi-column layout
+            doc.text(splitText, options.xOffset || 14, textY);
+            y = textY + (options.isTextarea ? textHeight + 4 : 0);
+            if (!options.isTextarea) y += -5;
         };
 
         const addDualField = (label1: string, value1: string | undefined, label2: string, value2: string | undefined) => {
@@ -585,7 +585,9 @@ const Section4 = React.memo(() => {
                 y = 15;
             }
             addField(label1, value1);
-            addField(label2, value2, { xOffset: 105 });
+            if(label2) {
+                addField(label2, value2, { xOffset: 105 });
+            }
             y += 10;
         }
     
@@ -603,17 +605,18 @@ const Section4 = React.memo(() => {
                 doc.addPage();
                 y = 15;
             }
-            doc.setFontSize(14);
+            doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
             doc.text(title, 14, y);
             y += 10;
             doc.setFontSize(10);
         };
     
-        doc.setFontSize(18);
+        doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
         doc.text("Project Data", 105, y, { align: 'center' });
         y += 15;
+        doc.setFontSize(10);
     
         addDualField("Project", formData.project, "Architect's Project No.", formData.architectsProjectNo);
         addDualField("Address", formData.address, "Date", formData.date);
@@ -626,14 +629,14 @@ const Section4 = React.memo(() => {
 
         addDualField("Building Dept. Classification", formData.buildingDeptClassification, "Set Backs", formData.setBacks);
         addDualField("Cost", formData.cost, "Stories", formData.stories);
-        addDualField("Fire Zone", formData.fireZone, "", undefined);
+        addDualField("Fire Zone", formData.fireZone, undefined, undefined);
         y += 5;
 
         addField("Other Agency Standards or Approvals Required", formData.otherAgencyStandards, { isTextarea: true });
         y += 10;
         addField("Site Legal Description", formData.siteLegalDescription, { isTextarea: true });
         y += 10;
-        addField("Deed recorded in", formData.deedRecorded);
+        addDualField("Deed recorded in", formData.deedRecorded, undefined, undefined);
         y += 10;
 
         addField("Restrictions", formData.restrictions, { isTextarea: true });
@@ -643,7 +646,7 @@ const Section4 = React.memo(() => {
         addField("Liens, Leases", formData.liensLeases, { isTextarea: true });
         y += 10;
 
-        addDualField("Lot Dimensions", formData.lotDimensions, "", undefined);
+        addDualField("Lot Dimensions", formData.lotDimensions, undefined, undefined);
         y += 5;
         addField("Adjacent property use", formData.adjacentPropertyUse, { isTextarea: true });
         y += 10;
@@ -651,13 +654,13 @@ const Section4 = React.memo(() => {
         addDualField("Owners: Name", formData.ownerName, "Designated Representative", formData.designatedRep);
         addDualField("Address", formData.repAddress, "Tel", formData.repTel);
         addDualField("Attorney at Law", formData.attorney, "Insurance Advisor", formData.insuranceAdvisor);
-        addDualField("Consultant on", formData.consultantOn, "", undefined);
+        addDualField("Consultant on", formData.consultantOn, undefined, undefined);
 
         y += 10;
         addTitle("Site Information Sources");
         addDualField("Property Survey by", formData.propertySurveyBy, "Topographic Survey by", formData.topographicSurveyBy);
         addDualField("Soils Tests by", formData.soilsTestsBy, "Aerial Photos by", formData.aerialPhotosBy);
-        addDualField("Maps", formData.maps, "", undefined);
+        addDualField("Maps", formData.maps, undefined, undefined);
 
         y += 10;
         addTitle("Public Services");
@@ -679,17 +682,18 @@ const Section4 = React.memo(() => {
         addTitle("Financial Data");
         addDualField("Loan Amount", formData.loanAmount, "Loan by", formData.loanBy);
         addDualField("Bonds or Liens", formData.bondsOrLiens, "Grant Amount", formData.grantAmount);
-        addDualField("Grant from", formData.grantFrom, "", undefined);
+        addDualField("Grant from", formData.grantFrom, undefined, undefined);
 
         y += 10;
         addTitle("Method of Handling");
         addCheckbox("Single Contract", formData.method_single);
         y -= 7;
+        doc.text("", 105, y); // Hack to reset x position
         addCheckbox("Separate Contracts", formData.method_separate);
         y += 7;
         addDualField("Negotiated/Bid", formData.negotiatedBid, "Stipulated Sum", formData.stipulatedSum);
         addDualField("Cost Plus Fee", formData.costPlusFee, "Equipment", formData.equipment);
-        addDualField("Landscaping", formData.landscaping, "", undefined);
+        addDualField("Landscaping", formData.landscaping, undefined, undefined);
 
         y += 10;
         addTitle("Sketch of Property");
@@ -2194,4 +2198,3 @@ const BankPage = () => {
 };
 
 export default BankPage;
-
