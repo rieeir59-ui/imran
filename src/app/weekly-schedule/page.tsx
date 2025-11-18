@@ -31,7 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const SCHEDULE_DOC_ID = "weekly-work-schedule";
 
 const initialScheduleData = [
-  { id: 1, projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '' },
+  { id: 1, employeeName: 'MUJAHID', projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '' },
 ];
 
 const WeeklySchedulePage = () => {
@@ -137,11 +137,12 @@ const WeeklySchedulePage = () => {
 
   const handleDownloadPdf = () => {
     const doc = new jsPDF();
-    doc.text("Weekly Work Schedule for MUJAHID", 14, 15);
+    const employeeName = schedules[0]?.employeeName || 'Employee';
+    doc.text(`Weekly Work Schedule for ${employeeName}`, 14, 15);
     doc.text(`Schedule: ${scheduleDates.start} to ${scheduleDates.end}`, 14, 22);
     autoTable(doc, {
-        head: [['Project Name', 'Details', 'Status', 'Start Date', 'End Date']],
-        body: schedules.map(s => [s.projectName, s.details, s.status, s.startDate, s.endDate]),
+        head: [['Employee', 'Project Name', 'Details', 'Status', 'Start Date', 'End Date']],
+        body: schedules.map(s => [s.employeeName, s.projectName, s.details, s.status, s.startDate, s.endDate]),
         startY: 30,
     });
     const finalY = (doc as any).lastAutoTable.finalY || 30;
@@ -153,7 +154,7 @@ const WeeklySchedulePage = () => {
   }
   
   const addRow = () => {
-    setSchedules([...schedules, { id: schedules.length + 1, projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '' }]);
+    setSchedules([...schedules, { id: schedules.length + 1, employeeName: schedules[0]?.employeeName || 'MUJAHID', projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '' }]);
   }
 
   const removeRow = (index: number) => {
@@ -233,11 +234,11 @@ const WeeklySchedulePage = () => {
         <CardHeader className="flex flex-col md:flex-row justify-between md:items-center">
             <div className='flex items-center gap-4'>
                 <Avatar className="h-16 w-16">
-                    <AvatarImage src="https://picsum.photos/seed/muj/200" alt="MUJAHID" />
-                    <AvatarFallback>M</AvatarFallback>
+                    <AvatarImage src={`https://picsum.photos/seed/${schedules[0]?.employeeName || 'employee'}/200`} alt={schedules[0]?.employeeName} />
+                    <AvatarFallback>{schedules[0]?.employeeName?.charAt(0) || 'E'}</AvatarFallback>
                 </Avatar>
                 <div>
-                    <CardTitle className="text-2xl font-bold">MUJAHID</CardTitle>
+                    <CardTitle className="text-2xl font-bold">{schedules[0]?.employeeName || 'Employee'}</CardTitle>
                     <p className="text-muted-foreground">Weekly Work Schedule</p>
                 </div>
             </div>
@@ -260,6 +261,7 @@ const WeeklySchedulePage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Employee Name</TableHead>
                   <TableHead>Project Name</TableHead>
                   <TableHead>Details</TableHead>
                   <TableHead>Status</TableHead>
@@ -272,6 +274,7 @@ const WeeklySchedulePage = () => {
               <TableBody>
                 {schedules.map((schedule, index) => (
                   <TableRow key={index}>
+                    <TableCell>{renderCell(schedule.employeeName, (val) => handleScheduleChange(index, 'employeeName', val))}</TableCell>
                     <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
                     <TableCell>{renderCell(schedule.details, (val) => handleScheduleChange(index, 'details', val))}</TableCell>
                     <TableCell>
