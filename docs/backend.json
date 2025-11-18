@@ -304,6 +304,19 @@
       "properties": {},
       "additionalProperties": { "type": "string" }
     },
+    "ProjectChecklist": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ProjectChecklist",
+      "type": "object",
+      "description": "Represents a project checklist form.",
+      "properties": {},
+      "additionalProperties": {
+        "anyOf": [
+          { "type": "string" },
+          { "type": "boolean" }
+        ]
+      }
+    },
     "ProjectTimeline": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "ProjectTimeline",
@@ -504,10 +517,18 @@
           },
           "description": "Stores project timeline data for a specific user."
         }
+      },
+      {
+        "path": "/users/{userId}/projectChecklists/{checklistId}",
+        "definition": {
+          "entityName": "ProjectChecklist",
+          "schema": {
+            "$ref": "#/entities/ProjectChecklist"
+          },
+          "description": "Stores project checklist data for a specific user."
+        }
       }
     ],
     "reasoning": "To address the user's requirement for saving and displaying data related to commercial, residential, hotel, and bank branch properties within the Isbah Dashboard application, I propose the following Firestore structure:\n\n*   **Authorization Independence:** Each property document (CommercialProperty, ResidentialProperty, HotelProperty, and BankBranch) will be stored under a path based on the user's ID. This eliminates the need for `get()` calls in security rules to check ownership, as the path itself establishes ownership. No membership maps are needed as ownership is implicit in the path.\n*   **Structural Segregation:** Each type of property (commercial, residential, hotel, and bank branch) is stored in its own top-level collection. This simplifies security rules by ensuring that all documents within a collection share the same access control requirements.\n*   **Clear Data Organization:** Properties are organized under user-specific subcollections to maintain data privacy and ownership.\n\nThis structure offers several advantages:\n\n*   **Security:** Access control is straightforward. Rules can easily restrict read/write access to only the owner of a specific `propertyId`.\n*   **Scalability:** Firestore's scalability is maximized by avoiding complex queries and hierarchical dependencies.\n*   **Debuggability:** The structure is simple and easy to understand, making it easier to debug security rules and data access issues.\n\nThis structure directly addresses the core design principles:\n\n*   **Authorization Independence:** The hierarchical path `/users/{userId}/{propertyType}/{propertyId}` ensures that ownership is inherent in the path structure, removing the need for `get()` calls to verify ownership.\n*   **Clarity of Intent:** The path-based ownership model clearly expresses the relationship between users and their properties.\n*   **DBAC (No Custom Claims):** Authorization relies solely on `request.auth.uid` and the path structure.\n*   **QAPs (Rules are not Filters):** The structure enables secure `list` operations. A user can only list properties under their `userId`, preventing unauthorized access to other users' properties.\n*   **Invariants:** Ownership and timestamps can be easily enforced via rules."
   }
 }
-
-    
