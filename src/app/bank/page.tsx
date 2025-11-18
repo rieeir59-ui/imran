@@ -6,13 +6,13 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Printer, Edit, Save, Loader2, Terminal } from 'lucide-react';
+import { ArrowLeft, Printer, Edit, Save, Loader2, Terminal, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
+import { cn, exportChecklistToPdf } from '@/lib/utils';
 import {
   Accordion,
   AccordionContent,
@@ -20,10 +20,12 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth, useFirestore, useUser, useMemoFirebase, setDocumentNonBlocking, FirestorePermissionError, errorEmitter } from "@/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { useAuth, useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+const PROJECT_CHECKLIST_DOC_ID = "project-checklist";
 
 
 const fileIndexItems = [
@@ -240,13 +242,41 @@ DrawingsList.displayName = 'DrawingsList';
 const Section1 = React.memo(() => {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [formData, setFormData] = useState({
-        project: '',
-        nameAddress: '',
-        architect: '',
-        architectProjectNo: '',
-        projectDate: '',
-    });
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState({});
+
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const auth = useAuth();
+    const { user, isUserLoading } = useUser();
+    
+    const checklistDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectChecklists/${PROJECT_CHECKLIST_DOC_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!checklistDocRef) return;
+
+        setIsLoading(true);
+        getDoc(checklistDocRef)
+            .then((docSnap) => {
+                if (docSnap.exists()) {
+                    setFormData(docSnap.data() || {});
+                }
+            })
+            .catch((serverError) => {
+                 const permissionError = new FirestorePermissionError({
+                    path: checklistDocRef.path,
+                    operation: 'get',
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
+    }, [checklistDocRef]);
+
     
     const getInitialChecklistState = (items: string[]) => {
         return items.reduce((acc, item) => {
@@ -267,46 +297,46 @@ const Section1 = React.memo(() => {
         supplemental: getInitialChecklistState(["Graphics Design", "Fine Arts and Crafts Services", "Special Furnishing Design", "Non-Building Equipment Selection"]),
         materials: getInitialChecklistState(["Conceptual Site and Building Plans/ Basic Layout", "Preliminary Sections and Elevations", "Air Conditioning/ H.V.A.C Design", "Plumbing", "Fire Protection", "Special Mechanical Systems", "General Space Requirements", "Power Services and Distribution", "Telephones", "Security Systems", "Special Electrical Systems", "Landscaping", "Materials", "Partition Sections", "Furniture Design", "Identification Of Potential Architectural Materials", "Specification Of a. Wall Finishes b. Floor Finishes c. Windows Coverings d. Carpeting", "Specialized Features Construction Details", "Project Administration", "Space Schematic Flow", "Existing Facilities Services", "Project Budgeting", "Presentation"]),
     };
-
-    const [checklists, setChecklists] = useState(initialChecklists);
-
-    const [mainSectionCompletion, setMainSectionCompletion] = useState({
-        predesign: false,
-        design: false,
-        construction: false,
-        post: false,
-        supplemental: false
-    });
-
-    const handleMainSectionCheck = (section: keyof typeof mainSectionCompletion, checked: boolean | 'indeterminate') => {
-        if (typeof checked === 'boolean') {
-            setMainSectionCompletion(prev => ({...prev, [section]: checked}));
-        }
-    }
-
+    const checklistCategories = Object.keys(initialChecklists);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({...prev, [name]: value}));
     };
     
-    const handleCheckboxChange = (category: keyof typeof initialChecklists, itemKey: string, checked: boolean | 'indeterminate') => {
+    const handleCheckboxChange = (name: string, checked: boolean | 'indeterminate') => {
         if (!isEditing || typeof checked !== 'boolean') return;
-        setChecklists(prev => ({
-            ...prev,
-            [category]: {
-                ...prev[category],
-                [itemKey]: checked
-            }
-        }));
+        setFormData(prev => ({...prev, [name]: checked }));
     };
     
     const handleSave = () => {
+        if (!checklistDocRef) {
+          toast({ variant: "destructive", title: "Save Failed", description: "User not authenticated." });
+          return;
+        }
         setIsSaving(true);
-        setTimeout(() => {
+        setDoc(checklistDocRef, formData, { merge: true })
+          .then(() => {
             setIsSaving(false);
             setIsEditing(false);
-        }, 1000);
+            toast({
+              title: "Data Saved",
+              description: "Your changes have been saved successfully.",
+            });
+          })
+          .catch((serverError) => {
+            const permissionError = new FirestorePermissionError({
+              path: checklistDocRef.path,
+              operation: 'write',
+              requestResourceData: formData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            setIsSaving(false);
+          });
+    };
+    
+    const handleDownload = () => {
+        exportChecklistToPdf(formData, checklistCategories, initialChecklists);
     }
 
     const renderChecklist = (title: string, category: keyof typeof initialChecklists) => {
@@ -314,35 +344,40 @@ const Section1 = React.memo(() => {
         return (
             <div>
                 <Subtitle>{title}</Subtitle>
-                <ul className="list-decimal list-inside space-y-2">
+                <div className="space-y-2">
                     {items.map((item, index) => {
                          const itemKey = item.toLowerCase().replace(/[^a-z0-9]/g, '');
+                         const checkboxName = `${category}-${itemKey}`;
                          return (
-                            <li key={index} className="flex items-center gap-2">
+                            <div key={index} className="flex items-center gap-2">
                                {isEditing ? (
                                     <Checkbox
-                                        id={`${category}-${itemKey}`}
-                                        checked={checklists[category][itemKey]}
-                                        onCheckedChange={(checked) => handleCheckboxChange(category, itemKey, checked)}
+                                        id={checkboxName}
+                                        checked={(formData as any)[checkboxName] || false}
+                                        onCheckedChange={(checked) => handleCheckboxChange(checkboxName, checked)}
                                     />
                                 ) : (
-                                    <span className="mr-2">{checklists[category][itemKey] ? '✅' : '🔲'}</span>
+                                    <span className="mr-2">{(formData as any)[checkboxName] ? '✅' : '🔲'}</span>
                                 )}
-                                <label htmlFor={`${category}-${itemKey}`} className="flex-grow">{item}</label>
-                            </li>
+                                <label htmlFor={checkboxName} className="flex-grow">{item}</label>
+                            </div>
                          );
                     })}
-                </ul>
+                </div>
             </div>
         );
     }
 
+    if (isLoading || isUserLoading) {
+        return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+    }
 
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Project Checklist</CardTitle>
                 <div className="flex gap-2">
+                    <Button onClick={handleDownload} variant="outline"><Download /> Download PDF</Button>
                     {isEditing ? (
                         <Button onClick={handleSave} disabled={isSaving}>
                             {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
@@ -354,17 +389,17 @@ const Section1 = React.memo(() => {
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-2 gap-4">
-                    <FormField label="Project" name="project" value={formData.project} onChange={handleInputChange} isEditing={isEditing} />
-                    <FormField label="Name, Address" name="nameAddress" value={formData.nameAddress} onChange={handleInputChange} isEditing={isEditing} />
-                    <FormField label="Architect" name="architect" value={formData.architect} onChange={handleInputChange} isEditing={isEditing} />
-                    <FormField label="Architect Project No" name="architectProjectNo" value={formData.architectProjectNo} onChange={handleInputChange} isEditing={isEditing} />
-                    <FormField label="Project Date" name="projectDate" value={formData.projectDate} onChange={handleInputChange} isEditing={isEditing} />
+                    <FormField label="Project" name="project" value={(formData as any).project} onChange={handleInputChange} isEditing={isEditing} />
+                    <FormField label="Name, Address" name="nameAddress" value={(formData as any).nameAddress} onChange={handleInputChange} isEditing={isEditing} />
+                    <FormField label="Architect" name="architect" value={(formData as any).architect} onChange={handleInputChange} isEditing={isEditing} />
+                    <FormField label="Architect Project No" name="architectProjectNo" value={(formData as any).architectProjectNo} onChange={handleInputChange} isEditing={isEditing} />
+                    <FormField label="Project Date" name="projectDate" value={(formData as any).projectDate} onChange={handleInputChange} isEditing={isEditing} />
                 </div>
                  <SectionTitle 
                     id="predesign-check"
                     isEditing={isEditing} 
-                    checked={mainSectionCompletion.predesign} 
-                    onCheckedChange={(checked) => handleMainSectionCheck('predesign', checked)}
+                    checked={(formData as any)['mainSection-predesign']} 
+                    onCheckedChange={(checked) => handleCheckboxChange('mainSection-predesign', checked)}
                 >
                     1: - Predesign
                 </SectionTitle>
@@ -373,8 +408,8 @@ const Section1 = React.memo(() => {
                 <SectionTitle 
                     id="design-check"
                     isEditing={isEditing} 
-                    checked={mainSectionCompletion.design} 
-                    onCheckedChange={(checked) => handleMainSectionCheck('design', checked)}
+                    checked={(formData as any)['mainSection-design']} 
+                    onCheckedChange={(checked) => handleCheckboxChange('mainSection-design', checked)}
                 >
                     2: - Design
                 </SectionTitle>
@@ -384,8 +419,8 @@ const Section1 = React.memo(() => {
                 <SectionTitle 
                     id="construction-check"
                     isEditing={isEditing} 
-                    checked={mainSectionCompletion.construction} 
-                    onCheckedChange={(checked) => handleMainSectionCheck('construction', checked)}
+                    checked={(formData as any)['mainSection-construction']} 
+                    onCheckedChange={(checked) => handleCheckboxChange('mainSection-construction', checked)}
                 >
                     3: - Construction
                 </SectionTitle>
@@ -394,8 +429,8 @@ const Section1 = React.memo(() => {
                 <SectionTitle 
                     id="post-check"
                     isEditing={isEditing} 
-                    checked={mainSectionCompletion.post} 
-                    onCheckedChange={(checked) => handleMainSectionCheck('post', checked)}
+                    checked={(formData as any)['mainSection-post']} 
+                    onCheckedChange={(checked) => handleCheckboxChange('mainSection-post', checked)}
                 >
                     4: - Post
                 </SectionTitle>
@@ -403,8 +438,8 @@ const Section1 = React.memo(() => {
                 <SectionTitle 
                     id="supplemental-check"
                     isEditing={isEditing} 
-                    checked={mainSectionCompletion.supplemental} 
-                    onCheckedChange={(checked) => handleMainSectionCheck('supplemental', checked)}
+                    checked={(formData as any)['mainSection-supplemental']} 
+                    onCheckedChange={(checked) => handleCheckboxChange('mainSection-supplemental', checked)}
                 >
                     5: - Supplemental
                 </SectionTitle>

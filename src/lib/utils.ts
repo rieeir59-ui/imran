@@ -112,3 +112,55 @@ export function exportDataToPdf(title: string, data: any[], filename: string, ov
 
   doc.save(`${filename}.pdf`);
 }
+
+export function exportChecklistToPdf(formData: any, checklistCategories: string[], initialChecklists: any) {
+  const doc = new jsPDF();
+  let y = 15;
+
+  doc.setFontSize(16);
+  doc.text("Project Checklist", 105, y, { align: 'center' });
+  y += 10;
+  
+  doc.setFontSize(10);
+  doc.text(`Project: ${formData.project || ''}`, 14, y);
+  doc.text(`Architect: ${formData.architect || ''}`, 14, y + 5);
+  doc.text(`Name, Address: ${formData.nameAddress || ''}`, 105, y);
+  doc.text(`Architect Project No: ${formData.architectProjectNo || ''}`, 105, y + 5);
+  doc.text(`Project Date: ${formData.projectDate || ''}`, 105, y + 10);
+  y += 20;
+
+  checklistCategories.forEach((categoryKey, catIndex) => {
+    const categoryTitle = categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1).replace(/([A-Z])/g, ' $1');
+    const mainSectionKey = `mainSection-${categoryKey.toLowerCase().replace(/ /g, '')}`;
+    const isMainSectionComplete = formData[mainSectionKey];
+
+    if (y > 270) {
+      doc.addPage();
+      y = 15;
+    }
+
+    doc.setFontSize(12);
+    doc.text(`${catIndex + 1}: - ${categoryTitle}`, 14, y);
+    doc.text(isMainSectionComplete ? '[X]' : '[ ]', 180, y);
+    y += 7;
+
+    const checklistItems = Object.keys(initialChecklists[categoryKey]);
+    checklistItems.forEach(item => {
+        if (y > 280) {
+            doc.addPage();
+            y = 15;
+        }
+        const itemKey = item.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const checkboxName = `${categoryKey}-${itemKey}`;
+        const isChecked = formData[checkboxName];
+
+        doc.setFontSize(10);
+        doc.text(isChecked ? '[X]' : '[ ]', 20, y);
+        doc.text(item, 30, y);
+        y+= 6;
+    });
+    y += 4;
+  });
+
+  doc.save('project-checklist.pdf');
+}
