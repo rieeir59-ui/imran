@@ -1,3 +1,4 @@
+
 'use client';
 
 import { 
@@ -24,7 +25,7 @@ const projectFormsItems = [
   { href: '/predesign-assessment', icon: ClipboardCheck, label: 'Predesign Assessment' },
   { href: '/project-timeline', icon: GanttChart, label: 'Project Timeline' },
   { href: '/bank', icon: ScrollText, label: 'Bank Forms' },
-  { href: '/weekly-schedule', icon: CalendarClock, label: 'Weekly Schedule' },
+  { href: '/weekly-schedule', icon: CalendarClock, label: 'Work Schedule' },
 ];
 
 const timelineItems = [
