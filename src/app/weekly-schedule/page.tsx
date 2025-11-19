@@ -23,7 +23,7 @@ import { useSearchParams } from 'next/navigation';
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
-import { format, isValid, parseISO, differenceInDays, addDays, endOfMonth, addMonths } from 'date-fns';
+import { format, isValid, parseISO, differenceInDays, addDays, addMonths } from 'date-fns';
 import { exportDataToCsv } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -51,9 +51,9 @@ const initialScheduleData = [
 
 const designations = [
     "CEO",
-    "Studio Manager",
     "Architect",
     "3D Visualizer",
+    "Studio Manager",
     "Draftsperson",
     "Quantity Surveyor",
     "Finance Manager",
@@ -268,21 +268,64 @@ const WeeklySchedulePage = () => {
 
   const handleDownloadPdf = () => {
     const doc = new jsPDF();
-    const employeeName = schedules[0]?.employeeName || 'Employee';
-    doc.text(`Work Schedule for ${employeeName}`, 14, 15);
-    doc.text(`Designation: ${designation}`, 14, 22);
-    doc.text(`Schedule: ${scheduleDates.start} to ${scheduleDates.end}`, 14, 29);
+    let y = 15;
+
+    const addText = (text: string, x: number, yPos: number, options = {}) => {
+        if (yPos > 280) {
+            doc.addPage();
+            y = 15;
+            yPos = 15;
+        }
+        doc.text(text, x, yPos, options);
+        return yPos;
+    };
     
-    schedules.forEach((schedule, index) => {
-        if (index > 0) doc.addPage();
-        doc.text(`Project: ${schedule.projectName} (Status: ${schedule.status})`, 14, 15);
+    const employeeName = schedules[0]?.employeeName || 'Employee';
+    doc.setFontSize(16);
+    y = addText(`Work Schedule for ${employeeName}`, 14, y) + 7;
+
+    doc.setFontSize(10);
+    y = addText(`Designation: ${designation}`, 14, y) + 5;
+    y = addText(`Schedule: ${scheduleDates.start} to ${scheduleDates.end}`, 14, y) + 10;
+
+    schedules.forEach((schedule) => {
+        if (y > 250) { // Check before adding a new project section
+            doc.addPage();
+            y = 15;
+        }
         
+        doc.setFontSize(12);
+        y = addText(`Project: ${schedule.projectName} (Status: ${schedule.status})`, 14, y) + 2;
+
+        const tableBody = schedule.dailyEntries.map((d, i) => [
+            `Day ${i + 1}`,
+            d.details,
+            `${d.percentage}%`
+        ]);
+
         autoTable(doc, {
             head: [['Day', 'Details', 'Progress']],
-            body: schedule.dailyEntries.map((d, i) => [`Day ${i+1}`, d.details, `${d.percentage}%`]),
-            startY: 20
+            body: tableBody,
+            startY: y,
+            theme: 'grid',
+            headStyles: { fillColor: [30, 41, 59] },
         });
+
+        y = (doc as any).lastAutoTable.finalY + 10;
     });
+
+    if (remarks) {
+        if (y > 270) {
+            doc.addPage();
+            y = 15;
+        }
+        doc.setFontSize(12);
+        y = addText("Remarks", 14, y) + 5;
+        doc.setFontSize(10);
+        const splitRemarks = doc.splitTextToSize(remarks, 180);
+        addText(splitRemarks, 14, y);
+    }
+
 
     doc.save('work-schedule.pdf');
   }
