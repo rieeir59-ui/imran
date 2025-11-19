@@ -28,10 +28,23 @@ import { exportDataToCsv } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 const initialScheduleData = [
-  { id: 1, employeeName: 'MUJAHID', projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '' },
+  { id: 1, employeeName: 'MUJAHID', designation: 'Architect 3D Visualizer', projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '' },
+];
+
+const designations = [
+    "CEO",
+    "Studio Manager",
+    "Architect 3D Visualizer",
+    "Draftsperson",
+    "Quantity Surveyor",
+    "Finance Manager",
+    "HR/Admin",
+    "IT Manager",
+    "AI Manager"
 ];
 
 const WeeklySchedulePage = () => {
@@ -41,6 +54,7 @@ const WeeklySchedulePage = () => {
   const [schedules, setSchedules] = useState(initialScheduleData);
   const [remarks, setRemarks] = useState('');
   const [scheduleDates, setScheduleDates] = useState({ start: '', end: '' });
+  const [designation, setDesignation] = useState<string>('');
   const [scheduleId, setScheduleId] = useState<string | null>(null);
 
   const { toast } = useToast();
@@ -58,6 +72,7 @@ const WeeklySchedulePage = () => {
         // If no ID, it's a new schedule
         setIsEditing(true);
         setSchedules(initialScheduleData);
+        setDesignation(initialScheduleData[0].designation);
     }
   }, [searchParams]);
 
@@ -86,6 +101,7 @@ const WeeklySchedulePage = () => {
           if (data.schedules && data.schedules.length > 0) setSchedules(data.schedules);
           if (data.remarks) setRemarks(data.remarks);
           if (data.scheduleDates) setScheduleDates(data.scheduleDates);
+          if (data.designation) setDesignation(data.designation);
         } else {
             // Document doesn't exist, treat as new.
             setScheduleId(null);
@@ -129,7 +145,7 @@ const WeeklySchedulePage = () => {
       return;
     }
     setIsSaving(true);
-    const dataToSave = { schedules, remarks, scheduleDates };
+    const dataToSave = { schedules, remarks, scheduleDates, designation };
     
     try {
         if (scheduleId) {
@@ -163,6 +179,7 @@ const WeeklySchedulePage = () => {
     const dataToExport = schedules.map(s => ({
         projectNo: s.id,
         employeeName: s.employeeName,
+        designation: designation,
         projectName: s.projectName,
         details: s.details,
         status: s.status,
@@ -176,13 +193,14 @@ const WeeklySchedulePage = () => {
     const doc = new jsPDF();
     const employeeName = schedules[0]?.employeeName || 'Employee';
     doc.text(`Weekly Work Schedule for ${employeeName}`, 14, 15);
-    doc.text(`Schedule: ${scheduleDates.start} to ${scheduleDates.end}`, 14, 22);
+    doc.text(`Designation: ${designation}`, 14, 22);
+    doc.text(`Schedule: ${scheduleDates.start} to ${scheduleDates.end}`, 14, 29);
     autoTable(doc, {
         head: [['Project No.', 'Employee', 'Project Name', 'Details', 'Status', 'Start Date', 'End Date']],
         body: schedules.map(s => [s.id, s.employeeName, s.projectName, s.details, s.status, s.startDate, s.endDate]),
-        startY: 30,
+        startY: 37,
     });
-    const finalY = (doc as any).lastAutoTable.finalY || 30;
+    const finalY = (doc as any).lastAutoTable.finalY || 37;
     if (remarks) {
         doc.text("Remarks", 14, finalY + 10);
         doc.text(remarks, 14, finalY + 15);
@@ -191,7 +209,7 @@ const WeeklySchedulePage = () => {
   }
   
   const addRow = () => {
-    setSchedules([...schedules, { id: schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1, employeeName: schedules[0]?.employeeName || 'MUJAHID', projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '' }]);
+    setSchedules([...schedules, { id: schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1, employeeName: schedules[0]?.employeeName || 'MUJAHID', designation: designation, projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '' }]);
   }
 
   const removeRow = (index: number) => {
@@ -292,21 +310,35 @@ const WeeklySchedulePage = () => {
                     ) : (
                         <CardTitle className="text-2xl font-bold">{schedules[0]?.employeeName || 'Employee'}</CardTitle>
                     )}
-                    <p className="text-muted-foreground">Weekly Work Schedule</p>
+                    {isEditing ? (
+                        <Select onValueChange={setDesignation} value={designation}>
+                            <SelectTrigger className="w-[280px] mt-1">
+                                <SelectValue placeholder="Select a designation" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    ) : (
+                         <p className="text-muted-foreground">{designation || 'No designation'}</p>
+                    )}
                 </div>
             </div>
-            <div className="flex items-center gap-2 mt-4 md:mt-0">
-                {isEditing ? (
-                    <>
-                        <DatePicker date={scheduleDates.start ? parseISO(scheduleDates.start) : undefined} onDateChange={(date) => handleDateRangeChange('start', date)} />
-                        <span className="mx-2">to</span>
-                        <DatePicker date={scheduleDates.end ? parseISO(scheduleDates.end) : undefined} onDateChange={(date) => handleDateRangeChange('end', date)} />
-                    </>
-                ) : (
-                    <p className="text-sm font-medium">
-                        {scheduleDates.start && format(parseISO(scheduleDates.start), 'PPP')} - {scheduleDates.end && format(parseISO(scheduleDates.end), 'PPP')}
-                    </p>
-                )}
+            <div className="flex flex-col items-start md:items-end gap-2 mt-4 md:mt-0">
+                 <p className="text-sm text-muted-foreground">Weekly Work Schedule</p>
+                <div className="flex items-center gap-2">
+                    {isEditing ? (
+                        <>
+                            <DatePicker date={scheduleDates.start ? parseISO(scheduleDates.start) : undefined} onDateChange={(date) => handleDateRangeChange('start', date)} />
+                            <span className="mx-2">to</span>
+                            <DatePicker date={scheduleDates.end ? parseISO(scheduleDates.end) : undefined} onDateChange={(date) => handleDateRangeChange('end', date)} />
+                        </>
+                    ) : (
+                        <p className="text-sm font-medium">
+                            {scheduleDates.start && format(parseISO(scheduleDates.start), 'PPP')} - {scheduleDates.end && format(parseISO(scheduleDates.end), 'PPP')}
+                        </p>
+                    )}
+                </div>
             </div>
         </CardHeader>
         <CardContent>
@@ -380,4 +412,3 @@ const WeeklySchedulePage = () => {
 
 export default WeeklySchedulePage;
 
-    

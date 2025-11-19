@@ -322,6 +322,7 @@
       "description": "Represents the data for the weekly work schedule.",
       "type": "object",
       "properties": {
+        "designation": { "type": "string" },
         "schedules": {
           "type": "array",
           "items": {
@@ -525,4 +526,3 @@
   }
 }
 
-    
