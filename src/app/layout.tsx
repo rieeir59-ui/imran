@@ -1,3 +1,6 @@
+
+"use client";
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -7,11 +10,6 @@ import { AppSidebar } from '@/components/layout/sidebar';
 import { SidebarInset } from '@/components/ui/sidebar';
 import { AppHeader } from '@/components/layout/header';
 import { FirebaseClientProvider } from '@/firebase';
-
-export const metadata: Metadata = {
-  title: 'Isbah Dashboard',
-  description: 'Dashboard for Isbah Hassan & Associates',
-};
 
 export default function RootLayout({
   children,
@@ -45,4 +43,3 @@ export default function RootLayout({
   );
 }
 
-    
