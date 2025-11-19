@@ -433,4 +433,3 @@ const WeeklySchedulePage = () => {
 };
 
 export default WeeklySchedulePage;
-
