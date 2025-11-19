@@ -370,14 +370,15 @@ const WeeklySchedulePage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {schedules.map((schedule, index) => (
-                    <Collapsible asChild key={index} open={openProjects[schedule.id] || false} onOpenChange={(isOpen) => setOpenProjects(prev => ({...prev, [schedule.id]: isOpen}))}>
-                        <Fragment>
-                             <TableRow>
+                {schedules.map((schedule, index) => {
+                    const isOpen = openProjects[schedule.id] || false;
+                    return (
+                        <Fragment key={schedule.id}>
+                            <TableRow>
                                 <TableCell>
-                                <CollapsibleTrigger asChild>
-                                    <Button variant="ghost" size="icon">{openProjects[schedule.id] ? <ChevronDown className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}</Button>
-                                </CollapsibleTrigger>
+                                    <Button variant="ghost" size="icon" onClick={() => setOpenProjects(prev => ({...prev, [schedule.id]: !isOpen}))}>
+                                        {isOpen ? <ChevronDown className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}
+                                    </Button>
                                 </TableCell>
                                 <TableCell>{renderCell(String(schedule.id), (val) => handleScheduleChange(index, 'id', Number(val) || 0))}</TableCell>
                                 <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
@@ -388,40 +389,40 @@ const WeeklySchedulePage = () => {
                                 <TableCell>{getStatusIcon(schedule.status)}</TableCell>
                                 {isEditing && <TableCell><Button variant="ghost" size="icon" onClick={() => removeRow(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>}
                             </TableRow>
-                            <CollapsibleContent asChild>
+                            {isOpen && (
                                 <TableRow>
-                                <TableCell colSpan={isEditing ? 9 : 8} className="p-0">
-                                    <div className="p-4 bg-muted/50">
-                                    <h4 className="font-semibold mb-2">Daily Plan</h4>
-                                    {getNumberOfDays(schedule.startDate, schedule.endDate) > 0 ? (
-                                        <Table>
-                                            <TableHeader>
-                                            <TableRow>
-                                                <TableHead className='w-24'>Day</TableHead>
-                                                <TableHead>Details</TableHead>
-                                                <TableHead className='w-48'>Progress</TableHead>
-                                            </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                            {schedule.dailyEntries.map((daily, dayIndex) => (
-                                                <TableRow key={dayIndex}>
-                                                <TableCell>Day {dayIndex + 1}</TableCell>
-                                                <TableCell>{renderCell(daily.details, (val) => handleDailyEntryChange(index, dayIndex, 'details', val), "What was done today?")}</TableCell>
-                                                <TableCell>{renderPercentageCell(daily.percentage, (val) => handleDailyEntryChange(index, dayIndex, 'percentage', val))}</TableCell>
-                                                </TableRow>
-                                            ))}
-                                            </TableBody>
-                                        </Table>
-                                    ) : (
-                                        <p className="text-sm text-muted-foreground p-4 text-center">Set a start and end date to create a daily plan.</p>
-                                    )}
-                                    </div>
-                                </TableCell>
+                                    <TableCell colSpan={isEditing ? 9 : 8} className="p-0">
+                                        <div className="p-4 bg-muted/50">
+                                            <h4 className="font-semibold mb-2">Daily Plan</h4>
+                                            {getNumberOfDays(schedule.startDate, schedule.endDate) > 0 ? (
+                                                <Table>
+                                                    <TableHeader>
+                                                        <TableRow>
+                                                            <TableHead className='w-24'>Day</TableHead>
+                                                            <TableHead>Details</TableHead>
+                                                            <TableHead className='w-48'>Progress</TableHead>
+                                                        </TableRow>
+                                                    </TableHeader>
+                                                    <TableBody>
+                                                        {schedule.dailyEntries.map((daily, dayIndex) => (
+                                                            <TableRow key={dayIndex}>
+                                                                <TableCell>Day {dayIndex + 1}</TableCell>
+                                                                <TableCell>{renderCell(daily.details, (val) => handleDailyEntryChange(index, dayIndex, 'details', val), "What was done today?")}</TableCell>
+                                                                <TableCell>{renderPercentageCell(daily.percentage, (val) => handleDailyEntryChange(index, dayIndex, 'percentage', val))}</TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
+                                                </Table>
+                                            ) : (
+                                                <p className="text-sm text-muted-foreground p-4 text-center">Set a start and end date to create a daily plan.</p>
+                                            )}
+                                        </div>
+                                    </TableCell>
                                 </TableRow>
-                            </CollapsibleContent>
+                            )}
                         </Fragment>
-                    </Collapsible>
-                ))}
+                    );
+                })}
               </TableBody>
             </Table>
             <div className="mt-6">
