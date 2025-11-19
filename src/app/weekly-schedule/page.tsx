@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import {
   Table,
   TableBody,
@@ -339,11 +339,11 @@ const WeeklySchedulePage = () => {
               </TableHeader>
               <TableBody>
                 {schedules.map((schedule, index) => (
-                  <Collapsible asChild key={index}>
-                    <>
+                  <Collapsible asChild key={index} open={openProjects[schedule.id] || false} onOpenChange={(isOpen) => setOpenProjects(prev => ({...prev, [schedule.id]: isOpen}))}>
+                    <Fragment>
                       <TableRow className={cn(openProjects[schedule.id] && 'bg-muted/50')}>
                         <TableCell>
-                          <CollapsibleTrigger asChild onClick={() => setOpenProjects(prev => ({...prev, [schedule.id]: !prev[schedule.id]}))}>
+                          <CollapsibleTrigger asChild>
                             <Button variant="ghost" size="icon">{openProjects[schedule.id] ? <ChevronDown className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}</Button>
                           </CollapsibleTrigger>
                         </TableCell>
@@ -383,7 +383,7 @@ const WeeklySchedulePage = () => {
                           </TableCell>
                         </TableRow>
                       </CollapsibleContent>
-                    </>
+                    </Fragment>
                   </Collapsible>
                 ))}
               </TableBody>
@@ -400,4 +400,3 @@ const WeeklySchedulePage = () => {
 };
 
 export default WeeklySchedulePage;
-
