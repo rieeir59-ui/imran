@@ -23,14 +23,13 @@ import { useSearchParams } from 'next/navigation';
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
-import { format, isValid, parseISO, differenceInDays } from 'date-fns';
+import { format, isValid, parseISO, differenceInDays, addDays } from 'date-fns';
 import { exportDataToCsv } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 
 const initialDailyEntry = () => ({ details: '', percentage: 0 });
@@ -150,21 +149,19 @@ const WeeklySchedulePage = () => {
     const updatedSchedules = [...schedules];
     const schedule = updatedSchedules[index] as any;
     
-    let oldStartDate = schedule.startDate;
-    let oldEndDate = schedule.endDate;
-
     if (field === 'startDate' && value instanceof Date) {
-        schedule.startDate = format(value, 'yyyy-MM-dd');
+        const startDate = value;
+        const endDate = addDays(startDate, 6);
+        schedule.startDate = format(startDate, 'yyyy-MM-dd');
+        schedule.endDate = format(endDate, 'yyyy-MM-dd');
+        
+        const numDays = 7;
+        schedule.dailyEntries = Array(numDays).fill(null).map(initialDailyEntry);
     } else if (field === 'endDate' && value instanceof Date) {
         schedule.endDate = format(value, 'yyyy-MM-dd');
-    } else {
-        schedule[field] = value;
-    }
-    
-    if ((field === 'startDate' && schedule.startDate !== oldStartDate) || (field === 'endDate' && schedule.endDate !== oldEndDate)) {
         const numDays = getNumberOfDays(schedule.startDate, schedule.endDate);
         const currentEntries = schedule.dailyEntries || [];
-        if (numDays > 0) {
+         if (numDays > 0) {
             if (numDays > currentEntries.length) {
                 schedule.dailyEntries = [
                     ...currentEntries,
@@ -176,6 +173,8 @@ const WeeklySchedulePage = () => {
         } else {
             schedule.dailyEntries = [];
         }
+    } else {
+        schedule[field] = value;
     }
 
     setSchedules(updatedSchedules);
