@@ -155,12 +155,32 @@ const WeeklySchedule = () => {
 
   const handleScheduleChange = (index: number, field: string, value: any) => {
     setSchedules(prevSchedules => 
-        prevSchedules.map((schedule, i) => {
-            if (i === index) {
-                return { ...schedule, [field]: value };
-            }
-            return schedule;
-        })
+      prevSchedules.map((schedule, i) => {
+        if (i === index) {
+          const newSchedule = { ...schedule, [field]: value };
+          
+          if (field === 'startDate' || field === 'endDate') {
+              const numDays = getNumberOfDays(newSchedule.startDate, newSchedule.endDate);
+              const currentEntries = newSchedule.dailyEntries || [];
+              let newEntries;
+              if (numDays > 0) {
+                  if (numDays > currentEntries.length) {
+                      newEntries = [
+                          ...currentEntries,
+                          ...Array(numDays - currentEntries.length).fill(null).map(initialDailyEntry)
+                      ];
+                  } else {
+                      newEntries = currentEntries.slice(0, numDays);
+                  }
+                  newSchedule.dailyEntries = newEntries;
+              } else {
+                  newSchedule.dailyEntries = [];
+              }
+          }
+          return newSchedule;
+        }
+        return schedule;
+      })
     );
   };
   
@@ -175,26 +195,18 @@ const WeeklySchedule = () => {
         if (scheduleType === 'weekly') {
             endDate = addDays(startDate, 6);
         } else { // monthly
-            endDate = endOfMonth(startDate);
+            endDate = addMonths(startDate, 1);
         }
-    } else { // field === 'end', which is disabled, but keeping logic just in case
+    } else { // field === 'end'
         endDate = value;
-        if (scheduleDates.start) {
-            startDate = parseISO(scheduleDates.start);
-        } else {
-            startDate = new Date();
-            if (scheduleType === 'weekly') {
-                endDate = addDays(startDate, 6);
-            } else { // monthly
-                endDate = endOfMonth(startDate);
-            }
-        }
+        startDate = scheduleDates.start ? parseISO(scheduleDates.start) : new Date();
     }
     
-    setScheduleDates({
+    const newScheduleDates = {
         start: format(startDate, 'yyyy-MM-dd'),
         end: format(endDate, 'yyyy-MM-dd'),
-    });
+    };
+    setScheduleDates(newScheduleDates);
   }
 
   const handleDailyEntryChange = (projectIndex: number, dayIndex: number, field: 'details' | 'percentage', value: any) => {
@@ -220,20 +232,10 @@ const WeeklySchedule = () => {
 
   useEffect(() => {
     const numDays = getNumberOfDays(scheduleDates.start, scheduleDates.end);
-    if(numDays <= 0) return;
+    if(numDays <= 0 || !isEditing) return;
 
     const updatedSchedules = schedules.map(schedule => {
-        const currentEntries = schedule.dailyEntries || [];
-        let newEntries;
-        if (numDays > currentEntries.length) {
-            newEntries = [
-                ...currentEntries,
-                ...Array(numDays - currentEntries.length).fill(null).map(initialDailyEntry)
-            ];
-        } else {
-            newEntries = currentEntries.slice(0, numDays);
-        }
-        return { ...schedule, dailyEntries: newEntries, startDate: scheduleDates.start, endDate: scheduleDates.end, employeeName };
+        return { ...schedule, startDate: scheduleDates.start, endDate: scheduleDates.end, employeeName };
     });
     setSchedules(updatedSchedules);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -310,20 +312,29 @@ const WeeklySchedule = () => {
     };
     
     doc.setFontSize(16);
-    y = addText(`Work Schedule for ${employeeName}`, 14, y) + 7;
+    y = addText(`Work Schedule for ${employeeName}`, doc.internal.pageSize.getWidth() / 2, y, { align: 'center' });
+    y += 7;
 
     doc.setFontSize(10);
+    const scheduleDateString = `Schedule: ${scheduleDates.start ? format(parseISO(scheduleDates.start), 'PPP') : ''} to ${scheduleDates.end ? format(parseISO(scheduleDates.end), 'PPP') : ''}`;
     y = addText(`Designation: ${designation}`, 14, y) + 5;
-    y = addText(`Schedule: ${scheduleDates.start} to ${scheduleDates.end}`, 14, y) + 10;
+    y = addText(scheduleDateString, 14, y) + 10;
 
-    schedules.forEach((schedule) => {
+    schedules.forEach((schedule, projIndex) => {
         if (y > 250) { // Check before adding a new project section
             doc.addPage();
             y = 15;
         }
         
+        const totalProgress = calculateTotalProgress(schedule.dailyEntries);
         doc.setFontSize(12);
-        y = addText(`Project: ${schedule.projectName} (Status: ${schedule.status})`, 14, y) + 2;
+        const projectTitle = `Project ${projIndex + 1}: ${schedule.projectName} (Status: ${schedule.status}) - ${totalProgress}% Complete`;
+        y = addText(projectTitle, 14, y);
+        y+=2;
+        
+        const projectDateRange = `(${schedule.startDate ? format(parseISO(schedule.startDate), 'd MMM') : ''} - ${schedule.endDate ? format(parseISO(schedule.endDate), 'd MMM') : ''})`;
+        doc.setFontSize(9);
+        y = addText(projectDateRange, 14, y);
         y += 5; // spacing
 
         const tableBody = schedule.dailyEntries.map((d, i) => [
@@ -408,6 +419,14 @@ const WeeklySchedule = () => {
     }
     return <Progress value={value || 0} className="w-full" />
   }
+
+  const renderDateCell = (dateString: string | undefined, onChange: (date: Date | undefined) => void) => {
+    const date = dateString && isValid(parseISO(dateString)) ? parseISO(dateString) : undefined;
+    if (isEditing) {
+      return <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />;
+    }
+    return <span className="p-2 block min-h-[32px]">{date ? format(date, 'd-MMM-yy') : ''}</span>;
+  };
   
   if (isUserLoading || (isLoading && scheduleId)) {
     return <div className="flex h-full w-full items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2">Loading Schedule...</p></div>;
@@ -449,7 +468,7 @@ const WeeklySchedule = () => {
                      </RadioGroup>
                  )}
                 <div className="flex items-center gap-2">
-                    {isEditing ? (<><DatePicker date={scheduleDates.start ? parseISO(scheduleDates.start) : undefined} onDateChange={(date) => handleDateRangeChange('start', date)} /><span className="mx-2">to</span><DatePicker date={scheduleDates.end ? parseISO(scheduleDates.end) : undefined} onDateChange={(date) => {}} disabled /></>) : (<p className="text-sm font-medium">{scheduleDates.start && format(parseISO(scheduleDates.start), 'PPP')} - {scheduleDates.end && format(parseISO(scheduleDates.end), 'PPP')}</p>)}
+                    {isEditing ? (<><DatePicker date={scheduleDates.start ? parseISO(scheduleDates.start) : undefined} onDateChange={(date) => handleDateRangeChange('start', date)} /><span className="mx-2">to</span><DatePicker date={scheduleDates.end ? parseISO(scheduleDates.end) : undefined} onDateChange={(date) => handleDateRangeChange('end', date)} disabled={scheduleType==='weekly' || scheduleType==='monthly'} /></>) : (<p className="text-sm font-medium">{scheduleDates.start && format(parseISO(scheduleDates.start), 'PPP')} - {scheduleDates.end && format(parseISO(scheduleDates.end), 'PPP')}</p>)}
                 </div>
             </div>
         </CardHeader>
@@ -460,8 +479,8 @@ const WeeklySchedule = () => {
                 <TableRow>
                   <TableHead className="w-12"></TableHead>
                   <TableHead className="w-20">Project No.</TableHead>
-                  <TableHead>Details</TableHead>
                   <TableHead>Project Name</TableHead>
+                  <TableHead>Details</TableHead>
                   <TableHead>Total Progress</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Start Date</TableHead>
@@ -480,8 +499,8 @@ const WeeklySchedule = () => {
                                     </Button>
                                 </TableCell>
                                 <TableCell>{renderCell(String(schedule.id), (val) => handleScheduleChange(index, 'id', Number(val) || 0))}</TableCell>
-                                <TableCell>{renderTextareaCell(schedule.details, (val) => handleScheduleChange(index, 'details', val))}</TableCell>
                                 <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
+                                <TableCell>{renderTextareaCell(schedule.details, (val) => handleScheduleChange(index, 'details', val))}</TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2">
                                         <Progress value={calculateTotalProgress(schedule.dailyEntries)} className="w-24" />
@@ -489,8 +508,8 @@ const WeeklySchedule = () => {
                                     </div>
                                 </TableCell>
                                 <TableCell>{isEditing ? (<Select value={schedule.status} onValueChange={(value) => handleScheduleChange(index, 'status', value)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="In Progress">In Progress</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Incomplete">Incomplete</SelectItem></SelectContent></Select>) : (<span className="p-2 block">{schedule.status}</span>)}</TableCell>
-                                <TableCell>{schedule.startDate ? format(parseISO(schedule.startDate), 'd-MMM-yy') : ''}</TableCell>
-                                <TableCell>{schedule.endDate ? format(parseISO(schedule.endDate), 'd-MMM-yy') : ''}</TableCell>
+                                <TableCell>{renderDateCell(schedule.startDate, (date) => handleScheduleChange(index, 'startDate', date ? format(date, 'yyyy-MM-dd') : ''))}</TableCell>
+                                <TableCell>{renderDateCell(schedule.endDate, (date) => handleScheduleChange(index, 'endDate', date ? format(date, 'yyyy-MM-dd') : ''))}</TableCell>
                                 <TableCell>{getStatusIcon(schedule.status)}</TableCell>
                                 {isEditing && <TableCell><Button variant="ghost" size="icon" onClick={() => removeRow(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>}
                             </TableRow>
