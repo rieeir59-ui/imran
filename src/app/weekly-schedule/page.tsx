@@ -41,6 +41,7 @@ const initialScheduleData = [
     id: 1, 
     employeeName: 'MUJAHID', 
     projectName: '', 
+    details: '',
     status: 'In Progress', 
     startDate: '', 
     endDate: '', 
@@ -292,6 +293,7 @@ const WeeklySchedulePage = () => {
       id: schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1, 
       employeeName: schedules[0]?.employeeName || 'MUJAHID', 
       projectName: '', 
+      details: '',
       status: 'In Progress', 
       startDate: scheduleDates.start, 
       endDate: scheduleDates.end, 
@@ -313,14 +315,12 @@ const WeeklySchedulePage = () => {
     }
   }
 
-  const calculateTotalProgress = (dailyEntries: {percentage: number}[]) => {
-      if (!dailyEntries || dailyEntries.length === 0) return 0;
-      const totalPercentage = dailyEntries.reduce((sum, entry) => sum + entry.percentage, 0);
-      return Math.round(totalPercentage / dailyEntries.length);
-  }
-
   const renderCell = (value: string | undefined, onChange: (val: any) => void, placeholder?: string) => {
     return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="h-8" /> : <span className="p-2 block min-h-[32px]">{value || ''}</span>;
+  }
+
+  const renderTextareaCell = (value: string | undefined, onChange: (val: any) => void, placeholder?: string) => {
+    return isEditing ? <Textarea value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="h-20" /> : <p className="p-2 block min-h-[32px] whitespace-pre-wrap">{value || ''}</p>;
   }
   
   const renderPercentageCell = (value: number | undefined, onChange: (val: any) => void) => {
@@ -382,6 +382,7 @@ const WeeklySchedulePage = () => {
                   <TableHead className="w-12"></TableHead>
                   <TableHead className="w-20">Project No.</TableHead>
                   <TableHead>Project Name</TableHead>
+                  <TableHead>Details</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Start Date</TableHead>
                   <TableHead>End Date</TableHead>
@@ -401,6 +402,7 @@ const WeeklySchedulePage = () => {
                                 </TableCell>
                                 <TableCell>{renderCell(String(schedule.id), (val) => handleScheduleChange(index, 'id', Number(val) || 0))}</TableCell>
                                 <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
+                                <TableCell>{renderTextareaCell(schedule.details, (val) => handleScheduleChange(index, 'details', val))}</TableCell>
                                 <TableCell>{isEditing ? (<Select value={schedule.status} onValueChange={(value) => handleScheduleChange(index, 'status', value)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="In Progress">In Progress</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Incomplete">Incomplete</SelectItem></SelectContent></Select>) : (<span className="p-2 block">{schedule.status}</span>)}</TableCell>
                                 <TableCell>{schedule.startDate ? format(parseISO(schedule.startDate), 'd-MMM-yy') : ''}</TableCell>
                                 <TableCell>{schedule.endDate ? format(parseISO(schedule.endDate), 'd-MMM-yy') : ''}</TableCell>
@@ -409,7 +411,7 @@ const WeeklySchedulePage = () => {
                             </TableRow>
                             {openProjects[schedule.id] && (
                                 <TableRow>
-                                    <TableCell colSpan={isEditing ? 8 : 7} className="p-0">
+                                    <TableCell colSpan={isEditing ? 9 : 8} className="p-0">
                                         <div className="p-4 bg-muted/50">
                                             <h4 className="font-semibold mb-2">Daily Plan</h4>
                                             {getNumberOfDays(schedule.startDate, schedule.endDate) > 0 ? (
