@@ -1,3 +1,4 @@
+
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import jsPDF from "jspdf";
@@ -54,15 +55,33 @@ export function exportDataToPdf(title: string, data: any[], filename: string, ov
     orientation: "landscape",
   });
   
+  doc.setFontSize(14);
   doc.text(title, 14, 15);
 
-  const tableHeaders = Object.keys(data[0]).map(key => {
-    // Simple camelCase to Title Case conversion
+  const headers = Object.keys(data[0]);
+  const tableHeaders = headers.map(key => {
     const result = key.replace(/([A-Z])/g, " $1");
     return result.charAt(0).toUpperCase() + result.slice(1);
   });
   
-  const tableData = data.map(item => Object.values(item).map(val => val !== undefined && val !== null ? String(val) : ''));
+  const tableData = data.map(item => headers.map(header => {
+    const value = item[header];
+    return value !== undefined && value !== null ? String(value) : '';
+  }));
+
+  const columnStyles: { [key: string]: any } = {};
+  headers.forEach((header, index) => {
+    if (header.toLowerCase().includes('name')) {
+      columnStyles[index] = { cellWidth: 35 };
+    } else if (header.toLowerCase().includes('date')) {
+      columnStyles[index] = { cellWidth: 20 };
+    } else if (header.toLowerCase().includes('area')) {
+      columnStyles[index] = { cellWidth: 15 };
+    } else {
+      columnStyles[index] = { cellWidth: 'auto' };
+    }
+  });
+
 
   autoTable(doc, {
     head: [tableHeaders],
@@ -70,42 +89,55 @@ export function exportDataToPdf(title: string, data: any[], filename: string, ov
     startY: 20,
     theme: 'grid',
     styles: {
-      fontSize: 5,
-      cellPadding: 1,
+      fontSize: 6,
+      cellPadding: 1.5,
       overflow: 'linebreak',
     },
     headStyles: {
-        fillColor: [30, 41, 59], // slate-800
+        fillColor: [30, 41, 59],
         textColor: [255, 255, 255],
-        fontSize: 6,
+        fontSize: 7,
+        fontStyle: 'bold',
     },
-    didDrawPage: (data) => {
-        // Optional: if you want to add footers etc.
-    }
+    columnStyles: columnStyles
   });
 
   let finalY = (doc as any).lastAutoTable.finalY || 20;
 
+  if (finalY > 180) { // check if new page is needed
+    doc.addPage();
+    finalY = 15;
+  }
+
+
   if (overallStatus && overallStatus.length > 0) {
     finalY += 10;
+    doc.setFontSize(12);
     doc.text("Overall Status", 14, finalY);
     autoTable(doc, {
-      startY: finalY + 2,
+      startY: finalY + 4,
       head: [['No.', 'Status']],
       body: overallStatus.map(s => [s.no, s.text]),
       theme: 'grid',
-      headStyles: { fillColor: [241, 245, 249] /* slate-100 */, textColor: [30, 41, 59] },
+      headStyles: { fillColor: [241, 245, 249], textColor: [30, 41, 59], fontSize: 10 },
+      styles: { fontSize: 9 },
     });
     finalY = (doc as any).lastAutoTable.finalY;
   }
 
   if (remarks && remarks.text) {
+    if (finalY > 180) {
+        doc.addPage();
+        finalY = 15;
+    }
     finalY += 10;
+    doc.setFontSize(12);
     doc.text("Remarks", 14, finalY);
+    doc.setFontSize(10);
     const splitText = doc.splitTextToSize(remarks.text, 260);
-    doc.text(splitText, 14, finalY + 5);
+    doc.text(splitText, 14, finalY + 6);
     if(remarks.date) {
-        doc.text(`Date: ${remarks.date}`, 14, finalY + 5 + (splitText.length * 5) + 5);
+        doc.text(`Date: ${remarks.date}`, 14, finalY + 6 + (splitText.length * 5) + 5);
     }
   }
 
