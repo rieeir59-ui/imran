@@ -29,10 +29,11 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
 
 
 const initialScheduleData = [
-  { id: 1, employeeName: 'MUJAHID', designation: 'Architect 3D Visualizer', projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '' },
+  { id: 1, employeeName: 'MUJAHID', designation: 'Architect 3D Visualizer', projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '', percentage: 0 },
 ];
 
 const designations = [
@@ -98,7 +99,7 @@ const WeeklySchedulePage = () => {
       .then((docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
-          if (data.schedules && data.schedules.length > 0) setSchedules(data.schedules);
+          if (data.schedules && data.schedules.length > 0) setSchedules(data.schedules.map((s: any) => ({...s, percentage: s.percentage || 0})));
           if (data.remarks) setRemarks(data.remarks);
           if (data.scheduleDates) setScheduleDates(data.scheduleDates);
           if (data.designation) setDesignation(data.designation);
@@ -123,7 +124,13 @@ const WeeklySchedulePage = () => {
   const handleScheduleChange = (index: number, field: string, value: any) => {
     const updatedSchedules = [...schedules];
     const schedule = updatedSchedules[index] as any;
-    schedule[field] = value;
+    
+    if (field === 'percentage') {
+      const numValue = Math.max(0, Math.min(100, Number(value) || 0));
+      schedule[field] = numValue;
+    } else {
+      schedule[field] = value;
+    }
     
     if (field === 'startDate' && value instanceof Date) {
         schedule.startDate = format(value, 'yyyy-MM-dd');
@@ -183,6 +190,7 @@ const WeeklySchedulePage = () => {
         projectName: s.projectName,
         details: s.details,
         status: s.status,
+        percentage: s.percentage,
         startDate: s.startDate,
         endDate: s.endDate,
     }));
@@ -196,8 +204,8 @@ const WeeklySchedulePage = () => {
     doc.text(`Designation: ${designation}`, 14, 22);
     doc.text(`Schedule: ${scheduleDates.start} to ${scheduleDates.end}`, 14, 29);
     autoTable(doc, {
-        head: [['Project No.', 'Employee', 'Project Name', 'Details', 'Status', 'Start Date', 'End Date']],
-        body: schedules.map(s => [s.id, s.employeeName, s.projectName, s.details, s.status, s.startDate, s.endDate]),
+        head: [['Project No.', 'Employee', 'Project Name', 'Details', 'Status', 'Percentage', 'Start Date', 'End Date']],
+        body: schedules.map(s => [s.id, s.employeeName, s.projectName, s.details, s.status, `${s.percentage}%`, s.startDate, s.endDate]),
         startY: 37,
     });
     const finalY = (doc as any).lastAutoTable.finalY || 37;
@@ -209,7 +217,7 @@ const WeeklySchedulePage = () => {
   }
   
   const addRow = () => {
-    setSchedules([...schedules, { id: schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1, employeeName: schedules[0]?.employeeName || 'MUJAHID', designation: designation, projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '' }]);
+    setSchedules([...schedules, { id: schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1, employeeName: schedules[0]?.employeeName || 'MUJAHID', designation: designation, projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '', percentage: 0 }]);
   }
 
   const removeRow = (index: number) => {
@@ -232,6 +240,13 @@ const WeeklySchedulePage = () => {
 
   const renderCell = (value: string | undefined, onChange: (val: any) => void) => {
     return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8" /> : <span className="p-2 block">{value || ''}</span>;
+  }
+  
+  const renderPercentageCell = (value: number | undefined, onChange: (val: any) => void) => {
+    if (isEditing) {
+        return <Input type="number" value={value || 0} onChange={(e) => onChange(e.target.value)} className="h-8 w-20" min="0" max="100"/>
+    }
+    return <Progress value={value || 0} className="w-full" />
   }
 
   const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
@@ -350,6 +365,7 @@ const WeeklySchedulePage = () => {
                   <TableHead>Project Name</TableHead>
                   <TableHead>Details</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Percentage</TableHead>
                   <TableHead>Start Date</TableHead>
                   <TableHead>End Date</TableHead>
                   <TableHead>Tick</TableHead>
@@ -381,6 +397,7 @@ const WeeklySchedulePage = () => {
                         <span className="p-2 block">{schedule.status}</span>
                       )}
                     </TableCell>
+                    <TableCell>{renderPercentageCell(schedule.percentage, (val) => handleScheduleChange(index, 'percentage', val))}</TableCell>
                     <TableCell>{renderDateCell(schedule.startDate, (val) => handleScheduleChange(index, 'startDate', val))}</TableCell>
                     <TableCell>{renderDateCell(schedule.endDate, (val) => handleScheduleChange(index, 'endDate', val))}</TableCell>
                     <TableCell>{getStatusIcon(schedule.status)}</TableCell>
@@ -415,3 +432,4 @@ const WeeklySchedulePage = () => {
 };
 
 export default WeeklySchedulePage;
+
