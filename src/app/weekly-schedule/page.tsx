@@ -83,10 +83,12 @@ const WeeklySchedulePage = () => {
         setScheduleId(id);
     } else {
         setIsEditing(true);
-        setSchedules(initialScheduleData);
-        setDesignation(initialScheduleData[0].employeeName);
+        if (schedules.length === 0 || schedules[0].employeeName !== 'MUJAHID') {
+            setSchedules(initialScheduleData);
+            setDesignation('');
+        }
     }
-  }, [searchParams]);
+  }, [searchParams, schedules]);
 
   useEffect(() => {
     if (!isUserLoading && !user && auth) {
@@ -367,8 +369,8 @@ const WeeklySchedulePage = () => {
               <TableBody>
                 {schedules.map((schedule, index) => (
                     <Collapsible asChild key={index} open={openProjects[schedule.id] || false} onOpenChange={(isOpen) => setOpenProjects(prev => ({...prev, [schedule.id]: isOpen}))}>
-                        <Fragment>
-                            <TableRow className={cn(openProjects[schedule.id] && 'bg-muted/50')}>
+                        <>
+                            <TableRow>
                                 <TableCell>
                                 <CollapsibleTrigger asChild>
                                     <Button variant="ghost" size="icon">{openProjects[schedule.id] ? <ChevronDown className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}</Button>
@@ -414,7 +416,7 @@ const WeeklySchedulePage = () => {
                                 </TableCell>
                                 </TableRow>
                             </CollapsibleContent>
-                        </Fragment>
+                        </>
                     </Collapsible>
                 ))}
               </TableBody>
