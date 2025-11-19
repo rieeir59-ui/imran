@@ -383,7 +383,6 @@ const WeeklySchedulePage = () => {
                   <TableHead className="w-20">Project No.</TableHead>
                   <TableHead>Project Name</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="w-48">Total Progress</TableHead>
                   <TableHead>Start Date</TableHead>
                   <TableHead>End Date</TableHead>
                   <TableHead>Tick</TableHead>
@@ -403,7 +402,6 @@ const WeeklySchedulePage = () => {
                                 <TableCell>{renderCell(String(schedule.id), (val) => handleScheduleChange(index, 'id', Number(val) || 0))}</TableCell>
                                 <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
                                 <TableCell>{isEditing ? (<Select value={schedule.status} onValueChange={(value) => handleScheduleChange(index, 'status', value)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="In Progress">In Progress</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Incomplete">Incomplete</SelectItem></SelectContent></Select>) : (<span className="p-2 block">{schedule.status}</span>)}</TableCell>
-                                <TableCell><Progress value={calculateTotalProgress(schedule.dailyEntries)} className="w-full" /></TableCell>
                                 <TableCell>{schedule.startDate ? format(parseISO(schedule.startDate), 'd-MMM-yy') : ''}</TableCell>
                                 <TableCell>{schedule.endDate ? format(parseISO(schedule.endDate), 'd-MMM-yy') : ''}</TableCell>
                                 <TableCell>{getStatusIcon(schedule.status)}</TableCell>
@@ -411,7 +409,7 @@ const WeeklySchedulePage = () => {
                             </TableRow>
                             {openProjects[schedule.id] && (
                                 <TableRow>
-                                    <TableCell colSpan={isEditing ? 9 : 8} className="p-0">
+                                    <TableCell colSpan={isEditing ? 8 : 7} className="p-0">
                                         <div className="p-4 bg-muted/50">
                                             <h4 className="font-semibold mb-2">Daily Plan</h4>
                                             {getNumberOfDays(schedule.startDate, schedule.endDate) > 0 ? (
