@@ -88,7 +88,7 @@ const WeeklySchedulePage = () => {
             setDesignation('');
         }
     }
-  }, [searchParams, schedules]);
+  }, [searchParams]);
 
   useEffect(() => {
     if (!isUserLoading && !user && auth) {
@@ -153,25 +153,28 @@ const WeeklySchedulePage = () => {
     let oldStartDate = schedule.startDate;
     let oldEndDate = schedule.endDate;
 
-    schedule[field] = value;
-    
     if (field === 'startDate' && value instanceof Date) {
         schedule.startDate = format(value, 'yyyy-MM-dd');
-    }
-    if (field === 'endDate' && value instanceof Date) {
+    } else if (field === 'endDate' && value instanceof Date) {
         schedule.endDate = format(value, 'yyyy-MM-dd');
+    } else {
+        schedule[field] = value;
     }
     
     if ((field === 'startDate' && schedule.startDate !== oldStartDate) || (field === 'endDate' && schedule.endDate !== oldEndDate)) {
         const numDays = getNumberOfDays(schedule.startDate, schedule.endDate);
         const currentEntries = schedule.dailyEntries || [];
-        if (numDays > currentEntries.length) {
-            schedule.dailyEntries = [
-                ...currentEntries,
-                ...Array(numDays - currentEntries.length).fill(null).map(initialDailyEntry)
-            ];
+        if (numDays > 0) {
+            if (numDays > currentEntries.length) {
+                schedule.dailyEntries = [
+                    ...currentEntries,
+                    ...Array(numDays - currentEntries.length).fill(null).map(initialDailyEntry)
+                ];
+            } else {
+                schedule.dailyEntries = currentEntries.slice(0, numDays);
+            }
         } else {
-            schedule.dailyEntries = currentEntries.slice(0, numDays);
+            schedule.dailyEntries = [];
         }
     }
 
@@ -369,8 +372,8 @@ const WeeklySchedulePage = () => {
               <TableBody>
                 {schedules.map((schedule, index) => (
                     <Collapsible asChild key={index} open={openProjects[schedule.id] || false} onOpenChange={(isOpen) => setOpenProjects(prev => ({...prev, [schedule.id]: isOpen}))}>
-                        <>
-                            <TableRow>
+                        <Fragment>
+                             <TableRow>
                                 <TableCell>
                                 <CollapsibleTrigger asChild>
                                     <Button variant="ghost" size="icon">{openProjects[schedule.id] ? <ChevronDown className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}</Button>
@@ -388,7 +391,7 @@ const WeeklySchedulePage = () => {
                             <CollapsibleContent asChild>
                                 <TableRow>
                                 <TableCell colSpan={isEditing ? 9 : 8} className="p-0">
-                                    <div className="p-4 bg-muted/20">
+                                    <div className="p-4 bg-muted/50">
                                     <h4 className="font-semibold mb-2">Daily Plan</h4>
                                     {getNumberOfDays(schedule.startDate, schedule.endDate) > 0 ? (
                                         <Table>
@@ -416,7 +419,7 @@ const WeeklySchedulePage = () => {
                                 </TableCell>
                                 </TableRow>
                             </CollapsibleContent>
-                        </>
+                        </Fragment>
                     </Collapsible>
                 ))}
               </TableBody>
