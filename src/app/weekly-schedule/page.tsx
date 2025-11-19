@@ -364,15 +364,19 @@ const WeeklySchedulePage = () => {
                     <TableCell>{renderCell(schedule.details, (val) => handleScheduleChange(index, 'details', val))}</TableCell>
                     <TableCell>
                       {isEditing ? (
-                        <select
+                        <Select
                           value={schedule.status}
-                          onChange={(e) => handleScheduleChange(index, 'status', e.target.value)}
-                          className="form-select block w-full h-8 border-gray-300 rounded-md"
+                          onValueChange={(value) => handleScheduleChange(index, 'status', value)}
                         >
-                          <option>In Progress</option>
-                          <option>Completed</option>
-                          <option>Incomplete</option>
-                        </select>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="In Progress">In Progress</SelectItem>
+                            <SelectItem value="Completed">Completed</SelectItem>
+                            <SelectItem value="Incomplete">Incomplete</SelectItem>
+                          </SelectContent>
+                        </Select>
                       ) : (
                         <span className="p-2 block">{schedule.status}</span>
                       )}
@@ -411,4 +415,3 @@ const WeeklySchedulePage = () => {
 };
 
 export default WeeklySchedulePage;
-
