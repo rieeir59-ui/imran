@@ -23,7 +23,7 @@ import { useSearchParams } from 'next/navigation';
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
-import { format, isValid, parseISO, differenceInDays, addDays } from 'date-fns';
+import { format, isValid, parseISO, differenceInDays, addDays, endOfMonth } from 'date-fns';
 import { exportDataToCsv } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -31,6 +31,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 const initialDailyEntry = () => ({ details: '', percentage: 0 });
 
@@ -69,6 +71,7 @@ const WeeklySchedulePage = () => {
   const [designation, setDesignation] = useState<string>('');
   const [scheduleId, setScheduleId] = useState<string | null>(null);
   const [openProjects, setOpenProjects] = useState<Record<number, boolean>>({});
+  const [scheduleType, setScheduleType] = useState<'weekly' | 'monthly'>('weekly');
 
   const { toast } = useToast();
 
@@ -121,6 +124,7 @@ const WeeklySchedulePage = () => {
           if (data.remarks) setRemarks(data.remarks);
           if (data.scheduleDates) setScheduleDates(data.scheduleDates);
           if (data.designation) setDesignation(data.designation);
+          if (data.scheduleType) setScheduleType(data.scheduleType);
         } else {
             setScheduleId(null);
             setIsEditing(true);
@@ -150,36 +154,28 @@ const WeeklySchedulePage = () => {
     const updatedSchedules = [...schedules];
     const schedule = updatedSchedules[index] as any;
     
-    if (field === 'startDate' && value instanceof Date) {
-        const startDate = value;
-        const endDate = addDays(startDate, 6);
-        schedule.startDate = format(startDate, 'yyyy-MM-dd');
-        schedule.endDate = format(endDate, 'yyyy-MM-dd');
-        
-        const numDays = 7;
-        schedule.dailyEntries = Array(numDays).fill(null).map(initialDailyEntry);
-    } else if (field === 'endDate' && value instanceof Date) {
-        schedule.endDate = format(value, 'yyyy-MM-dd');
-        const numDays = getNumberOfDays(schedule.startDate, schedule.endDate);
-        const currentEntries = schedule.dailyEntries || [];
-         if (numDays > 0) {
-            if (numDays > currentEntries.length) {
-                schedule.dailyEntries = [
-                    ...currentEntries,
-                    ...Array(numDays - currentEntries.length).fill(null).map(initialDailyEntry)
-                ];
-            } else {
-                schedule.dailyEntries = currentEntries.slice(0, numDays);
-            }
-        } else {
-            schedule.dailyEntries = [];
-        }
-    } else {
-        schedule[field] = value;
-    }
+    schedule[field] = value;
 
     setSchedules(updatedSchedules);
   };
+
+  const handleDateRangeChange = (field: 'start' | 'end', value: Date | undefined) => {
+    if (!value) return;
+
+    const startDate = field === 'start' ? value : (scheduleDates.start ? parseISO(scheduleDates.start) : new Date());
+    let endDate: Date;
+
+    if (scheduleType === 'weekly') {
+        endDate = addDays(startDate, 6);
+    } else { // monthly
+        endDate = endOfMonth(startDate);
+    }
+    
+    setScheduleDates({
+        start: format(startDate, 'yyyy-MM-dd'),
+        end: format(endDate, 'yyyy-MM-dd'),
+    });
+  }
   
   const handleDailyEntryChange = (projectIndex: number, dayIndex: number, field: 'details' | 'percentage', value: any) => {
     const updatedSchedules = [...schedules];
@@ -193,9 +189,27 @@ const WeeklySchedulePage = () => {
     setSchedules(updatedSchedules);
   }
 
-  const handleDateRangeChange = (field: 'start' | 'end', value: Date | undefined) => {
-      setScheduleDates(prev => ({...prev, [field]: value ? format(value, 'yyyy-MM-dd') : ''}))
-  }
+  useEffect(() => {
+    const numDays = getNumberOfDays(scheduleDates.start, scheduleDates.end);
+    if(numDays <= 0) return;
+
+    const updatedSchedules = schedules.map(schedule => {
+        const currentEntries = schedule.dailyEntries || [];
+        let newEntries;
+        if (numDays > currentEntries.length) {
+            newEntries = [
+                ...currentEntries,
+                ...Array(numDays - currentEntries.length).fill(null).map(initialDailyEntry)
+            ];
+        } else {
+            newEntries = currentEntries.slice(0, numDays);
+        }
+        return { ...schedule, dailyEntries: newEntries, startDate: scheduleDates.start, endDate: scheduleDates.end };
+    });
+    setSchedules(updatedSchedules);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scheduleDates]);
+
 
   const handleSave = async () => {
     if (!user || !firestore) {
@@ -203,7 +217,7 @@ const WeeklySchedulePage = () => {
       return;
     }
     setIsSaving(true);
-    const dataToSave = { schedules, remarks, scheduleDates, designation };
+    const dataToSave = { schedules, remarks, scheduleDates, designation, scheduleType };
     
     try {
         if (scheduleId) {
@@ -219,7 +233,7 @@ const WeeklySchedulePage = () => {
         setIsEditing(false);
         toast({
           title: "Data Saved",
-          description: "Your weekly schedule has been saved successfully.",
+          description: "Your work schedule has been saved successfully.",
         });
 
     } catch (serverError) {
@@ -254,7 +268,7 @@ const WeeklySchedulePage = () => {
   const handleDownloadPdf = () => {
     const doc = new jsPDF();
     const employeeName = schedules[0]?.employeeName || 'Employee';
-    doc.text(`Weekly Work Schedule for ${employeeName}`, 14, 15);
+    doc.text(`Work Schedule for ${employeeName}`, 14, 15);
     doc.text(`Designation: ${designation}`, 14, 22);
     doc.text(`Schedule: ${scheduleDates.start} to ${scheduleDates.end}`, 14, 29);
     
@@ -269,11 +283,20 @@ const WeeklySchedulePage = () => {
         });
     });
 
-    doc.save('daily-work-schedule.pdf');
+    doc.save('work-schedule.pdf');
   }
   
   const addRow = () => {
-    setSchedules([...schedules, { id: schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1, employeeName: schedules[0]?.employeeName || 'MUJAHID', projectName: '', status: 'In Progress', startDate: '', endDate: '', dailyEntries: [] }]);
+    const numDays = getNumberOfDays(scheduleDates.start, scheduleDates.end);
+    setSchedules([...schedules, { 
+      id: schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1, 
+      employeeName: schedules[0]?.employeeName || 'MUJAHID', 
+      projectName: '', 
+      status: 'In Progress', 
+      startDate: scheduleDates.start, 
+      endDate: scheduleDates.end, 
+      dailyEntries: Array(numDays > 0 ? numDays : 0).fill(null).map(initialDailyEntry)
+    }]);
   }
 
   const removeRow = (index: number) => {
@@ -305,14 +328,6 @@ const WeeklySchedulePage = () => {
         return <Input type="number" value={value || 0} onChange={(e) => onChange(e.target.value)} className="h-8 w-20" min="0" max="100"/>
     }
     return <Progress value={value || 0} className="w-full" />
-  }
-
-  const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
-    const date = value && isValid(parseISO(value)) ? parseISO(value) : undefined;
-    if (isEditing) {
-      return <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />;
-    }
-    return <span className="p-2 block min-h-[32px]">{date ? format(date, 'd-MMM-yy') : (value || '')}</span>;
   }
   
   if (isUserLoading || (isLoading && scheduleId)) {
@@ -347,9 +362,15 @@ const WeeklySchedulePage = () => {
                 </div>
             </div>
             <div className="flex flex-col items-start md:items-end gap-2 mt-4 md:mt-0">
-                 <p className="text-sm text-muted-foreground">Weekly Work Schedule</p>
+                 <p className="text-sm text-muted-foreground">Work Schedule</p>
+                 {isEditing && (
+                     <RadioGroup value={scheduleType} onValueChange={(val: 'weekly' | 'monthly') => setScheduleType(val)} className="flex gap-4">
+                         <div className="flex items-center space-x-2"><RadioGroupItem value="weekly" id="weekly"/><Label htmlFor="weekly">Weekly</Label></div>
+                         <div className="flex items-center space-x-2"><RadioGroupItem value="monthly" id="monthly"/><Label htmlFor="monthly">Monthly</Label></div>
+                     </RadioGroup>
+                 )}
                 <div className="flex items-center gap-2">
-                    {isEditing ? (<><DatePicker date={scheduleDates.start ? parseISO(scheduleDates.start) : undefined} onDateChange={(date) => handleDateRangeChange('start', date)} /><span className="mx-2">to</span><DatePicker date={scheduleDates.end ? parseISO(scheduleDates.end) : undefined} onDateChange={(date) => handleDateRangeChange('end', date)} /></>) : (<p className="text-sm font-medium">{scheduleDates.start && format(parseISO(scheduleDates.start), 'PPP')} - {scheduleDates.end && format(parseISO(scheduleDates.end), 'PPP')}</p>)}
+                    {isEditing ? (<><DatePicker date={scheduleDates.start ? parseISO(scheduleDates.start) : undefined} onDateChange={(date) => handleDateRangeChange('start', date)} /><span className="mx-2">to</span><DatePicker date={scheduleDates.end ? parseISO(scheduleDates.end) : undefined} onDateChange={(date) => {}} disabled /></>) : (<p className="text-sm font-medium">{scheduleDates.start && format(parseISO(scheduleDates.start), 'PPP')} - {scheduleDates.end && format(parseISO(scheduleDates.end), 'PPP')}</p>)}
                 </div>
             </div>
         </CardHeader>
@@ -371,25 +392,24 @@ const WeeklySchedulePage = () => {
               </TableHeader>
               <TableBody>
                 {schedules.map((schedule, index) => {
-                    const isOpen = openProjects[schedule.id] || false;
                     return (
                         <Fragment key={schedule.id}>
                             <TableRow>
                                 <TableCell>
-                                    <Button variant="ghost" size="icon" onClick={() => setOpenProjects(prev => ({...prev, [schedule.id]: !isOpen}))}>
-                                        {isOpen ? <ChevronDown className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}
+                                    <Button variant="ghost" size="icon" onClick={() => setOpenProjects(prev => ({...prev, [schedule.id]: !prev[schedule.id]}))}>
+                                        {openProjects[schedule.id] ? <ChevronDown className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}
                                     </Button>
                                 </TableCell>
                                 <TableCell>{renderCell(String(schedule.id), (val) => handleScheduleChange(index, 'id', Number(val) || 0))}</TableCell>
                                 <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
                                 <TableCell>{isEditing ? (<Select value={schedule.status} onValueChange={(value) => handleScheduleChange(index, 'status', value)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="In Progress">In Progress</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Incomplete">Incomplete</SelectItem></SelectContent></Select>) : (<span className="p-2 block">{schedule.status}</span>)}</TableCell>
                                 <TableCell><Progress value={calculateTotalProgress(schedule.dailyEntries)} className="w-full" /></TableCell>
-                                <TableCell>{renderDateCell(schedule.startDate, (val) => handleScheduleChange(index, 'startDate', val))}</TableCell>
-                                <TableCell>{renderDateCell(schedule.endDate, (val) => handleScheduleChange(index, 'endDate', val))}</TableCell>
+                                <TableCell>{schedule.startDate ? format(parseISO(schedule.startDate), 'd-MMM-yy') : ''}</TableCell>
+                                <TableCell>{schedule.endDate ? format(parseISO(schedule.endDate), 'd-MMM-yy') : ''}</TableCell>
                                 <TableCell>{getStatusIcon(schedule.status)}</TableCell>
                                 {isEditing && <TableCell><Button variant="ghost" size="icon" onClick={() => removeRow(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>}
                             </TableRow>
-                            {isOpen && (
+                            {openProjects[schedule.id] && (
                                 <TableRow>
                                     <TableCell colSpan={isEditing ? 9 : 8} className="p-0">
                                         <div className="p-4 bg-muted/50">
@@ -437,3 +457,4 @@ const WeeklySchedulePage = () => {
 };
 
 export default WeeklySchedulePage;
+
