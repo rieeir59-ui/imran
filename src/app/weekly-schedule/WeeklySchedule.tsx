@@ -23,7 +23,7 @@ import { useSearchParams } from 'next/navigation';
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
-import { format, isValid, parseISO, differenceInDays, addDays, addMonths } from 'date-fns';
+import { format, isValid, parseISO, differenceInDays, addDays, addMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { exportDataToCsv } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -73,6 +73,7 @@ const WeeklySchedule = () => {
   const [scheduleId, setScheduleId] = useState<string | null>(null);
   const [openProjects, setOpenProjects] = useState<Record<number, boolean>>({});
   const [scheduleType, setScheduleType] = useState<'weekly' | 'monthly'>('weekly');
+  const [employeeName, setEmployeeName] = useState('MUJAHID');
 
   const { toast } = useToast();
 
@@ -87,12 +88,10 @@ const WeeklySchedule = () => {
         setScheduleId(id);
     } else {
         setIsEditing(true);
-        if (schedules.length === 0 || schedules[0].employeeName !== 'MUJAHID') {
-            setSchedules(initialScheduleData);
-            setDesignation('');
-        }
+        setSchedules(initialScheduleData.map(s => ({...s, employeeName})));
+        setDesignation('');
     }
-  }, [searchParams, schedules]);
+  }, [searchParams, employeeName]);
 
   useEffect(() => {
     if (!isUserLoading && !user && auth) {
@@ -121,6 +120,9 @@ const WeeklySchedule = () => {
               ...s,
               dailyEntries: s.dailyEntries || []
             })));
+             if (data.schedules[0]?.employeeName) {
+              setEmployeeName(data.schedules[0].employeeName);
+            }
           }
           if (data.remarks) setRemarks(data.remarks);
           if (data.scheduleDates) setScheduleDates(data.scheduleDates);
@@ -152,24 +154,41 @@ const WeeklySchedule = () => {
   };
 
   const handleScheduleChange = (index: number, field: string, value: any) => {
-    const updatedSchedules = [...schedules];
-    const schedule = updatedSchedules[index] as any;
-    
-    schedule[field] = value;
-
-    setSchedules(updatedSchedules);
+    setSchedules(prevSchedules => 
+        prevSchedules.map((schedule, i) => {
+            if (i === index) {
+                return { ...schedule, [field]: value };
+            }
+            return schedule;
+        })
+    );
   };
-
+  
   const handleDateRangeChange = (field: 'start' | 'end', value: Date | undefined) => {
     if (!value) return;
 
-    const startDate = field === 'start' ? value : (scheduleDates.start ? parseISO(scheduleDates.start) : new Date());
+    let startDate: Date;
     let endDate: Date;
 
-    if (scheduleType === 'weekly') {
-        endDate = addDays(startDate, 6);
-    } else { // monthly
-        endDate = addMonths(startDate, 1);
+    if (field === 'start') {
+        startDate = value;
+        if (scheduleType === 'weekly') {
+            endDate = addDays(startDate, 6);
+        } else { // monthly
+            endDate = endOfMonth(startDate);
+        }
+    } else { // field === 'end', which is disabled, but keeping logic just in case
+        endDate = value;
+        if (scheduleDates.start) {
+            startDate = parseISO(scheduleDates.start);
+        } else {
+            startDate = new Date();
+            if (scheduleType === 'weekly') {
+                endDate = addDays(startDate, 6);
+            } else { // monthly
+                endDate = endOfMonth(startDate);
+            }
+        }
     }
     
     setScheduleDates({
@@ -177,17 +196,26 @@ const WeeklySchedule = () => {
         end: format(endDate, 'yyyy-MM-dd'),
     });
   }
-  
+
   const handleDailyEntryChange = (projectIndex: number, dayIndex: number, field: 'details' | 'percentage', value: any) => {
-    const updatedSchedules = [...schedules];
-    const schedule = updatedSchedules[projectIndex];
-    const dailyEntry = schedule.dailyEntries[dayIndex];
-    if (field === 'percentage') {
-      dailyEntry[field] = Math.max(0, Math.min(100, Number(value) || 0));
-    } else {
-      dailyEntry[field] = value;
-    }
-    setSchedules(updatedSchedules);
+    setSchedules(prevSchedules => 
+        prevSchedules.map((schedule, i) => {
+            if (i === projectIndex) {
+                const newDailyEntries = schedule.dailyEntries.map((entry, j) => {
+                    if (j === dayIndex) {
+                        let finalValue = value;
+                        if (field === 'percentage') {
+                            finalValue = Math.max(0, Math.min(100, Number(value) || 0));
+                        }
+                        return { ...entry, [field]: finalValue };
+                    }
+                    return entry;
+                });
+                return { ...schedule, dailyEntries: newDailyEntries };
+            }
+            return schedule;
+        })
+    );
   }
 
   useEffect(() => {
@@ -205,11 +233,11 @@ const WeeklySchedule = () => {
         } else {
             newEntries = currentEntries.slice(0, numDays);
         }
-        return { ...schedule, dailyEntries: newEntries, startDate: scheduleDates.start, endDate: scheduleDates.end };
+        return { ...schedule, dailyEntries: newEntries, startDate: scheduleDates.start, endDate: scheduleDates.end, employeeName };
     });
     setSchedules(updatedSchedules);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scheduleDates, scheduleType]);
+  }, [scheduleDates, scheduleType, employeeName]);
 
 
   const handleSave = async () => {
@@ -271,7 +299,8 @@ const WeeklySchedule = () => {
     let y = 15;
 
     const addText = (text: string, x: number, yPos: number, options = {}) => {
-        if (yPos > 280) {
+        const pageHeight = doc.internal.pageSize.height;
+        if (yPos > pageHeight - 20) {
             doc.addPage();
             y = 15;
             yPos = 15;
@@ -280,7 +309,6 @@ const WeeklySchedule = () => {
         return yPos;
     };
     
-    const employeeName = schedules[0]?.employeeName || 'Employee';
     doc.setFontSize(16);
     y = addText(`Work Schedule for ${employeeName}`, 14, y) + 7;
 
@@ -296,6 +324,7 @@ const WeeklySchedule = () => {
         
         doc.setFontSize(12);
         y = addText(`Project: ${schedule.projectName} (Status: ${schedule.status})`, 14, y) + 2;
+        y += 5; // spacing
 
         const tableBody = schedule.dailyEntries.map((d, i) => [
             `Day ${i + 1}`,
@@ -319,6 +348,7 @@ const WeeklySchedule = () => {
             doc.addPage();
             y = 15;
         }
+        y += 5;
         doc.setFontSize(12);
         y = addText("Remarks", 14, y) + 5;
         doc.setFontSize(10);
@@ -334,7 +364,7 @@ const WeeklySchedule = () => {
     const numDays = getNumberOfDays(scheduleDates.start, scheduleDates.end);
     setSchedules([...schedules, { 
       id: schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1, 
-      employeeName: schedules[0]?.employeeName || 'MUJAHID', 
+      employeeName: employeeName, 
       projectName: '', 
       details: '',
       status: 'In Progress', 
@@ -404,9 +434,9 @@ const WeeklySchedule = () => {
       <Card className="printable-card">
         <CardHeader className="flex flex-col md:flex-row justify-between md:items-center">
             <div className='flex items-center gap-4'>
-                <Avatar className="h-16 w-16"><AvatarImage src={`https://picsum.photos/seed/${schedules[0]?.employeeName || 'employee'}/200`} alt={schedules[0]?.employeeName} /><AvatarFallback>{schedules[0]?.employeeName?.charAt(0) || 'E'}</AvatarFallback></Avatar>
+                <Avatar className="h-16 w-16"><AvatarImage src={`https://picsum.photos/seed/${employeeName}/200`} alt={employeeName} /><AvatarFallback>{employeeName?.charAt(0) || 'E'}</AvatarFallback></Avatar>
                 <div>
-                    {isEditing ? (<Input value={schedules[0]?.employeeName || ''} onChange={(e) => { const newName = e.target.value; setSchedules(schedules.map(s => ({ ...s, employeeName: newName })));}} className="text-2xl font-bold p-0 border-0 h-auto focus-visible:ring-0" placeholder="Employee Name"/>) : (<CardTitle className="text-2xl font-bold">{schedules[0]?.employeeName || 'Employee'}</CardTitle>)}
+                    {isEditing ? (<Input value={employeeName} onChange={(e) => setEmployeeName(e.target.value)} className="text-2xl font-bold p-0 border-0 h-auto focus-visible:ring-0" placeholder="Employee Name"/>) : (<CardTitle className="text-2xl font-bold">{employeeName}</CardTitle>)}
                     {isEditing ? (<Select onValueChange={setDesignation} value={designation}><SelectTrigger className="w-[280px] mt-1"><SelectValue placeholder="Select a designation" /></SelectTrigger><SelectContent>{designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select>) : (<p className="text-muted-foreground">{designation || 'No designation'}</p>)}
                 </div>
             </div>
@@ -430,8 +460,8 @@ const WeeklySchedule = () => {
                 <TableRow>
                   <TableHead className="w-12"></TableHead>
                   <TableHead className="w-20">Project No.</TableHead>
-                  <TableHead>Project Name</TableHead>
                   <TableHead>Details</TableHead>
+                  <TableHead>Project Name</TableHead>
                   <TableHead>Total Progress</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Start Date</TableHead>
@@ -450,8 +480,8 @@ const WeeklySchedule = () => {
                                     </Button>
                                 </TableCell>
                                 <TableCell>{renderCell(String(schedule.id), (val) => handleScheduleChange(index, 'id', Number(val) || 0))}</TableCell>
-                                <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
                                 <TableCell>{renderTextareaCell(schedule.details, (val) => handleScheduleChange(index, 'details', val))}</TableCell>
+                                <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2">
                                         <Progress value={calculateTotalProgress(schedule.dailyEntries)} className="w-24" />
