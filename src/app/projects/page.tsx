@@ -126,19 +126,18 @@ export default function ProjectsPage() {
     const doc = new jsPDF();
     let y = 15;
     const x = 14;
-    const x2 = 105;
     const pageHeight = doc.internal.pageSize.height;
     const bottomMargin = 20;
 
-    const checkPageBreak = () => {
-        if (y > pageHeight - bottomMargin) {
+    const checkPageBreak = (neededHeight: number) => {
+        if (y + neededHeight > pageHeight - bottomMargin) {
             doc.addPage();
             y = 15;
         }
     };
 
     const addTitle = (title: string) => {
-        checkPageBreak();
+        checkPageBreak(14);
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
         doc.text(title, x, y);
@@ -150,31 +149,33 @@ export default function ProjectsPage() {
     };
 
     const addField = (label: string, value: string | undefined, isTextarea = false) => {
-        checkPageBreak();
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`${label}:`, x, y);
-        doc.setFont('helvetica', 'normal');
-        
         const valueX = x + 60;
         const fieldWidth = 195 - valueX;
+        let textHeight = 7; // Default height for a single line field
 
         if (value) {
-          const splitText = doc.splitTextToSize(value, fieldWidth);
-          const textHeight = doc.getTextDimensions(splitText).h;
-          if (y + textHeight > pageHeight - bottomMargin) {
-            doc.addPage();
-            y = 15;
-          }
-          doc.text(splitText, valueX, y);
-          y += textHeight + 2;
-        } else {
-            y += 7;
+            const splitText = doc.splitTextToSize(value, fieldWidth);
+            textHeight = doc.getTextDimensions(splitText).h + 2;
         }
+        
+        checkPageBreak(textHeight);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${label}:`, x, y + (isTextarea ? 0 : 4));
+        doc.setFont('helvetica', 'normal');
+        
+        if (value) {
+            const splitText = doc.splitTextToSize(value, fieldWidth);
+            doc.text(splitText, valueX, y + (isTextarea ? 0 : 4));
+        } else {
+            doc.line(valueX, y + 4, valueX + fieldWidth, y + 4); // Draw a line if no value
+        }
+
+        y += textHeight;
     };
     
      const addCheckboxRow = (label: string, fields: {name: string, label: string}[]) => {
-        checkPageBreak();
+        checkPageBreak(7);
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
         doc.text(`${label}:`, x, y);
@@ -187,7 +188,7 @@ export default function ProjectsPage() {
             if (currentX + textWidth > 195) {
                 y += 7;
                 currentX = x + 60;
-                checkPageBreak();
+                checkPageBreak(7);
             }
             doc.text(checkboxText, currentX, y);
             currentX += textWidth + 5;
@@ -257,19 +258,22 @@ export default function ProjectsPage() {
     addField("Other Major Projects Milestone Dates", formData.date_other_milestones, true);
 
     addTitle("Provided by Owner");
-    doc.text(`${formData.provided_program ? '[X]' : '[ ]'} Program`, x, y); y+=6;
-    doc.text(`${formData.provided_schedule ? '[X]' : '[ ]'} Suggested Schedule`, x, y); y+=6;
-    doc.text(`${formData.provided_legal ? '[X]' : '[ ]'} Legal Site Description & Other Concerned Documents`, x, y); y+=6;
-    doc.text(`${formData.provided_survey ? '[X]' : '[ ]'} Land Survey Report`, x, y); y+=6;
-    doc.text(`${formData.provided_geo ? '[X]' : '[ ]'} Geo-Technical, Tests and Other Site Information`, x, y); y+=6;
-    doc.text(`${formData.provided_drawings ? '[X]' : '[ ]'} Existing Structure's Drawings`, x, y); y+=10;
+    y -= 5;
+    addCheckboxRow("", [{ name: "provided_program", label: "Program" }]);
+    addCheckboxRow("", [{ name: "provided_schedule", label: "Suggested Schedule" }]);
+    addCheckboxRow("", [{ name: "provided_legal", label: "Legal Site Description & Other Concerned Documents" }]);
+    addCheckboxRow("", [{ name: "provided_survey", label: "Land Survey Report" }]);
+    addCheckboxRow("", [{ name: "provided_geo", label: "Geo-Technical, Tests and Other Site Information" }]);
+    addCheckboxRow("", [{ name: "provided_drawings", label: "Existing Structure's Drawings" }]);
+    y += 5;
 
     addTitle("Compensation");
     addField("Initial Payment", formData.comp_initial_payment);
     addField("Basic Services (% of Cost of Construction)", formData.comp_basic_services_pct);
     
+    checkPageBreak(7);
     doc.setFont('helvetica', 'bold');
-    doc.text("Breakdown by Phase:", x + 5, y); y+=6;
+    doc.text("Breakdown by Phase:", x + 5, y); y+=7;
     doc.setFont('helvetica', 'normal');
     addField("Schematic Design %", formData.comp_schematic_pct);
     addField("Design Development %", formData.comp_dev_pct);
@@ -285,9 +289,10 @@ export default function ProjectsPage() {
     addTitle("Miscellaneous Notes");
     addField("", formData.misc_notes, true);
 
+    checkPageBreak(10);
     addTitle("Consultants");
     const consultantTypes = ["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Solar", "Construction Cost", "Other 1", "Other 2", "Other 3", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"];
-    const consultantHead = [['Type', 'Basic', 'Add.', 'Arch', 'Owner']];
+    const consultantHead = [['Type', 'Within Basic Fee', 'Additional Fee', 'Architect', 'Owner']];
     const consultantBody = consultantTypes.map(type => {
         const slug = type.toLowerCase().replace(/ /g, '_').replace(/\//g, '_');
         return [
@@ -308,6 +313,7 @@ export default function ProjectsPage() {
     });
     y = (doc as any).lastAutoTable.finalY + 10;
     
+    checkPageBreak(10);
     addTitle("Requirements");
     addField("Residence Nos", formData.req_residence_nos);
     addField("Size of plot", formData.req_plot_size);
@@ -387,7 +393,7 @@ export default function ProjectsPage() {
         />
       );
     }
-    return <div className="form-value min-h-[80px] p-2 border-b" data-value={value}>{value}</div>;
+    return <div className="form-value min-h-[80px] p-2 border-b whitespace-pre-wrap" data-value={value}>{value}</div>;
   };
 
   const renderCheckbox = (name: string, label?: string) => (
@@ -548,7 +554,7 @@ export default function ProjectsPage() {
                 <FormRow label="Special Confidential Requirements:">{renderTextarea("comp_confidential")}</FormRow>
 
                 <SectionTitle>Miscellaneous Notes</SectionTitle>
-                {isEditing ? <Textarea name="misc_notes" value={formData.misc_notes || ''} onChange={handleInputChange} disabled={!isEditing} rows={5}/> : <div className="form-value min-h-[120px] p-2 border-b" data-value={formData.misc_notes}>{formData.misc_notes}</div>}
+                {isEditing ? <Textarea name="misc_notes" value={formData.misc_notes || ''} onChange={handleInputChange} disabled={!isEditing} rows={5}/> : <div className="form-value min-h-[120px] p-2 border-b whitespace-pre-wrap" data-value={formData.misc_notes}>{formData.misc_notes}</div>}
                 
 
                 <SectionTitle>Consultants</SectionTitle>
@@ -589,3 +595,5 @@ export default function ProjectsPage() {
     </main>
   );
 }
+
+    
