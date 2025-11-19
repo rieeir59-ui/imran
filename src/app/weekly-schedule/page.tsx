@@ -209,7 +209,7 @@ const WeeklySchedulePage = () => {
     });
     setSchedules(updatedSchedules);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scheduleDates]);
+  }, [scheduleDates, scheduleType]);
 
 
   const handleSave = async () => {
@@ -314,6 +314,12 @@ const WeeklySchedulePage = () => {
       default: return null;
     }
   }
+  
+  const calculateTotalProgress = (dailyEntries: { percentage: number }[]) => {
+    if (!dailyEntries || dailyEntries.length === 0) return 0;
+    const totalPercentage = dailyEntries.reduce((sum, entry) => sum + (entry.percentage || 0), 0);
+    return Math.round(totalPercentage / dailyEntries.length);
+  }
 
   const renderCell = (value: string | undefined, onChange: (val: any) => void, placeholder?: string) => {
     return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="h-8" /> : <span className="p-2 block min-h-[32px]">{value || ''}</span>;
@@ -383,6 +389,7 @@ const WeeklySchedulePage = () => {
                   <TableHead className="w-20">Project No.</TableHead>
                   <TableHead>Project Name</TableHead>
                   <TableHead>Details</TableHead>
+                  <TableHead>Total Progress</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Start Date</TableHead>
                   <TableHead>End Date</TableHead>
@@ -393,7 +400,7 @@ const WeeklySchedulePage = () => {
               <TableBody>
                 {schedules.map((schedule, index) => (
                         <Fragment key={schedule.id}>
-                            <TableRow>
+                             <TableRow>
                                 <TableCell>
                                     <Button variant="ghost" size="icon" onClick={() => setOpenProjects(prev => ({...prev, [schedule.id]: !prev[schedule.id]}))}>
                                         {openProjects[schedule.id] ? <ChevronDown className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}
@@ -402,6 +409,12 @@ const WeeklySchedulePage = () => {
                                 <TableCell>{renderCell(String(schedule.id), (val) => handleScheduleChange(index, 'id', Number(val) || 0))}</TableCell>
                                 <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
                                 <TableCell>{renderTextareaCell(schedule.details, (val) => handleScheduleChange(index, 'details', val))}</TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <Progress value={calculateTotalProgress(schedule.dailyEntries)} className="w-24" />
+                                        <span>{calculateTotalProgress(schedule.dailyEntries)}%</span>
+                                    </div>
+                                </TableCell>
                                 <TableCell>{isEditing ? (<Select value={schedule.status} onValueChange={(value) => handleScheduleChange(index, 'status', value)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="In Progress">In Progress</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Incomplete">Incomplete</SelectItem></SelectContent></Select>) : (<span className="p-2 block">{schedule.status}</span>)}</TableCell>
                                 <TableCell>{schedule.startDate ? format(parseISO(schedule.startDate), 'd-MMM-yy') : ''}</TableCell>
                                 <TableCell>{schedule.endDate ? format(parseISO(schedule.endDate), 'd-MMM-yy') : ''}</TableCell>
@@ -410,7 +423,7 @@ const WeeklySchedulePage = () => {
                             </TableRow>
                             {openProjects[schedule.id] && (
                                 <TableRow>
-                                    <TableCell colSpan={isEditing ? 9 : 8} className="p-0">
+                                    <TableCell colSpan={isEditing ? 10 : 9} className="p-0">
                                         <div className="p-4 bg-muted/50">
                                             <h4 className="font-semibold mb-2">Daily Plan</h4>
                                             {getNumberOfDays(schedule.startDate, schedule.endDate) > 0 ? (
