@@ -23,7 +23,7 @@ import { useSearchParams } from 'next/navigation';
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
-import { format, isValid, parseISO, differenceInDays, addDays, endOfMonth } from 'date-fns';
+import { format, isValid, parseISO, differenceInDays, addDays, endOfMonth, addMonths } from 'date-fns';
 import { exportDataToCsv } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -92,7 +92,7 @@ const WeeklySchedulePage = () => {
             setDesignation('');
         }
     }
-  }, [searchParams]);
+  }, [searchParams, schedules]);
 
   useEffect(() => {
     if (!isUserLoading && !user && auth) {
@@ -169,7 +169,7 @@ const WeeklySchedulePage = () => {
     if (scheduleType === 'weekly') {
         endDate = addDays(startDate, 6);
     } else { // monthly
-        endDate = endOfMonth(startDate);
+        endDate = addMonths(startDate, 1);
     }
     
     setScheduleDates({
@@ -391,8 +391,7 @@ const WeeklySchedulePage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {schedules.map((schedule, index) => {
-                    return (
+                {schedules.map((schedule, index) => (
                         <Fragment key={schedule.id}>
                             <TableRow>
                                 <TableCell>
@@ -441,8 +440,7 @@ const WeeklySchedulePage = () => {
                                 </TableRow>
                             )}
                         </Fragment>
-                    );
-                })}
+                    ))}
               </TableBody>
             </Table>
             <div className="mt-6">
