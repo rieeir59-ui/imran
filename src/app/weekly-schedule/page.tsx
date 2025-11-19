@@ -23,7 +23,7 @@ import { useSearchParams } from 'next/navigation';
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
-import { format, isValid, parseISO } from 'date-fns';
+import { format, isValid, parseISO, differenceInDays } from 'date-fns';
 import { exportDataToCsv } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -43,7 +43,7 @@ const initialScheduleData = [
     status: 'In Progress', 
     startDate: '', 
     endDate: '', 
-    dailyEntries: Array(6).fill(null).map(initialDailyEntry),
+    dailyEntries: Array(0).fill(null).map(initialDailyEntry),
   },
 ];
 
@@ -113,7 +113,7 @@ const WeeklySchedulePage = () => {
           if (data.schedules && data.schedules.length > 0) {
             setSchedules(data.schedules.map((s: any) => ({
               ...s,
-              dailyEntries: s.dailyEntries && s.dailyEntries.length === 6 ? s.dailyEntries : Array(6).fill(null).map(initialDailyEntry)
+              dailyEntries: s.dailyEntries || []
             })));
           }
           if (data.remarks) setRemarks(data.remarks);
@@ -136,9 +136,21 @@ const WeeklySchedulePage = () => {
       });
   }, [scheduleDocRef]);
 
+  const getNumberOfDays = (startDateStr: string, endDateStr: string) => {
+    if (!startDateStr || !endDateStr) return 0;
+    const start = parseISO(startDateStr);
+    const end = parseISO(endDateStr);
+    if (!isValid(start) || !isValid(end)) return 0;
+    return differenceInDays(end, start) + 1;
+  };
+
   const handleScheduleChange = (index: number, field: string, value: any) => {
     const updatedSchedules = [...schedules];
     const schedule = updatedSchedules[index] as any;
+    
+    let oldStartDate = schedule.startDate;
+    let oldEndDate = schedule.endDate;
+
     schedule[field] = value;
     
     if (field === 'startDate' && value instanceof Date) {
@@ -147,6 +159,20 @@ const WeeklySchedulePage = () => {
     if (field === 'endDate' && value instanceof Date) {
         schedule.endDate = format(value, 'yyyy-MM-dd');
     }
+    
+    if ((field === 'startDate' && schedule.startDate !== oldStartDate) || (field === 'endDate' && schedule.endDate !== oldEndDate)) {
+        const numDays = getNumberOfDays(schedule.startDate, schedule.endDate);
+        const currentEntries = schedule.dailyEntries || [];
+        if (numDays > currentEntries.length) {
+            schedule.dailyEntries = [
+                ...currentEntries,
+                ...Array(numDays - currentEntries.length).fill(null).map(initialDailyEntry)
+            ];
+        } else {
+            schedule.dailyEntries = currentEntries.slice(0, numDays);
+        }
+    }
+
     setSchedules(updatedSchedules);
   };
   
@@ -242,7 +268,7 @@ const WeeklySchedulePage = () => {
   }
   
   const addRow = () => {
-    setSchedules([...schedules, { id: schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1, employeeName: schedules[0]?.employeeName || 'MUJAHID', projectName: '', status: 'In Progress', startDate: '', endDate: '', dailyEntries: Array(6).fill(null).map(initialDailyEntry) }]);
+    setSchedules([...schedules, { id: schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1, employeeName: schedules[0]?.employeeName || 'MUJAHID', projectName: '', status: 'In Progress', startDate: '', endDate: '', dailyEntries: [] }]);
   }
 
   const removeRow = (index: number) => {
@@ -259,7 +285,8 @@ const WeeklySchedulePage = () => {
     }
   }
 
-  const calculateWeeklyProgress = (dailyEntries: {percentage: number}[]) => {
+  const calculateTotalProgress = (dailyEntries: {percentage: number}[]) => {
+      if (!dailyEntries || dailyEntries.length === 0) return 0;
       const totalPercentage = dailyEntries.reduce((sum, entry) => sum + entry.percentage, 0);
       return Math.round(totalPercentage / dailyEntries.length);
   }
@@ -330,7 +357,7 @@ const WeeklySchedulePage = () => {
                   <TableHead className="w-20">Project No.</TableHead>
                   <TableHead>Project Name</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="w-48">Weekly Progress</TableHead>
+                  <TableHead className="w-48">Total Progress</TableHead>
                   <TableHead>Start Date</TableHead>
                   <TableHead>End Date</TableHead>
                   <TableHead>Tick</TableHead>
@@ -350,7 +377,7 @@ const WeeklySchedulePage = () => {
                                 <TableCell>{renderCell(String(schedule.id), (val) => handleScheduleChange(index, 'id', Number(val) || 0))}</TableCell>
                                 <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
                                 <TableCell>{isEditing ? (<Select value={schedule.status} onValueChange={(value) => handleScheduleChange(index, 'status', value)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="In Progress">In Progress</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Incomplete">Incomplete</SelectItem></SelectContent></Select>) : (<span className="p-2 block">{schedule.status}</span>)}</TableCell>
-                                <TableCell><Progress value={calculateWeeklyProgress(schedule.dailyEntries)} className="w-full" /></TableCell>
+                                <TableCell><Progress value={calculateTotalProgress(schedule.dailyEntries)} className="w-full" /></TableCell>
                                 <TableCell>{renderDateCell(schedule.startDate, (val) => handleScheduleChange(index, 'startDate', val))}</TableCell>
                                 <TableCell>{renderDateCell(schedule.endDate, (val) => handleScheduleChange(index, 'endDate', val))}</TableCell>
                                 <TableCell>{getStatusIcon(schedule.status)}</TableCell>
@@ -360,25 +387,29 @@ const WeeklySchedulePage = () => {
                                 <TableRow>
                                 <TableCell colSpan={isEditing ? 9 : 8} className="p-0">
                                     <div className="p-4 bg-muted/20">
-                                    <h4 className="font-semibold mb-2">Daily Progress</h4>
-                                    <Table>
-                                        <TableHeader>
-                                        <TableRow>
-                                            <TableHead className='w-24'>Day</TableHead>
-                                            <TableHead>Details</TableHead>
-                                            <TableHead className='w-48'>Progress</TableHead>
-                                        </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                        {schedule.dailyEntries.map((daily, dayIndex) => (
-                                            <TableRow key={dayIndex}>
-                                            <TableCell>Day {dayIndex + 1}</TableCell>
-                                            <TableCell>{renderCell(daily.details, (val) => handleDailyEntryChange(index, dayIndex, 'details', val), "What was done today?")}</TableCell>
-                                            <TableCell>{renderPercentageCell(daily.percentage, (val) => handleDailyEntryChange(index, dayIndex, 'percentage', val))}</TableCell>
+                                    <h4 className="font-semibold mb-2">Daily Plan</h4>
+                                    {getNumberOfDays(schedule.startDate, schedule.endDate) > 0 ? (
+                                        <Table>
+                                            <TableHeader>
+                                            <TableRow>
+                                                <TableHead className='w-24'>Day</TableHead>
+                                                <TableHead>Details</TableHead>
+                                                <TableHead className='w-48'>Progress</TableHead>
                                             </TableRow>
-                                        ))}
-                                        </TableBody>
-                                    </Table>
+                                            </TableHeader>
+                                            <TableBody>
+                                            {schedule.dailyEntries.map((daily, dayIndex) => (
+                                                <TableRow key={dayIndex}>
+                                                <TableCell>Day {dayIndex + 1}</TableCell>
+                                                <TableCell>{renderCell(daily.details, (val) => handleDailyEntryChange(index, dayIndex, 'details', val), "What was done today?")}</TableCell>
+                                                <TableCell>{renderPercentageCell(daily.percentage, (val) => handleDailyEntryChange(index, dayIndex, 'percentage', val))}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                            </TableBody>
+                                        </Table>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground p-4 text-center">Set a start and end date to create a daily plan.</p>
+                                    )}
                                     </div>
                                 </TableCell>
                                 </TableRow>
@@ -400,3 +431,4 @@ const WeeklySchedulePage = () => {
 };
 
 export default WeeklySchedulePage;
+
