@@ -49,7 +49,8 @@ const initialScheduleData = [
 const designations = [
     "CEO",
     "Studio Manager",
-    "Architect 3D Visualizer",
+    "Architect",
+    "3D Visualizer",
     "Draftsperson",
     "Quantity Surveyor",
     "Finance Manager",
