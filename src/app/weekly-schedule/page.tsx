@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown, PlusCircle, Trash2, CheckCircle, XCircle, CircleDotDashed } from 'lucide-react';
+import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown, PlusCircle, Trash2, CheckCircle, XCircle, CircleDotDashed, ChevronDown, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
@@ -30,10 +30,21 @@ import autoTable from 'jspdf-autotable';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
 
+const initialDailyEntry = () => ({ details: '', percentage: 0 });
 
 const initialScheduleData = [
-  { id: 1, employeeName: 'MUJAHID', designation: 'Architect 3D Visualizer', projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '', percentage: 0 },
+  { 
+    id: 1, 
+    employeeName: 'MUJAHID', 
+    projectName: '', 
+    status: 'In Progress', 
+    startDate: '', 
+    endDate: '', 
+    dailyEntries: Array(6).fill(null).map(initialDailyEntry),
+  },
 ];
 
 const designations = [
@@ -57,6 +68,7 @@ const WeeklySchedulePage = () => {
   const [scheduleDates, setScheduleDates] = useState({ start: '', end: '' });
   const [designation, setDesignation] = useState<string>('');
   const [scheduleId, setScheduleId] = useState<string | null>(null);
+  const [openProjects, setOpenProjects] = useState<Record<number, boolean>>({});
 
   const { toast } = useToast();
 
@@ -70,10 +82,9 @@ const WeeklySchedulePage = () => {
     if (id) {
         setScheduleId(id);
     } else {
-        // If no ID, it's a new schedule
         setIsEditing(true);
         setSchedules(initialScheduleData);
-        setDesignation(initialScheduleData[0].designation);
+        setDesignation(initialScheduleData[0].employeeName);
     }
   }, [searchParams]);
 
@@ -99,12 +110,16 @@ const WeeklySchedulePage = () => {
       .then((docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
-          if (data.schedules && data.schedules.length > 0) setSchedules(data.schedules.map((s: any) => ({...s, percentage: s.percentage || 0})));
+          if (data.schedules && data.schedules.length > 0) {
+            setSchedules(data.schedules.map((s: any) => ({
+              ...s,
+              dailyEntries: s.dailyEntries && s.dailyEntries.length === 6 ? s.dailyEntries : Array(6).fill(null).map(initialDailyEntry)
+            })));
+          }
           if (data.remarks) setRemarks(data.remarks);
           if (data.scheduleDates) setScheduleDates(data.scheduleDates);
           if (data.designation) setDesignation(data.designation);
         } else {
-            // Document doesn't exist, treat as new.
             setScheduleId(null);
             setIsEditing(true);
         }
@@ -124,13 +139,7 @@ const WeeklySchedulePage = () => {
   const handleScheduleChange = (index: number, field: string, value: any) => {
     const updatedSchedules = [...schedules];
     const schedule = updatedSchedules[index] as any;
-    
-    if (field === 'percentage') {
-      const numValue = Math.max(0, Math.min(100, Number(value) || 0));
-      schedule[field] = numValue;
-    } else {
-      schedule[field] = value;
-    }
+    schedule[field] = value;
     
     if (field === 'startDate' && value instanceof Date) {
         schedule.startDate = format(value, 'yyyy-MM-dd');
@@ -138,10 +147,21 @@ const WeeklySchedulePage = () => {
     if (field === 'endDate' && value instanceof Date) {
         schedule.endDate = format(value, 'yyyy-MM-dd');
     }
-
     setSchedules(updatedSchedules);
   };
   
+  const handleDailyEntryChange = (projectIndex: number, dayIndex: number, field: 'details' | 'percentage', value: any) => {
+    const updatedSchedules = [...schedules];
+    const schedule = updatedSchedules[projectIndex];
+    const dailyEntry = schedule.dailyEntries[dayIndex];
+    if (field === 'percentage') {
+      dailyEntry[field] = Math.max(0, Math.min(100, Number(value) || 0));
+    } else {
+      dailyEntry[field] = value;
+    }
+    setSchedules(updatedSchedules);
+  }
+
   const handleDateRangeChange = (field: 'start' | 'end', value: Date | undefined) => {
       setScheduleDates(prev => ({...prev, [field]: value ? format(value, 'yyyy-MM-dd') : ''}))
   }
@@ -183,18 +203,21 @@ const WeeklySchedulePage = () => {
   };
 
   const handleDownloadCsv = () => {
-    const dataToExport = schedules.map(s => ({
-        projectNo: s.id,
-        employeeName: s.employeeName,
-        designation: designation,
-        projectName: s.projectName,
-        details: s.details,
-        status: s.status,
-        percentage: s.percentage,
-        startDate: s.startDate,
-        endDate: s.endDate,
-    }));
-    exportDataToCsv(dataToExport, 'weekly-work-schedule');
+    const dataToExport = schedules.flatMap(s => 
+        s.dailyEntries.map((d, i) => ({
+            projectNo: s.id,
+            employeeName: s.employeeName,
+            designation: designation,
+            projectName: s.projectName,
+            day: `Day ${i + 1}`,
+            details: d.details,
+            percentage: d.percentage,
+            status: s.status,
+            startDate: s.startDate,
+            endDate: s.endDate,
+        }))
+    );
+    exportDataToCsv(dataToExport, 'daily-work-schedule');
   }
 
   const handleDownloadPdf = () => {
@@ -203,21 +226,23 @@ const WeeklySchedulePage = () => {
     doc.text(`Weekly Work Schedule for ${employeeName}`, 14, 15);
     doc.text(`Designation: ${designation}`, 14, 22);
     doc.text(`Schedule: ${scheduleDates.start} to ${scheduleDates.end}`, 14, 29);
-    autoTable(doc, {
-        head: [['Project No.', 'Employee', 'Project Name', 'Details', 'Status', 'Percentage', 'Start Date', 'End Date']],
-        body: schedules.map(s => [s.id, s.employeeName, s.projectName, s.details, s.status, `${s.percentage}%`, s.startDate, s.endDate]),
-        startY: 37,
+    
+    schedules.forEach((schedule, index) => {
+        if (index > 0) doc.addPage();
+        doc.text(`Project: ${schedule.projectName} (Status: ${schedule.status})`, 14, 15);
+        
+        autoTable(doc, {
+            head: [['Day', 'Details', 'Progress']],
+            body: schedule.dailyEntries.map((d, i) => [`Day ${i+1}`, d.details, `${d.percentage}%`]),
+            startY: 20
+        });
     });
-    const finalY = (doc as any).lastAutoTable.finalY || 37;
-    if (remarks) {
-        doc.text("Remarks", 14, finalY + 10);
-        doc.text(remarks, 14, finalY + 15);
-    }
-    doc.save('weekly-work-schedule.pdf');
+
+    doc.save('daily-work-schedule.pdf');
   }
   
   const addRow = () => {
-    setSchedules([...schedules, { id: schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1, employeeName: schedules[0]?.employeeName || 'MUJAHID', designation: designation, projectName: '', details: '', status: 'In Progress', startDate: '', endDate: '', percentage: 0 }]);
+    setSchedules([...schedules, { id: schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1, employeeName: schedules[0]?.employeeName || 'MUJAHID', projectName: '', status: 'In Progress', startDate: '', endDate: '', dailyEntries: Array(6).fill(null).map(initialDailyEntry) }]);
   }
 
   const removeRow = (index: number) => {
@@ -227,19 +252,20 @@ const WeeklySchedulePage = () => {
   
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'Completed':
-        return <CheckCircle className="text-green-500" />;
-      case 'In Progress':
-        return <CircleDotDashed className="text-blue-500" />;
-      case 'Incomplete':
-        return <XCircle className="text-red-500" />;
-      default:
-        return null;
+      case 'Completed': return <CheckCircle className="text-green-500" />;
+      case 'In Progress': return <CircleDotDashed className="text-blue-500" />;
+      case 'Incomplete': return <XCircle className="text-red-500" />;
+      default: return null;
     }
   }
 
-  const renderCell = (value: string | undefined, onChange: (val: any) => void) => {
-    return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8" /> : <span className="p-2 block">{value || ''}</span>;
+  const calculateWeeklyProgress = (dailyEntries: {percentage: number}[]) => {
+      const totalPercentage = dailyEntries.reduce((sum, entry) => sum + entry.percentage, 0);
+      return Math.round(totalPercentage / dailyEntries.length);
+  }
+
+  const renderCell = (value: string | undefined, onChange: (val: any) => void, placeholder?: string) => {
+    return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="h-8" /> : <span className="p-2 block min-h-[32px]">{value || ''}</span>;
   }
   
   const renderPercentageCell = (value: number | undefined, onChange: (val: any) => void) => {
@@ -254,31 +280,17 @@ const WeeklySchedulePage = () => {
     if (isEditing) {
       return <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />;
     }
-    return <span className="p-2 block">{date ? format(date, 'd-MMM-yy') : (value || '')}</span>;
+    return <span className="p-2 block min-h-[32px]">{date ? format(date, 'd-MMM-yy') : (value || '')}</span>;
   }
-
+  
   if (isUserLoading || (isLoading && scheduleId)) {
-    return (
-        <div className="flex h-full w-full items-center justify-center p-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="ml-2">Loading Schedule...</p>
-        </div>
-    );
+    return <div className="flex h-full w-full items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2">Loading Schedule...</p></div>;
   }
 
   if (!user && !isUserLoading) {
       return (
         <main className="p-4 md:p-6 lg:p-8">
-         <Card>
-           <CardHeader><CardTitle>Authentication Required</CardTitle></CardHeader>
-           <CardContent>
-             <Alert variant="destructive">
-               <Terminal className="h-4 w-4" />
-               <AlertTitle>Unable to Authenticate</AlertTitle>
-               <AlertDescription>We could not sign you in. Please refresh the page to try again.</AlertDescription>
-             </Alert>
-           </CardContent>
-         </Card>
+         <Card><CardHeader><CardTitle>Authentication Required</CardTitle></CardHeader><CardContent><Alert variant="destructive"><Terminal className="h-4 w-4" /><AlertTitle>Unable to Authenticate</AlertTitle><AlertDescription>We could not sign you in. Please refresh the page to try again.</AlertDescription></Alert></CardContent></Card>
        </main>
      )
   }
@@ -286,73 +298,26 @@ const WeeklySchedulePage = () => {
   return (
     <main className="p-4 md:p-6 lg:p-8">
       <div className="flex justify-between items-center mb-6 no-print">
-        <Button variant="outline" asChild>
-            <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
-        </Button>
+        <Button variant="outline" asChild><Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link></Button>
         <div className="flex items-center gap-2">
             <Button onClick={handleDownloadCsv} variant="outline"><FileDown className="mr-2 h-4 w-4" /> CSV</Button>
             <Button onClick={handleDownloadPdf} variant="outline"><Download className="mr-2 h-4 w-4" /> PDF</Button>
-            {isEditing ? (
-                <>
-                    <Button onClick={addRow} variant="outline"><PlusCircle className="mr-2 h-4 w-4" /> Add Row</Button>
-                    <Button onClick={handleSave} disabled={isSaving}>
-                        {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />} Save
-                    </Button>
-                </>
-            ) : (
-                <Button onClick={() => setIsEditing(true)}><Edit className="mr-2" /> Edit</Button>
-            )}
+            {isEditing ? (<><Button onClick={addRow} variant="outline"><PlusCircle className="mr-2 h-4 w-4" /> Add Project</Button><Button onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />} Save</Button></>) : (<Button onClick={() => setIsEditing(true)}><Edit className="mr-2" /> Edit</Button>)}
         </div>
       </div>
       <Card className="printable-card">
         <CardHeader className="flex flex-col md:flex-row justify-between md:items-center">
             <div className='flex items-center gap-4'>
-                <Avatar className="h-16 w-16">
-                    <AvatarImage src={`https://picsum.photos/seed/${schedules[0]?.employeeName || 'employee'}/200`} alt={schedules[0]?.employeeName} />
-                    <AvatarFallback>{schedules[0]?.employeeName?.charAt(0) || 'E'}</AvatarFallback>
-                </Avatar>
+                <Avatar className="h-16 w-16"><AvatarImage src={`https://picsum.photos/seed/${schedules[0]?.employeeName || 'employee'}/200`} alt={schedules[0]?.employeeName} /><AvatarFallback>{schedules[0]?.employeeName?.charAt(0) || 'E'}</AvatarFallback></Avatar>
                 <div>
-                    {isEditing ? (
-                        <Input
-                            value={schedules[0]?.employeeName || ''}
-                            onChange={(e) => {
-                                const newName = e.target.value;
-                                setSchedules(schedules.map(s => ({ ...s, employeeName: newName })));
-                            }}
-                            className="text-2xl font-bold p-0 border-0 h-auto focus-visible:ring-0"
-                            placeholder="Employee Name"
-                        />
-                    ) : (
-                        <CardTitle className="text-2xl font-bold">{schedules[0]?.employeeName || 'Employee'}</CardTitle>
-                    )}
-                    {isEditing ? (
-                        <Select onValueChange={setDesignation} value={designation}>
-                            <SelectTrigger className="w-[280px] mt-1">
-                                <SelectValue placeholder="Select a designation" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    ) : (
-                         <p className="text-muted-foreground">{designation || 'No designation'}</p>
-                    )}
+                    {isEditing ? (<Input value={schedules[0]?.employeeName || ''} onChange={(e) => { const newName = e.target.value; setSchedules(schedules.map(s => ({ ...s, employeeName: newName })));}} className="text-2xl font-bold p-0 border-0 h-auto focus-visible:ring-0" placeholder="Employee Name"/>) : (<CardTitle className="text-2xl font-bold">{schedules[0]?.employeeName || 'Employee'}</CardTitle>)}
+                    {isEditing ? (<Select onValueChange={setDesignation} value={designation}><SelectTrigger className="w-[280px] mt-1"><SelectValue placeholder="Select a designation" /></SelectTrigger><SelectContent>{designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select>) : (<p className="text-muted-foreground">{designation || 'No designation'}</p>)}
                 </div>
             </div>
             <div className="flex flex-col items-start md:items-end gap-2 mt-4 md:mt-0">
                  <p className="text-sm text-muted-foreground">Weekly Work Schedule</p>
                 <div className="flex items-center gap-2">
-                    {isEditing ? (
-                        <>
-                            <DatePicker date={scheduleDates.start ? parseISO(scheduleDates.start) : undefined} onDateChange={(date) => handleDateRangeChange('start', date)} />
-                            <span className="mx-2">to</span>
-                            <DatePicker date={scheduleDates.end ? parseISO(scheduleDates.end) : undefined} onDateChange={(date) => handleDateRangeChange('end', date)} />
-                        </>
-                    ) : (
-                        <p className="text-sm font-medium">
-                            {scheduleDates.start && format(parseISO(scheduleDates.start), 'PPP')} - {scheduleDates.end && format(parseISO(scheduleDates.end), 'PPP')}
-                        </p>
-                    )}
+                    {isEditing ? (<><DatePicker date={scheduleDates.start ? parseISO(scheduleDates.start) : undefined} onDateChange={(date) => handleDateRangeChange('start', date)} /><span className="mx-2">to</span><DatePicker date={scheduleDates.end ? parseISO(scheduleDates.end) : undefined} onDateChange={(date) => handleDateRangeChange('end', date)} /></>) : (<p className="text-sm font-medium">{scheduleDates.start && format(parseISO(scheduleDates.start), 'PPP')} - {scheduleDates.end && format(parseISO(scheduleDates.end), 'PPP')}</p>)}
                 </div>
             </div>
         </CardHeader>
@@ -361,11 +326,11 @@ const WeeklySchedulePage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12"></TableHead>
                   <TableHead className="w-20">Project No.</TableHead>
                   <TableHead>Project Name</TableHead>
-                  <TableHead>Details</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Percentage</TableHead>
+                  <TableHead className="w-32">Weekly Progress</TableHead>
                   <TableHead>Start Date</TableHead>
                   <TableHead>End Date</TableHead>
                   <TableHead>Tick</TableHead>
@@ -374,55 +339,58 @@ const WeeklySchedulePage = () => {
               </TableHeader>
               <TableBody>
                 {schedules.map((schedule, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{renderCell(String(schedule.id), (val) => handleScheduleChange(index, 'id', Number(val) || 0))}</TableCell>
-                    <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
-                    <TableCell>{renderCell(schedule.details, (val) => handleScheduleChange(index, 'details', val))}</TableCell>
-                    <TableCell>
-                      {isEditing ? (
-                        <Select
-                          value={schedule.status}
-                          onValueChange={(value) => handleScheduleChange(index, 'status', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="In Progress">In Progress</SelectItem>
-                            <SelectItem value="Completed">Completed</SelectItem>
-                            <SelectItem value="Incomplete">Incomplete</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <span className="p-2 block">{schedule.status}</span>
-                      )}
-                    </TableCell>
-                    <TableCell>{renderPercentageCell(schedule.percentage, (val) => handleScheduleChange(index, 'percentage', val))}</TableCell>
-                    <TableCell>{renderDateCell(schedule.startDate, (val) => handleScheduleChange(index, 'startDate', val))}</TableCell>
-                    <TableCell>{renderDateCell(schedule.endDate, (val) => handleScheduleChange(index, 'endDate', val))}</TableCell>
-                    <TableCell>{getStatusIcon(schedule.status)}</TableCell>
-                    {isEditing && 
+                  <Collapsible asChild key={index}>
+                    <>
+                      <TableRow className={cn(openProjects[schedule.id] && 'bg-muted/50')}>
                         <TableCell>
-                            <Button variant="ghost" size="icon" onClick={() => removeRow(index)}>
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
+                          <CollapsibleTrigger asChild onClick={() => setOpenProjects(prev => ({...prev, [schedule.id]: !prev[schedule.id]}))}>
+                            <Button variant="ghost" size="icon">{openProjects[schedule.id] ? <ChevronDown className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}</Button>
+                          </CollapsibleTrigger>
                         </TableCell>
-                    }
-                  </TableRow>
+                        <TableCell>{renderCell(String(schedule.id), (val) => handleScheduleChange(index, 'id', Number(val) || 0))}</TableCell>
+                        <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
+                        <TableCell>{isEditing ? (<Select value={schedule.status} onValueChange={(value) => handleScheduleChange(index, 'status', value)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="In Progress">In Progress</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Incomplete">Incomplete</SelectItem></SelectContent></Select>) : (<span className="p-2 block">{schedule.status}</span>)}</TableCell>
+                        <TableCell><Progress value={calculateWeeklyProgress(schedule.dailyEntries)} className="w-full" /></TableCell>
+                        <TableCell>{renderDateCell(schedule.startDate, (val) => handleScheduleChange(index, 'startDate', val))}</TableCell>
+                        <TableCell>{renderDateCell(schedule.endDate, (val) => handleScheduleChange(index, 'endDate', val))}</TableCell>
+                        <TableCell>{getStatusIcon(schedule.status)}</TableCell>
+                        {isEditing && <TableCell><Button variant="ghost" size="icon" onClick={() => removeRow(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>}
+                      </TableRow>
+                      <CollapsibleContent asChild>
+                        <TableRow>
+                          <TableCell colSpan={isEditing ? 9 : 8} className="p-0">
+                            <div className="p-4 bg-muted/20">
+                              <h4 className="font-semibold mb-2">Daily Progress</h4>
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead className='w-24'>Day</TableHead>
+                                    <TableHead>Details</TableHead>
+                                    <TableHead className='w-48'>Progress</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {schedule.dailyEntries.map((daily, dayIndex) => (
+                                    <TableRow key={dayIndex}>
+                                      <TableCell>Day {dayIndex + 1}</TableCell>
+                                      <TableCell>{renderCell(daily.details, (val) => handleDailyEntryChange(index, dayIndex, 'details', val), "What was done today?")}</TableCell>
+                                      <TableCell>{renderPercentageCell(daily.percentage, (val) => handleDailyEntryChange(index, dayIndex, 'percentage', val))}</TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </CollapsibleContent>
+                    </>
+                  </Collapsible>
                 ))}
               </TableBody>
             </Table>
             <div className="mt-6">
                 <h3 className="text-lg font-semibold mb-2">Remarks</h3>
-                {isEditing ? (
-                    <Textarea 
-                        value={remarks}
-                        onChange={(e) => setRemarks(e.target.value)}
-                        placeholder="Add any overall remarks here..."
-                    />
-                ) : (
-                    <p className="text-sm text-muted-foreground p-2">{remarks || 'No remarks.'}</p>
-                )}
+                {isEditing ? (<Textarea value={remarks} onChange={(e) => setRemarks(e.target.value)} placeholder="Add any overall remarks here..."/>) : (<p className="text-sm text-muted-foreground p-2">{remarks || 'No remarks.'}</p>)}
             </div>
           </div>
         </CardContent>
