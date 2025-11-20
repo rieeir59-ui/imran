@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Fragment } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -35,6 +35,7 @@ const PROJECT_AGREEMENT_DOC_ID = "project-agreement";
 const PROJECT_APP_SUMMARY_DOC_ID = 'project-application-summary';
 const PROJECT_SERVICES_DOC_ID = "project-services-checklist";
 const CONTINUATION_SHEET_DOC_ID = 'continuation-sheet';
+const CONSTRUCTION_SCHEDULE_DOC_ID = 'construction-activity-schedule';
 
 
 const fileIndexItems = [
@@ -2268,13 +2269,13 @@ const Section19 = React.memo(() => {
         }).finally(() => setIsSaving(false));
     };
     
-    const renderField = (label: string, name: string) => {
+    const renderField = (label: string, name: string, isLeft = true) => {
         return (
-            <div className="flex justify-between items-center py-1">
-                <span>{label}</span>
+            <div className={`flex items-center py-1 ${isLeft ? 'justify-between' : ''}`}>
+                <span className="w-2/3">{label}</span>
                 {isEditing ? 
-                    <Input name={name} value={formData[name] || ''} onChange={handleInputChange} className="w-48" /> :
-                    <span className="w-48 border-b text-right">{formData[name] || ''}</span>
+                    <Input name={name} value={formData[name] || ''} onChange={handleInputChange} className="w-1/3" /> :
+                    <span className="w-1/3 border-b text-right">{formData[name] || ''}</span>
                 }
             </div>
         )
@@ -2299,36 +2300,42 @@ const Section19 = React.memo(() => {
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-2 gap-8">
-                     {renderField("Application Number", "applicationNumber")}
-                     {renderField("Application Date", "applicationDate")}
-                     {renderField("Period From", "periodFrom")}
-                     {renderField("To", "periodTo")}
-                     {renderField("Architect's Project No", "architectsProjectNo")}
+                 <div className="grid grid-cols-1 gap-4 mb-4">
+                     <div className="flex items-center gap-2"><Label>Application Number:</Label>{isEditing ? <Input name="applicationNumber" value={formData.applicationNumber || ''} onChange={handleInputChange} /> : <span className="font-medium border-b flex-1">{formData.applicationNumber}</span>}</div>
+                     <div className="flex items-center gap-2"><Label>Application Date:</Label>{isEditing ? <Input name="applicationDate" value={formData.applicationDate || ''} onChange={handleInputChange} /> : <span className="font-medium border-b flex-1">{formData.applicationDate}</span>}</div>
+                     <div className="flex items-center gap-2"><Label>Period From:</Label>{isEditing ? <Input name="periodFrom" value={formData.periodFrom || ''} onChange={handleInputChange} /> : <span className="font-medium border-b flex-1">{formData.periodFrom}</span>}</div>
+                     <div className="flex items-center gap-2"><Label>To:</Label>{isEditing ? <Input name="periodTo" value={formData.periodTo || ''} onChange={handleInputChange} /> : <span className="font-medium border-b flex-1">{formData.periodTo}</span>}</div>
+                     <div className="flex items-center gap-2"><Label>Architect's Project No:</Label>{isEditing ? <Input name="architectsProjectNo" value={formData.architectsProjectNo || ''} onChange={handleInputChange} /> : <span className="font-medium border-b flex-1">{formData.architectsProjectNo}</span>}</div>
                 </div>
+                <p className="text-sm text-muted-foreground">In tabulations below, amounts are stated to the nearest rupee.</p>
                 <Separator className="my-4" />
-                <div className="grid grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div>
-                        <p><strong>Contractor Name:</strong></p>
-                        {renderField("A Original Contract Sum", "originalContractSum")}
-                        {renderField("B Net Change Orders to Date", "netChangeOrders")}
-                        {renderField("C Contract Sum to Date", "contractSumToDate")}
-                        {renderField("D Work In Place to Date", "workInPlaceToDate")}
-                        {renderField("E Stored Materials (Not in D or I)", "storedMaterials")}
-                        {renderField("F Total Completed & Stored to Date (D+E)", "totalCompletedAndStored")}
-                        {renderField("G Retainage Percentage", "retainagePercentage")}
-                        {renderField("H Retainage Amount", "retainageAmount")}
-                        {renderField("I Previous Payments", "previousPayments")}
-                        {renderField("J Current Payment Due (F-H-I)", "currentPaymentDue")}
-                        {renderField("K Balance to Finish (C-E)", "balanceToFinish")}
-                        {renderField("L Percent Complete (F÷C)", "percentComplete")}
+                        <h4 className="font-bold">Contractor Name</h4>
+                        {isEditing ? <Input name="contractorName" value={formData.contractorName || ''} onChange={handleInputChange} className="mt-1" /> : <div className="border-b min-h-6 mt-1">{formData.contractorName}</div>}
                     </div>
-                     <div>
-                        <p><strong>Totals this Page or all Pages:</strong></p>
-                        {isEditing ? <Input name="totals" value={formData.totals || ''} onChange={handleInputChange} /> : <div className="border-b min-h-6">{formData.totals}</div>}
-                        <p className="mt-4"><strong>Portion of Work:</strong></p>
-                        {isEditing ? <Input name="portionOfWork" value={formData.portionOfWork || ''} onChange={handleInputChange} /> : <div className="border-b min-h-6">{formData.portionOfWork}</div>}
+                    <div>
+                        <h4 className="font-bold">Totals this Page or all Pages</h4>
+                        {isEditing ? <Input name="totals" value={formData.totals || ''} onChange={handleInputChange} className="mt-1"/> : <div className="border-b min-h-6 mt-1">{formData.totals}</div>}
                     </div>
+                    <div>
+                        <h4 className="font-bold">Portion of Work</h4>
+                        {isEditing ? <Input name="portionOfWork" value={formData.portionOfWork || ''} onChange={handleInputChange} className="mt-1" /> : <div className="border-b min-h-6 mt-1">{formData.portionOfWork}</div>}
+                    </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                    {renderField("A. Original Contract Sum", "originalContractSum")}
+                    {renderField("B. Net Change Orders to Date", "netChangeOrders")}
+                    {renderField("C. Contract Sum to Date", "contractSumToDate")}
+                    {renderField("D. Work In Place to Date", "workInPlaceToDate")}
+                    {renderField("E. Stored Materials (Not in D or I)", "storedMaterials")}
+                    {renderField("F. Total Completed & Stored to Date (D+E)", "totalCompletedAndStored")}
+                    {renderField("G. Retainage Percentage", "retainagePercentage")}
+                    {renderField("H. Retainage Amount", "retainageAmount")}
+                    {renderField("I. Previous Payments", "previousPayments")}
+                    {renderField("J. Current Payment Due (F-H-I)", "currentPaymentDue")}
+                    {renderField("K. Balance to Finish (C-E)", "balanceToFinish")}
+                    {renderField("L. Percent Complete (F÷C)", "percentComplete")}
                 </div>
             </CardContent>
         </Card>
@@ -2490,16 +2497,16 @@ const Section20 = React.memo(() => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-16">Item No.</TableHead>
-                                <TableHead>Description of Work</TableHead>
-                                <TableHead>Scheduled Value</TableHead>
-                                <TableHead>Work Completed (Prev)</TableHead>
-                                <TableHead>Work Completed (This)</TableHead>
-                                <TableHead>Materials Stored</TableHead>
-                                <TableHead>Total Completed</TableHead>
-                                <TableHead>%</TableHead>
-                                <TableHead>Balance</TableHead>
-                                <TableHead>Retainage</TableHead>
+                                <TableHead className="min-w-[5rem]">Item No.</TableHead>
+                                <TableHead className="min-w-[12rem]">Description of Work</TableHead>
+                                <TableHead className="min-w-[8rem]">Scheduled Value</TableHead>
+                                <TableHead className="min-w-[8rem]">Work Completed (Prev)</TableHead>
+                                <TableHead className="min-w-[8rem]">Work Completed (This)</TableHead>
+                                <TableHead className="min-w-[8rem]">Materials Stored</TableHead>
+                                <TableHead className="min-w-[8rem]">Total Completed</TableHead>
+                                <TableHead className="min-w-[4rem]">%</TableHead>
+                                <TableHead className="min-w-[8rem]">Balance</TableHead>
+                                <TableHead className="min-w-[8rem]">Retainage</TableHead>
                                 {isEditing && <TableHead className="w-12"></TableHead>}
                             </TableRow>
                         </TableHeader>
@@ -2532,8 +2539,176 @@ const Section20 = React.memo(() => {
 });
 Section20.displayName = 'Section20';
 
-const Section21 = React.memo(() => (<Card><CardHeader><CardTitle>Construction Activity schedule</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section21 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [headerData, setHeaderData] = useState({
+        client: '', title: '', project: '', type: '',
+        coveredArea: '', location: '', projectNumber: '', date: ''
+    });
+    const [tasks, setTasks] = useState([{ 
+        id: 1, code: '', task: '', duration: '', planStart: '', planFinish: '',
+        actualStart: '', actualFinish: '', progressPlan: '', progressActual: '',
+        variance: '', remarks: ''
+    }]);
+
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+
+    const scheduleDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectData/${CONSTRUCTION_SCHEDULE_DOC_ID}`);
+    }, [user, firestore]);
+
+    useEffect(() => {
+        if (!scheduleDocRef) return;
+        setIsLoading(true);
+        getDoc(scheduleDocRef).then(docSnap => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                setHeaderData(data.headerData || {});
+                if (data.tasks && data.tasks.length > 0) {
+                    setTasks(data.tasks);
+                }
+            }
+        }).finally(() => setIsLoading(false));
+    }, [scheduleDocRef]);
+
+    const handleHeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setHeaderData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    };
+
+    const handleTaskChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setTasks(prev => prev.map((task, i) => i === index ? { ...task, [name]: value } : task));
+    };
+
+    const addRow = () => {
+        setTasks(prev => [...prev, { 
+            id: Date.now(), code: '', task: '', duration: '', planStart: '', planFinish: '',
+            actualStart: '', actualFinish: '', progressPlan: '', progressActual: '',
+            variance: '', remarks: ''
+        }]);
+    };
+
+    const removeRow = (index: number) => {
+        setTasks(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleSave = () => {
+        if (!scheduleDocRef) return;
+        setIsSaving(true);
+        setDoc(scheduleDocRef, { headerData, tasks }, { merge: true })
+            .then(() => {
+                setIsEditing(false);
+                toast({ title: "Success", description: "Schedule saved." });
+            })
+            .catch(() => toast({ variant: 'destructive', title: "Error", description: "Could not save schedule." }))
+            .finally(() => setIsSaving(false));
+    };
+
+    const handleDownload = () => {
+        const doc = new jsPDF({ orientation: 'landscape' });
+        doc.text("Construction Time Line", 14, 15);
+        
+        let y = 25;
+        Object.entries(headerData).forEach(([key, value]) => {
+            doc.text(`${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`, 14, y);
+            y += 7;
+        });
+
+        autoTable(doc, {
+            head: [['Sr.No/Code', 'Task', 'Duration', 'Plan Start', 'Plan Finish', 'Actual Start', 'Actual Finish', 'Progress Plan', 'Progress Actual', 'Variance', 'Remarks']],
+            body: tasks.map(t => Object.values(t).slice(1)), // Omit ID
+            startY: y,
+            theme: 'grid',
+            styles: { fontSize: 6, cellPadding: 1, overflow: 'linebreak' },
+            headStyles: { fillColor: [30, 41, 59] },
+        });
+
+        doc.save('construction-schedule.pdf');
+    };
+
+    const renderHeaderInput = (label: string, name: keyof typeof headerData) => (
+        <div className="flex items-center gap-2">
+            <Label>{label}:</Label>
+            {isEditing ? (
+                <Input name={name} value={headerData[name]} onChange={handleHeaderChange} className="h-8" />
+            ) : (
+                <span className="font-medium flex-1 border-b">{headerData[name]}</span>
+            )}
+        </div>
+    );
+    
+    if (isLoading || isUserLoading) return <div className="p-8 text-center"><Loader2 className="mx-auto animate-spin" /></div>;
+
+    return (
+        <Card>
+            <CardHeader className="flex-row items-center justify-between">
+                <CardTitle>Construction Activity Schedule</CardTitle>
+                 <div className="flex gap-2">
+                    <Button variant="outline" onClick={handleDownload}><Download /></Button>
+                    {isEditing ? (
+                        <>
+                            <Button variant="outline" onClick={addRow}><PlusCircle /></Button>
+                            <Button onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin" /> : <Save />}</Button>
+                        </>
+                    ) : (
+                        <Button onClick={() => setIsEditing(true)}><Edit /></Button>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    {renderHeaderInput('Client', 'client')}
+                    {renderHeaderInput('Title', 'title')}
+                    {renderHeaderInput('Project', 'project')}
+                    {renderHeaderInput('Type', 'type')}
+                    {renderHeaderInput('Covered Area', 'coveredArea')}
+                    {renderHeaderInput('Location', 'location')}
+                    {renderHeaderInput('Project Number', 'projectNumber')}
+                    {renderHeaderInput('Date', 'date')}
+                </div>
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Sr.No/Code</TableHead>
+                                <TableHead>Task</TableHead>
+                                <TableHead>Duration</TableHead>
+                                <TableHead>Plan Start</TableHead>
+                                <TableHead>Plan Finish</TableHead>
+                                <TableHead>Actual Start</TableHead>
+                                <TableHead>Actual Finish</TableHead>
+                                <TableHead>Progress Plan</TableHead>
+                                <TableHead>Progress Actual</TableHead>
+                                <TableHead>Variance</TableHead>
+                                <TableHead>Remarks</TableHead>
+                                {isEditing && <TableHead />}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {tasks.map((task, index) => (
+                                <TableRow key={task.id}>
+                                    {(Object.keys(task) as Array<keyof typeof task>).slice(1).map(key => (
+                                        <TableCell key={key}>
+                                            {isEditing ? <Input name={key} value={task[key]} onChange={(e) => handleTaskChange(index, e)} className="h-8" /> : <span>{task[key]}</span>}
+                                        </TableCell>
+                                    ))}
+                                    {isEditing && <TableCell><Button variant="ghost" size="icon" onClick={() => removeRow(index)}><Trash2 className="h-4 w-4" /></Button></TableCell>}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            </CardContent>
+        </Card>
+    );
+});
 Section21.displayName = 'Section21';
+
 const Section22 = React.memo(() => (<Card><CardHeader><CardTitle>Preliminary Project Budget</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
 Section22.displayName = 'Section22';
 const Section23 = React.memo(() => (<Card><CardHeader><CardTitle>Bill Of Quantity</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
