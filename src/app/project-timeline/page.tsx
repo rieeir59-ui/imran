@@ -26,62 +26,67 @@ import { addDays, format, parseISO, isValid } from 'date-fns';
 const DEFAULT_TIMELINE_ID = "main-project-timeline";
 
 const initialTimelineTasks = [
-    { id: 1, name: "Project Name:", duration: "", start: "", finish: "", predecessor: "" },
-    { id: 2, name: "Conceptual Design", duration: "", start: "", finish: "", predecessor: "" },
-    { id: 3, name: "Client Brief", duration: "", start: "", finish: "", predecessor: "2" },
-    { id: 4, name: "Topographic Survey", duration: "", start: "", finish: "", predecessor: "2" },
-    { id: 5, name: "Project Scope and Area Statements", duration: "", start: "", finish: "", predecessor: "3,4" },
-    { id: 6, name: "Conceptual Plans and Supporting Drawings", duration: "", start: "", finish: "", predecessor: "5" },
-    { id: 7, name: "Concept Engineering", duration: "", start: "", finish: "", predecessor: "5" },
-    { id: 8, name: "Geotechnical Investigation and Report", duration: "", start: "", finish: "", predecessor: "5" },
-    { id: 9, name: "Conceptual Interior Brief", duration: "", start: "", finish: "", predecessor: "5" },
-    { id: 10, name: "Finalize Concept Design / Report", duration: "", start: "", finish: "", predecessor: "6,7,8,9" },
-    { id: 11, name: "Client Comments / Approval on Concept Design", duration: "", start: "", finish: "", predecessor: "10" },
-    { id: 12, name: "Preliminary Design", duration: "", start: "", finish: "", predecessor: "11" },
-    { id: 13, name: "Layout Plans-Cycle 1", duration: "", start: "", finish: "", predecessor: "12" },
-    { id: 14, name: "Initial Engineering", duration: "", start: "", finish: "", predecessor: "12" },
-    { id: 15, name: "Preliminary Design Workshop", duration: "", start: "", finish: "", predecessor: "13,14" },
-    { id: 16, name: "Layout Plans-Cycle 2", duration: "", start: "", finish: "", predecessor: "15" },
-    { id: 17, name: "Environmental Study and Authority Approval", duration: "", start: "", finish: "", predecessor: "16" },
-    { id: 18, name: "3-D Model", duration: "", start: "", finish: "", predecessor: "16" },
-    { id: 19, name: "External Elevation", duration: "", start: "", finish: "", predecessor: "16" },
-    { id: 20, name: "Building Section", duration: "", start: "", finish: "", predecessor: "16" },
-    { id: 21, name: "Preliminary Interior Layouts", duration: "", start: "", finish: "", predecessor: "16" },
-    { id: 22, name: "Preliminary Engineering Design", duration: "", start: "", finish: "", predecessor: "16" },
-    { id: 23, name: "Finalize Preliminary Design / Report", duration: "", start: "", finish: "", predecessor: "17,18,19,20,21,22" },
-    { id: 24, name: "Client Comments / Approval on Preliminary Design", duration: "", start: "", finish: "", predecessor: "23" },
-    { id: 25, name: "Submission to LDA / CDA or Other Authority", duration: "", start: "", finish: "", predecessor: "24" },
-    { id: 26, name: "Prepare Submission Drawings", duration: "", start: "", finish: "", predecessor: "25" },
-    { id: 27, name: "Submit Application for Stage I Approval", duration: "", start: "", finish: "", predecessor: "26" },
-    { id: 28, name: "LDA/CDA/Other Authority Approval Process", duration: "", start: "", finish: "", predecessor: "27" },
-    { id: 29, name: "LDA/CDA/Other Authority Stage I Approval", duration: "", start: "", finish: "", predecessor: "28" },
-    { id: 30, name: "Detailed Design and Draft Tender", duration: "", start: "", finish: "", predecessor: "29" },
-    { id: 31, name: "Detailed Architectural Design", duration: "", start: "", finish: "", predecessor: "30" },
-    { id: 32, name: "Detailed Interior Layouts", duration: "", start: "", finish: "", predecessor: "30" },
-    { id: 33, name: "Detailed Engineering Design", duration: "", start: "", finish: "", predecessor: "30" },
-    { id: 34, name: "Draft Conditions of Contract", duration: "", start: "", finish: "", predecessor: "30" },
-    { id: 35, name: "Draft BOQ and Specifications", duration: "", start: "", finish: "", predecessor: "30" },
-    { id: 36, name: "Client Comments / Approval Final Design", duration: "", start: "", finish: "", predecessor: "31,32,33,34,35" },
-    { id: 37, name: "Construction Drawings and Final Tender", duration: "", start: "", finish: "", predecessor: "36" },
-    { id: 38, name: "Architectural Construction Drawings", duration: "", start: "", finish: "", predecessor: "37" },
-    { id: 39, name: "Engineering Construction Drawings", duration: "", start: "", finish: "", predecessor: "37" },
-    { id: 40, name: "Final Tender Documents", duration: "", start: "", finish: "", predecessor: "38,39" },
-    { id: 41, name: "Client Comments / Approval on Final Tender Documents", duration: "", start: "", finish: "", predecessor: "40" },
-    { id: 42, name: "Incorporate Comments in Tender Documents", duration: "", start: "", finish: "", predecessor: "41" },
-    { id: 43, name: "Tender Documents Ready", duration: "", start: "", finish: "", predecessor: "42" },
-    { id: 44, name: "Final Interior Design", duration: "", start: "", finish: "", predecessor: "36" },
-    { id: 45, name: "Interior Layouts working details", duration: "", start: "", finish: "", predecessor: "44" },
-    { id: 46, name: "Interior Thematic Mood Board + Color Scheme", duration: "", start: "", finish: "", predecessor: "44" },
-    { id: 47, name: "Ceiling Details Design Drawings", duration: "", start: "", finish: "", predecessor: "44" },
-    { id: 48, name: "Built-in Feature Details", duration: "", start: "", finish: "", predecessor: "44" },
-    { id: 49, name: "Partition Pattern Details Drawings", duration: "", start: "", finish: "", predecessor: "44" },
-    { id: 50, name: "Draft Interior design Tender", duration: "", start: "", finish: "", predecessor: "45,46,47,48,49" },
-    { id: 51, name: "Client Comments / Approval of Interior Design Tender", duration: "", start: "", finish: "", predecessor: "50" },
-    { id: 52, name: "Incorporate Comments in Interior Design Tender", duration: "", start: "", finish: "", predecessor: "51" },
-    { id: 53, name: "Interior Design Tender Complete", duration: "", start: "", finish: "", predecessor: "52" },
-    { id: 54, name: "Procurement of Main Contractor", duration: "", start: "", finish: "", predecessor: "43" },
-    { id: 55, name: "Construction Period ____ Months - Top Supervision by IH&SA and ____________________", duration: "", start: "", finish: "", predecessor: "54" },
+    { id: 1, name: "1. Project Initiation & Site Studies", isHeader: true },
+    { id: 2, name: "Client Brief", duration: "", start: "", finish: "", predecessor: "" },
+    { id: 3, name: "Project Scope and Area Statements", duration: "", start: "", finish: "", predecessor: "2" },
+    { id: 4, name: "Topographic / Preliminary Survey", duration: "", start: "", finish: "", predecessor: "2" },
+    { id: 5, name: "Geotechnical Investigation and Report", duration: "", start: "", finish: "", predecessor: "2" },
+    { id: 6, name: "2. Concept Design Stage", isHeader: true },
+    { id: 7, name: "Concept Design Development", duration: "", start: "", finish: "", predecessor: "3,4,5" },
+    { id: 8, name: "Concept Plans and Supporting Drawings", duration: "", start: "", finish: "", predecessor: "7" },
+    { id: 9, name: "Interior Design Concept Development", duration: "", start: "", finish: "", predecessor: "7" },
+    { id: 10, name: "Finalization of Concept Design Report", duration: "", start: "", finish: "", predecessor: "8,9" },
+    { id: 11, name: "Client Approval on Concept Design", duration: "", start: "", finish: "", predecessor: "10" },
+    { id: 12, name: "3. Preliminary Design Stage", isHeader: true },
+    { id: 13, name: "Preliminary Design and Layout Plan – Cycle 1", duration: "", start: "", finish: "", predecessor: "11" },
+    { id: 14, name: "Initial Engineering Coordination (Structural / MEP)", duration: "", start: "", finish: "", predecessor: "11" },
+    { id: 15, name: "Layout Plan – Cycle 2 (Refined Based on Feedback)", duration: "", start: "", finish: "", predecessor: "13,14" },
+    { id: 16, name: "Environmental Study (if applicable)", duration: "", start: "", finish: "", predecessor: "15" },
+    { id: 17, name: "Authority Pre-Consultation / Coordination (LDA, CDA, etc.)", duration: "", start: "", finish: "", predecessor: "15" },
+    { id: 18, name: "3D Model Development", duration: "", start: "", finish: "", predecessor: "15" },
+    { id: 19, name: "Elevations and Sections", duration: "", start: "", finish: "", predecessor: "15" },
+    { id: 20, name: "Preliminary Interior Layout", duration: "", start: "", finish: "", predecessor: "15" },
+    { id: 21, name: "Preliminary Engineering Design", duration: "", start: "", finish: "", predecessor: "15" },
+    { id: 22, name: "Finalization of Preliminary Design Report", duration: "", start: "", finish: "", predecessor: "16,17,18,19,20,21" },
+    { id: 23, name: "Client Comments / Approval on Preliminary Design", duration: "", start: "", finish: "", predecessor: "22" },
+    { id: 24, name: "4. Authority Submission Stage", isHeader: true },
+    { id: 25, name: "Preparation of Submission Drawings", duration: "", start: "", finish: "", predecessor: "23" },
+    { id: 26, name: "Submission to LDA / CDA / Other Relevant Authority", duration: "", start: "", finish: "", predecessor: "25" },
+    { id: 27, name: "Application for Stage-1 Approval", duration: "", start: "", finish: "", predecessor: "26" },
+    { id: 28, name: "Authority Approval Process (Review, Comments, Compliance)", duration: "", start: "", finish: "", predecessor: "27" },
+    { id: 29, name: "Receipt of Authority Approval (Stage-1)", duration: "", start: "", finish: "", predecessor: "28" },
+    { id: 30, name: "5. Detailed Design and Tender Preparation Stage", isHeader: true },
+    { id: 31, name: "Detailed Architectural Design", duration: "", start: "", finish: "", predecessor: "29" },
+    { id: 32, name: "Detailed Interior Layout", duration: "", start: "", finish: "", predecessor: "29" },
+    { id: 33, name: "Detailed Engineering Designs (Structural / MEP)", duration: "", start: "", finish: "", predecessor: "29" },
+    { id: 34, name: "Draft Conditions of Contract", duration: "", start: "", finish: "", predecessor: "29" },
+    { id: 35, name: "Draft BOQs and Technical Specifications", duration: "", start: "", finish: "", predecessor: "29" },
+    { id: 36, name: "Client Comments and Approvals on Detailed Design", duration: "", start: "", finish: "", predecessor: "31,32,33,34,35" },
+    { id: 37, name: "Finalization of Detailed Design", duration: "", start: "", finish: "", predecessor: "36" },
+    { id: 38, name: "6. Construction Design and Tender Finalization Stage", isHeader: true },
+    { id: 39, name: "Construction Design and Final Tender Preparation", duration: "", start: "", finish: "", predecessor: "37" },
+    { id: 40, name: "Architectural Construction Drawings", duration: "", start: "", finish: "", predecessor: "39" },
+    { id: 41, name: "Engineering Construction Drawings", duration: "", start: "", finish: "", predecessor: "39" },
+    { id: 42, name: "Final Tender Documents", duration: "", start: "", finish: "", predecessor: "40,41" },
+    { id: 43, name: "Client Comments / Approval on Final Tender Documents", duration: "", start: "", finish: "", predecessor: "42" },
+    { id: 44, name: "Tender Documents Ready for Issue", duration: "", start: "", finish: "", predecessor: "43" },
+    { id: 45, name: "7. Interior Design Development Stage", isHeader: true },
+    { id: 46, name: "Final Interior Design Development", duration: "", start: "", finish: "", predecessor: "37" },
+    { id: 47, name: "Interior Layout Working Details", duration: "", start: "", finish: "", predecessor: "46" },
+    { id: 48, name: "Interior Thematic Mood Board and Color Scheme", duration: "", start: "", finish: "", predecessor: "46" },
+    { id: 49, name: "Ceiling Detail Design Drawings", duration: "", start: "", finish: "", predecessor: "46" },
+    { id: 50, name: "Built-in Feature Details", duration: "", start: "", finish: "", predecessor: "46" },
+    { id: 51, name: "Partition and Pattern Detail Drawings", duration: "", start: "", finish: "", predecessor: "46" },
+    { id: 52, name: "Draft Interior Design Tender", duration: "", start: "", finish: "", predecessor: "47,48,49,50,51" },
+    { id: 53, name: "Client Comments / Approval on Interior Design Development", duration: "", start: "", finish: "", predecessor: "52" },
+    { id: 54, name: "Client Comments / Approval on Interior Design Tender", duration: "", start: "", finish: "", predecessor: "53" },
+    { id: 55, name: "Finalization of Interior Design Tender", duration: "", start: "", finish: "", predecessor: "54" },
+    { id: 56, name: "8. Procurement & Appointment Stage", isHeader: true },
+    { id: 57, name: "Procurement of Main Contractor", duration: "", start: "", finish: "", predecessor: "44" },
+    { id: 58, name: "Contract Award / Mobilization", duration: "", start: "", finish: "", predecessor: "57" },
+    { id: 59, name: "Supervision by IH&SA and ______________________________", duration: "", start: "", finish: "", predecessor: "58" },
 ];
+
 
 const FormField = ({ label, value, isEditing, onChange, name }: { label: string, value?: string, isEditing?: boolean, onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void, name?: string }) => (
     <div>
@@ -138,7 +143,7 @@ export default function ProjectTimelinePage() {
                         architectProjectNo: data.architectProjectNo || "",
                         projectDate: data.projectDate || ""
                     });
-                    if (data.tasks && Array.isArray(data.tasks) && data.tasks.length === initialTimelineTasks.length) {
+                    if (data.tasks && Array.isArray(data.tasks) && data.tasks.length > 0) {
                        setTimelineTasks(data.tasks);
                     } else {
                        setTimelineTasks(initialTimelineTasks);
@@ -246,7 +251,7 @@ export default function ProjectTimelinePage() {
     }
 
     const renderCell = (value: string, onChange: (val: string) => void) => {
-        return isEditing ? <Input value={value} onChange={(e) => onChange(e.target.value)} className="h-8" /> : value;
+        return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8" /> : value;
     }
     
     const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
@@ -300,13 +305,19 @@ export default function ProjectTimelinePage() {
                         </TableHeader>
                         <TableBody>
                             {timelineTasks.map((task, index) => (
-                                <TableRow key={task.id}>
-                                    <TableCell>{task.id}</TableCell>
-                                    <TableCell>{renderCell(task.name, (val) => handleTaskChange(index, 'name', val))}</TableCell>
-                                    <TableCell>{renderCell(task.duration, (val) => handleTaskChange(index, 'duration', val))}</TableCell>
-                                    <TableCell>{renderDateCell(task.start, (val) => handleTaskChange(index, 'start', val))}</TableCell>
-                                    <TableCell>{renderCell(task.finish, (val) => handleTaskChange(index, 'finish', val))}</TableCell>
-                                    <TableCell>{renderCell(task.predecessor, (val) => handleTaskChange(index, 'predecessor', val))}</TableCell>
+                                <TableRow key={task.id} className={(task as any).isHeader ? 'bg-muted font-bold' : ''}>
+                                    <TableCell>{(task as any).isHeader ? '' : task.id}</TableCell>
+                                    <TableCell colSpan={(task as any).isHeader ? 5 : 1}>
+                                        {renderCell(task.name, (val) => handleTaskChange(index, 'name', val))}
+                                    </TableCell>
+                                    {!(task as any).isHeader && (
+                                        <>
+                                            <TableCell>{renderCell(task.duration || '', (val) => handleTaskChange(index, 'duration', val))}</TableCell>
+                                            <TableCell>{renderDateCell(task.start, (val) => handleTaskChange(index, 'start', val))}</TableCell>
+                                            <TableCell>{renderCell(task.finish || '', (val) => handleTaskChange(index, 'finish', val))}</TableCell>
+                                            <TableCell>{renderCell(task.predecessor || '', (val) => handleTaskChange(index, 'predecessor', val))}</TableCell>
+                                        </>
+                                    )}
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -317,4 +328,3 @@ export default function ProjectTimelinePage() {
     );
 }
 
-    
