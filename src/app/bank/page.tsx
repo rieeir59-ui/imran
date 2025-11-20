@@ -1775,7 +1775,7 @@ const Section10 = React.memo(() => (
                 <FormField label="Attachments: (List attached documents that support description)" as="textarea" value="" />
                 
                 <p>Please submit an itemized quotation for changes in the Contract Sum and/or Time incidental to proposed modifications to the Contract Documents described herein.</p>
-                <p className="font-bold">THIS IS NOT A CHANGE ORDER NOT A DIRECTION TO PROCEED WITH THE WORK DESCRIBED HEREIN.</p>
+                <p className="font-bold text-center">THIS IS NOT A CHANGE ORDER NOT A DIRECTION TO PROCEED WITH THE WORK DESCRIBED HEREIN.</p>
                 
                 <div className="flex justify-between items-end pt-8">
                     <div>
@@ -2773,7 +2773,7 @@ const Section23 = React.memo(() => {
             { id: 6.07, srNo: '6.6', description: 'Basement Basement Coulumn', unit: 'C.ft', qty: '340', rate: '', amount: '' },
             { id: 6.08, srNo: '6.7', description: 'Basement Lintel', unit: 'C.ft', qty: '495', rate: '', amount: '' },
             { id: 6.09, srNo: '6.8', description: 'Basement Slab & Beam', unit: 'C.ft', qty: '4,224', rate: '', amount: '' },
-            { id: 6.1, srNo: '6.9', description: 'Ground Floor Column Foundations', unit: 'C.ft', qty: '36', rate: '', amount: '' },
+            { id: 6.10, srNo: '6.9', description: 'Ground Floor Column Foundations', unit: 'C.ft', qty: '36', rate: '', amount: '' },
             { id: 6.11, srNo: '6.10', description: 'Ground Floor Coulumn', unit: 'C.ft', qty: '425', rate: '', amount: '' },
             { id: 6.12, srNo: '6.11', description: 'Ground Floor Lintel', unit: 'C.ft', qty: '375', rate: '', amount: '' },
             { id: 6.13, srNo: '6.12', description: 'Ground Floor Slab & Beam', unit: 'C.ft', qty: '4,800', rate: '', amount: '' },
@@ -2949,44 +2949,33 @@ const Section23 = React.memo(() => {
     };
     
     const renderRow = (item: any) => {
-        if (item.subItems) {
-             return (
-                <Fragment key={item.id}>
-                    <TableRow>
-                        <TableCell>{item.srNo}</TableCell>
-                        <TableCell colSpan={isEditing ? 5 : 5}>{renderCell(item.id, 'description', item.description)}</TableCell>
-                        {!item.isHeader && (
-                            <>
-                                <TableCell>{renderCell(item.id, 'unit', item.unit)}</TableCell>
-                                <TableCell>{renderCell(item.id, 'qty', item.qty)}</TableCell>
-                                <TableCell>{renderCell(item.id, 'rate', item.rate)}</TableCell>
-                                <TableCell>{renderCell(item.id, 'amount', item.amount)}</TableCell>
-                            </>
-                        )}
-                    </TableRow>
-                    {item.subItems.map((sub: any) => (
-                        <TableRow key={sub.id}>
-                            <TableCell>{sub.srNo}</TableCell>
-                            <TableCell>{sub.description}</TableCell>
-                            <TableCell>{renderCell(sub.id, 'unit', sub.unit)}</TableCell>
-                            <TableCell>{renderCell(sub.id, 'qty', sub.qty)}</TableCell>
-                            <TableCell>{renderCell(sub.id, 'rate', sub.rate)}</TableCell>
-                            <TableCell>{renderCell(sub.id, 'amount', sub.amount)}</TableCell>
-                        </TableRow>
-                    ))}
-                </Fragment>
-            );
-        }
-        
         return (
-            <TableRow key={item.id}>
-                <TableCell>{item.srNo}</TableCell>
-                <TableCell>{renderCell(item.id, 'description', item.description)}</TableCell>
-                <TableCell>{renderCell(item.id, 'unit', item.unit)}</TableCell>
-                <TableCell>{renderCell(item.id, 'qty', item.qty)}</TableCell>
-                <TableCell>{renderCell(item.id, 'rate', item.rate)}</TableCell>
-                <TableCell>{renderCell(item.id, 'amount', item.amount)}</TableCell>
-            </TableRow>
+            <Fragment key={item.id}>
+                <TableRow>
+                    <TableCell>{item.srNo}</TableCell>
+                    <TableCell colSpan={item.isHeader ? 5 : 1} className={cn(item.isHeader && "font-bold")}>
+                        {renderCell(item.id, 'description', item.description)}
+                    </TableCell>
+                    {!item.isHeader && (
+                        <>
+                            <TableCell>{renderCell(item.id, 'unit', item.unit)}</TableCell>
+                            <TableCell>{renderCell(item.id, 'qty', item.qty)}</TableCell>
+                            <TableCell>{renderCell(item.id, 'rate', item.rate)}</TableCell>
+                            <TableCell>{item.amount}</TableCell>
+                        </>
+                    )}
+                </TableRow>
+                {item.subItems && item.subItems.map((sub: any) => (
+                    <TableRow key={sub.id}>
+                        <TableCell>{sub.srNo}</TableCell>
+                        <TableCell>{sub.description}</TableCell>
+                        <TableCell>{renderCell(sub.id, 'unit', sub.unit)}</TableCell>
+                        <TableCell>{renderCell(sub.id, 'qty', sub.qty)}</TableCell>
+                        <TableCell>{renderCell(sub.id, 'rate', sub.rate)}</TableCell>
+                        <TableCell>{sub.amount}</TableCell>
+                    </TableRow>
+                ))}
+            </Fragment>
         );
     }
     
@@ -3050,7 +3039,7 @@ const Section24 = React.memo(() => {
 
     const docRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
-        return doc(firestore, `users/${user.uid}/projectData/${RATE_ANALYSIS_DOC_ID}`);
+        return doc(firestore, `users/${user.uid}/rateAnalysis/${RATE_ANALYSIS_DOC_ID}`);
     }, [user, firestore]);
 
     useEffect(() => {
@@ -3216,7 +3205,7 @@ const Section25 = React.memo(() => {
 
     const docRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
-        return doc(firestore, `users/${user.uid}/projectData/${CHANGE_ORDER_DOC_ID}`);
+        return doc(firestore, `users/${user.uid}/changeOrders/${CHANGE_ORDER_DOC_ID}`);
     }, [user, firestore]);
 
     useEffect(() => {
@@ -3311,7 +3300,7 @@ const Section25 = React.memo(() => {
                     <div className="flex items-center gap-2"><p>The (Contract Sum) (Guaranteed Maximum Price) will be (increased) (decreased) (changed) by this Change Order in the amount of</p> {renderField('change_order_amount', 'Rs.')}</div>
                     <div className="flex items-center gap-2"><p>The new (Contract Sum) (Guaranteed Maximum Price) including this Change Order will be</p> {renderField('new_contract_sum', 'Rs.')}</div>
                     <div className="flex items-center gap-2"><p>The Contract Time will be (increased) (decreased) by</p> {renderField('contract_time_change', '(_______) days')}</div>
-                    <p>the date of Substantial Completion as the date of this Change Order therefore is: {renderField('substantial_completion_date')}</p>
+                    <div className="flex items-center gap-2"><p>the date of Substantial Completion as the date of this Change Order therefore is:</p> {renderField('substantial_completion_date')}</div>
                 </div>
                 
                 <p className="text-xs text-center">NOTE: This summary does not reflect changes in the Contract Sum, Contract Time or Guaranteed Maximum Price which have been authorized by Contraction Change Directive.</p>
