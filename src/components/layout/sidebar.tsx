@@ -26,7 +26,6 @@ const projectFormsItems = [
   { href: '/project-timeline', icon: GanttChart, label: 'Project Timeline' },
   { href: '/bank', icon: ScrollText, label: 'Bank Forms' },
   { href: '/weekly-schedule', icon: CalendarClock, label: 'Work Schedule' },
-  { href: '/save-record', icon: Save, label: 'Save Record' },
 ];
 
 const timelineItems = [
