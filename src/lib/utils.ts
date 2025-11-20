@@ -196,3 +196,51 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
 
   doc.save('project-checklist.pdf');
 }
+
+export function exportServicesToPdf(formData: any, serviceSections: any) {
+    const doc = new jsPDF();
+    let y = 15;
+
+    doc.setFontSize(16);
+    doc.text("List of Services", 105, y, { align: 'center' });
+    y += 15;
+
+    Object.entries(serviceSections).forEach(([mainTitle, subSections], mainIndex) => {
+        if (y > 260) {
+            doc.addPage();
+            y = 15;
+        }
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${mainIndex + 1}: - ${mainTitle}`, 14, y);
+        y += 8;
+
+        Object.entries(subSections as Record<string, string[]>).forEach(([subTitle, items]) => {
+            if (y > 270) {
+                doc.addPage();
+                y = 15;
+            }
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(subTitle, 18, y);
+            y += 7;
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            items.forEach(item => {
+                if (y > 280) {
+                    doc.addPage();
+                    y = 15;
+                }
+                const itemKey = `${mainTitle}-${subTitle}-${item}`.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                const isChecked = formData[itemKey];
+                doc.text(isChecked ? '[X]' : '[ ]', 22, y);
+                doc.text(item, 30, y);
+                y += 6;
+            });
+            y += 2;
+        });
+    });
+
+    doc.save('list-of-services.pdf');
+}

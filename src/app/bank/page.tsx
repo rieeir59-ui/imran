@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
-import { cn, exportChecklistToPdf } from '@/lib/utils';
+import { cn, exportChecklistToPdf, exportServicesToPdf } from '@/lib/utils';
 import {
   Accordion,
   AccordionContent,
@@ -32,7 +32,8 @@ import autoTable from 'jspdf-autotable';
 const PROJECT_CHECKLIST_DOC_ID = "project-checklist";
 const PROJECT_DATA_DOC_ID = "main-project-data";
 const PROJECT_AGREEMENT_DOC_ID = "project-agreement";
-const PROJECT_APP_SUMMARY_DOC_ID = 'project-application-summary'
+const PROJECT_APP_SUMMARY_DOC_ID = 'project-application-summary';
+const PROJECT_SERVICES_DOC_ID = "project-services-checklist";
 
 
 const fileIndexItems = [
@@ -1211,185 +1212,140 @@ const Section5 = React.memo(() => {
 });
 Section5.displayName = 'Section5';
 
-const Section6 = React.memo(() => (
-    <Card>
-        <CardHeader><CardTitle>List of Services</CardTitle></CardHeader>
-        <CardContent>
-            <SectionTitle>1: - Predesign</SectionTitle>
-            <Subtitle>Predesign Services:-</Subtitle>
-            <ol className="list-decimal list-inside space-y-1">
-                <li>Project Administration</li>
-                <li>Disciplines Coordination Document Checking</li>
-                <li>Agency Consulting Review/ Approval</li>
-                <li>Coordination Of Owner Supplied Data</li>
-                <li>Programming</li>
-                <li>Space Schematics/ Flow Diagrams</li>
-                <li>Existing Facilities Surveys</li>
-                <li>Presentations</li>
-            </ol>
-            <Subtitle>Site Analysis Services</Subtitle>
-            <ol className="list-decimal list-inside space-y-1">
-                <li>Project Administration</li>
-                <li>Disciplines Coordination Document Checking</li>
-                <li>Agency Consulting Review/ Approval</li>
-                <li>Coordination Of Owner Supplied Data</li>
-                <li>Site Analysis and Selection</li>
-                <li>Site Development and Planning</li>
-                <li>Detailed Site Utilization Studies</li>
-                <li>Onsite Utility Studies</li>
-                <li>Offsite Utility Studies</li>
-                <li>Zoning Processing Assistance</li>
-                <li>Project Development Scheduling</li>
-                <li>Project Budgeting</li>
-                <li>Presentations</li>
-            </ol>
+const serviceSections = {
+    "Predesign": {
+        "Predesign Services:-": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Programming", "Space Schematics/ Flow Diagrams", "Existing Facilities Surveys", "Presentations"],
+        "Site Analysis Services": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Site Analysis and Selection", "Site Development and Planning", "Detailed Site Utilization Studies", "Onsite Utility Studies", "Offsite Utility Studies", "Zoning Processing Assistance", "Project Development Scheduling", "Project Budgeting", "Presentations"]
+    },
+    "Design": {
+        "Schematic Design Services: -": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design/ Documentation", "Electrical Design/ Documentation", "Civil Design/ Documentation", "Landscape Design/ Documentation", "Interior Design/ Documentation", "Materials Research/ Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"],
+        "Design Development Services:-": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design / Documentation", "Electrical Design / Documentation", "Civil Design / Documentation", "Landscape Design / Documentation", "Interior Design / Documentation", "Materials Research / Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"],
+        "Construction Documents Services:-": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design/ Documentation", "Electrical Design/ Documentation", "Civil Design/ Documentation", "Landscape Design/ Documentation", "Interior Design/ Documentation", "Materials Research / Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"]
+    },
+    "Construction": {
+        "Bidding Or Negotiation Services:": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Bidding Materials", "Addenda", "Bidding Negotiations", "Analysis Of Alternates/ Substitutions", "Special Bidding Services", "Bid Evaluation", "Construction Contract Agreements"],
+        "Construction Contract Administration Services:-": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Office Construction Administration", "Construction Field Observation", "Project Representation", "Inspection Coordination", "Supplemental Documents", "Quotation Requests/ Change Orders", "Project Schedule Monitoring", "Construction Cost Accounting", "Project Closeout"]
+    },
+    "Post": {
+        "Post Construction Services:-": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Maintenance And Operational Programming", "Start Up Assistance", "Record Drawings", "Warranty Review", "Post Construction Evaluation"]
+    },
+    "Supplemental": {
+        "Supplemental Services: -": ["Graphics Design", "Fine Arts and Crafts Services", "Special Furnishing Design", "Non-Building Equipment Selection"],
+        "List Of Materials:-": ["Conceptual Site and Building Plans/ Basic Layout", "Preliminary Sections and Elevations", "Air Conditioning/ H.V.A.C Design", "Plumbing", "Fire Protection", "Special Mechanical Systems", "General Space Requirements", "Power Services and Distribution", "Telephones", "Security Systems", "Special Electrical Systems", "Landscaping", "Materials", "Partition Sections", "Furniture Design", "Identification Of Potential Architectural Materials", "Specification Of a. Wall Finishes b. Floor Finishes c. Windows Coverings d. Carpeting", "Specialized Features Construction Details", "Project Administration", "Space Schematic Flow", "Existing Facilities Services", "Project Budgeting", "Presentation"]
+    }
+};
 
-            <SectionTitle>2: - Design</SectionTitle>
-            <Subtitle>Schematic Design Services: -</Subtitle>
-            <ol className="list-decimal list-inside space-y-1">
-                <li>Project Administration</li>
-                <li>Disciplines Coordination Document Checking</li>
-                <li>Agency Consulting Review/ Approval</li>
-                <li>Coordination Of Owner Supplied Data</li>
-                <li>Architectural Design/ Documentation</li>
-                <li>Structural Design/ Documentation</li>
-                <li>Mechanical Design/ Documentation</li>
-                <li>Electrical Design/ Documentation</li>
-                <li>Civil Design/ Documentation</li>
-                <li>Landscape Design/ Documentation</li>
-                <li>Interior Design/ Documentation</li>
-                <li>Materials Research/ Specifications</li>
-                <li>Project Development Scheduling</li>
-                <li>Statement Of Probable Construction Cost</li>
-                <li>Presentations</li>
-            </ol>
-            <Subtitle>Design Development Services:-</Subtitle>
-            <ol className="list-decimal list-inside space-y-1">
-                <li>Project Administration</li>
-                <li>Disciplines Coordination Document Checking</li>
-                <li>Agency Consulting Review/ Approval</li>
-                <li>Coordination Of Owner Supplied Data</li>
-                <li>Architectural Design/ Documentation</li>
-                <li>Structural Design/ Documentation</li>
-                <li>Mechanical Design / Documentation</li>
-                <li>Electrical Design / Documentation</li>
-                <li>Civil Design / Documentation</li>
-                <li>Landscape Design / Documentation</li>
-                <li>Interior Design / Documentation</li>
-                <li>Materials Research / Specifications</li>
-                <li>Project Development Scheduling</li>
-                <li>Statement Of Probable Construction Cost</li>
-                <li>Presentations</li>
-            </ol>
-            <Subtitle>Construction Documents Services:-</Subtitle>
-             <ol className="list-decimal list-inside space-y-1">
-                <li>Project Administration</li>
-                <li>Disciplines Coordination Document Checking</li>
-                <li>Agency Consulting Review/ Approval</li>
-                <li>Coordination Of Owner Supplied Data</li>
-                <li>Architectural Design/ Documentation</li>
-                <li>Structural Design/ Documentation</li>
-                <li>Mechanical Design/ Documentation</li>
-                <li>Electrical Design/ Documentation</li>
-                <li>Civil Design/ Documentation</li>
-                <li>Landscape Design/ Documentation</li>
-                <li>Interior Design/ Documentation</li>
-                <li>Materials Research / Specifications</li>
-                <li>Project Development Scheduling</li>
-                <li>Statement Of Probable Construction Cost</li>
-                <li>Presentations</li>
-            </ol>
+const Section6 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({});
+    
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
 
-            <SectionTitle>3: - Construction</SectionTitle>
-            <Subtitle>Bidding Or Negotiation Services:</Subtitle>
-            <ol className="list-decimal list-inside space-y-1">
-                <li>Project Administration</li>
-                <li>Disciplines Coordination Document Checking</li>
-                <li>Agency Consulting Review/ Approval</li>
-                <li>Coordination Of Owner Supplied Data</li>
-                <li>Bidding Materials</li>
-                <li>Addenda</li>
-                <li>Bidding Negotiations</li>
-                <li>Analysis Of Alternates/ Substitutions</li>
-                <li>Special Bidding Services</li>
-                <li>Bid Evaluation</li>
-                <li>Construction Contract Agreements</li>
-            </ol>
-            <Subtitle>Construction Contract Administration Services:-</Subtitle>
-            <ol className="list-decimal list-inside space-y-1">
-                <li>Project Administration</li>
-                <li>Disciplines Coordination Document Checking</li>
-                <li>Agency Consulting Review/ Approval</li>
-                <li>Coordination Of Owner Supplied Data</li>
-                <li>Office Construction Administration</li>
-                <li>Construction Field Observation</li>
-                <li>Project Representation</li>
-                <li>Inspection Coordination</li>
-                <li>Supplemental Documents</li>
-                <li>Quotation Requests/ Change Orders</li>
-                <li>Project Schedule Monitoring</li>
-                <li>Construction Cost Accounting</li>
-                <li>Project Closeout</li>
-            </ol>
-            
-            <SectionTitle>4: - Post</SectionTitle>
-            <Subtitle>Post Construction Services:-</Subtitle>
-            <ol className="list-decimal list-inside space-y-1">
-                <li>Project Administration</li>
-                <li>Disciplines Coordination Document Checking</li>
-                <li>Agency Consulting Review/ Approval</li>
-                <li>Coordination Of Owner Supplied Data</li>
-                <li>Maintenance And Operational Programming</li>
-                <li>Start Up Assistance</li>
-                <li>Record Drawings</li>
-                <li>Warranty Review</li>
-                <li>Post Construction Evaluation</li>
-            </ol>
+    const servicesDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectData/${PROJECT_SERVICES_DOC_ID}`);
+    }, [user, firestore]);
 
-            <SectionTitle>5: - Supplemental</SectionTitle>
-            <Subtitle>Supplemental Services: -</Subtitle>
-            <ol className="list-decimal list-inside space-y-1">
-                <li>Graphics Design</li>
-                <li>Fine Arts and Crafts Services</li>
-                <li>Special Furnishing Design</li>
-                <li>Non-Building Equipment Selection</li>
-            </ol>
-            <Subtitle>List Of Materials:-</Subtitle>
-             <ol className="list-decimal list-inside space-y-1">
-                <li>Conceptual Site and Building Plans/ Basic Layout</li>
-                <li>Preliminary Sections and Elevations</li>
-                <li>Air Conditioning/ H.V.A.C Design</li>
-                <li>Plumbing</li>
-                <li>Fire Protection</li>
-                <li>Special Mechanical Systems</li>
-                <li>General Space Requirements</li>
-                <li>Power Services and Distribution</li>
-                <li>Telephones</li>
-                <li>Security Systems</li>
-                <li>Special Electrical Systems</li>
-                <li>Landscaping</li>
-                <li>Materials</li>
-                <li>Partition Sections</li>
-                <li>Furniture Design</li>
-                <li>Identification Of Potential Architectural Materials</li>
-                <li>Specification Of
-                    <ul className="list-[lower-alpha] pl-5">
-                        <li>Wall Finishes</li>
-                        <li>Floor Finishes</li>
-                        <li>Windows Coverings</li>
-                        <li>Carpeting</li>
-                    </ul>
-                </li>
-                <li>Specialized Features Construction Details</li>
-                <li>Project Administration</li>
-                <li>Space Schematic Flow</li>
-                <li>Existing Facilities Services</li>
-                <li>Project Budgeting</li>
-                <li>Presentation</li>
-            </ol>
-        </CardContent>
-    </Card>
-));
+    useEffect(() => {
+        if (!servicesDocRef) return;
+        setIsLoading(true);
+        getDoc(servicesDocRef).then(docSnap => {
+            if (docSnap.exists()) {
+                setFormData(docSnap.data());
+            }
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load services data.' });
+        }).finally(() => setIsLoading(false));
+    }, [servicesDocRef, toast]);
+    
+    const handleCheckboxChange = (name: string, checked: boolean | 'indeterminate') => {
+        if (typeof checked === 'boolean') {
+            setFormData((prev: any) => ({ ...prev, [name]: checked }));
+        }
+    };
+    
+    const handleSave = () => {
+        if (!servicesDocRef) {
+            toast({ variant: 'destructive', title: 'Error', description: 'User not authenticated.' });
+            return;
+        }
+        setIsSaving(true);
+        setDoc(servicesDocRef, formData, { merge: true }).then(() => {
+            setIsSaving(false);
+            setIsEditing(false);
+            toast({ title: 'Success', description: 'List of Services saved.' });
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save data.' });
+            setIsSaving(false);
+        });
+    };
+
+    const handleDownload = () => {
+        exportServicesToPdf(formData, serviceSections);
+        toast({ title: "Download started", description: "Your PDF is being generated." });
+    };
+
+    const renderServiceItem = (item: string, key: string) => (
+        <div key={key} className="flex items-center gap-2 ml-4">
+            {isEditing ? (
+                <Checkbox
+                    id={key}
+                    checked={formData[key] || false}
+                    onCheckedChange={(checked) => handleCheckboxChange(key, checked)}
+                />
+            ) : (
+                <span>{formData[key] ? '✅' : '🔲'}</span>
+            )}
+            <Label htmlFor={key} className="font-normal">{item}</Label>
+        </div>
+    );
+    
+    if (isLoading || isUserLoading) {
+        return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+    }
+
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>List of Services</CardTitle>
+                <div className="flex gap-2">
+                    <Button onClick={handleDownload} variant="outline"><Download /> Download PDF</Button>
+                    {isEditing ? (
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                        </Button>
+                    ) : (
+                        <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent>
+                {Object.entries(serviceSections).map(([mainTitle, subSections]) => (
+                    <div key={mainTitle}>
+                        <h2 className="text-2xl font-bold mt-8 mb-4 pt-4">{Object.keys(serviceSections).indexOf(mainTitle) + 1}: - {mainTitle}</h2>
+                        {Object.entries(subSections).map(([subTitle, items]) => (
+                            <div key={subTitle} className="mb-4">
+                                <h3 className="text-xl font-semibold mt-6 mb-3">{subTitle}</h3>
+                                <div className="space-y-1">
+                                    {items.map(item => {
+                                        const itemKey = `${mainTitle}-${subTitle}-${item}`.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                                        return renderServiceItem(item, itemKey);
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ))}
+            </CardContent>
+        </Card>
+    );
+});
 Section6.displayName = 'Section6';
 
 const Section7 = React.memo(() => {
@@ -2268,7 +2224,114 @@ Section17.displayName = 'Section17';
 
 const Section18 = React.memo(() => (<Card><CardHeader><CardTitle>Time line Schedule</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
 Section18.displayName = 'Section18';
-const Section19 = React.memo(() => (<Card><CardHeader><CardTitle>Project Application Summary</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section19 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({});
+    
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+    
+    const appSummaryDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectData/${PROJECT_APP_SUMMARY_DOC_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!appSummaryDocRef) return;
+        setIsLoading(true);
+        getDoc(appSummaryDocRef).then(docSnap => {
+            if (docSnap.exists()) setFormData(docSnap.data());
+        }).catch(err => {
+            console.error(err);
+        }).finally(() => setIsLoading(false));
+
+    }, [appSummaryDocRef]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData(prev => ({...prev, [e.target.name]: e.target.value}));
+    }
+
+    const handleSave = () => {
+        if(!appSummaryDocRef) return;
+        setIsSaving(true);
+        setDoc(appSummaryDocRef, formData, {merge: true}).then(() => {
+            setIsEditing(false);
+            toast({title: "Success", description: "Summary saved."});
+        }).catch(err => {
+            console.error(err);
+            toast({variant: 'destructive', title: "Error", description: "Could not save summary."});
+        }).finally(() => setIsSaving(false));
+    };
+    
+    const renderField = (label: string, name: string) => {
+        return (
+            <div className="flex justify-between items-center py-1">
+                <span>{label}</span>
+                {isEditing ? 
+                    <Input name={name} value={formData[name] || ''} onChange={handleInputChange} className="w-48" /> :
+                    <span className="w-48 border-b text-right">{formData[name] || ''}</span>
+                }
+            </div>
+        )
+    };
+    
+    if (isLoading || isUserLoading) {
+        return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+    }
+
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>PROJECT APPLICATION SUMMARY</CardTitle>
+                 <div className="flex gap-2">
+                    {isEditing ? (
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                        </Button>
+                    ) : (
+                        <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-2 gap-8">
+                     {renderField("Application Number", "applicationNumber")}
+                     {renderField("Application Date", "applicationDate")}
+                     {renderField("Period From", "periodFrom")}
+                     {renderField("To", "periodTo")}
+                     {renderField("Architect's Project No", "architectsProjectNo")}
+                </div>
+                <Separator className="my-4" />
+                <div className="grid grid-cols-2 gap-8">
+                    <div>
+                        <p><strong>Contractor Name:</strong></p>
+                        {renderField("A Original Contract Sum", "originalContractSum")}
+                        {renderField("B Net Change Orders to Date", "netChangeOrders")}
+                        {renderField("C Contract Sum to Date", "contractSumToDate")}
+                        {renderField("D Work In Place to Date", "workInPlaceToDate")}
+                        {renderField("E Stored Materials (Not in D or I)", "storedMaterials")}
+                        {renderField("F Total Completed & Stored to Date (D+E)", "totalCompletedAndStored")}
+                        {renderField("G Retainage Percentage", "retainagePercentage")}
+                        {renderField("H Retainage Amount", "retainageAmount")}
+                        {renderField("I Previous Payments", "previousPayments")}
+                        {renderField("J Current Payment Due (F-H-I)", "currentPaymentDue")}
+                        {renderField("K Balance to Finish (C-E)", "balanceToFinish")}
+                        {renderField("L Percent Complete (F÷C)", "percentComplete")}
+                    </div>
+                     <div>
+                        <p><strong>Totals this Page or all Pages:</strong></p>
+                        {isEditing ? <Input name="totals" value={formData.totals || ''} onChange={handleInputChange} /> : <div className="border-b min-h-6">{formData.totals}</div>}
+                        <p className="mt-4"><strong>Portion of Work:</strong></p>
+                        {isEditing ? <Input name="portionOfWork" value={formData.portionOfWork || ''} onChange={handleInputChange} /> : <div className="border-b min-h-6">{formData.portionOfWork}</div>}
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    )
+});
 Section19.displayName = 'Section19';
 const Section20 = React.memo(() => (<Card><CardHeader><CardTitle>Continuation Sheet</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
 Section20.displayName = 'Section20';
