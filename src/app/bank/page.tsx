@@ -36,6 +36,7 @@ const PROJECT_APP_SUMMARY_DOC_ID = 'project-application-summary';
 const PROJECT_SERVICES_DOC_ID = "project-services-checklist";
 const CONTINUATION_SHEET_DOC_ID = 'continuation-sheet';
 const CONSTRUCTION_SCHEDULE_DOC_ID = 'construction-activity-schedule';
+const BILL_OF_QUANTITY_DOC_ID = 'bill-of-quantity';
 
 
 const fileIndexItems = [
@@ -2711,8 +2712,317 @@ Section21.displayName = 'Section21';
 
 const Section22 = React.memo(() => (<Card><CardHeader><CardTitle>Preliminary Project Budget</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
 Section22.displayName = 'Section22';
-const Section23 = React.memo(() => (<Card><CardHeader><CardTitle>Bill Of Quantity</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
-Section23.displayName = 'Section23';
+
+const Section23 = React.memo(() => {
+    const initialBoqData = [
+        { id: '1', srNo: '1', description: 'EXCAVATION', isHeader: true },
+        { id: '1.1', srNo: '', description: 'Excavation for isolated, stripe/combined & Brick foundations in clay and sandy soil including cost of dressing, leveling and compaction in approved manners and disposal of surplus excavated soil away from site, all excavated area will be proof rolled as directed by the Consultant/Engineer incharge.', subItems: [
+            { id: '1.1.1', description: 'Basement', unit: 'C.FT', qty: 59972, rate: 0, amount: 0 },
+            { id: '1.1.2', description: 'Ground Floor', unit: 'C.FT', qty: 225, rate: 0, amount: 0 },
+        ]},
+        { id: '2', srNo: '2', description: 'BACK FILLING', isHeader: true },
+        { id: '2.1', srNo: '', description: 'Back Filling including watering and compaction in layers not exceeding 150mm compacted thickness to dry Compaction Test (ASTM D-1557) upto 95% Modified AASHTO by using the borrowed local sand from the local nearby site, as directed by the Consultant/Engineer incharge', unit: 'C.FT', qty: 12000, rate: 0, amount: 0 },
+        { id: '3', srNo: '3', description: 'TERMITE PROOFING', isHeader: true },
+        { id: '3.1', srNo: '', description: 'Providing and applying of Termite Control by spraying FMC Biflex or Mirage 5% SC by Ali Akbar Group in clear water under all floors, excavation including side walls and bottom of all pits & trenches, for footing and under floors.', subItems: [
+            { id: '3.1.1', description: 'Basement', unit: 'S.ft', qty: 5452, rate: 0, amount: 0 },
+            { id: '3.1.2', description: 'Ground Floor', unit: 'S.ft', qty: 6222, rate: 0, amount: 0 },
+            { id: '3.1.3', description: 'First Floor', unit: 'S.ft', qty: 4986, rate: 0, amount: 0 },
+        ]},
+        { id: '4', srNo: '4', description: 'PLAIN CEMENT CONCRETE UNDER FOUNDATIONS/FLOOR', isHeader: true },
+        { id: '4.1', srNo: '', description: 'Providing and laying P.C.C plain cement concrete (1:4:8) using ordinary Portland cement chenab sand and Dina stone 1.5\'\' down as blinding layer under foundations/floor & swimming pool including confining, leveling, compacting and curing etc. complete in all respect finished smooth as directed by the Consultant/Engineer incharge.', subItems: [
+            { id: '4.1.1', description: 'Basement', unit: 'C.FT', qty: 5452, rate: 0, amount: 0 },
+            { id: '4.1.2', description: 'Column Foundation', unit: 'C.ft', qty: 125, rate: 0, amount: 0 },
+        ]},
+        { id: '5', srNo: '5', description: 'Water Stopper', isHeader: true },
+        { id: '5.1', srNo: '', description: 'Providing and fixing of water stopper 4mm thick and 229 mm wide poly vinyl chloride ribbed bar by Marflex or approved equivalent installed in the centre of x-section of the concrete structure joint of retaining walls, water tanks and expansion joints complete in all respect as per drawings and as directed by the consultant / Engineer. (9" Decora)', subItems: [
+            { id: '5.1.1', description: 'Basement Wall', unit: 'R.ft', qty: 525, rate: 0, amount: 0 },
+            { id: '5.1.2', description: 'O.H.W.T', unit: 'R.ft', qty: 60, rate: 0, amount: 0 },
+        ]},
+        { id: '6', srNo: '6', description: 'Reinforced Cement Concrete Work (3000 Psi)', isHeader: true },
+        { id: '6.1', srNo: '', description: 'Providing, laying, vibrating, compacting, finishing and curing etc. straight or curved, cast in situ reinforced cement concrete at any floor/height/depth, from ready mix plant, 3000 Psi minimum cylinder compressive strength at 28 days, mix using Ordinary Portland Grey Cement, fine aggregate (100% clean lawrence pur sand ) and sargodah crushed coarse aggregate 3/4\'\' down graded with approved quality admixture by Sika/Imporient or approved equivalent, including laying through pump, vibrating through electro mechanical vibrators, placing of all pipes and embedded items before concreting curing finishing complete but excluding the cost of steel reinforcement complete in all respect as per drawings and as directed by the Consultant/Engineer incharge', subItems: [
+            { id: '6.1.1', srNo: '6.1', description: 'Basement Retaining Walls', unit: 'C.ft', qty: 4050, rate: 0, amount: 0 },
+            { id: '6.1.2', srNo: '6.2', description: 'Basement Pool Walls', unit: 'C.ft', qty: 1335, rate: 0, amount: 0 },
+            { id: '6.1.3', srNo: '6.3', description: 'Basement Pool Base', unit: 'C.ft', qty: 473, rate: 0, amount: 0 },
+            { id: '6.1.4', srNo: '6.4', description: 'Basement water body walls & Base', unit: 'C.ft', qty: 230, rate: 0, amount: 0 },
+            { id: '6.1.5', srNo: '6.5', description: 'Basement Column Foundations', unit: 'C.ft', qty: 1664, rate: 0, amount: 0 },
+            { id: '6.1.6', srNo: '6.6', description: 'Basement Basement Coulumn', unit: 'C.ft', qty: 340, rate: 0, amount: 0 },
+            { id: '6.1.7', srNo: '6.7', description: 'Basement Lintel', unit: 'C.ft', qty: 495, rate: 0, amount: 0 },
+            { id: '6.1.8', srNo: '6.8', description: 'Basement Slab & Beam', unit: 'C.ft', qty: 4224, rate: 0, amount: 0 },
+            { id: '6.1.9', srNo: '6.9', description: 'Ground Floor Column Foundations', unit: 'C.ft', qty: 36, rate: 0, amount: 0 },
+            { id: '6.1.10', srNo: '6.10', description: 'Ground Floor Coulumn', unit: 'C.ft', qty: 425, rate: 0, amount: 0 },
+            { id: '6.1.11', srNo: '6.11', description: 'Ground Floor Lintel', unit: 'C.ft', qty: 375, rate: 0, amount: 0 },
+            { id: '6.1.12', srNo: '6.12', description: 'Ground Floor Slab & Beam', unit: 'C.ft', qty: 4800, rate: 0, amount: 0 },
+            { id: '6.1.13', srNo: '6.13', description: 'First Floor Coulumn', unit: 'C.ft', qty: 375, rate: 0, amount: 0 },
+            { id: '6.1.14', srNo: '6.14', description: 'First Floor Lintel', unit: 'C.ft', qty: 165, rate: 0, amount: 0 },
+            { id: '6.1.15', srNo: '6.15', description: 'First Floor Slab & Beam', unit: 'C.ft', qty: 3314, rate: 0, amount: 0 },
+            { id: '6.1.16', srNo: '6.16', description: 'Baement to first Floor Stair', unit: 'C.ft', qty: 400, rate: 0, amount: 0 },
+            { id: '6.1.17', srNo: '6.17', description: 'O.H.W.T Base and walls', unit: 'C.ft', qty: 583, rate: 0, amount: 0 },
+            { id: '6.1.18', srNo: '6.18', description: 'U.G.W.T Base and walls', unit: 'C.ft', qty: 252, rate: 0, amount: 0 },
+            { id: '6.1.19', srNo: '6.19', description: 'Septic Tank', unit: 'C.ft', qty: 185, rate: 0, amount: 0 },
+        ]},
+        { id: '7', srNo: '7', description: 'STEEL REINFORCEMENT', isHeader: true },
+        { id: '7.1', srNo: '', description: 'Providing fabricating, laying, fixing, Mild Steel deformed bars (non-TMT) grade 60 with minimum yield stress conforming to ASTM specifications A-615. including cost of cutting, bending, placing, binded annealed binding wire 16 guage, removal of rest from bars if any, in specified overlaps, chairs, sports, spacers, wastage, etc. Complete in all respects by an approved source such as Afco steel, Prime steel, Ittefaq steel, Model Steel, City Steel UAE ( if not available, client will specify the alternate brand. Only the lengths shown on Drawings shall be paid for in accordance with the Bar bending schedule prepared the contractors from the drawings and submitted well in advance to the Engineer for the approval, steel lengths from the site multiply by the standard weights will used for the purpose of payment and duly approved by the consultant/Engineer Incharge.', unit: 'Ton', qty: 75, rate: 0, amount: 0 },
+        { id: '8', srNo: '8', description: 'Brick Work', isHeader: true },
+        { id: '8.1', srNo: '8.1', description: 'Providing and laying first class burnt brick work 9"and above thickness to in cement sand mortar (1:5) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer', subItems: [
+            { id: '8.1.1', description: 'Basement 9" Thick Wall', unit: 'C.ft', qty: 414, rate: 0, amount: 0 },
+            { id: '8.1.2', description: 'Basement 13.50" Thick Wall', unit: 'C.ft', qty: 1384, rate: 0, amount: 0 },
+            { id: '8.1.3', description: 'Ground Floor 15" Thick Wall', unit: 'C.ft', qty: 900, rate: 0, amount: 0 },
+            { id: '8.1.4', description: 'Ground Floor 13.50" Thick Wall', unit: 'C.ft', qty: 1814, rate: 0, amount: 0 },
+            { id: '8.1.5', description: 'Ground Floor 9" Thick Wall', unit: 'C.ft', qty: 1206, rate: 0, amount: 0 },
+            { id: '8.1.6', description: 'First Floor 15" Thick Wall', unit: 'C.ft', qty: 825, rate: 0, amount: 0 },
+            { id: '8.1.7', description: 'First Floor 13.50" Thick Wall', unit: 'C.ft', qty: 354, rate: 0, amount: 0 },
+            { id: '8.1.8', description: 'First Floor 9" Thick Wall', unit: 'C.ft', qty: 2175, rate: 0, amount: 0 },
+        ]},
+        { id: '8.2', srNo: '8.2', description: 'Providing and laying first class burnt brick work 4½" thickness to in cement sand mortar (1:4) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer.', subItems: [
+            { id: '8.2.1', srNo: '8.2.1', description: 'Basement Floor', unit: 'S.ft', qty: 3264, rate: 0, amount: 0 },
+            { id: '8.2.2', srNo: '8.2.2', description: 'Ground Floor', unit: 'S.ft', qty: 960, rate: 0, amount: 0 },
+            { id: '8.2.3', srNo: '8.2.3', description: 'First Floor', unit: 'S.ft', qty: 528, rate: 0, amount: 0 },
+            { id: '8.2.4', srNo: '8.2.4', description: 'Boundary Wall', unit: 'S.ft', qty: 3960, rate: 0, amount: 0 },
+        ]},
+        { id: '9', srNo: '9', description: 'Plaster Work', isHeader: true },
+        { id: '9.1', srNo: '', description: 'Supply, mix, apply and cure Cement sand plaster of any height, includes making sharp corners, edges, grooves, all scaffolding. complete in all respects as per drawing, specifications, and or as directed by the Internal & External Plaster', unit: 'S.ft', qty: 27890, rate: 0, amount: 0 },
+        { id: '10', srNo: '10', description: 'Brick Blast', isHeader: true },
+        { id: '10.1', srNo: '', description: '', subItems: [
+            { id: '10.1.1', srNo: '10.1', description: 'Basement Floor', unit: 'C.ft', qty: 1799, rate: 0, amount: 0 },
+            { id: '10.1.2', srNo: '10.2', description: 'Ground Floor', unit: 'C.ft', qty: 2053, rate: 0, amount: 0 },
+            { id: '10.1.3', srNo: '10.3', description: 'First Floor', unit: 'C.ft', qty: 1645, rate: 0, amount: 0 },
+        ]},
+        { id: '11', srNo: '11', description: 'PCC SUB FLOOR', isHeader: true },
+        { id: '11.1', srNo: '', description: 'Cement Concrete (1:2:4), including placing, compacting, finishing and curing complete. (Screed Under Floor)', subItems: [
+            { id: '11.1.1', srNo: '11.1', description: 'Baement Floor', unit: 'C.ft', qty: 1799, rate: 0, amount: 0 },
+            { id: '11.1.2', srNo: '11.2', description: 'Ground Floor', unit: 'C.ft', qty: 2053, rate: 0, amount: 0 },
+            { id: '11.1.3', srNo: '11.3', description: 'First Floor', unit: 'C.ft', qty: 1645, rate: 0, amount: 0 },
+        ]},
+        { id: '12', srNo: '12', description: 'Roof insulation and water proofing', isHeader: true },
+        { id: '12.1', srNo: '', description: 'Providing and laying Roof insulation and water proofing to roof consisting of given below of as directed by the Engineer incharge. - Bituminous primer coat. - 2-coats of cold applied rubberized bitumen - One layer of polythene 500 gauge - 1½” thick "extruded polystyrene board" 1½" thick. (density 34 Kg/m³) - One layer of polythene 500 gauge - 4” thick average mud (compacted thickness). - Brick tiles 9”x4-1/2”x1-1/2” laid in cement sand mortar 1:4 and grouted with cement sand mortar 1:3 using 1-part of OPC and 3-parts of clean approved quality sand, complete as per drawings, specifications and instructions of the Consultant.', unit: 'S.ft', qty: 6561, rate: 0, amount: 0 },
+        { id: '13', srNo: '13', description: 'D.P.C', isHeader: true },
+        { id: '13.1', srNo: '', description: 'Supply, mix, place, cure, compact concrete (1:2:4) 1-1/2" horizontal damp proof course on brick masonry wall includes form work & mixing of rhombic 707 manufactured by MBT in concrete & application of one coat of same chemical on masonry surface before pouring of mixed concrete according to drawings and manufacturers instructions or As directed by the consultant.', subItems: [
+            { id: '13.1.1', description: 'Ground Floor', unit: 'S.ft', qty: 654, rate: 0, amount: 0 },
+        ]},
+    ];
+    
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [boqData, setBoqData] = useState(initialBoqData);
+
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+
+    const boqDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectData/${BILL_OF_QUANTITY_DOC_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!boqDocRef) {
+            setIsLoading(false);
+            return;
+        }
+        setIsLoading(true);
+        getDoc(boqDocRef).then(docSnap => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.boqData && data.boqData.length > 0) {
+                    setBoqData(data.boqData);
+                }
+            }
+        }).catch(err => {
+            console.error("Failed to load BOQ data:", err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not load Bill of Quantity.'});
+        }).finally(() => setIsLoading(false));
+    }, [boqDocRef, toast]);
+    
+    const handleItemChange = (itemId: string, field: string, value: any) => {
+        const newData = boqData.map(item => {
+            if (item.id === itemId) {
+                const updatedItem = { ...item, [field]: value };
+                if (field === 'qty' || field === 'rate') {
+                    const qty = parseFloat(updatedItem.qty || 0);
+                    const rate = parseFloat(updatedItem.rate || 0);
+                    (updatedItem as any).amount = qty * rate;
+                }
+                return updatedItem;
+            }
+            if ((item as any).subItems) {
+                const newSubItems = (item as any).subItems.map((subItem: any) => {
+                    if (subItem.id === itemId) {
+                        const updatedSubItem = { ...subItem, [field]: value };
+                        if (field === 'qty' || field === 'rate') {
+                            const qty = parseFloat(updatedSubItem.qty || 0);
+                            const rate = parseFloat(updatedSubItem.rate || 0);
+                            updatedSubItem.amount = qty * rate;
+                        }
+                        return updatedSubItem;
+                    }
+                    return subItem;
+                });
+                return { ...item, subItems: newSubItems };
+            }
+            return item;
+        });
+        setBoqData(newData);
+    };
+
+    const handleSave = () => {
+        if (!boqDocRef) return;
+        setIsSaving(true);
+        setDoc(boqDocRef, { boqData }, { merge: true })
+            .then(() => {
+                setIsEditing(false);
+                toast({ title: "Success", description: "Bill of Quantity saved." });
+            })
+            .catch(err => {
+                toast({ variant: "destructive", title: "Error", description: "Failed to save Bill of Quantity." });
+                console.error(err);
+            })
+            .finally(() => setIsSaving(false));
+    };
+
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        doc.text("Bill of Quantity", 14, 15);
+
+        const body = boqData.flatMap(item => {
+            const itemRows: any[] = [];
+            if ((item as any).isHeader) {
+                itemRows.push([{ content: `${item.srNo} ${item.description}`, colSpan: 5, styles: { fontStyle: 'bold' } }]);
+            } else {
+                const descLines = doc.splitTextToSize(item.description, 100);
+                const firstLine = descLines.shift();
+                 itemRows.push([
+                    item.srNo,
+                    firstLine,
+                    (item as any).unit || '',
+                    (item as any).qty || '',
+                    (item as any).rate || '',
+                    (item as any).amount || '',
+                ]);
+                descLines.forEach((line: string) => itemRows.push(['', line, '', '', '', '']));
+            }
+            if ((item as any).subItems) {
+                (item as any).subItems.forEach((sub: any) => {
+                    itemRows.push([
+                        sub.srNo || '',
+                        sub.description,
+                        sub.unit || '',
+                        sub.qty || '',
+                        sub.rate || '',
+                        sub.amount || '',
+                    ]);
+                });
+            }
+            return itemRows;
+        });
+
+        autoTable(doc, {
+            head: [['Sr. No', 'Description', 'Unit', 'Qty', 'Rate', 'Amount (Rs)']],
+            body: body,
+            startY: 20,
+            theme: 'grid',
+            headStyles: { fillColor: [30, 41, 59] },
+        });
+
+        doc.save('bill-of-quantity.pdf');
+    };
+    
+    if (isLoading) {
+        return <div className="p-4"><Loader2 className="animate-spin" /> Loading...</div>
+    }
+    
+    const renderRow = (item: any) => {
+        if (item.isHeader) {
+            return (
+                <TableRow key={item.id}>
+                    <TableCell colSpan={6} className="font-bold bg-muted">{item.srNo} {item.description}</TableCell>
+                </TableRow>
+            );
+        }
+
+        const renderCell = (field: 'description' | 'unit' | 'qty' | 'rate' | 'amount', value: any) => {
+            if (isEditing && (field === 'qty' || field === 'rate' || field === 'description' || field === 'unit')) {
+                return <Input value={value || ''} onChange={(e) => handleItemChange(item.id, field, e.target.value)} className="h-8" />;
+            }
+            if (field === 'amount') {
+                return (value || 0).toLocaleString();
+            }
+            return value;
+        };
+
+        if (item.subItems) {
+             return (
+                <>
+                    <TableRow key={item.id}>
+                        <TableCell>{item.srNo}</TableCell>
+                        <TableCell colSpan={isEditing ? 1 : 5}>{renderCell('description', item.description)}</TableCell>
+                        {isEditing && <>
+                            <TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell>
+                        </>}
+                    </TableRow>
+                    {item.subItems.map((subItem: any) => (
+                         <TableRow key={subItem.id}>
+                            <TableCell>{subItem.srNo}</TableCell>
+                            <TableCell>{subItem.description}</TableCell>
+                            <TableCell>{renderCell.call(null, 'unit', subItem.unit)}</TableCell>
+                            <TableCell>{renderCell.call(null, 'qty', subItem.qty)}</TableCell>
+                            <TableCell>{renderCell.call(null, 'rate', subItem.rate)}</TableCell>
+                            <TableCell>{(subItem.amount || 0).toLocaleString()}</TableCell>
+                        </TableRow>
+                    ))}
+                </>
+            );
+        }
+
+        return (
+            <TableRow key={item.id}>
+                <TableCell>{item.srNo}</TableCell>
+                <TableCell>{item.description}</TableCell>
+                <TableCell>{renderCell('unit', item.unit)}</TableCell>
+                <TableCell>{renderCell('qty', item.qty)}</TableCell>
+                <TableCell>{renderCell('rate', item.rate)}</TableCell>
+                <TableCell>{renderCell('amount', item.amount)}</TableCell>
+            </TableRow>
+        );
+    }
+    
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Bill of Quantity</CardTitle>
+                <div className="flex items-center gap-2">
+                    <Button onClick={handleDownload} variant="outline"><Download /></Button>
+                    {isEditing ? (
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                        </Button>
+                    ) : (
+                        <Button onClick={() => setIsEditing(true)}><Edit /></Button>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Sr. No</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Unit</TableHead>
+                            <TableHead>Qty</TableHead>
+                            <TableHead>Rate</TableHead>
+                            <TableHead>Amount (Rs)</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {boqData.map(item => renderRow(item))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    );
+});
+Section23.displayName = "Section23";
+
 const Section24 = React.memo(() => (<Card><CardHeader><CardTitle>Rate Analysis</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
 Section24.displayName = 'Section24';
 const Section25 = React.memo(() => (<Card><CardHeader><CardTitle>Change Order</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
