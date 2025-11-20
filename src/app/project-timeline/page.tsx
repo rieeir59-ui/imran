@@ -22,6 +22,7 @@ import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
 import { addDays, format, parseISO, isValid } from 'date-fns';
+import { exportDataToPdf } from '@/lib/utils';
 
 const DEFAULT_TIMELINE_ID = "main-project-timeline";
 
@@ -224,6 +225,11 @@ export default function ProjectTimelinePage() {
         }, 500);
     };
 
+    const handleDownloadPdf = () => {
+        const tasksToExport = timelineTasks.filter(task => !(task as any).isHeader);
+        exportDataToPdf('Project Timeline', tasksToExport, 'project-timeline');
+    }
+
     if (isUserLoading || isLoading) {
         return (
             <div className="flex h-full w-full items-center justify-center p-8">
@@ -270,7 +276,7 @@ export default function ProjectTimelinePage() {
                     <Link href="/"><ArrowLeft /> Back to Dashboard</Link>
                 </Button>
                 <div className="flex items-center gap-2">
-                    <Button onClick={() => window.print()} variant="outline"><Download /> Download</Button>
+                    <Button onClick={handleDownloadPdf} variant="outline"><Download /> Download PDF</Button>
                     {isEditing ? (
                         <Button onClick={handleSave} disabled={isSaving}>
                             {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
@@ -327,4 +333,3 @@ export default function ProjectTimelinePage() {
         </main>
     );
 }
-
