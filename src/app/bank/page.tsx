@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -33,6 +32,7 @@ import autoTable from 'jspdf-autotable';
 const PROJECT_CHECKLIST_DOC_ID = "project-checklist";
 const PROJECT_DATA_DOC_ID = "main-project-data";
 const PROJECT_AGREEMENT_DOC_ID = "project-agreement";
+const PROJECT_APP_SUMMARY_DOC_ID = 'project-application-summary'
 
 
 const fileIndexItems = [
