@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Printer, Edit, Save, Loader2, Terminal, Download } from 'lucide-react';
+import { ArrowLeft, Printer, Edit, Save, Loader2, Terminal, Download, PlusCircle, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -34,6 +34,7 @@ const PROJECT_DATA_DOC_ID = "main-project-data";
 const PROJECT_AGREEMENT_DOC_ID = "project-agreement";
 const PROJECT_APP_SUMMARY_DOC_ID = 'project-application-summary';
 const PROJECT_SERVICES_DOC_ID = "project-services-checklist";
+const CONTINUATION_SHEET_DOC_ID = 'continuation-sheet';
 
 
 const fileIndexItems = [
@@ -2224,6 +2225,7 @@ Section17.displayName = 'Section17';
 
 const Section18 = React.memo(() => (<Card><CardHeader><CardTitle>Time line Schedule</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
 Section18.displayName = 'Section18';
+
 const Section19 = React.memo(() => {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -2333,8 +2335,203 @@ const Section19 = React.memo(() => {
     )
 });
 Section19.displayName = 'Section19';
-const Section20 = React.memo(() => (<Card><CardHeader><CardTitle>Continuation Sheet</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+
+const Section20 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [headerData, setHeaderData] = useState({
+        applicationNumber: '',
+        applicationDate: '',
+        periodTo: '',
+        architectsProjectNo: '',
+    });
+    const [rows, setRows] = useState([
+        { id: 1, itemNo: '', description: '', scheduledValue: '', workCompletedPrev: '', workCompletedThis: '', materialsStored: '', totalCompleted: '', percentage: '', balance: '', retainage: '' }
+    ]);
+
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+
+    const sheetDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectData/${CONTINUATION_SHEET_DOC_ID}`);
+    }, [user, firestore]);
+
+    useEffect(() => {
+        if (!sheetDocRef) return;
+        setIsLoading(true);
+        getDoc(sheetDocRef).then(docSnap => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                setHeaderData({
+                    applicationNumber: data.applicationNumber || '',
+                    applicationDate: data.applicationDate || '',
+                    periodTo: data.periodTo || '',
+                    architectsProjectNo: data.architectsProjectNo || '',
+                });
+                if (data.rows && data.rows.length > 0) {
+                    setRows(data.rows);
+                }
+            }
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load data.' });
+        }).finally(() => setIsLoading(false));
+    }, [sheetDocRef, toast]);
+
+    const handleHeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setHeaderData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    };
+
+    const handleRowChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        const newRows = [...rows];
+        (newRows[index] as any)[name] = value;
+        setRows(newRows);
+    };
+
+    const addRow = () => {
+        setRows(prev => [...prev, { id: Date.now(), itemNo: '', description: '', scheduledValue: '', workCompletedPrev: '', workCompletedThis: '', materialsStored: '', totalCompleted: '', percentage: '', balance: '', retainage: '' }]);
+    };
+
+    const removeRow = (index: number) => {
+        setRows(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleSave = () => {
+        if (!sheetDocRef) return;
+        setIsSaving(true);
+        const dataToSave = { ...headerData, rows };
+        setDoc(sheetDocRef, dataToSave, { merge: true }).then(() => {
+            setIsEditing(false);
+            toast({ title: 'Success', description: 'Continuation Sheet saved.' });
+        }).catch(err => {
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not save sheet.' });
+        }).finally(() => setIsSaving(false));
+    };
+
+    const handleDownload = () => {
+        const doc = new jsPDF({ orientation: 'landscape' });
+        doc.text("Continuation Sheet", 14, 15);
+        
+        doc.setFontSize(10);
+        let y = 25;
+        doc.text(`Application Number: ${headerData.applicationNumber}`, 14, y);
+        doc.text(`Application Date: ${headerData.applicationDate}`, 100, y);
+        doc.text(`Period To: ${headerData.periodTo}`, 180, y);
+        doc.text(`Architect's Project No: ${headerData.architectsProjectNo}`, 14, y+5);
+        y+=10;
+
+        const head = [
+            'Item No.', 'Description', 'Scheduled Value', 'Work Completed (Prev)', 'Work Completed (This)', 'Materials Stored', 'Total Completed', '%', 'Balance', 'Retainage'
+        ];
+        const body = rows.map(row => [
+            row.itemNo, row.description, row.scheduledValue, row.workCompletedPrev, row.workCompletedThis, row.materialsStored, row.totalCompleted, row.percentage, row.balance, row.retainage
+        ]);
+        
+        autoTable(doc, {
+            head: [head],
+            body: body,
+            startY: y,
+            theme: 'grid',
+            styles: { fontSize: 8, cellPadding: 1, overflow: 'linebreak' },
+            headStyles: { fillColor: [30, 41, 59] },
+        });
+
+        doc.save('continuation-sheet.pdf');
+    };
+    
+    if (isLoading || isUserLoading) return <div className="p-8 text-center"><Loader2 className="mx-auto animate-spin" /></div>;
+
+    const renderInput = (value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void) => {
+        if (isEditing) {
+            return <Input value={value} onChange={onChange} className="h-8" />;
+        }
+        return <span className="p-2 block min-h-8">{value}</span>;
+    };
+    
+    const renderHeaderInput = (label: string, name: keyof typeof headerData) => (
+        <div className="flex items-center gap-2">
+            <Label>{label}:</Label>
+            {isEditing ? (
+                <Input name={name} value={headerData[name]} onChange={handleHeaderChange} className="h-8" />
+            ) : (
+                <span className="font-medium">{headerData[name]}</span>
+            )}
+        </div>
+    );
+
+    return (
+        <Card>
+            <CardHeader className="flex-row items-center justify-between">
+                <CardTitle>Continuation Sheet</CardTitle>
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={handleDownload}><Download /></Button>
+                    {isEditing ? (
+                        <>
+                            <Button variant="outline" onClick={addRow}><PlusCircle /></Button>
+                            <Button onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin" /> : <Save />}</Button>
+                        </>
+                    ) : (
+                        <Button onClick={() => setIsEditing(true)}><Edit /></Button>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    {renderHeaderInput('Application Number', 'applicationNumber')}
+                    {renderHeaderInput('Application Date', 'applicationDate')}
+                    {renderHeaderInput('Period To', 'periodTo')}
+                    {renderHeaderInput('Architect\'s Project No', 'architectsProjectNo')}
+                </div>
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-16">Item No.</TableHead>
+                                <TableHead>Description of Work</TableHead>
+                                <TableHead>Scheduled Value</TableHead>
+                                <TableHead>Work Completed (Prev)</TableHead>
+                                <TableHead>Work Completed (This)</TableHead>
+                                <TableHead>Materials Stored</TableHead>
+                                <TableHead>Total Completed</TableHead>
+                                <TableHead>%</TableHead>
+                                <TableHead>Balance</TableHead>
+                                <TableHead>Retainage</TableHead>
+                                {isEditing && <TableHead className="w-12"></TableHead>}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {rows.map((row, index) => (
+                                <TableRow key={row.id}>
+                                    <TableCell>{renderInput(row.itemNo, (e) => handleRowChange(index, e))}</TableCell>
+                                    <TableCell>{renderInput(row.description, (e) => handleRowChange(index, e))}</TableCell>
+                                    <TableCell>{renderInput(row.scheduledValue, (e) => handleRowChange(index, e))}</TableCell>
+                                    <TableCell>{renderInput(row.workCompletedPrev, (e) => handleRowChange(index, e))}</TableCell>
+                                    <TableCell>{renderInput(row.workCompletedThis, (e) => handleRowChange(index, e))}</TableCell>
+                                    <TableCell>{renderInput(row.materialsStored, (e) => handleRowChange(index, e))}</TableCell>
+                                    <TableCell>{renderInput(row.totalCompleted, (e) => handleRowChange(index, e))}</TableCell>
+                                    <TableCell>{renderInput(row.percentage, (e) => handleRowChange(index, e))}</TableCell>
+                                    <TableCell>{renderInput(row.balance, (e) => handleRowChange(index, e))}</TableCell>
+                                    <TableCell>{renderInput(row.retainage, (e) => handleRowChange(index, e))}</TableCell>
+                                    {isEditing && (
+                                        <TableCell>
+                                            <Button variant="ghost" size="icon" onClick={() => removeRow(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                        </TableCell>
+                                    )}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            </CardContent>
+        </Card>
+    );
+});
 Section20.displayName = 'Section20';
+
 const Section21 = React.memo(() => (<Card><CardHeader><CardTitle>Construction Activity schedule</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
 Section21.displayName = 'Section21';
 const Section22 = React.memo(() => (<Card><CardHeader><CardTitle>Preliminary Project Budget</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
@@ -2401,5 +2598,7 @@ const BankPage = () => {
 };
 
 export default BankPage;
+
+    
 
     
