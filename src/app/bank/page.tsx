@@ -2195,4 +2195,908 @@ const Section17 = React.memo(() => {
             {"Sr No.": 8, "Vendor's Name": "Synergy Technologies", "Contact Person": "", "Products": "Home Automation", "Address": "39-A Block D-1 Gulberg III Lahore", "Contact": "042-111900111"},
             {"Sr No.": 9, "Vendor's Name": "Tera Generation Solutions Pvt. Ltd.", "Contact Person": "", "Products": "Home Automation", "Address": "7-A, P Block Block P Gulberg 2, Lahore, Punjab", "Contact": "(042) 111 847 111"}
         ]
+    };
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>List of Approved Vendors</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Accordion type="single" collapsible className="w-full">
+                    {Object.entries(vendors).map(([category, vendorList]) => (
+                        <AccordionItem value={category} key={category}>
+                            <AccordionTrigger>{category}</AccordionTrigger>
+                            <AccordionContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            {Object.keys(vendorList[0] || {}).map(header => <TableHead key={header}>{header}</TableHead>)}
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {vendorList.map((vendor, index) => (
+                                            <TableRow key={index}>
+                                                {Object.values(vendor).map((value, i) => <TableCell key={i}>{value}</TableCell>)}
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
+            </CardContent>
+        </Card>
+    );
+});
+Section17.displayName = 'Section17';
+
+const Section18 = React.memo(() => (<Card><CardHeader><CardTitle>Time line Schedule</CardTitle></CardHeader><CardContent>This form can be filled out on the <Link href="/project-timeline" className="text-primary underline">Project Timeline page</Link>.</CardContent></Card>));
+Section18.displayName = 'Section18';
+
+const Section19 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({});
+    
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+    
+    const appSummaryDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectData/${PROJECT_APP_SUMMARY_DOC_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!appSummaryDocRef) return;
+        setIsLoading(true);
+        getDoc(appSummaryDocRef).then(docSnap => {
+            if (docSnap.exists()) {
+                setFormData(docSnap.data());
+            }
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load data.' });
+        }).finally(() => setIsLoading(false));
+    }, [appSummaryDocRef, toast]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSave = () => {
+        if (!appSummaryDocRef) {
+            toast({ variant: 'destructive', title: 'Error', description: 'User not authenticated.' });
+            return;
+        }
+        setIsSaving(true);
+        setDoc(appSummaryDocRef, formData, { merge: true }).then(() => {
+            setIsSaving(false);
+            setIsEditing(false);
+            toast({ title: 'Success', description: 'Project Application Summary saved.' });
+        }).catch(err => {
+            console.error(err);
+            setIsSaving(false);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save data.' });
+        });
+    };
+
+    const handleDownload = () => {
+      const doc = new jsPDF();
+      doc.text("PROJECT APPLICATION SUMMARY", 10, 10);
+      let y = 30;
+      const addField = (label: string, value: string) => {
+        doc.text(`${label}: ${value || '________________' }`, 10, y);
+        y += 7;
+      }
+      addField("Application Number", formData.applicationNumber);
+      addField("Application Date", formData.applicationDate);
+      addField("Period From", formData.periodFrom);
+      addField("To", formData.periodTo);
+      addField("Architect's Project No", formData.architectsProjectNo);
+      
+      y+= 5;
+      doc.text("In tabulations below, amounts are stated to the nearest rupee.", 10, y);
+      y+= 10;
+
+      autoTable(doc, {
+        startY: y,
+        body: [
+            ['Contractor Name', formData.contractorName || ''],
+            ['Portion of Work', formData.portionOfWork || ''],
+            ['A', 'Original Contract Sum', formData.originalContractSum || ''],
+            ['B', 'Net Change Orders to Date', formData.netChangeOrders || ''],
+            ['C', 'Contract Sum to Date', formData.contractSumToDate || ''],
+            ['D', 'Work In Place to Date', formData.workInPlaceToDate || ''],
+            ['E', 'Stored Materials (Not in D or I)', formData.storedMaterials || ''],
+            ['F', 'Total Completed & Stored to Date (D+E)', formData.totalCompletedAndStored || ''],
+            ['G', 'Retainage Percentage', formData.retainagePercentage || ''],
+            ['H', 'Retainage Amount', formData.retainageAmount || ''],
+            ['I', 'Previous Payments', formData.previousPayments || ''],
+            ['J', 'Current Payment Due (F-H-I)', formData.currentPaymentDue || ''],
+            ['K', 'Balance to Finish (C-E)', formData.balanceToFinish || ''],
+            ['L', 'Percent Complete (F÷C)', formData.percentComplete || ''],
+        ],
+        theme: 'plain',
+        columnStyles: { 0: { fontStyle: 'bold' } }
+      });
+      doc.save("project-application-summary.pdf");
+    };
+
+    const renderField = (label: string, name: keyof typeof formData) => (
+        <div className="flex justify-between items-center py-1">
+            <Label htmlFor={name} className={cn(name.length === 1 && "font-bold")}>{label}</Label>
+            {isEditing ? (
+                <Input id={name} name={name} value={formData[name] || ''} onChange={handleInputChange} className="w-1/2" />
+            ) : (
+                <span className="w-1/2 text-right">{formData[name]}</span>
+            )}
+        </div>
+    );
+    
+    if (isLoading || isUserLoading) {
+      return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
     }
+
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Project Application Summary</CardTitle>
+                <div className="flex gap-2">
+                    <Button onClick={handleDownload} variant="outline"><Download /> PDF</Button>
+                    {isEditing ? (
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                        </Button>
+                    ) : (
+                        <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    {renderField("Application Number:", "applicationNumber")}
+                    {renderField("Application Date:", "applicationDate")}
+                    {renderField("Period From:", "periodFrom")}
+                    {renderField("To:", "periodTo")}
+                    {renderField("Architect's Project No:", "architectsProjectNo")}
+                    
+                    <p className="text-sm text-muted-foreground pt-4">In tabulations below, amounts are stated to the nearest rupee.</p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 pt-4">
+                        <div className="font-semibold">{renderField("Contractor Name", "contractorName")}</div>
+                        <div className="font-semibold">{renderField("Totals this Page or all Pages", "totalsPage")}</div>
+                        <div className="font-semibold">{renderField("Portion of Work", "portionOfWork")}</div>
+                    </div>
+                    
+                    <Separator className="my-4"/>
+
+                    {renderField("A. Original Contract Sum", "originalContractSum")}
+                    {renderField("B. Net Change Orders to Date", "netChangeOrders")}
+                    {renderField("C. Contract Sum to Date", "contractSumToDate")}
+                    {renderField("D. Work In Place to Date", "workInPlaceToDate")}
+                    {renderField("E. Stored Materials (Not in D or I)", "storedMaterials")}
+                    {renderField("F. Total Completed & Stored to Date (D+E)", "totalCompletedAndStored")}
+                    {renderField("G. Retainage Percentage", "retainagePercentage")}
+                    {renderField("H. Retainage Amount", "retainageAmount")}
+                    {renderField("I. Previous Payments", "previousPayments")}
+                    {renderField("J. Current Payment Due (F-H-I)", "currentPaymentDue")}
+                    {renderField("K. Balance to Finish (C-E)", "balanceToFinish")}
+                    {renderField("L. Percent Complete (F÷C)", "percentComplete")}
+                </div>
+            </CardContent>
+        </Card>
+    );
+});
+Section19.displayName = 'Section19';
+
+const Section20 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({ rows: [] });
+
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+    
+    const continuationSheetDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectData/${CONTINUATION_SHEET_DOC_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!continuationSheetDocRef) return;
+        setIsLoading(true);
+        getDoc(continuationSheetDocRef).then(docSnap => {
+            if (docSnap.exists()) {
+                setFormData(docSnap.data() || { rows: [] });
+            } else {
+                setFormData({ rows: [{ id: 1, itemNo: '', description: '', scheduledValue: '', workCompletedPrev: '', workCompletedThis: '', materialsStored: '', totalCompleted: '', percentage: '', balance: '', retainage: '' }] });
+            }
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load continuation sheet data.' });
+        }).finally(() => setIsLoading(false));
+    }, [continuationSheetDocRef, toast]);
+
+    const handleHeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+    
+    const handleRowChange = (index: number, name: string, value: string) => {
+        const newRows = [...formData.rows];
+        newRows[index][name] = value;
+        setFormData(prev => ({...prev, rows: newRows}));
+    };
+    
+    const addRow = () => {
+        const newId = formData.rows.length > 0 ? Math.max(...formData.rows.map((r: any) => r.id)) + 1 : 1;
+        setFormData(prev => ({ ...prev, rows: [...prev.rows, { id: newId, itemNo: '', description: '', scheduledValue: '', workCompletedPrev: '', workCompletedThis: '', materialsStored: '', totalCompleted: '', percentage: '', balance: '', retainage: '' }] }));
+    };
+
+    const removeRow = (id: number) => {
+        setFormData(prev => ({...prev, rows: prev.rows.filter((row: any) => row.id !== id)}));
+    }
+
+    const handleSave = () => {
+        if (!continuationSheetDocRef) return;
+        setIsSaving(true);
+        setDoc(continuationSheetDocRef, formData, { merge: true }).then(() => {
+            toast({ title: 'Success', description: 'Continuation Sheet saved.' });
+            setIsEditing(false);
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save sheet.' });
+        }).finally(() => setIsSaving(false));
+    };
+
+    const handleDownloadPdf = () => {
+        const doc = new jsPDF({ orientation: 'landscape' });
+        doc.text("Continuation Sheet", 14, 15);
+        
+        let y = 25;
+        doc.setFontSize(10);
+        doc.text(`Application Number: ${formData.applicationNumber || ''}`, 14, y);
+        doc.text(`Application Date: ${formData.applicationDate || ''}`, 150, y);
+        y+=7;
+        doc.text(`Period To: ${formData.periodTo || ''}`, 14, y);
+        doc.text(`Architect's Project No: ${formData.architectsProjectNo || ''}`, 150, y);
+        y+=10;
+
+        autoTable(doc, {
+            startY: y,
+            head: [['Item No.', 'Description of Work', 'Scheduled Value', 'Work Completed Prev', 'Work Completed This', 'Materials Stored', 'Total Completed', '%', 'Balance', 'Retainage']],
+            body: formData.rows.map((row: any) => Object.values(row).slice(1)), // remove id
+            theme: 'grid',
+            styles: { fontSize: 8 },
+        });
+
+        doc.save("continuation-sheet.pdf");
+    };
+    
+    const renderCell = (rowIndex: number, fieldName: string) => {
+      if (isEditing) {
+        return <Input value={formData.rows[rowIndex][fieldName]} onChange={(e) => handleRowChange(rowIndex, fieldName, e.target.value)} className="h-8" />;
+      }
+      return formData.rows[rowIndex][fieldName];
+    }
+    
+    if (isLoading || isUserLoading) {
+      return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+    }
+
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Continuation Sheet</CardTitle>
+                 <div className="flex gap-2">
+                    <Button onClick={handleDownloadPdf} variant="outline"><Download /> PDF</Button>
+                    {isEditing ? (
+                        <>
+                        <Button onClick={addRow} variant="outline"><PlusCircle/> Add Row</Button>
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                        </Button>
+                        </>
+                    ) : (
+                        <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                    <FormField label="Application Number:" name="applicationNumber" value={formData.applicationNumber} isEditing={isEditing} onChange={handleHeaderChange} />
+                    <FormField label="Application Date:" name="applicationDate" value={formData.applicationDate} isEditing={isEditing} onChange={handleHeaderChange} />
+                    <FormField label="Period To:" name="periodTo" value={formData.periodTo} isEditing={isEditing} onChange={handleHeaderChange} />
+                    <FormField label="Architect's Project No:" name="architectsProjectNo" value={formData.architectsProjectNo} isEditing={isEditing} onChange={handleHeaderChange} />
+                </div>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Item No.</TableHead>
+                            <TableHead>Description of Work</TableHead>
+                            <TableHead>Scheduled Value</TableHead>
+                            <TableHead>Work Completed Prev</TableHead>
+                            <TableHead>Work Completed This</TableHead>
+                            <TableHead>Materials Stored</TableHead>
+                            <TableHead>Total Completed</TableHead>
+                            <TableHead>%</TableHead>
+                            <TableHead>Balance</TableHead>
+                            <TableHead>Retainage</TableHead>
+                            {isEditing && <TableHead></TableHead>}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {formData.rows.map((row: any, index: number) => (
+                            <TableRow key={row.id}>
+                                <TableCell>{renderCell(index, 'itemNo')}</TableCell>
+                                <TableCell>{renderCell(index, 'description')}</TableCell>
+                                <TableCell>{renderCell(index, 'scheduledValue')}</TableCell>
+                                <TableCell>{renderCell(index, 'workCompletedPrev')}</TableCell>
+                                <TableCell>{renderCell(index, 'workCompletedThis')}</TableCell>
+                                <TableCell>{renderCell(index, 'materialsStored')}</TableCell>
+                                <TableCell>{renderCell(index, 'totalCompleted')}</TableCell>
+                                <TableCell>{renderCell(index, 'percentage')}</TableCell>
+                                <TableCell>{renderCell(index, 'balance')}</TableCell>
+                                <TableCell>{renderCell(index, 'retainage')}</TableCell>
+                                {isEditing && <TableCell><Button variant="ghost" size="icon" onClick={() => removeRow(row.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>}
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    );
+});
+Section20.displayName = 'Section20';
+
+const Section21 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({ tasks: [] });
+
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+    
+    const scheduleDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectData/${CONSTRUCTION_SCHEDULE_DOC_ID}`);
+    }, [user, firestore]);
+
+    useEffect(() => {
+        if (!scheduleDocRef) return;
+        setIsLoading(true);
+        getDoc(scheduleDocRef).then(docSnap => {
+            if (docSnap.exists()) {
+                setFormData(docSnap.data());
+            } else {
+                 setFormData({ tasks: [{ id: 1, code: '', task: '', duration: '', planStart: '', planFinish: '', actualStart: '', actualFinish: '', progress: '', variance: '', remarks: '' }] });
+            }
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load schedule data.' });
+        }).finally(() => setIsLoading(false));
+    }, [scheduleDocRef, toast]);
+    
+    const handleHeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+    
+    const handleTaskChange = (index: number, name: string, value: string) => {
+        const newTasks = [...formData.tasks];
+        newTasks[index][name] = value;
+        setFormData(prev => ({...prev, tasks: newTasks}));
+    };
+    
+    const addTask = () => {
+        const newId = formData.tasks.length > 0 ? Math.max(...formData.tasks.map((t: any) => t.id)) + 1 : 1;
+        setFormData(prev => ({ ...prev, tasks: [...prev.tasks, { id: newId, code: '', task: '', duration: '', planStart: '', planFinish: '', actualStart: '', actualFinish: '', progress: '', variance: '', remarks: '' }] }));
+    };
+
+    const removeTask = (id: number) => {
+        setFormData(prev => ({...prev, tasks: prev.tasks.filter((task: any) => task.id !== id)}));
+    }
+
+    const handleSave = () => {
+        if (!scheduleDocRef) return;
+        setIsSaving(true);
+        setDoc(scheduleDocRef, formData, { merge: true }).then(() => {
+            toast({ title: 'Success', description: 'Construction schedule saved.' });
+            setIsEditing(false);
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save schedule.' });
+        }).finally(() => setIsSaving(false));
+    };
+
+    const handleDownload = () => {
+        const doc = new jsPDF({ orientation: 'landscape' });
+        doc.text("Construction Time Line", 14, 15);
+        let y = 25;
+        doc.setFontSize(10);
+        doc.text(`Client: ${formData.client || ''}`, 14, y);
+        doc.text(`Project: ${formData.project || ''}`, 80, y);
+        doc.text(`Covered Area: ${formData.coveredArea || ''}`, 150, y);
+        doc.text(`Location: ${formData.location || ''}`, 220, y);
+        y+=7;
+        doc.text(`Title: ${formData.title || ''}`, 14, y);
+        doc.text(`Type: ${formData.type || ''}`, 80, y);
+        doc.text(`Project Number: ${formData.projectNumber || ''}`, 150, y);
+        doc.text(`Date: ${formData.date || ''}`, 220, y);
+        y+=10;
+        
+        autoTable(doc, {
+            startY: y,
+            head: [['Sr.No/Code', 'Task', 'Duration', 'Plan Start', 'Plan Finish', 'Actual Start', 'Actual Finish', 'Progress', 'Variance Plan', 'Variance Actual', 'Remarks']],
+            body: formData.tasks.map((task: any) => [task.code, task.task, task.duration, task.planStart, task.planFinish, task.actualStart, task.actualFinish, task.progress, task.variancePlan, task.varianceActual, task.remarks]),
+            theme: 'grid',
+            styles: { fontSize: 7, cellPadding: 1 },
+        });
+
+        doc.save("construction-activity-schedule.pdf");
+    };
+    
+    const renderCell = (rowIndex: number, fieldName: string) => {
+      if (isEditing) {
+        return <Input value={formData.tasks[rowIndex][fieldName]} onChange={(e) => handleTaskChange(rowIndex, fieldName, e.target.value)} className="h-8" />;
+      }
+      return formData.tasks[rowIndex][fieldName];
+    }
+    
+    if (isLoading || isUserLoading) {
+      return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+    }
+
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Construction Activity Schedule</CardTitle>
+                <div className="flex gap-2">
+                    <Button onClick={handleDownload} variant="outline"><Download /> PDF</Button>
+                    {isEditing ? (
+                        <>
+                        <Button onClick={addTask} variant="outline"><PlusCircle/> Add Task</Button>
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                        </Button>
+                        </>
+                    ) : (
+                        <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent>
+                <h3 className="text-lg font-bold text-center">Construction Time Line</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 my-4">
+                    <FormField label="Client" name="client" value={formData.client} isEditing={isEditing} onChange={handleHeaderChange} />
+                    <FormField label="Title" name="title" value={formData.title} isEditing={isEditing} onChange={handleHeaderChange} />
+                    <FormField label="Project" name="project" value={formData.project} isEditing={isEditing} onChange={handleHeaderChange} />
+                    <FormField label="Type" name="type" value={formData.type} isEditing={isEditing} onChange={handleHeaderChange} />
+                    <FormField label="Covered Area" name="coveredArea" value={formData.coveredArea} isEditing={isEditing} onChange={handleHeaderChange} />
+                    <FormField label="Location" name="location" value={formData.location} isEditing={isEditing} onChange={handleHeaderChange} />
+                    <FormField label="Project Number" name="projectNumber" value={formData.projectNumber} isEditing={isEditing} onChange={handleHeaderChange} />
+                    <FormField label="Date" name="date" value={formData.date} isEditing={isEditing} onChange={handleHeaderChange} />
+                </div>
+                 <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Sr.No/Code</TableHead>
+                            <TableHead>Task</TableHead>
+                            <TableHead>Duration</TableHead>
+                            <TableHead>Plan Start</TableHead>
+                            <TableHead>Plan Finish</TableHead>
+                            <TableHead>Actual Start</TableHead>
+                            <TableHead>Actual Finish</TableHead>
+                            <TableHead>Progress</TableHead>
+                            <TableHead>Variance Plan</TableHead>
+                            <TableHead>Variance Actual</TableHead>
+                            <TableHead>Remarks</TableHead>
+                            {isEditing && <TableHead></TableHead>}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {formData.tasks.map((task: any, index: number) => (
+                            <TableRow key={task.id}>
+                                <TableCell>{renderCell(index, 'code')}</TableCell>
+                                <TableCell>{renderCell(index, 'task')}</TableCell>
+                                <TableCell>{renderCell(index, 'duration')}</TableCell>
+                                <TableCell>{renderCell(index, 'planStart')}</TableCell>
+                                <TableCell>{renderCell(index, 'planFinish')}</TableCell>
+                                <TableCell>{renderCell(index, 'actualStart')}</TableCell>
+                                <TableCell>{renderCell(index, 'actualFinish')}</TableCell>
+                                <TableCell>{renderCell(index, 'progress')}</TableCell>
+                                <TableCell>{renderCell(index, 'variancePlan')}</TableCell>
+                                <TableCell>{renderCell(index, 'varianceActual')}</TableCell>
+                                <TableCell>{renderCell(index, 'remarks')}</TableCell>
+                                {isEditing && <TableCell><Button variant="ghost" size="icon" onClick={() => removeTask(task.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>}
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    );
+});
+Section21.displayName = 'Section21';
+
+const Section22 = React.memo(() => (<Card><CardHeader><CardTitle>Preliminary Project Budget</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section22.displayName = 'Section22';
+
+const Section23 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const initialData = {
+      items: [
+        { id: 1, srNo: '1', description: 'EXCAVATION', unit: '', qty: '', rate: '', amount: '', isHeader: true, subItems: [
+          { id: 1.1, srNo: '', description: 'Excavation for isolated, stripe/combined & Brick foundations in clay and sandy soil including cost of dressing, leveling and compaction in approved manners and disposal of surplus excavated soil away from site, all excavated area will be proof rolled as directed by the Consultant/Engineer incharge.', unit: 'C.FT', qty: '59,972', rate: '', amount: '' },
+          { id: 1.2, srNo: 'Basement', description: '', unit: 'C.FT', qty: '225', rate: '', amount: '' },
+        ]},
+        { id: 2, srNo: '2', description: 'BACK FILLING', unit: 'C.FT', qty: '12,000', rate: '', amount: '', isHeader: false, subItems: [
+            { id: 2.1, srNo: '', description: 'Back Filling including watering and compaction in layers not exceeding 150mm compacted thickness to dry Compaction Test (ASTM D-1557) upto 95% Modified AASHTO by using the borrowed local sand from the local nearby site, as directed by the Consultant/Engineer incharge', unit: 'C.FT', qty: '12,000', rate: '', amount: '' },
+        ]},
+        { id: 3, srNo: '3', description: 'TERMITE PROOFING', isHeader: true, subItems: [
+            { id: 3.1, srNo: '', description: 'Providing and applying of Termite Control by spraying FMC Biflex or Mirage 5% SC by Ali Akbar Group in clear water under all floors, excavation including side walls and bottom of all pits & trenches, for footing and under floors.', unit: '', qty: '', rate: '', amount: '' },
+            { id: 3.2, srNo: 'a', description: 'Basement', unit: 'S.ft', qty: '5,452', rate: '', amount: '' },
+            { id: 3.3, srNo: 'b', description: 'Ground Floor', unit: 'S.ft', qty: '6,222', rate: '', amount: '' },
+            { id: 3.4, srNo: 'c', description: 'First Floor', unit: 'S.ft', qty: '4,986', rate: '', amount: '' },
+        ]},
+        { id: 4, srNo: '4', description: 'PLAIN CEMENT CONCRETE UNDER FOUNDATIONS/FLOOR', isHeader: true, subItems: [
+            { id: 4.1, srNo: '', description: 'Providing and laying P.C.C plain cement concrete (1:4:8) using ordinary Portland cement chenab sand and Dina stone 1.5\'\' down as blinding layer under foundations/floor & swimming pool including confining, leveling, compacting and curing etc. complete in all respect finished smooth as directed by the Consultant/Engineer incharge.', unit: '', qty: '', rate: '', amount: '' },
+            { id: 4.2, srNo: 'i', description: 'Basement', unit: 'C.FT', qty: '5,452', rate: '', amount: '' },
+            { id: 4.3, srNo: 'ii', description: 'Column Foundation', unit: 'C.ft', qty: '125', rate: '', amount: '' },
+        ]},
+        { id: 5, srNo: '5', description: 'Water Stopper', isHeader: true, subItems: [
+            { id: 5.1, srNo: '', description: 'Providing and fixing of water stopper 4mm thick and 229 mm wide poly vinyl chloride ribbed bar by Marflex or approved equivalent installed in the centre of x-section of the concrete structure joint of retaining walls, water tanks and expansion joints complete in all respect as per drawings and as directed by the consultant / Engineer. (9" Decora)', unit: '', qty: '', rate: '', amount: '' },
+            { id: 5.2, srNo: 'i', description: 'Basement Wall', unit: 'R.ft', qty: '525', rate: '', amount: '' },
+            { id: 5.3, srNo: 'ii', description: 'O.H.W.T', unit: 'R.ft', qty: '60', rate: '', amount: '' },
+        ]},
+        { id: 6, srNo: '6', description: 'Reinforced Cement Concrete Work (3000 Psi)', isHeader: true, subItems: [
+            { id: 6.1, srNo: '', description: 'Providing, laying, vibrating, compacting, finishing and curing etc. straight or curved, cast in situ reinforced cement concrete at any floor/height/depth, from ready mix plant, 3000 Psi minimum cylinder compressive strength at 28 days, mix using Ordinary Portland Grey Cement, fine aggregate (100% clean lawrence pur sand ) and sargodah crushed coarse aggregate 3/4\'\' down graded with approved quality admixture by Sika/Imporient or approved equivalent, including laying through pump, vibrating through electro mechanical vibrators, placing of all pipes and embedded items before concreting curing finishing complete but excluding the cost of steel reinforcement complete in all respect as per drawings and as directed by the Consultant/Engineer incharge', unit: '', qty: '', rate: '', amount: '' },
+            { id: 6.2, srNo: '6.1', description: 'Basement Retaining Walls', unit: 'C.ft', qty: '4,050', rate: '', amount: '' },
+            { id: 6.3, srNo: '6.2', description: 'Basement Pool Walls', unit: 'C.ft', qty: '1,335', rate: '', amount: '' },
+            { id: 6.4, srNo: '6.3', description: 'Basement Pool Base', unit: 'C.ft', qty: '473', rate: '', amount: '' },
+            { id: 6.5, srNo: '6.4', description: 'Basement water body walls & Base', unit: 'C.ft', qty: '230', rate: '', amount: '' },
+            { id: 6.6, srNo: '6.5', description: 'Basement Column Foundations', unit: 'C.ft', qty: '1,664', rate: '', amount: '' },
+            { id: 6.7, srNo: '6.6', description: 'Basement Basement Coulumn', unit: 'C.ft', qty: '340', rate: '', amount: '' },
+            { id: 6.8, srNo: '6.7', description: 'Basement Lintel', unit: 'C.ft', qty: '495', rate: '', amount: '' },
+            { id: 6.9, srNo: '6.8', description: 'Basement Slab & Beam', unit: 'C.ft', qty: '4,224', rate: '', amount: '' },
+            { id: 6.10, srNo: '6.9', description: 'Ground Floor Column Foundations', unit: 'C.ft', qty: '36', rate: '', amount: '' },
+            { id: 6.11, srNo: '6.10', description: 'Ground Floor Coulumn', unit: 'C.ft', qty: '425', rate: '', amount: '' },
+            { id: 6.12, srNo: '6.11', description: 'Ground Floor Lintel', unit: 'C.ft', qty: '375', rate: '', amount: '' },
+            { id: 6.13, srNo: '6.12', description: 'Ground Floor Slab & Beam', unit: 'C.ft', qty: '4,800', rate: '', amount: '' },
+            { id: 6.14, srNo: '6.13', description: 'First Floor Coulumn', unit: 'C.ft', qty: '375', rate: '', amount: '' },
+            { id: 6.15, srNo: '6.14', description: 'First Floor Lintel', unit: 'C.ft', qty: '165', rate: '', amount: '' },
+            { id: 6.16, srNo: '6.15', description: 'First Floor Slab & Beam', unit: 'C.ft', qty: '3,314', rate: '', amount: '' },
+            { id: 6.17, srNo: '6.16', description: 'Baement to first Floor Stair', unit: 'C.ft', qty: '400', rate: '', amount: '' },
+            { id: 6.18, srNo: '6.17', description: 'O.H.W.T Base and walls', unit: 'C.ft', qty: '583', rate: '', amount: '' },
+            { id: 6.19, srNo: '6.18', description: 'U.G.W.T Base and walls', unit: 'C.ft', qty: '252', rate: '', amount: '' },
+            { id: 6.20, srNo: '6.19', description: 'Septic Tank', unit: 'C.ft', qty: '185', rate: '', amount: '' },
+        ]},
+        { id: 7, srNo: '7', description: 'STEEL REINFORCEMENT', unit: 'Ton', qty: '75', rate: '', amount: '', isHeader: false, subItems: [
+            { id: 7.1, srNo: '', description: 'Providing fabricating, laying, fixing, Mild Steel deformed bars (non-TMT) grade 60 with minimum yield stress conforming to ASTM specifications A-615. including cost of cutting, bending, placing, binded annealed binding wire 16 guage, removal of rest from bars if any, in specified overlaps, chairs, sports, spacers, wastage, etc. Complete in all respects by an approved source such as Afco steel, Prime steel, Ittefaq steel, Model Steel, City Steel UAE ( if not available, client will specify the alternate brand. Only the lengths shown on Drawings shall be paid for in accordance with the Bar bending schedule prepared the contractors from the drawings and submitted well in advance to the Engineer for the approval, steel lengths from the site multiply by the standard weights will used for the purpose of payment and duly approved by the consultant/Engineer Incharge.', unit: '', qty: '', rate: '', amount: '' }
+        ]},
+        { id: 8, srNo: '8', description: 'Brick Work', isHeader: true, subItems: [
+            { id: 8.1, srNo: '8.1', description: 'Providing and laying first class burnt brick work 9"and above thickness to in cement sand mortar (1:5) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer', unit: '', qty: '', rate: '', amount: '' },
+            { id: 8.2, srNo: '8.1.1', description: 'Basement 9" Thick Wall', unit: 'C.ft', qty: '414', rate: '', amount: '' },
+            { id: 8.3, srNo: '8.2', description: 'Basement 13.50" Thick Wall', unit: 'C.ft', qty: '1,384', rate: '', amount: '' },
+            { id: 8.4, srNo: '8.3', description: 'Ground Floor 15" Thick Wall', unit: 'C.ft', qty: '900', rate: '', amount: '' },
+            { id: 8.5, srNo: '8.4', description: 'Ground Floor 13.50" Thick Wall', unit: 'C.ft', qty: '1,814', rate: '', amount: '' },
+            { id: 8.6, srNo: '8.5', description: 'Ground Floor 9" Thick Wall', unit: 'C.ft', qty: '1,206', rate: '', amount: '' },
+            { id: 8.7, srNo: '8.6', description: 'First Floor 15" Thick Wall', unit: 'C.ft', qty: '825', rate: '', amount: '' },
+            { id: 8.8, srNo: '8.7', description: 'First Floor 13.50" Thick Wall', unit: 'C.ft', qty: '354', rate: '', amount: '' },
+            { id: 8.9, srNo: '8.8', description: 'First Floor 9" Thick Wall', unit: 'C.ft', qty: '2,175', rate: '', amount: '' },
+            { id: 8.10, srNo: '8.2', description: 'Providing and laying first class burnt brick work 4½" thickness to in cement sand mortar (1:4) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer.', unit: '', qty: '', rate: '', amount: '' },
+            { id: 8.11, srNo: '8.2.1', description: 'Basement Floor', unit: 'S.ft', qty: '3,264', rate: '', amount: '' },
+            { id: 8.12, srNo: '8.2.2', description: 'Ground Floor', unit: 'S.ft', qty: '960', rate: '', amount: '' },
+            { id: 8.13, srNo: '8.2.3', description: 'First Floor', unit: 'S.ft', qty: '528', rate: '', amount: '' },
+            { id: 8.14, srNo: '8.2.4', description: 'Boundary Wall', unit: 'S.ft', qty: '3,960', rate: '', amount: '' },
+        ]},
+        { id: 9, srNo: '9', description: 'Plaster Work', unit: 'S.ft', qty: '27,890', rate: '', amount: '', isHeader: false, subItems: [
+            { id: 9.1, srNo: '', description: 'Supply, mix, apply and cure Cement sand plaster of any height, includes making sharp corners, edges, grooves, all scaffolding. complete in all respects as per drawing, specifications, and or as directed by the Engineer', unit: '', qty: '', rate: '', amount: '' }
+        ]},
+        { id: 10, srNo: '10', description: 'Brick Blast', isHeader: true, subItems: [
+            { id: 10.1, srNo: '10.1', description: 'Basement Floor', unit: 'C.ft', qty: '1,799', rate: '', amount: '' },
+            { id: 10.2, srNo: '10.2', description: 'Ground Floor', unit: 'C.ft', qty: '2,053', rate: '', amount: '' },
+            { id: 10.3, srNo: '10.3', description: 'First Floor', unit: 'C.ft', qty: '1,645', rate: '', amount: '' },
+        ]},
+        { id: 11, srNo: '11', description: 'PCC SUB FLOOR', isHeader: true, subItems: [
+            { id: 11.1, srNo: '', description: 'Cement Concrete (1:2:4), including placing, compacting, finishing and curing complete. (Screed Under Floor)', unit: '', qty: '', rate: '', amount: '' },
+            { id: 11.2, srNo: '11.1', description: 'Baement Floor', unit: 'C.ft', qty: '1,799', rate: '', amount: '' },
+            { id: 11.3, srNo: '11.2', description: 'Ground Floor', unit: 'C.ft', qty: '2,053', rate: '', amount: '' },
+            { id: 11.4, srNo: '11.3', description: 'First Floor', unit: 'C.ft', qty: '1,645', rate: '', amount: '' },
+        ]},
+        { id: 12, srNo: '12', description: 'Roof insulation and water proofing', unit: 'S.ft', qty: '6,561', rate: '', amount: '', isHeader: false, subItems: [
+            { id: 12.1, srNo: '', description: 'Providing and laying Roof insulation and water proofing to roof consisting of given below of as directed by the Engineer incharge. - Bituminous primer coat. - 2-coats of cold applied rubberized bitumen - One layer of polythene 500 gauge - 1½” thick "extruded polystyrene board" 1½" thick. (density 34 Kg/m³) - One layer of polythene 500 gauge - 4” thick average mud (compacted thickness). - Brick tiles 9”x4-1/2”x1-1/2” laid in cement sand mortar 1:4 and grouted with cement sand mortar 1:3 using 1-part of OPC and 3-parts of clean approved quality sand, complete as per drawings, specifications and instructions of the Consultant.', unit: '', qty: '', rate: '', amount: '' },
+        ]},
+        { id: 13, srNo: '13', description: 'D.P.C', isHeader: true, subItems: [
+            { id: 13.1, srNo: '', description: 'Supply, mix, place, cure, compact concrete (1:2:4) 1-1/2" horizontal damp proof course on brick masonry wall includes form work & mixing of rhombic 707 manufactured by MBT in concrete & application of one coat of same chemical on masonry surface before pouring of mixed concrete according to drawings and manufacturers instructions or As directed by the consultant.', unit: '', qty: '', rate: '', amount: '' },
+            { id: 13.2, srNo: 'i', description: 'Ground Floor', unit: 'S.ft', qty: '654', rate: '', amount: '' },
+        ]},
+      ]
+    };
+
+    const [formData, setFormData] = useState(initialData);
+
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+    
+    const boqDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectData/${BILL_OF_QUANTITY_DOC_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!boqDocRef) return;
+        setIsLoading(true);
+        getDoc(boqDocRef).then(docSnap => {
+            if (docSnap.exists()) {
+                setFormData(docSnap.data() || initialData);
+            }
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load data.' });
+        }).finally(() => setIsLoading(false));
+    }, [boqDocRef, toast]);
+    
+    const handleItemChange = (itemId: number, field: string, value: string) => {
+        const newItems = formData.items.map(item => {
+            if (item.id === itemId) {
+                const updatedItem = { ...item, [field]: value };
+                if (field === 'qty' || field === 'rate') {
+                    const qty = parseFloat(updatedItem.qty.replace(/,/g, '')) || 0;
+                    const rate = parseFloat(updatedItem.rate.replace(/,/g, '')) || 0;
+                    updatedItem.amount = (qty * rate).toLocaleString();
+                }
+                return updatedItem;
+            }
+            if (item.subItems) {
+                const newSubItems = item.subItems.map(subItem => {
+                    if (subItem.id === itemId) {
+                         const updatedSubItem = { ...subItem, [field]: value };
+                        if (field === 'qty' || field === 'rate') {
+                            const qty = parseFloat(updatedSubItem.qty.replace(/,/g, '')) || 0;
+                            const rate = parseFloat(updatedSubItem.rate.replace(/,/g, '')) || 0;
+                            updatedSubItem.amount = (qty * rate).toLocaleString();
+                        }
+                        return updatedSubItem;
+                    }
+                    return subItem;
+                });
+                return { ...item, subItems: newSubItems };
+            }
+            return item;
+        });
+        setFormData({ ...formData, items: newItems });
+    };
+
+    const handleSave = () => {
+        if (!boqDocRef) return;
+        setIsSaving(true);
+        setDoc(boqDocRef, formData, { merge: true }).then(() => {
+            toast({ title: 'Success', description: 'Bill of Quantity saved.' });
+            setIsEditing(false);
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save data.' });
+        }).finally(() => setIsSaving(false));
+    };
+
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        doc.text("BILL OF QUANTITY", 10, 10);
+        let y = 20;
+
+        formData.items.forEach(item => {
+            if (y > 270) { doc.addPage(); y = 15; }
+            if (item.isHeader) {
+                doc.setFont('helvetica', 'bold');
+                doc.text(`${item.srNo}. ${item.description}`, 10, y);
+                y += 7;
+                doc.setFont('helvetica', 'normal');
+            } else {
+                 autoTable(doc, {
+                    startY: y,
+                    body: [[item.srNo, item.description, item.unit, item.qty, item.rate, item.amount]],
+                    theme: 'plain',
+                    styles: {fontSize: 8}
+                });
+                y = (doc as any).lastAutoTable.finalY;
+            }
+
+            if (item.subItems) {
+                item.subItems.forEach(sub => {
+                    if (y > 280) { doc.addPage(); y = 15; }
+                    let body;
+                    if(sub.srNo) {
+                        body = [[sub.srNo, sub.description, sub.unit, sub.qty, sub.rate, sub.amount]];
+                    } else {
+                        body = [['', sub.description, '', '', '', '']];
+                    }
+                    autoTable(doc, {
+                        startY: y,
+                        body: body,
+                        theme: 'plain',
+                        styles: {fontSize: 8},
+                        columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 100 } },
+                    });
+                    y = (doc as any).lastAutoTable.finalY;
+                });
+            }
+        });
+        
+        doc.save("bill-of-quantity.pdf");
+    };
+    
+    const renderCell = (itemId: number, field: string, value: string) => {
+        if (isEditing) {
+            return <Input value={value} onChange={(e) => handleItemChange(itemId, field, e.target.value)} className="h-8"/>;
+        }
+        return value;
+    };
+    
+    const renderRow = (item: any) => {
+        if (item.subItems) {
+             return (
+                <React.Fragment key={item.id}>
+                    <TableRow>
+                        <TableCell>{item.srNo}</TableCell>
+                        <TableCell colSpan={isEditing ? 1 : 5}>{renderCell(item.id, 'description', item.description)}</TableCell>
+                        {!item.isHeader && (
+                            <>
+                                <TableCell>{renderCell(item.id, 'unit', item.unit)}</TableCell>
+                                <TableCell>{renderCell(item.id, 'qty', item.qty)}</TableCell>
+                                <TableCell>{renderCell(item.id, 'rate', item.rate)}</TableCell>
+                                <TableCell>{renderCell(item.id, 'amount', item.amount)}</TableCell>
+                            </>
+                        )}
+                    </TableRow>
+                    {item.subItems.map((sub: any) => (
+                        <TableRow key={sub.id}>
+                            <TableCell>{sub.srNo}</TableCell>
+                            <TableCell>{sub.description}</TableCell>
+                            <TableCell>{renderCell(sub.id, 'unit', sub.unit)}</TableCell>
+                            <TableCell>{renderCell(sub.id, 'qty', sub.qty)}</TableCell>
+                            <TableCell>{renderCell(sub.id, 'rate', sub.rate)}</TableCell>
+                            <TableCell>{renderCell(sub.id, 'amount', sub.amount)}</TableCell>
+                        </TableRow>
+                    ))}
+                </React.Fragment>
+            );
+        }
+        
+        return (
+            <TableRow key={item.id}>
+                <TableCell>{item.srNo}</TableCell>
+                <TableCell>{renderCell(item.id, 'description', item.description)}</TableCell>
+                <TableCell>{renderCell(item.id, 'unit', item.unit)}</TableCell>
+                <TableCell>{renderCell(item.id, 'qty', item.qty)}</TableCell>
+                <TableCell>{renderCell(item.id, 'rate', item.rate)}</TableCell>
+                <TableCell>{renderCell(item.id, 'amount', item.amount)}</TableCell>
+            </TableRow>
+        );
+    }
+    
+    if (isLoading || isUserLoading) {
+        return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+    }
+
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Bill Of Quantity</CardTitle>
+                <div className="flex gap-2">
+                    <Button onClick={handleDownload} variant="outline"><Download /> PDF</Button>
+                    {isEditing ? (
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                        </Button>
+                    ) : (
+                        <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Sr. No</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Unit</TableHead>
+                            <TableHead>Qty</TableHead>
+                            <TableHead>Rate</TableHead>
+                            <TableHead>Amount (Rs)</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {formData.items.map(renderRow)}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    );
+});
+Section23.displayName = 'Section23';
+
+const Section24 = React.memo(() => (<Card><CardHeader><CardTitle>Rate Analysis</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section24.displayName = 'Section24';
+
+const Section25 = React.memo(() => (<Card><CardHeader><CardTitle>Change Order</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section25.displayName = 'Section25';
+
+const Section26 = React.memo(() => (<Card><CardHeader><CardTitle>Application and Certificate for Payment</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section26.displayName = 'Section26';
+
+const Section27 = React.memo(() => (<Card><CardHeader><CardTitle>Instruction Sheet</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section27.displayName = 'Section27';
+
+const Section28 = React.memo(() => (<Card><CardHeader><CardTitle>Certificate Substantial Summary</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section28.displayName = 'Section28';
+
+const Section29 = React.memo(() => (<Card><CardHeader><CardTitle>Other Provisions</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section29.displayName = 'Section29';
+
+const Section30 = React.memo(() => (<Card><CardHeader><CardTitle>Consent of Surety</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section30.displayName = 'Section30';
+
+const Section31 = React.memo(() => (<Card><CardHeader><CardTitle>Total Package of Project</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section31.displayName = 'Section31';
+
+const Section32 = React.memo(() => (<Card><CardHeader><CardTitle>Architects Supplemental Instructions</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section32.displayName = 'Section32';
+
+const Section33 = React.memo(() => (<Card><CardHeader><CardTitle>Construction Change Director</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+Section33.displayName = 'Section33';
+
+
+
+const components: { [key: string]: React.FC } = {
+  Section1, Section2, Section3, Section4, Section5, Section6, Section7, Section8, Section9, Section10, Section11, Section12, Section13, Section14, Section15, Section16, Section17, Section18, Section19, Section20, Section21, Section22, Section23, Section24, Section25, Section26, Section27, Section28, Section29, Section30, Section31, Section32, Section33
+};
+
+export default function BankPage() {
+    return (
+        <main className="p-4 md:p-6 lg:p-8">
+            <div className="grid grid-cols-12 gap-8">
+                <div className="col-span-12 lg:col-span-3">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>File Index</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ul className="space-y-2">
+                                {fileIndexItems.map(item => (
+                                    <li key={item.id}>
+                                        <a href={`#${item.id}`} className="hover:text-primary transition-colors">
+                                            {item.no}. {item.title}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </CardContent>
+                    </Card>
+                </div>
+                <div className="col-span-12 lg:col-span-9 space-y-8">
+                    {fileIndexItems.map(item => {
+                        const Component = components[item.component];
+                        return (
+                            <section id={item.id} key={item.id}>
+                                {Component ? <Component /> : <Card><CardHeader><CardTitle>{item.title}</CardTitle></CardHeader><CardContent>...</CardContent></Card>}
+                            </section>
+                        );
+                    })}
+                </div>
+            </div>
+        </main>
+    );
+}
