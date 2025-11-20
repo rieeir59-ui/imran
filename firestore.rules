@@ -186,7 +186,15 @@ service cloud.firestore {
         allow get: if true;
         allow list, write: if isOwner(userId);
     }
+
+    /**
+     * @description Enforces ownership for rate analysis.
+     * @path /users/{userId}/rateAnalysis/{analysisId}
+     * @allow (create, get, update, delete) - Authenticated user can manage their own rate analysis.
+     * @deny - All other access is denied.
+     */
+     match /users/{userId}/rateAnalysis/{analysisId} {
+        allow read, write: if isOwner(userId);
+    }
   }
 }
-
-    
