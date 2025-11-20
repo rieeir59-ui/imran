@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useMemo, Fragment } from 'react';
@@ -38,6 +39,7 @@ const CONTINUATION_SHEET_DOC_ID = 'continuation-sheet';
 const CONSTRUCTION_SCHEDULE_DOC_ID = 'construction-activity-schedule';
 const BILL_OF_QUANTITY_DOC_ID = 'bill-of-quantity';
 const RATE_ANALYSIS_DOC_ID = 'rate-analysis';
+const CHANGE_ORDER_DOC_ID = 'change-order';
 
 
 const fileIndexItems = [
@@ -2195,7 +2197,7 @@ const Section17 = React.memo(() => {
             {"Sr No.": 7, "Vendor's Name": "Phoenix Groups of Compines", "Contact Person": "", "Products": "Home Automation", "Address": "KHI.SUK P&O Plaza I.I. Chunrigar Road Khi", "Contact": "021-111288288"},
             {"Sr No.": 8, "Vendor's Name": "Synergy Technologies", "Contact Person": "", "Products": "Home Automation", "Address": "39-A Block D-1 Gulberg III Lahore", "Contact": "042-111900111"},
             {"Sr No.": 9, "Vendor's Name": "Tera Generation Solutions Pvt. Ltd.", "Contact Person": "", "Products": "Home Automation", "Address": "7-A, P Block Block P Gulberg 2, Lahore, Punjab", "Contact": "(042) 111 847 111"}
-        ]
+        ],
     };
     return (
         <Card>
@@ -2771,7 +2773,7 @@ const Section23 = React.memo(() => {
             { id: 6.07, srNo: '6.6', description: 'Basement Basement Coulumn', unit: 'C.ft', qty: '340', rate: '', amount: '' },
             { id: 6.08, srNo: '6.7', description: 'Basement Lintel', unit: 'C.ft', qty: '495', rate: '', amount: '' },
             { id: 6.09, srNo: '6.8', description: 'Basement Slab & Beam', unit: 'C.ft', qty: '4,224', rate: '', amount: '' },
-            { id: 6.10, srNo: '6.9', description: 'Ground Floor Column Foundations', unit: 'C.ft', qty: '36', rate: '', amount: '' },
+            { id: 6.1, srNo: '6.9', description: 'Ground Floor Column Foundations', unit: 'C.ft', qty: '36', rate: '', amount: '' },
             { id: 6.11, srNo: '6.10', description: 'Ground Floor Coulumn', unit: 'C.ft', qty: '425', rate: '', amount: '' },
             { id: 6.12, srNo: '6.11', description: 'Ground Floor Lintel', unit: 'C.ft', qty: '375', rate: '', amount: '' },
             { id: 6.13, srNo: '6.12', description: 'Ground Floor Slab & Beam', unit: 'C.ft', qty: '4,800', rate: '', amount: '' },
@@ -2949,7 +2951,7 @@ const Section23 = React.memo(() => {
     const renderRow = (item: any) => {
         if (item.subItems) {
              return (
-                <React.Fragment key={item.id}>
+                <Fragment key={item.id}>
                     <TableRow>
                         <TableCell>{item.srNo}</TableCell>
                         <TableCell colSpan={isEditing ? 5 : 5}>{renderCell(item.id, 'description', item.description)}</TableCell>
@@ -2972,7 +2974,7 @@ const Section23 = React.memo(() => {
                             <TableCell>{renderCell(sub.id, 'amount', sub.amount)}</TableCell>
                         </TableRow>
                     ))}
-                </React.Fragment>
+                </Fragment>
             );
         }
         
@@ -3202,7 +3204,130 @@ const Section24 = React.memo(() => {
 });
 Section24.displayName = 'Section24';
 
-const Section25 = React.memo(() => (<Card><CardHeader><CardTitle>Change Order</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section25 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({});
+
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+
+    const docRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectData/${CHANGE_ORDER_DOC_ID}`);
+    }, [user, firestore]);
+
+    useEffect(() => {
+        if (!docRef) return;
+        setIsLoading(true);
+        getDoc(docRef).then(docSnap => {
+            if (docSnap.exists()) {
+                setFormData(docSnap.data());
+            }
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load change order data.' });
+        }).finally(() => setIsLoading(false));
+    }, [docRef, toast]);
+    
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSave = () => {
+        if (!docRef) return;
+        setIsSaving(true);
+        setDoc(docRef, formData, { merge: true }).then(() => {
+            toast({ title: 'Success', description: 'Change Order saved.' });
+            setIsEditing(false);
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save change order.' });
+        }).finally(() => setIsSaving(false));
+    };
+
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        doc.text("CHANGE ORDER", 14, 15);
+        // Simplified PDF generation
+        doc.save("change-order.pdf");
+    };
+
+    const renderField = (name: string, placeholder?: string, as?: 'textarea') => {
+        const value = formData[name] || '';
+        if (isEditing) {
+            if (as === 'textarea') {
+                return <Textarea name={name} value={value} onChange={handleInputChange} placeholder={placeholder} />;
+            }
+            return <Input name={name} value={value} onChange={handleInputChange} placeholder={placeholder} />;
+        }
+        return <div className="p-2 border-b min-h-[36px]">{value}</div>;
+    };
+    
+    if (isLoading || isUserLoading) {
+      return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+    }
+
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Change Order</CardTitle>
+                <div className="flex gap-2">
+                    <Button onClick={handleDownload} variant="outline"><Download /> PDF</Button>
+                    {isEditing ? (
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                        </Button>
+                    ) : (
+                        <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                 <div className="grid grid-cols-2 gap-4">
+                    <div><Label>Project:</Label>{renderField('project_name_address', '(Name, Address)')}</div>
+                    <div><Label>Field Report No.:</Label>{renderField('field_report_no')}</div>
+                    <div><Label>Architects Project No:</Label>{renderField('architect_project_no')}</div>
+                    <div><Label>Date:</Label>{renderField('date')}</div>
+                    <div><Label>To (Contractor):</Label>{renderField('to_contractor')}</div>
+                    <div><Label>Contract For:</Label>{renderField('contract_for')}</div>
+                    <div><Label>Contract Date:</Label>{renderField('contract_date')}</div>
+                </div>
+
+                <div>
+                    <Label>This Contract is changed as follows:</Label>
+                    {renderField('change_description', '', 'textarea')}
+                </div>
+
+                <p className="font-bold text-center">Not Valid until signed by the Owner, Architect and Contractor.</p>
+                
+                <div className="space-y-2">
+                    <div className="flex items-center gap-2"><p>The original (Contract Sum) (Guaranteed Maximum Price) was</p> {renderField('original_contract_sum', 'Rs.')}</div>
+                    <div className="flex items-center gap-2"><p>Net change by previously authorized Change Orders</p> {renderField('net_change_orders', 'Rs.')}</div>
+                    <div className="flex items-center gap-2"><p>The (Contract Sum) (Guaranteed Maximum Price) prior to this Change Order was</p> {renderField('contract_sum_prior', 'Rs.')}</div>
+                    <div className="flex items-center gap-2"><p>The (Contract Sum) (Guaranteed Maximum Price) will be (increased) (decreased) (changed) by this Change Order in the amount of</p> {renderField('change_order_amount', 'Rs.')}</div>
+                    <div className="flex items-center gap-2"><p>The new (Contract Sum) (Guaranteed Maximum Price) including this Change Order will be</p> {renderField('new_contract_sum', 'Rs.')}</div>
+                    <div className="flex items-center gap-2"><p>The Contract Time will be (increased) (decreased) by</p> {renderField('contract_time_change', '(_______) days')}</div>
+                    <p>the date of Substantial Completion as the date of this Change Order therefore is: {renderField('substantial_completion_date')}</p>
+                </div>
+                
+                <p className="text-xs text-center">NOTE: This summary does not reflect changes in the Contract Sum, Contract Time or Guaranteed Maximum Price which have been authorized by Contraction Change Directive.</p>
+                
+                <div className="grid grid-cols-3 gap-8 pt-8">
+                    <div><Label>Architect</Label>{renderField('architect_signature_address', 'Address')}{renderField('architect_by', 'By')}{renderField('architect_date', 'Date')}</div>
+                    <div><Label>Contractor</Label>{renderField('contractor_signature_address', 'Address')}{renderField('contractor_by', 'By')}{renderField('contractor_date', 'Date')}</div>
+                    <div><Label>Owner</Label>{renderField('owner_signature_address', 'Address')}{renderField('owner_by', 'By')}{renderField('owner_date', 'Date')}</div>
+                </div>
+                <div className="flex justify-end gap-4 text-xs pt-4">
+                    <span>Owner</span><span>Architect</span><span>Contractor</span><span>Field</span><span>Other</span>
+                </div>
+            </CardContent>
+        </Card>
+    );
+});
 Section25.displayName = 'Section25';
 
 const Section26 = React.memo(() => (<Card><CardHeader><CardTitle>Application and Certificate for Payment</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
@@ -3271,3 +3396,4 @@ export default function BankPage() {
         </main>
     );
 }
+

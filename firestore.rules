@@ -1,4 +1,5 @@
 
+
 /**
  * @file Firestore Security Rules
  * @description This ruleset enforces a strict user-ownership model for property data.
@@ -196,5 +197,16 @@ service cloud.firestore {
      match /users/{userId}/rateAnalysis/{analysisId} {
         allow read, write: if isOwner(userId);
     }
+
+    /**
+     * @description Enforces ownership for change orders.
+     * @path /users/{userId}/changeOrders/{orderId}
+     * @allow (create, get, update, delete) - Authenticated user can manage their own change orders.
+     * @deny - All other access is denied.
+     */
+    match /users/{userId}/changeOrders/{orderId} {
+      allow read, write: if isOwner(userId);
+    }
   }
 }
+
