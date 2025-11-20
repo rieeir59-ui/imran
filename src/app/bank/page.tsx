@@ -2952,8 +2952,8 @@ const Section23 = React.memo(() => {
 
         if (item.subItems) {
              return (
-                <>
-                    <TableRow key={item.id}>
+                <Fragment key={item.id}>
+                    <TableRow>
                         <TableCell>{item.srNo}</TableCell>
                         <TableCell colSpan={isEditing ? 1 : 5}>{renderCell('description', item.description)}</TableCell>
                         {isEditing && <>
@@ -2970,7 +2970,7 @@ const Section23 = React.memo(() => {
                             <TableCell>{(subItem.amount || 0).toLocaleString()}</TableCell>
                         </TableRow>
                     ))}
-                </>
+                </Fragment>
             );
         }
 
