@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect, useMemo, Fragment } from 'react';
@@ -1379,11 +1378,14 @@ const Section7 = React.memo(() => {
             if (docSnap.exists()) {
                 setFormData(docSnap.data());
             }
-        }).catch(err => {
-            console.error(err);
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load data.' });
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'get',
+            });
+            errorEmitter.emit('permission-error', permissionError);
         }).finally(() => setIsLoading(false));
-    }, [docRef, toast]);
+    }, [docRef]);
     
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -1402,10 +1404,15 @@ const Section7 = React.memo(() => {
         setDoc(docRef, formData, { merge: true }).then(() => {
             toast({ title: 'Success', description: 'Requirement Performa saved.' });
             setIsEditing(false);
-        }).catch(err => {
-            console.error(err);
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save data.' });
-        }).finally(() => setIsSaving(false));
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'write',
+                requestResourceData: formData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            setIsSaving(false);
+        });
     };
 
     const handleDownload = () => {
@@ -1624,11 +1631,14 @@ const Section8 = React.memo(() => {
             if (docSnap.exists()) {
                 setFormData(docSnap.data());
             }
-        }).catch(err => {
-            console.error(err);
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load data.' });
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'get',
+            });
+            errorEmitter.emit('permission-error', permissionError);
         }).finally(() => setIsLoading(false));
-    }, [docRef, toast]);
+    }, [docRef]);
     
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!isEditing) return;
@@ -1651,10 +1661,15 @@ const Section8 = React.memo(() => {
         setDoc(docRef, formData, { merge: true }).then(() => {
             toast({ title: 'Success', description: 'Site Survey saved.' });
             setIsEditing(false);
-        }).catch(err => {
-            console.error(err);
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save data.' });
-        }).finally(() => setIsSaving(false));
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'write',
+                requestResourceData: formData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            setIsSaving(false);
+        });
     };
 
     const handleDownload = () => {
@@ -1908,11 +1923,14 @@ const Section10 = React.memo(() => {
             if (docSnap.exists()) {
                 setFormData(docSnap.data());
             }
-        }).catch(err => {
-            console.error(err);
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load data.' });
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'get',
+            });
+            errorEmitter.emit('permission-error', permissionError);
         }).finally(() => setIsLoading(false));
-    }, [docRef, toast]);
+    }, [docRef]);
     
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -1925,10 +1943,15 @@ const Section10 = React.memo(() => {
         setDoc(docRef, formData, { merge: true }).then(() => {
             toast({ title: 'Success', description: 'Proposal Request saved.' });
             setIsEditing(false);
-        }).catch(err => {
-            console.error(err);
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save data.' });
-        }).finally(() => setIsSaving(false));
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'write',
+                requestResourceData: formData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            setIsSaving(false);
+        });
     };
 
     const handleDownload = () => {
@@ -2420,7 +2443,7 @@ const Section17 = React.memo(() => {
             {"Sr No.": 7, "Vendor's Name": "Phoenix Groups of Compines", "Contact Person": "", "Products": "Home Automation", "Address": "KHI.SUK P&O Plaza I.I. Chunrigar Road Khi", "Contact": "021-111288288"},
             {"Sr No.": 8, "Vendor's Name": "Synergy Technologies", "Contact Person": "", "Products": "Home Automation", "Address": "39-A Block D-1 Gulberg III Lahore", "Contact": "042-111900111"},
             {"Sr No.": 9, "Vendor's Name": "Tera Generation Solutions Pvt. Ltd.", "Contact Person": "", "Products": "Home Automation", "Address": "7-A, P Block Block P Gulberg 2, Lahore, Punjab", "Contact": "(042) 111 847 111"}
-        ],
+        ]
     };
     return (
         <Card>
@@ -3278,11 +3301,14 @@ const Section24 = React.memo(() => {
             if (docSnap.exists()) {
                 setFormData(docSnap.data());
             }
-        }).catch(err => {
-            console.error(err);
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load rate analysis data.' });
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'get',
+            });
+            errorEmitter.emit('permission-error', permissionError);
         }).finally(() => setIsLoading(false));
-    }, [docRef, toast]);
+    }, [docRef]);
 
     const handleInputChange = (section: 'material' | 'labour', index: number, field: 'description' | 'amount', value: any) => {
         if (!isEditing) return;
@@ -3314,10 +3340,15 @@ const Section24 = React.memo(() => {
         setDoc(docRef, formData, { merge: true }).then(() => {
             toast({ title: 'Success', description: 'Rate Analysis saved.' });
             setIsEditing(false);
-        }).catch(err => {
-            console.error(err);
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save analysis.' });
-        }).finally(() => setIsSaving(false));
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'write',
+                requestResourceData: formData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            setIsSaving(false);
+        });
     };
 
     const handleDownload = () => {
@@ -3444,11 +3475,14 @@ const Section25 = React.memo(() => {
             if (docSnap.exists()) {
                 setFormData(docSnap.data());
             }
-        }).catch(err => {
-            console.error(err);
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load change order data.' });
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'get',
+            });
+            errorEmitter.emit('permission-error', permissionError);
         }).finally(() => setIsLoading(false));
-    }, [docRef, toast]);
+    }, [docRef]);
     
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -3461,10 +3495,15 @@ const Section25 = React.memo(() => {
         setDoc(docRef, formData, { merge: true }).then(() => {
             toast({ title: 'Success', description: 'Change Order saved.' });
             setIsEditing(false);
-        }).catch(err => {
-            console.error(err);
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save change order.' });
-        }).finally(() => setIsSaving(false));
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'write',
+                requestResourceData: formData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            setIsSaving(false);
+        });
     };
 
     const handleDownload = () => {
@@ -3614,6 +3653,4 @@ export default function BankPage() {
         </main>
     );
 }
-
-
 
