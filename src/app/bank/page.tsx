@@ -1633,7 +1633,7 @@ const Section8 = React.memo(() => {
     
     const docRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
-        return doc(firestore, `users/${user.uid}/siteSurvey/${SITE_SURVEY_DOC_ID}`);
+        return doc(firestore, `users/${user.uid}/siteSurveys/${SITE_SURVEY_DOC_ID}`);
     }, [user, firestore]);
     
     useEffect(() => {
@@ -1927,7 +1927,7 @@ const Section10 = React.memo(() => {
     
     const docRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
-        return doc(firestore, `users/${user.uid}/proposalRequest/${PROPOSAL_REQUEST_DOC_ID}`);
+        return doc(firestore, `users/${user.uid}/proposalRequests/${PROPOSAL_REQUEST_DOC_ID}`);
     }, [user, firestore]);
 
     useEffect(() => {
@@ -3543,15 +3543,15 @@ const Section23 = React.memo(() => {
             { id: 7.1, srNo: '', description: 'Providing fabricating, laying, fixing, Mild Steel deformed bars (non-TMT) grade 60 with minimum yield stress conforming to ASTM specifications A-615. including cost of cutting, bending, placing, binded annealed binding wire 16 guage, removal of rest from bars if any, in specified overlaps, chairs, sports, spacers, wastage, etc. Complete in all respects by an approved source such as Afco steel, Prime steel, Ittefaq steel, Model Steel, City Steel UAE ( if not available, client will specify the alternate brand. Only the lengths shown on Drawings shall be paid for in accordance with the Bar bending schedule prepared the contractors from the drawings and submitted well in advance to the Engineer for the approval, steel lengths from the site multiply by the standard weights will used for the purpose of payment and duly approved by the consultant/Engineer Incharge.', unit: 'Ton', qty: '75', rate: '', amount: '' }
         ]},
         { id: 8, srNo: '8', description: 'Brick Work', isHeader: true, subItems: [
-            { id: 8.1, srNo: '8.1', description: 'Providing and laying first class burnt brick work 9"and above thickness to in cement sand mortar (1:5) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer', unit: '', qty: '', rate: '', amount: '' },
-            { id: 8.2, srNo: '8.1.1', description: 'Basement 9" Thick Wall', unit: 'C.ft', qty: '414', rate: '', amount: '' },
-            { id: 8.3, srNo: '8.1.2', description: 'Basement 13.50" Thick Wall', unit: 'C.ft', qty: '1,384', rate: '', amount: '' },
-            { id: 8.4, srNo: '8.1.3', description: 'Ground Floor 15" Thick Wall', unit: 'C.ft', qty: '900', rate: '', amount: '' },
-            { id: 8.5, srNo: '8.1.4', description: 'Ground Floor 13.50" Thick Wall', unit: 'C.ft', qty: '1,814', rate: '', amount: '' },
-            { id: 8.6, srNo: '8.1.5', description: 'Ground Floor 9" Thick Wall', unit: 'C.ft', qty: '1,206', rate: '', amount: '' },
-            { id: 8.7, srNo: '8.1.6', description: 'First Floor 15" Thick Wall', unit: 'C.ft', qty: '825', rate: '', amount: '' },
-            { id: 8.8, srNo: '8.1.7', description: 'First Floor 13.50" Thick Wall', unit: 'C.ft', qty: '354', rate: '', amount: '' },
-            { id: 8.9, srNo: '8.1.8', description: 'First Floor 9" Thick Wall', unit: 'C.ft', qty: '2,175', rate: '', amount: '' },
+            { id: 8.01, srNo: '8.1', description: 'Providing and laying first class burnt brick work 9"and above thickness to in cement sand mortar (1:5) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer', unit: '', qty: '', rate: '', amount: '' },
+            { id: 8.02, srNo: '8.1.1', description: 'Basement 9" Thick Wall', unit: 'C.ft', qty: '414', rate: '', amount: '' },
+            { id: 8.03, srNo: '8.1.2', description: 'Basement 13.50" Thick Wall', unit: 'C.ft', qty: '1,384', rate: '', amount: '' },
+            { id: 8.04, srNo: '8.1.3', description: 'Ground Floor 15" Thick Wall', unit: 'C.ft', qty: '900', rate: '', amount: '' },
+            { id: 8.05, srNo: '8.1.4', description: 'Ground Floor 13.50" Thick Wall', unit: 'C.ft', qty: '1,814', rate: '', amount: '' },
+            { id: 8.06, srNo: '8.1.5', description: 'Ground Floor 9" Thick Wall', unit: 'C.ft', qty: '1,206', rate: '', amount: '' },
+            { id: 8.07, srNo: '8.1.6', description: 'First Floor 15" Thick Wall', unit: 'C.ft', qty: '825', rate: '', amount: '' },
+            { id: 8.08, srNo: '8.1.7', description: 'First Floor 13.50" Thick Wall', unit: 'C.ft', qty: '354', rate: '', amount: '' },
+            { id: 8.09, srNo: '8.1.8', description: 'First Floor 9" Thick Wall', unit: 'C.ft', qty: '2,175', rate: '', amount: '' },
             { id: 8.10, srNo: '8.2', description: 'Providing and laying first class burnt brick work 4½" thickness to in cement sand mortar (1:4) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer.', unit: '', qty: '', rate: '', amount: '' },
             { id: 8.11, srNo: '8.2.1', description: 'Basement Floor', unit: 'S.ft', qty: '3,264', rate: '', amount: '' },
             { id: 8.12, srNo: '8.2.2', description: 'Ground Floor', unit: 'S.ft', qty: '960', rate: '', amount: '' },
