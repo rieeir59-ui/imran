@@ -1688,8 +1688,157 @@ const Section8 = React.memo(() => {
 
     const handleDownload = () => {
         const doc = new jsPDF();
-        doc.text("SITE SURVEY", 10, 10);
-        // Add more fields to PDF
+        let y = 15;
+
+        const addText = (text: string, x: number, yPos: number, options = {}) => {
+            doc.text(text, x, yPos, options);
+        };
+        
+        const addTitle = (title: string) => {
+            if (y > 260) { doc.addPage(); y = 15; }
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(title, 14, y);
+            y += 8;
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+        };
+
+        const addField = (label: string, value: string | undefined) => {
+             if (y > 280) { doc.addPage(); y = 15; }
+            addText(`${label}: ${value || '________________'}`, 14, y);
+            y += 7;
+        };
+        
+        const addRadio = (label: string, value: string | undefined, options: string[]) => {
+             if (y > 280) { doc.addPage(); y = 15; }
+             let line = `${label}: `;
+             options.forEach(opt => {
+                 line += `   ${(value && value.toLowerCase() === opt.toLowerCase()) ? '[X]' : '[ ]'} ${opt}`;
+             });
+             addText(line, 14, y);
+             y += 7;
+        };
+
+        const addCheckbox = (label: string, name: string) => {
+             if (y > 280) { doc.addPage(); y = 15; }
+             addText(`${formData[name] ? '[X]' : '[ ]'} ${label}`, 14, y);
+             y += 7;
+        }
+        
+        doc.setFontSize(14);
+        doc.text("SITE SURVEY", 105, y, { align: 'center' });
+        y += 5;
+        doc.setFontSize(10);
+        doc.text("REAL ESTATE MANAGEMENT", 105, y, { align: 'center' });
+        y += 5;
+        doc.text("PREMISES REVIEW FOR PROPOSED BRANCH/OFFICE", 105, y, { align: 'center' });
+        y += 10;
+        
+        addTitle("Location");
+        addField("Purpose", formData.purpose);
+        addField("City", formData.city);
+        addField("Region", formData.region);
+        addField("Address", formData.address);
+        y += 5;
+        
+        addTitle("Legal File");
+        addField("Name of Owner", formData.owner_name);
+        addRadio("Completion Certificate", formData.completion_cert, ["Yes", "No"]);
+        addRadio("Is Leased", formData.is_leased, ["Yes", "No"]);
+        y += 5;
+
+        addTitle("Area");
+        addField("Maximum Frontage (ft)", formData.frontage);
+        addField("Maximum Depth (ft)", formData.depth);
+        addField("Total Area (Sqft)", formData.total_area);
+        addField("Minimum Clear Height (ft)", formData.clear_height);
+        addField("Building Plot Size", formData.plot_size);
+        addField("Covered Area (Basement)", formData.covered_basement);
+        addField("Covered Area (Ground Floor)", formData.covered_ground);
+        addField("No. of Stories/Floors", formData.stories);
+        y += 5;
+
+        addTitle("Building Overview");
+        addRadio("Independent Premises", formData.independent_premises, ["Yes", "No"]);
+        addField("Status", formData.status);
+        addField("Type of Premises", formData.premises_type);
+        addField("Age of Premises", formData.premises_age);
+        addField("Interior of Premises", formData.premises_interior);
+        addField("Type of Construction", formData.construction_type);
+        addRadio("Independent Entrance", formData.independent_entrance, ["Yes", "No"]);
+        addRadio("Staff Staircase", formData.staff_staircase, ["Yes", "No"]);
+        addRadio("Emergency Exit", formData.emergency_exit, ["Yes", "No"]);
+        addRadio("Can provide exit if not available?", formData.can_provide_exit, ["Yes", "No"]);
+        addRadio("Ramp Available", formData.ramp_available, ["Yes", "No"]);
+        addRadio("Can provide ramp if not available?", formData.can_provide_ramp, ["Yes", "No"]);
+        addRadio("Seepage", formData.seepage, ["Yes", "No"]);
+        addField("Area of Seepage", formData.seepage_area);
+        addField("Cause of Seepage", formData.seepage_cause);
+        addRadio("Generator Space", formData.generator_space, ["Yes", "No"]);
+        
+        doc.text("Property Utilization:", 14, y); y+=7;
+        addCheckbox("Fully residential", "pu_res");
+        addCheckbox("Fully Commercial", "pu_com");
+        addCheckbox("Dual use", "pu_dual");
+        addCheckbox("Industrial", "pu_ind");
+
+        addField("Building plinth level from the road", formData.plinth_level);
+        addRadio("Flooding Risk", formData.flooding_risk, ["Yes", "No"]);
+        addRadio("Disable Access", formData.disable_access, ["Yes", "No"]);
+        addField("Condition of roof waterproofing", formData.roof_waterproofing);
+        addRadio("Parking Available", formData.parking_available, ["Yes", "No"]);
+        addRadio("Road Approachable", formData.road_approachable, ["Yes", "No"]);
+        addRadio("Hazard in Vicinity (300m)", formData.hazard_vicinity, ["Yes", "No"]);
+        addRadio("Wall Masonry Material", formData.wall_masonry_material, ["Yes", "No"]);
+        addRadio("Signage Space", formData.signage_space, ["Yes", "No"]);
+
+        doc.text("Major retainable building elements:", 14, y); y+=7;
+        addCheckbox("Water Tank", "mrb_wt");
+        addCheckbox("Vault", "mrb_v");
+        addCheckbox("Subflooring", "mrb_sf");
+        addCheckbox("Staircase", "mrb_sc");
+        addCheckbox("Others", "mrb_o");
+        
+        addField("In case of Plot provide existing level from road & surrounding buildings", formData.plot_levels);
+        y+= 5;
+        
+        addTitle("Utilities");
+        addField("Sanctioned Electrical Load", formData.electrical_load);
+        addRadio("Electrical Meter", formData.electrical_meter, ["Single Phase", "3 Phase"]);
+        addRadio("Piped Water", formData.piped_water, ["Yes", "No"]);
+        addRadio("Underground Tank", formData.underground_tank, ["Yes", "No"]);
+        addRadio("Overhead Tank", formData.overhead_tank, ["Yes", "No"]);
+        addField("Type of Overhead Tank", formData.overhead_tank_type);
+        addField("Type of Water", formData.water_type);
+        addRadio("Gas Connection", formData.gas_connection, ["Yes", "No"]);
+        addRadio("Sewerage Line", formData.sewerage_line, ["Yes", "No"]);
+        y += 5;
+
+        addTitle("Bounded As");
+        addField("Front", formData.bound_front);
+        addField("Back", formData.bound_back);
+        addField("Right", formData.bound_right);
+        addField("Left", formData.bound_left);
+        y+=5;
+        
+        addTitle("Rental Detail");
+        addField("Acquisition", formData.acquisition);
+        addField("Expected Rental/month", formData.expected_rental);
+        addField("Expected Advance (# of month)", formData.expected_advance);
+        addField("Expected period of lease", formData.lease_period);
+        addField("Annual increase in rental", formData.rental_increase);
+        y+=5;
+
+        addTitle("Survey Conducted By");
+        addField("Name", formData.surveyor_name);
+        addField("Designation", formData.surveyor_designation);
+        addField("Contact", formData.surveyor_contact);
+        addField("Cell", formData.surveyor_cell);
+        addField("Landline", formData.surveyor_landline);
+        addField("Email", formData.surveyor_email);
+        addField("Date", formData.survey_date);
+
         doc.save("site-survey.pdf");
         toast({ title: 'Download Started', description: 'PDF is being generated.' });
     };
@@ -2536,7 +2685,10 @@ const TransmittalLetterForm = React.memo(() => {
     const renderField = (name: string, placeholder?: string, as?: 'textarea') => {
         const value = formData[name] || '';
         if (isEditing) {
-            return as === 'textarea' ? <Textarea name={name} value={value} onChange={handleInputChange} placeholder={placeholder}/> : <Input name={name} value={value} onChange={handleInputChange} placeholder={placeholder}/>
+            if (as === 'textarea') {
+                return <Textarea name={name} value={value} onChange={handleInputChange} placeholder={placeholder}/>
+            }
+            return <Input name={name} value={value} onChange={handleInputChange} placeholder={placeholder}/>
         }
         return <div className="p-1 border-b min-h-[24px] whitespace-pre-wrap">{value}</div>
     }
@@ -3580,15 +3732,15 @@ const Section23 = React.memo(() => {
             { id: 5.2, srNo: 'ii', description: 'O.H.W.T', unit: 'R.ft', qty: '60', rate: '', amount: '' },
         ]},
         { id: 6, srNo: '6', description: 'Reinforced Cement Concrete Work (3000 Psi)', isHeader: true, subItems: [
-            { id: 6.01, srNo: '6.1', description: 'Providing, laying, vibrating, compacting, finishing and curing etc. straight or curved, cast in situ reinforced cement concrete at any floor/height/depth, from ready mix plant, 3000 Psi minimum cylinder compressive strength at 28 days, mix using Ordinary Portland Grey Cement, fine aggregate (100% clean lawrence pur sand ) and sargodah crushed coarse aggregate 3/4\'\' down graded with approved quality admixture by Sika/Imporient or approved equivalent, including laying through pump, vibrating through electro mechanical vibrators, placing of all pipes and embedded items before concreting curing finishing complete but excluding the cost of steel reinforcement complete in all respect as per drawings and as directed by the Consultant/Engineer incharge', unit: '', qty: '', rate: '', amount: '' },
-            { id: 6.02, srNo: '6.2', description: 'Basement Retaining Walls', unit: 'C.ft', qty: '4,050', rate: '', amount: '' },
-            { id: 6.03, srNo: '6.3', description: 'Basement Pool Walls', unit: 'C.ft', qty: '1,335', rate: '', amount: '' },
-            { id: 6.04, srNo: '6.4', description: 'Basement Pool Base', unit: 'C.ft', qty: '473', rate: '', amount: '' },
-            { id: 6.05, srNo: '6.5', description: 'Basement water body walls & Base', unit: 'C.ft', qty: '230', rate: '', amount: '' },
-            { id: 6.06, srNo: '6.6', description: 'Basement Column Foundations', unit: 'C.ft', qty: '1,664', rate: '', amount: '' },
-            { id: 6.07, srNo: '6.7', description: 'Basement Basement Coulumn', unit: 'C.ft', qty: '340', rate: '', amount: '' },
-            { id: 6.08, srNo: '6.8', description: 'Basement Lintel', unit: 'C.ft', qty: '495', rate: '', amount: '' },
-            { id: 6.09, srNo: '6.9', description: 'Basement Slab & Beam', unit: 'C.ft', qty: '4,224', rate: '', amount: '' },
+            { id: 6.1, srNo: '6.1', description: 'Providing, laying, vibrating, compacting, finishing and curing etc. straight or curved, cast in situ reinforced cement concrete at any floor/height/depth, from ready mix plant, 3000 Psi minimum cylinder compressive strength at 28 days, mix using Ordinary Portland Grey Cement, fine aggregate (100% clean lawrence pur sand ) and sargodah crushed coarse aggregate 3/4\'\' down graded with approved quality admixture by Sika/Imporient or approved equivalent, including laying through pump, vibrating through electro mechanical vibrators, placing of all pipes and embedded items before concreting curing finishing complete but excluding the cost of steel reinforcement complete in all respect as per drawings and as directed by the Consultant/Engineer incharge', unit: '', qty: '', rate: '', amount: '' },
+            { id: 6.2, srNo: '6.2', description: 'Basement Retaining Walls', unit: 'C.ft', qty: '4,050', rate: '', amount: '' },
+            { id: 6.3, srNo: '6.3', description: 'Basement Pool Walls', unit: 'C.ft', qty: '1,335', rate: '', amount: '' },
+            { id: 6.4, srNo: '6.4', description: 'Basement Pool Base', unit: 'C.ft', qty: '473', rate: '', amount: '' },
+            { id: 6.5, srNo: '6.5', description: 'Basement water body walls & Base', unit: 'C.ft', qty: '230', rate: '', amount: '' },
+            { id: 6.6, srNo: '6.6', description: 'Basement Column Foundations', unit: 'C.ft', qty: '1,664', rate: '', amount: '' },
+            { id: 6.7, srNo: '6.7', description: 'Basement Basement Coulumn', unit: 'C.ft', qty: '340', rate: '', amount: '' },
+            { id: 6.8, srNo: '6.8', description: 'Basement Lintel', unit: 'C.ft', qty: '495', rate: '', amount: '' },
+            { id: 6.9, srNo: '6.9', description: 'Basement Slab & Beam', unit: 'C.ft', qty: '4,224', rate: '', amount: '' },
             { id: 6.10, srNo: '6.10', description: 'Ground Floor Column Foundations', unit: 'C.ft', qty: '36', rate: '', amount: '' },
             { id: 6.11, srNo: '6.11', description: 'Ground Floor Coulumn', unit: 'C.ft', qty: '425', rate: '', amount: '' },
             { id: 6.12, srNo: '6.12', description: 'Ground Floor Lintel', unit: 'C.ft', qty: '375', rate: '', amount: '' },
