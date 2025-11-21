@@ -1368,7 +1368,7 @@ const Section7 = React.memo(() => {
     
     const docRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
-        return doc(firestore, `users/${user.uid}/requirementPerforma/${REQUIREMENT_PERFORMA_DOC_ID}`);
+        return doc(firestore, `users/${user.uid}/requirementPerformas/${REQUIREMENT_PERFORMA_DOC_ID}`);
     }, [user, firestore]);
     
     useEffect(() => {
@@ -1963,12 +1963,13 @@ const Section10 = React.memo(() => {
     };
 
     const renderFormField = (label: string, name: string, as?: 'textarea') => {
+        const value = formData[name] || '';
         if (isEditing) {
             return as === 'textarea' ?
-                <Textarea name={name} value={formData[name] || ''} onChange={handleInputChange} /> :
-                <Input name={name} value={formData[name] || ''} onChange={handleInputChange} />;
+                <Textarea name={name} value={value} onChange={handleInputChange} /> :
+                <Input name={name} value={value} onChange={handleInputChange} />;
         }
-        return <div className="border-b min-h-[24px] py-1">{formData[name] || ''}</div>;
+        return <div className="border-b min-h-[24px] py-1">{value}</div>;
     };
 
     if (isLoading || isUserLoading) {
@@ -1993,20 +1994,20 @@ const Section10 = React.memo(() => {
         <CardContent>
             <div className="space-y-4">
                 <div className="flex justify-between">
-                    <div><Label>Project</Label>{renderFormField('project', 'project')}</div>
-                    <div><Label>Proposal Request No.</Label>{renderFormField('proposal_no', 'proposal_no')}</div>
+                    <div><Label>Project</Label>{renderFormField('', 'project')}</div>
+                    <div><Label>Proposal Request No.</Label>{renderFormField('', 'proposal_no')}</div>
                 </div>
                  <div className="flex justify-between">
-                    <div><Label>(Name, Address)</Label>{renderFormField('name_address', 'name_address')}</div>
-                    <div><Label>Date</Label>{renderFormField('date', 'date')}</div>
+                    <div><Label>(Name, Address)</Label>{renderFormField('', 'name_address')}</div>
+                    <div><Label>Date</Label>{renderFormField('', 'date')}</div>
                 </div>
                  <div className="flex justify-between">
-                    <div><Label>Architects Project No</Label>{renderFormField('architect_project_no', 'architect_project_no')}</div>
-                    <div><Label>Contract For</Label>{renderFormField('contract_for', 'contract_for')}</div>
+                    <div><Label>Architects Project No</Label>{renderFormField('', 'architect_project_no')}</div>
+                    <div><Label>Contract For</Label>{renderFormField('', 'contract_for')}</div>
                 </div>
                  <div className="flex justify-between">
-                    <div><Label>Owner</Label>{renderFormField('owner', 'owner')}</div>
-                    <div><Label>Contract Date</Label>{renderFormField('contract_date', 'contract_date')}</div>
+                    <div><Label>Owner</Label>{renderFormField('', 'owner')}</div>
+                    <div><Label>Contract Date</Label>{renderFormField('', 'contract_date')}</div>
                 </div>
 
                 <div className="border rounded-md p-4 space-y-2">
@@ -2015,8 +2016,8 @@ const Section10 = React.memo(() => {
                     {isEditing && <Input name="to_contractor" value={formData.to_contractor || ''} onChange={handleInputChange} />}
                 </div>
 
-                <div><Label>Description: (Written description of the Work)</Label>{renderFormField('description', 'description', 'textarea')}</div>
-                <div><Label>Attachments: (List attached documents that support description)</Label>{renderFormField('attachments', 'attachments', 'textarea')}</div>
+                <div><Label>Description: (Written description of the Work)</Label>{renderFormField('', 'description', 'textarea')}</div>
+                <div><Label>Attachments: (List attached documents that support description)</Label>{renderFormField('', 'attachments', 'textarea')}</div>
                 
                 <p>Please submit an itemized quotation for changes in the Contract Sum and/or Time incidental to proposed modifications to the Contract Documents described herein.</p>
                 <p className="font-bold text-center">THIS IS NOT A CHANGE ORDER NOT A DIRECTION TO PROCEED WITH THE WORK DESCRIBED HEREIN.</p>
@@ -2442,8 +2443,8 @@ const Section17 = React.memo(() => {
             {"Sr No.": 6, "Vendor's Name": "Green Wave", "Contact Person": "", "Products": "Home Automation", "Address": "Suit 5 ,4 sher shah Block,Lahore Punjab", "Contact": ""},
             {"Sr No.": 7, "Vendor's Name": "Phoenix Groups of Compines", "Contact Person": "", "Products": "Home Automation", "Address": "KHI.SUK P&O Plaza I.I. Chunrigar Road Khi", "Contact": "021-111288288"},
             {"Sr No.": 8, "Vendor's Name": "Synergy Technologies", "Contact Person": "", "Products": "Home Automation", "Address": "39-A Block D-1 Gulberg III Lahore", "Contact": "042-111900111"},
-            {"Sr No.": 9, "Vendor's Name": "Tera Generation Solutions Pvt. Ltd.", "Contact Person": "", "Products": "Home Automation", "Address": "7-A, P Block Block P Gulberg 2, Lahore, Punjab", "Contact": "(042) 111 847 111"}
-        ]
+            {"Sr No.": 9, "Vendor's Name": "Tera Generation Solutions Pvt. Ltd.", "Contact Person": "", "Products": "Home Automation", "Address": "7-A, P Block Block P Gulberg 2, Lahore, Punjab", "Contact": "(042) 111 847 111"},
+        ],
     };
     return (
         <Card>
@@ -2994,42 +2995,40 @@ const Section23 = React.memo(() => {
             { id: 2.1, srNo: '', description: 'Back Filling including watering and compaction in layers not exceeding 150mm compacted thickness to dry Compaction Test (ASTM D-1557) upto 95% Modified AASHTO by using the borrowed local sand from the local nearby site, as directed by the Consultant/Engineer incharge', unit: 'C.FT', qty: '12,000', rate: '', amount: '' },
         ]},
         { id: 3, srNo: '3', description: 'TERMITE PROOFING', isHeader: true, subItems: [
-            { id: 3.1, srNo: '', description: 'Providing and applying of Termite Control by spraying FMC Biflex or Mirage 5% SC by Ali Akbar Group in clear water under all floors, excavation including side walls and bottom of all pits & trenches, for footing and under floors.', unit: '', qty: '', rate: '', amount: '' },
-            { id: 3.2, srNo: 'a', description: 'Basement', unit: 'S.ft', qty: '5,452', rate: '', amount: '' },
-            { id: 3.3, srNo: 'b', description: 'Ground Floor', unit: 'S.ft', qty: '6,222', rate: '', amount: '' },
-            { id: 3.4, srNo: 'c', description: 'First Floor', unit: 'S.ft', qty: '4,986', rate: '', amount: '' },
+            { id: 3.1, srNo: 'a', description: 'Providing and applying of Termite Control by spraying FMC Biflex or Mirage 5% SC by Ali Akbar Group in clear water under all floors, excavation including side walls and bottom of all pits & trenches, for footing and under floors.', unit: '', qty: '', rate: '', amount: '' },
+            { id: 3.2, srNo: 'b', description: 'Basement', unit: 'S.ft', qty: '5,452', rate: '', amount: '' },
+            { id: 3.3, srNo: 'c', description: 'Ground Floor', unit: 'S.ft', qty: '6,222', rate: '', amount: '' },
+            { id: 3.4, srNo: 'd', description: 'First Floor', unit: 'S.ft', qty: '4,986', rate: '', amount: '' },
         ]},
         { id: 4, srNo: '4', description: 'PLAIN CEMENT CONCRETE UNDER FOUNDATIONS/FLOOR', isHeader: true, subItems: [
-            { id: 4.1, srNo: '', description: 'Providing and laying P.C.C plain cement concrete (1:4:8) using ordinary Portland cement chenab sand and Dina stone 1.5\'\' down as blinding layer under foundations/floor & swimming pool including confining, leveling, compacting and curing etc. complete in all respect finished smooth as directed by the Consultant/Engineer incharge.', unit: '', qty: '', rate: '', amount: '' },
-            { id: 4.2, srNo: 'i', description: 'Basement', unit: 'C.FT', qty: '5,452', rate: '', amount: '' },
-            { id: 4.3, srNo: 'ii', description: 'Column Foundation', unit: 'C.ft', qty: '125', rate: '', amount: '' },
+            { id: 4.1, srNo: 'i', description: 'Providing and laying P.C.C plain cement concrete (1:4:8) using ordinary Portland cement chenab sand and Dina stone 1.5\'\' down as blinding layer under foundations/floor & swimming pool including confining, leveling, compacting and curing etc. complete in all respect finished smooth as directed by the Consultant/Engineer incharge.', unit: 'C.FT', qty: '5,452', rate: '', amount: '' },
+            { id: 4.2, srNo: 'ii', description: 'Column Foundation', unit: 'C.ft', qty: '125', rate: '', amount: '' },
         ]},
         { id: 5, srNo: '5', description: 'Water Stopper', isHeader: true, subItems: [
-            { id: 5.1, srNo: '', description: 'Providing and fixing of water stopper 4mm thick and 229 mm wide poly vinyl chloride ribbed bar by Marflex or approved equivalent installed in the centre of x-section of the concrete structure joint of retaining walls, water tanks and expansion joints complete in all respect as per drawings and as directed by the consultant / Engineer. (9" Decora)', unit: '', qty: '', rate: '', amount: '' },
-            { id: 5.2, srNo: 'i', description: 'Basement Wall', unit: 'R.ft', qty: '525', rate: '', amount: '' },
-            { id: 5.3, srNo: 'ii', description: 'O.H.W.T', unit: 'R.ft', qty: '60', rate: '', amount: '' },
+            { id: 5.1, srNo: 'i', description: 'Providing and fixing of water stopper 4mm thick and 229 mm wide poly vinyl chloride ribbed bar by Marflex or approved equivalent installed in the centre of x-section of the concrete structure joint of retaining walls, water tanks and expansion joints complete in all respect as per drawings and as directed by the consultant / Engineer. (9" Decora)', unit: 'R.ft', qty: '525', rate: '', amount: '' },
+            { id: 5.2, srNo: 'ii', description: 'O.H.W.T', unit: 'R.ft', qty: '60', rate: '', amount: '' },
         ]},
         { id: 6, srNo: '6', description: 'Reinforced Cement Concrete Work (3000 Psi)', isHeader: true, subItems: [
-            { id: 6.01, srNo: '', description: 'Providing, laying, vibrating, compacting, finishing and curing etc. straight or curved, cast in situ reinforced cement concrete at any floor/height/depth, from ready mix plant, 3000 Psi minimum cylinder compressive strength at 28 days, mix using Ordinary Portland Grey Cement, fine aggregate (100% clean lawrence pur sand ) and sargodah crushed coarse aggregate 3/4\'\' down graded with approved quality admixture by Sika/Imporient or approved equivalent, including laying through pump, vibrating through electro mechanical vibrators, placing of all pipes and embedded items before concreting curing finishing complete but excluding the cost of steel reinforcement complete in all respect as per drawings and as directed by the Consultant/Engineer incharge', unit: '', qty: '', rate: '', amount: '' },
-            { id: 6.02, srNo: '6.1', description: 'Basement Retaining Walls', unit: 'C.ft', qty: '4,050', rate: '', amount: '' },
-            { id: 6.03, srNo: '6.2', description: 'Basement Pool Walls', unit: 'C.ft', qty: '1,335', rate: '', amount: '' },
-            { id: 6.04, srNo: '6.3', description: 'Basement Pool Base', unit: 'C.ft', qty: '473', rate: '', amount: '' },
-            { id: 6.05, srNo: '6.4', description: 'Basement water body walls & Base', unit: 'C.ft', qty: '230', rate: '', amount: '' },
-            { id: 6.06, srNo: '6.5', description: 'Basement Column Foundations', unit: 'C.ft', qty: '1,664', rate: '', amount: '' },
-            { id: 6.07, srNo: '6.6', description: 'Basement Basement Coulumn', unit: 'C.ft', qty: '340', rate: '', amount: '' },
-            { id: 6.08, srNo: '6.7', description: 'Basement Lintel', unit: 'C.ft', qty: '495', rate: '', amount: '' },
-            { id: 6.09, srNo: '6.8', description: 'Basement Slab & Beam', unit: 'C.ft', qty: '4,224', rate: '', amount: '' },
-            { id: 6.10, srNo: '6.9', description: 'Ground Floor Column Foundations', unit: 'C.ft', qty: '36', rate: '', amount: '' },
-            { id: 6.11, srNo: '6.10', description: 'Ground Floor Coulumn', unit: 'C.ft', qty: '425', rate: '', amount: '' },
-            { id: 6.12, srNo: '6.11', description: 'Ground Floor Lintel', unit: 'C.ft', qty: '375', rate: '', amount: '' },
-            { id: 6.13, srNo: '6.12', description: 'Ground Floor Slab & Beam', unit: 'C.ft', qty: '4,800', rate: '', amount: '' },
-            { id: 6.14, srNo: '6.13', description: 'First Floor Coulumn', unit: 'C.ft', qty: '375', rate: '', amount: '' },
-            { id: 6.15, srNo: '6.14', description: 'First Floor Lintel', unit: 'C.ft', qty: '165', rate: '', amount: '' },
-            { id: 6.16, srNo: '6.15', description: 'First Floor Slab & Beam', unit: 'C.ft', qty: '3,314', rate: '', amount: '' },
-            { id: 6.17, srNo: '6.16', description: 'Baement to first Floor Stair', unit: 'C.ft', qty: '400', rate: '', amount: '' },
-            { id: 6.18, srNo: '6.17', description: 'O.H.W.T Base and walls', unit: 'C.ft', qty: '583', rate: '', amount: '' },
-            { id: 6.19, srNo: '6.18', description: 'U.G.W.T Base and walls', unit: 'C.ft', qty: '252', rate: '', amount: '' },
-            { id: 6.20, srNo: '6.19', description: 'Septic Tank', unit: 'C.ft', qty: '185', rate: '', amount: '' },
+            { id: 6.01, srNo: '6.1', description: 'Providing, laying, vibrating, compacting, finishing and curing etc. straight or curved, cast in situ reinforced cement concrete at any floor/height/depth, from ready mix plant, 3000 Psi minimum cylinder compressive strength at 28 days, mix using Ordinary Portland Grey Cement, fine aggregate (100% clean lawrence pur sand ) and sargodah crushed coarse aggregate 3/4\'\' down graded with approved quality admixture by Sika/Imporient or approved equivalent, including laying through pump, vibrating through electro mechanical vibrators, placing of all pipes and embedded items before concreting curing finishing complete but excluding the cost of steel reinforcement complete in all respect as per drawings and as directed by the Consultant/Engineer incharge', unit: '', qty: '', rate: '', amount: '' },
+            { id: 6.02, srNo: '6.2', description: 'Basement Retaining Walls', unit: 'C.ft', qty: '4,050', rate: '', amount: '' },
+            { id: 6.03, srNo: '6.3', description: 'Basement Pool Walls', unit: 'C.ft', qty: '1,335', rate: '', amount: '' },
+            { id: 6.04, srNo: '6.4', description: 'Basement Pool Base', unit: 'C.ft', qty: '473', rate: '', amount: '' },
+            { id: 6.05, srNo: '6.5', description: 'Basement water body walls & Base', unit: 'C.ft', qty: '230', rate: '', amount: '' },
+            { id: 6.06, srNo: '6.6', description: 'Basement Column Foundations', unit: 'C.ft', qty: '1,664', rate: '', amount: '' },
+            { id: 6.07, srNo: '6.7', description: 'Basement Basement Coulumn', unit: 'C.ft', qty: '340', rate: '', amount: '' },
+            { id: 6.08, srNo: '6.8', description: 'Basement Lintel', unit: 'C.ft', qty: '495', rate: '', amount: '' },
+            { id: 6.09, srNo: '6.9', description: 'Basement Slab & Beam', unit: 'C.ft', qty: '4,224', rate: '', amount: '' },
+            { id: 6.10, srNo: '6.10', description: 'Ground Floor Column Foundations', unit: 'C.ft', qty: '36', rate: '', amount: '' },
+            { id: 6.11, srNo: '6.11', description: 'Ground Floor Coulumn', unit: 'C.ft', qty: '425', rate: '', amount: '' },
+            { id: 6.12, srNo: '6.12', description: 'Ground Floor Lintel', unit: 'C.ft', qty: '375', rate: '', amount: '' },
+            { id: 6.13, srNo: '6.13', description: 'Ground Floor Slab & Beam', unit: 'C.ft', qty: '4,800', rate: '', amount: '' },
+            { id: 6.14, srNo: '6.14', description: 'First Floor Coulumn', unit: 'C.ft', qty: '375', rate: '', amount: '' },
+            { id: 6.15, srNo: '6.15', description: 'First Floor Lintel', unit: 'C.ft', qty: '165', rate: '', amount: '' },
+            { id: 6.16, srNo: '6.16', description: 'First Floor Slab & Beam', unit: 'C.ft', qty: '3,314', rate: '', amount: '' },
+            { id: 6.17, srNo: '6.17', description: 'Baement to first Floor Stair', unit: 'C.ft', qty: '400', rate: '', amount: '' },
+            { id: 6.18, srNo: '6.18', description: 'O.H.W.T Base and walls', unit: 'C.ft', qty: '583', rate: '', amount: '' },
+            { id: 6.19, srNo: '6.19', description: 'U.G.W.T Base and walls', unit: 'C.ft', qty: '252', rate: '', amount: '' },
+            { id: 6.20, srNo: '6.20', description: 'Septic Tank', unit: 'C.ft', qty: '185', rate: '', amount: '' },
         ]},
         { id: 7, srNo: '7', description: 'STEEL REINFORCEMENT', unit: '', qty: '', rate: '', amount: '', isHeader: true, subItems: [
             { id: 7.1, srNo: '', description: 'Providing fabricating, laying, fixing, Mild Steel deformed bars (non-TMT) grade 60 with minimum yield stress conforming to ASTM specifications A-615. including cost of cutting, bending, placing, binded annealed binding wire 16 guage, removal of rest from bars if any, in specified overlaps, chairs, sports, spacers, wastage, etc. Complete in all respects by an approved source such as Afco steel, Prime steel, Ittefaq steel, Model Steel, City Steel UAE ( if not available, client will specify the alternate brand. Only the lengths shown on Drawings shall be paid for in accordance with the Bar bending schedule prepared the contractors from the drawings and submitted well in advance to the Engineer for the approval, steel lengths from the site multiply by the standard weights will used for the purpose of payment and duly approved by the consultant/Engineer Incharge.', unit: 'Ton', qty: '75', rate: '', amount: '' }
@@ -3059,17 +3058,16 @@ const Section23 = React.memo(() => {
             { id: 10.3, srNo: '10.3', description: 'First Floor', unit: 'C.ft', qty: '1,645', rate: '', amount: '' },
         ]},
         { id: 11, srNo: '11', description: 'PCC SUB FLOOR', isHeader: true, subItems: [
-            { id: 11.1, srNo: '', description: 'Cement Concrete (1:2:4), including placing, compacting, finishing and curing complete. (Screed Under Floor)', unit: '', qty: '', rate: '', amount: '' },
-            { id: 11.2, srNo: '11.1', description: 'Baement Floor', unit: 'C.ft', qty: '1,799', rate: '', amount: '' },
-            { id: 11.3, srNo: '11.2', description: 'Ground Floor', unit: 'C.ft', qty: '2,053', rate: '', amount: '' },
-            { id: 11.4, srNo: '11.3', description: 'First Floor', unit: 'C.ft', qty: '1,645', rate: '', amount: '' },
+            { id: 11.1, srNo: '11.1', description: 'Cement Concrete (1:2:4), including placing, compacting, finishing and curing complete. (Screed Under Floor)', unit: '', qty: '', rate: '', amount: '' },
+            { id: 11.2, srNo: '11.2', description: 'Baement Floor', unit: 'C.ft', qty: '1,799', rate: '', amount: '' },
+            { id: 11.3, srNo: '11.3', description: 'Ground Floor', unit: 'C.ft', qty: '2,053', rate: '', amount: '' },
+            { id: 11.4, srNo: '11.4', description: 'First Floor', unit: 'C.ft', qty: '1,645', rate: '', amount: '' },
         ]},
         { id: 12, srNo: '12', description: 'Roof insulation and water proofing', isHeader: true, subItems: [
             { id: 12.1, srNo: '', description: 'Providing and laying Roof insulation and water proofing to roof consisting of given below of as directed by the Engineer incharge. - Bituminous primer coat. - 2-coats of cold applied rubberized bitumen - One layer of polythene 500 gauge - 1½” thick "extruded polystyrene board" 1½" thick. (density 34 Kg/m³) - One layer of polythene 500 gauge - 4” thick average mud (compacted thickness). - Brick tiles 9”x4-1/2”x1-1/2” laid in cement sand mortar 1:4 and grouted with cement sand mortar 1:3 using 1-part of OPC and 3-parts of clean approved quality sand, complete as per drawings, specifications and instructions of the Consultant.', unit: 'S.ft', qty: '6,561', rate: '', amount: '' },
         ]},
         { id: 13, srNo: '13', description: 'D.P.C', isHeader: true, subItems: [
-            { id: 13.1, srNo: '', description: 'Supply, mix, place, cure, compact concrete (1:2:4) 1-1/2" horizontal damp proof course on brick masonry wall includes form work & mixing of rhombic 707 manufactured by MBT in concrete & application of one coat of same chemical on masonry surface before pouring of mixed concrete according to drawings and manufacturers instructions or As directed by the consultant.', unit: '', qty: '', rate: '', amount: '' },
-            { id: 13.2, srNo: 'i', description: 'Ground Floor', unit: 'S.ft', qty: '654', rate: '', amount: '' },
+            { id: 13.1, srNo: 'i', description: 'Supply, mix, place, cure, compact concrete (1:2:4) 1-1/2" horizontal damp proof course on brick masonry wall includes form work & mixing of rhombic 707 manufactured by MBT in concrete & application of one coat of same chemical on masonry surface before pouring of mixed concrete according to drawings and manufacturers instructions or As directed by the consultant.', unit: 'S.ft', qty: '654', rate: '', amount: '' },
         ]},
       ]
     };
@@ -3568,7 +3566,7 @@ const Section25 = React.memo(() => {
                     <div className="flex items-center gap-2"><p>The (Contract Sum) (Guaranteed Maximum Price) will be (increased) (decreased) (changed) by this Change Order in the amount of</p> {renderField('change_order_amount', 'Rs.')}</div>
                     <div className="flex items-center gap-2"><p>The new (Contract Sum) (Guaranteed Maximum Price) including this Change Order will be</p> {renderField('new_contract_sum', 'Rs.')}</div>
                     <div className="flex items-center gap-2"><p>The Contract Time will be (increased) (decreased) by</p> {renderField('contract_time_change', '(_______) days')}</div>
-                    <div><p>the date of Substantial Completion as the date of this Change Order therefore is: {renderField('substantial_completion_date')}</p></div>
+                    <div className="flex items-center gap-2"><p>the date of Substantial Completion as the date of this Change Order therefore is:</p> {renderField('substantial_completion_date')}</div>
                 </div>
                 
                 <p className="text-xs text-center">NOTE: This summary does not reflect changes in the Contract Sum, Contract Time or Guaranteed Maximum Price which have been authorized by Contraction Change Directive.</p>
