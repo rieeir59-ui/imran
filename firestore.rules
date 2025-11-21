@@ -212,11 +212,11 @@ service cloud.firestore {
         allow read, write: if isOwner(userId);
     }
     
-    match /users/{userId}/siteSurvey/{surveyId} {
+    match /users/{userId}/siteSurveys/{surveyId} {
         allow read, write: if isOwner(userId);
     }
 
-    match /users/{userId}/proposalRequest/{requestId} {
+    match /users/{userId}/proposalRequests/{requestId} {
         allow read, write: if isOwner(userId);
     }
 
@@ -253,3 +253,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
