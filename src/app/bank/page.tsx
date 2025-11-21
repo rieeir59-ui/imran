@@ -42,6 +42,14 @@ const CHANGE_ORDER_DOC_ID = 'change-order';
 const REQUIREMENT_PERFORMA_DOC_ID = 'requirement-performa';
 const SITE_SURVEY_DOC_ID = 'site-survey';
 const PROPOSAL_REQUEST_DOC_ID = 'proposal-request';
+const DRAWING_SCHEDULE_DOC_ID = 'drawing-schedule';
+const SHOP_DRAWING_RECORD_DOC_ID = 'shop-drawing-record';
+const FIELD_REPORT_DOC_ID = 'field-report';
+const TRANSMITTAL_LETTER_DOC_ID = 'transmittal-letter';
+const MINUTES_OF_MEETING_DOC_ID = 'minutes-of-meeting';
+const SUB_CONSULTANT_LIST_DOC_ID = 'sub-consultant-list';
+const CONTRACTOR_LIST_DOC_ID = 'contractor-list';
+const VENDOR_LIST_DOC_ID = 'vendor-list';
 
 
 const fileIndexItems = [
@@ -1399,7 +1407,10 @@ const Section7 = React.memo(() => {
     };
     
     const handleSave = () => {
-        if (!docRef) return;
+        if (!docRef) {
+            toast({ variant: 'destructive', title: 'Error', description: 'User not authenticated.' });
+            return;
+        }
         setIsSaving(true);
         setDoc(docRef, formData, { merge: true }).then(() => {
             toast({ title: 'Success', description: 'Requirement Performa saved.' });
@@ -1411,8 +1422,7 @@ const Section7 = React.memo(() => {
                 requestResourceData: formData,
             });
             errorEmitter.emit('permission-error', permissionError);
-            setIsSaving(false);
-        });
+        }).finally(() => setIsSaving(false));
     };
 
     const handleDownload = () => {
@@ -1640,7 +1650,7 @@ const Section8 = React.memo(() => {
         }).finally(() => setIsLoading(false));
     }, [docRef]);
     
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         if (!isEditing) return;
         setFormData({...formData, [e.target.name]: e.target.value});
     };
@@ -1656,7 +1666,10 @@ const Section8 = React.memo(() => {
     };
 
     const handleSave = () => {
-        if (!docRef) return;
+        if (!docRef) {
+            toast({ variant: 'destructive', title: 'Error', description: 'User not authenticated.' });
+            return;
+        }
         setIsSaving(true);
         setDoc(docRef, formData, { merge: true }).then(() => {
             toast({ title: 'Success', description: 'Site Survey saved.' });
@@ -1668,8 +1681,7 @@ const Section8 = React.memo(() => {
                 requestResourceData: formData,
             });
             errorEmitter.emit('permission-error', permissionError);
-            setIsSaving(false);
-        });
+        }).finally(() => setIsSaving(false));
     };
 
     const handleDownload = () => {
@@ -1938,7 +1950,10 @@ const Section10 = React.memo(() => {
     };
     
     const handleSave = () => {
-        if (!docRef) return;
+        if (!docRef) {
+            toast({ variant: 'destructive', title: 'Error', description: 'User not authenticated.' });
+            return;
+        }
         setIsSaving(true);
         setDoc(docRef, formData, { merge: true }).then(() => {
             toast({ title: 'Success', description: 'Proposal Request saved.' });
@@ -1950,8 +1965,7 @@ const Section10 = React.memo(() => {
                 requestResourceData: formData,
             });
             errorEmitter.emit('permission-error', permissionError);
-            setIsSaving(false);
-        });
+        }).finally(() => setIsSaving(false));
     };
 
     const handleDownload = () => {
@@ -2042,39 +2056,197 @@ const Section10 = React.memo(() => {
 });
 Section10.displayName = 'Section10';
 
-const Section11 = React.memo(() => (
+const Section11 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({});
+    
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+    
+    const docRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/drawingSchedules/${DRAWING_SCHEDULE_DOC_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!docRef) return;
+        setIsLoading(true);
+        getDoc(docRef).then(docSnap => {
+            if (docSnap.exists()) {
+                setFormData(docSnap.data());
+            }
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'get' });
+            errorEmitter.emit('permission-error', permissionError);
+        }).finally(() => setIsLoading(false));
+    }, [docRef]);
+    
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({...prev, [name]: value}));
+    };
+    
+    const handleSave = () => {
+        if (!docRef) return;
+        setIsSaving(true);
+        setDoc(docRef, formData, { merge: true }).then(() => {
+            toast({ title: 'Success', description: 'Drawing schedule saved.' });
+            setIsEditing(false);
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'write', requestResourceData: formData });
+            errorEmitter.emit('permission-error', permissionError);
+        }).finally(() => setIsSaving(false));
+    };
+
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        doc.text("Drawings (Architectural / Interiors / submission)", 10, 10);
+        // Add more fields
+        doc.save("drawings.pdf");
+        toast({ title: "Download Started", description: "PDF generation is in progress." });
+    };
+
+    const renderField = (name: string) => isEditing ? <Input name={name} value={formData[name] || ''} onChange={handleInputChange} /> : <div className="border-b min-h-[24px] py-1">{formData[name] || ''}</div>;
+
+    if (isLoading || isUserLoading) {
+      return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+    }
+
+    return (
     <Card>
-        <CardHeader><CardTitle>Drawings (Architectural / Interiors / submission)</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Drawings (Architectural / Interiors / submission)</CardTitle>
+             <div className="flex gap-2">
+                <Button onClick={handleDownload} variant="outline"><Download /> PDF</Button>
+                {isEditing ? (
+                    <Button onClick={handleSave} disabled={isSaving}>
+                        {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                    </Button>
+                ) : (
+                    <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                )}
+            </div>
+        </CardHeader>
         <CardContent>
             <DrawingsList />
         </CardContent>
     </Card>
-));
+    )
+});
 Section11.displayName = 'Section11';
 
-const Section12 = React.memo(() => (
+const Section12 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({ records: Array(12).fill({}).map((_, i) => ({ id: i + 1 })) });
+    
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+    
+    const docRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/shopDrawingRecords/${SHOP_DRAWING_RECORD_DOC_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!docRef) return;
+        setIsLoading(true);
+        getDoc(docRef).then(docSnap => {
+            if (docSnap.exists()) {
+                setFormData(docSnap.data());
+            }
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'get' });
+            errorEmitter.emit('permission-error', permissionError);
+        }).finally(() => setIsLoading(false));
+    }, [docRef]);
+    
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
+        const { name, value } = e.target;
+        if(index !== undefined) {
+            const newRecords = [...formData.records];
+            newRecords[index] = {...newRecords[index], [name]: value};
+            setFormData(prev => ({...prev, records: newRecords}));
+        } else {
+            setFormData(prev => ({...prev, [name]: value}));
+        }
+    };
+
+     const handleCheckboxChange = (index: number, name: string, checked: boolean | 'indeterminate') => {
+        if (!isEditing || typeof checked !== 'boolean') return;
+        const newRecords = [...formData.records];
+        newRecords[index] = {...newRecords[index], [name]: checked};
+        setFormData(prev => ({...prev, records: newRecords}));
+    };
+
+    
+    const handleSave = () => {
+        if (!docRef) return;
+        setIsSaving(true);
+        setDoc(docRef, formData, { merge: true }).then(() => {
+            toast({ title: 'Success', description: 'Shop Drawings Record saved.' });
+            setIsEditing(false);
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'write', requestResourceData: formData });
+            errorEmitter.emit('permission-error', permissionError);
+        }).finally(() => setIsSaving(false));
+    };
+
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        doc.text("Shop Drawings Sample Record", 10, 10);
+        // PDF generation logic here
+        doc.save("shop-drawings-record.pdf");
+        toast({ title: "Download Started", description: "PDF generation is in progress." });
+    };
+
+    const renderField = (name: string, index?: number) => {
+        const value = index !== undefined ? formData.records[index]?.[name] : formData[name];
+        return isEditing ? <Input name={name} value={value || ''} onChange={(e) => handleInputChange(e, index)} /> : <div className="border-b min-h-[24px] py-1">{value || ''}</div>
+    }
+
+    if (isLoading || isUserLoading) {
+      return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+    }
+
+    return (
     <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-center font-bold text-2xl">
                 SHOP DRAWINGS<br />&<br />SAMPLE RECORD
             </CardTitle>
+             <div className="flex gap-2">
+                <Button onClick={handleDownload} variant="outline"><Download /> PDF</Button>
+                {isEditing ? (
+                    <Button onClick={handleSave} disabled={isSaving}>
+                        {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                    </Button>
+                ) : (
+                    <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                )}
+            </div>
         </CardHeader>
         <CardContent>
             <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-4">
-                    <FormField label="Project:" value="" />
-                    <FormField label="Architect's Project No:" value="" />
-                    <FormField label="Contractor:" value="" />
-                    <FormField label="Date:" value="" />
+                    <FormField label="Project:">{renderField('project')}</FormField>
+                    <FormField label="Architect's Project No:">{renderField('architectProjectNo')}</FormField>
+                    <FormField label="Contractor:">{renderField('contractor')}</FormField>
+                    <FormField label="Date:">{renderField('date')}</FormField>
                 </div>
                 <div className="border-t border-b py-2 my-2">
-                    <FormField label="Spec. Section No.:" value="" />
-                    <FormField label="Shop Drawing or Sample Drawing No.:" value="" />
+                    <FormField label="Spec. Section No.:">{renderField('specSectionNo')}</FormField>
+                    <FormField label="Shop Drawing or Sample Drawing No.:">{renderField('drawingNo')}</FormField>
                 </div>
                 <div className="grid grid-cols-3 gap-x-8 gap-y-2 mb-4">
-                    <FormField label="Contractor:" value="" />
-                    <FormField label="Subcontractor:" value="" />
-                    <FormField label="Trade:" value="" />
+                    <FormField label="Contractor:">{renderField('contractor2')}</FormField>
+                    <FormField label="Subcontractor:">{renderField('subcontractor')}</FormField>
+                    <FormField label="Trade:">{renderField('trade')}</FormField>
                 </div>
                 <Table>
                     <TableHeader>
@@ -2091,27 +2263,27 @@ const Section12 = React.memo(() => (
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {[...Array(12)].map((_, i) => (
-                            <TableRow key={i}>
+                        {formData.records.map((record: any, i: number) => (
+                            <TableRow key={record.id}>
                                 <TableCell>{i + 1}</TableCell>
-                                <TableCell></TableCell>
-                                <TableCell></TableCell>
-                                <TableCell></TableCell>
-                                <TableCell></TableCell>
-                                <TableCell></TableCell>
+                                <TableCell>{renderField('recordDate', i)}</TableCell>
+                                <TableCell>{renderField('referredTo', i)}</TableCell>
+                                <TableCell>{renderField('dateSent', i)}</TableCell>
+                                <TableCell>{renderField('numCopies', i)}</TableCell>
+                                <TableCell>{renderField('dateRetd', i)}</TableCell>
                                 <TableCell className="space-y-1 text-xs">
-                                    <div className="flex items-center gap-1"><Checkbox id={`a${i}`}/> Approved</div>
-                                    <div className="flex items-center gap-1"><Checkbox id={`an${i}`}/> App'd as Noted</div>
-                                    <div className="flex items-center gap-1"><Checkbox id={`rr${i}`}/> Revise & Resubmit</div>
-                                    <div className="flex items-center gap-1"><Checkbox id={`na${i}`}/> Not Approved</div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`a${i}`} checked={record.approved} onCheckedChange={(c) => handleCheckboxChange(i, 'approved', c)} disabled={!isEditing}/> Approved</div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`an${i}`} checked={record.approvedAsNoted} onCheckedChange={(c) => handleCheckboxChange(i, 'approvedAsNoted', c)} disabled={!isEditing}/> App'd as Noted</div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`rr${i}`} checked={record.reviseResubmit} onCheckedChange={(c) => handleCheckboxChange(i, 'reviseResubmit', c)} disabled={!isEditing}/> Revise & Resubmit</div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`na${i}`} checked={record.notApproved} onCheckedChange={(c) => handleCheckboxChange(i, 'notApproved', c)} disabled={!isEditing}/> Not Approved</div>
                                 </TableCell>
                                 <TableCell className="space-y-1 text-xs">
-                                    <div className="flex items-center gap-1"><Checkbox id={`co${i}`}/> Contractor</div>
-                                    <div className="flex items-center gap-1"><Checkbox id={`ow${i}`}/> Owner</div>
-                                    <div className="flex items-center gap-1"><Checkbox id={`fi${i}`}/> Field</div>
-                                    <div className="flex items-center gap-1"><Checkbox id={`f${i}`}/> File</div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`co${i}`} checked={record.copyContractor} onCheckedChange={(c) => handleCheckboxChange(i, 'copyContractor', c)} disabled={!isEditing}/> Contractor</div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`ow${i}`} checked={record.copyOwner} onCheckedChange={(c) => handleCheckboxChange(i, 'copyOwner', c)} disabled={!isEditing}/> Owner</div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`fi${i}`} checked={record.copyField} onCheckedChange={(c) => handleCheckboxChange(i, 'copyField', c)} disabled={!isEditing}/> Field</div>
+                                    <div className="flex items-center gap-1"><Checkbox id={`f${i}`} checked={record.copyFile} onCheckedChange={(c) => handleCheckboxChange(i, 'copyFile', c)} disabled={!isEditing}/> File</div>
                                 </TableCell>
-                                <TableCell></TableCell>
+                                <TableCell>{renderField('title', i)}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
@@ -2119,144 +2291,14 @@ const Section12 = React.memo(() => (
             </div>
         </CardContent>
     </Card>
-));
+    )
+});
 Section12.displayName = 'Section12';
 
 const Section13 = React.memo(() => (<Card><CardHeader><CardTitle>Project Chart (Studio)</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
 Section13.displayName = 'Section13';
 
-const Section14 = React.memo(() => (
-    <Card>
-        <CardHeader><CardTitle>Architects Field Report / Transmittal Letter / Minutes of Meetings</CardTitle></CardHeader>
-        <CardContent className="space-y-8">
-            {/* Field Report */}
-            <div className="border p-4 rounded-lg">
-                <h3 className="text-xl font-bold text-center">ARCHITECT'S FIELD REPORT</h3>
-                <div className="grid grid-cols-2 gap-4 my-4">
-                    <FormField label="Project" value="" />
-                    <FormField label="Field Report No." value="" />
-                    <FormField label="Contract" value="" />
-                    <FormField label="Architects Project No" value="" />
-                    <FormField label="Date" value="" />
-                    <FormField label="Time" value="" />
-                    <FormField label="Weather" value="" />
-                    <FormField label="Tem. Range" value="" />
-                </div>
-                <FormField label="Est. % of Completion" value="" />
-                <FormField label="Conformance with Schedule" value="" />
-                <FormField label="Work in Progress" as="textarea" value="" />
-                <FormField label="Present at Site" as="textarea" value="" />
-                <FormField label="Observations" as="textarea" value="" />
-                <FormField label="Items to Verify" as="textarea" value="" />
-                <FormField label="Information or Action Required" as="textarea" value="" />
-                <FormField label="Attachments" as="textarea" value="" />
-                <div className="flex justify-between items-end mt-4">
-                    <FormField label="Report By" value="" />
-                    <div className="flex gap-4"><span>Owner</span><span>Architect</span><span>Contractor</span><span>Field</span><span>Other</span></div>
-                </div>
-            </div>
-            {/* Transmittal Letter */}
-            <div className="border p-4 rounded-lg">
-                <h3 className="text-xl font-bold text-center">TRANSMITTAL LETTER</h3>
-                <div className="grid grid-cols-2 gap-4 my-4">
-                    <FormField label="Project (Name, Address)" value="" />
-                    <div>
-                        <FormField label="Architect" value="" />
-                        <FormField label="Project No" value="" />
-                        <FormField label="Date" value="" />
-                    </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="border p-2 rounded">
-                        <p>To:</p>
-                        <p>Attn:</p>
-                    </div>
-                    <div>
-                        <p>If Enclosures are not as noted, Please Inform us immediately.</p>
-                        <p>If checked below, please:</p>
-                        <div className="flex gap-2"><Checkbox id="ack-receipt"/> Acknowledge Receipt of Enclosures.</div>
-                        <div className="flex gap-2"><Checkbox id="return-enclosures"/> Return Enclosures to us.</div>
-                    </div>
-                </div>
-                <div className="my-4">
-                    <p>We Transmit:</p>
-                    <div className="flex gap-4">
-                        <div className="flex gap-2"><Checkbox id="transmit-herewith"/> herewith</div>
-                        <div className="flex gap-2"><Checkbox id="transmit-separate"/> under separate cover via ______</div>
-                        <div className="flex gap-2"><Checkbox id="transmit-request"/> in accordance with your request ______</div>
-                    </div>
-                    <p className="mt-2">For Your:</p>
-                    <div className="flex flex-wrap gap-4">
-                        <div className="flex gap-2"><Checkbox id="for-approval"/> approval</div>
-                        <div className="flex gap-2"><Checkbox id="for-distribution"/> distribution to parties</div>
-                        <div className="flex gap-2"><Checkbox id="for-info"/> information</div>
-                        <div className="flex gap-2"><Checkbox id="for-review"/> review & comment</div>
-                        <div className="flex gap-2"><Checkbox id="for-record"/> record</div>
-                        <div className="flex gap-2"><Checkbox id="for-use"/> use</div>
-                        <div className="flex gap-2"><Checkbox id="for-other"/> ______</div>
-                    </div>
-                     <p className="mt-2">The Following:</p>
-                    <div className="flex flex-wrap gap-4">
-                        <div className="flex gap-2"><Checkbox id="following-drawings"/> Drawings</div>
-                        <div className="flex gap-2"><Checkbox id="following-shop-prints"/> Shop Drawing Prints</div>
-                        <div className="flex gap-2"><Checkbox id="following-samples"/> Samples</div>
-                        <div className="flex gap-2"><Checkbox id="following-specs"/> Specifications</div>
-                        <div className="flex gap-2"><Checkbox id="following-shop-repro"/> Shop Drawing Reproducible</div>
-                        <div className="flex gap-2"><Checkbox id="following-prod-lit"/> Product Literature</div>
-                        <div className="flex gap-2"><Checkbox id="following-change-order"/> Change Order</div>
-                         <div className="flex gap-2"><Checkbox id="following-other"/> ______</div>
-                    </div>
-                </div>
-                 <Table>
-                    <TableHeader><TableRow><TableHead>Copies</TableHead><TableHead>Date</TableHead><TableHead>Rev. No.</TableHead><TableHead>Description</TableHead><TableHead>Action Code</TableHead></TableRow></TableHeader>
-                    <TableBody>{[...Array(4)].map((_,i)=><TableRow key={i}><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}</TableBody>
-                </Table>
-                <div className="text-xs my-2">
-                    <strong>Action Code:</strong> A. Action indicated on item transmitted D. For signature and forwarding as noted below under REMARKS, B. No action required E. See REMARKS below, C. For signature and return to this office
-                </div>
-                <FormField label="Remarks" as="textarea" value=""/>
-                <div className="flex justify-between mt-4">
-                     <FormField label="Copies To: (With Enclosures)" value=""/>
-                     <FormField label="Received By:" value=""/>
-                </div>
-            </div>
-            {/* Minutes of Meeting */}
-            <div className="border p-4 rounded-lg">
-                <h3 className="text-xl font-bold text-center">MINUTES OF MEETING</h3>
-                 <div className="grid grid-cols-3 gap-4 my-4">
-                    <FormField label="Project" value="" />
-                    <FormField label="Meeting Date" value="" />
-                    <FormField label="Meeting Time" value="" />
-                    <FormField label="Meeting Location" value="" />
-                    <FormField label="Meeting Called By" value="" />
-                    <FormField label="Type of Meeting" value="" />
-                    <FormField label="Facilitator" value="" />
-                    <FormField label="Note Taker" value="" />
-                    <FormField label="Timekeeper" value="" />
-                </div>
-                <FormField label="Attendees" as="textarea" value="" />
-                {[...Array(5)].map((_, i) => (
-                    <div key={i} className="border-t pt-4 mt-4">
-                        <FormField label="Time Allotted" value="______ hours / days" />
-                        <FormField label="Agenda Topic" value="" />
-                        <FormField label="Presenter" value="" />
-                        <FormField label="Discussion" as="textarea" value="" />
-                        <FormField label="Conclusions" as="textarea" value="" />
-                        <FormField label="Action Items">
-                             <Table>
-                                <TableHeader><TableRow><TableHead>Action</TableHead><TableHead>Person Responsible</TableHead><TableHead>Deadline</TableHead></TableRow></TableHeader>
-                                <TableBody><TableRow><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow></TableBody>
-                            </Table>
-                        </FormField>
-                    </div>
-                ))}
-                <FormField label="Observers" as="textarea" value="" />
-                <FormField label="Resource Persons" as="textarea" value="" />
-                <FormField label="Special Notes" as="textarea" value="" />
-            </div>
-        </CardContent>
-    </Card>
-));
+const Section14 = React.memo(() => (<Card><CardHeader><CardTitle>Architects Field Report / Transmittal Letter / Minutes of Meetings</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
 Section14.displayName = 'Section14';
 
 const Section15 = React.memo(() => (
@@ -2477,7 +2519,7 @@ const Section17 = React.memo(() => {
                 </Accordion>
             </CardContent>
         </Card>
-    );
+    )
 });
 Section17.displayName = 'Section17';
 
@@ -3199,34 +3241,42 @@ const Section23 = React.memo(() => {
     };
     
     const renderRow = (item: any) => {
-        return (
-            <Fragment key={item.id}>
-                <TableRow className={cn(item.isHeader && "font-bold bg-muted")}>
-                    <TableCell>{item.srNo}</TableCell>
-                    <TableCell colSpan={item.isHeader ? 5 : 1}>
-                        {renderCell(item.id, 'description', item.description)}
-                    </TableCell>
-                    {!item.isHeader && (
-                        <>
-                            <TableCell>{renderCell(item.id, 'unit', item.unit)}</TableCell>
-                            <TableCell>{renderCell(item.id, 'qty', item.qty)}</TableCell>
-                            <TableCell>{renderCell(item.id, 'rate', item.rate)}</TableCell>
-                            <TableCell>{item.amount}</TableCell>
-                        </>
-                    )}
-                </TableRow>
-                {item.subItems && item.subItems.map((sub: any) => (
-                    <TableRow key={sub.id}>
-                        <TableCell>{sub.srNo}</TableCell>
-                        <TableCell>{sub.description}</TableCell>
-                        <TableCell>{renderCell(sub.id, 'unit', sub.unit)}</TableCell>
-                        <TableCell>{renderCell(sub.id, 'qty', sub.qty)}</TableCell>
-                        <TableCell>{renderCell(sub.id, 'rate', sub.rate)}</TableCell>
-                        <TableCell>{sub.amount}</TableCell>
-                    </TableRow>
-                ))}
-            </Fragment>
+        const mainRow = (
+             <TableRow key={item.id} className={cn(item.isHeader && "font-bold bg-muted")}>
+                <TableCell>{item.srNo}</TableCell>
+                <TableCell colSpan={item.isHeader ? 5 : 1}>
+                    {renderCell(item.id, 'description', item.description)}
+                </TableCell>
+                {!item.isHeader && (
+                    <>
+                        <TableCell>{renderCell(item.id, 'unit', item.unit)}</TableCell>
+                        <TableCell>{renderCell(item.id, 'qty', item.qty)}</TableCell>
+                        <TableCell>{renderCell(item.id, 'rate', item.rate)}</TableCell>
+                        <TableCell>{item.amount}</TableCell>
+                    </>
+                )}
+            </TableRow>
         );
+
+        if (item.subItems) {
+            return (
+                <Fragment key={item.id}>
+                    {mainRow}
+                    {item.subItems.map((sub: any) => (
+                        <TableRow key={sub.id}>
+                            <TableCell>{sub.srNo}</TableCell>
+                            <TableCell>{sub.description}</TableCell>
+                            <TableCell>{renderCell(sub.id, 'unit', sub.unit)}</TableCell>
+                            <TableCell>{renderCell(sub.id, 'qty', sub.qty)}</TableCell>
+                            <TableCell>{renderCell(sub.id, 'rate', sub.rate)}</TableCell>
+                            <TableCell>{sub.amount}</TableCell>
+                        </TableRow>
+                    ))}
+                </Fragment>
+            );
+        }
+
+        return mainRow;
     }
     
     if (isLoading || isUserLoading) {
@@ -3333,7 +3383,10 @@ const Section24 = React.memo(() => {
     const labourGrandTotal = labourTotal + labourProfit + labourTax;
 
     const handleSave = () => {
-        if (!docRef) return;
+        if (!docRef) {
+            toast({ variant: 'destructive', title: 'Error', description: 'User not authenticated.' });
+            return;
+        }
         setIsSaving(true);
         setDoc(docRef, formData, { merge: true }).then(() => {
             toast({ title: 'Success', description: 'Rate Analysis saved.' });
@@ -3345,8 +3398,7 @@ const Section24 = React.memo(() => {
                 requestResourceData: formData,
             });
             errorEmitter.emit('permission-error', permissionError);
-            setIsSaving(false);
-        });
+        }).finally(() => setIsSaving(false));
     };
 
     const handleDownload = () => {
@@ -3488,7 +3540,10 @@ const Section25 = React.memo(() => {
     };
 
     const handleSave = () => {
-        if (!docRef) return;
+        if (!docRef) {
+             toast({ variant: 'destructive', title: 'Error', description: 'User not authenticated.' });
+            return;
+        }
         setIsSaving(true);
         setDoc(docRef, formData, { merge: true }).then(() => {
             toast({ title: 'Success', description: 'Change Order saved.' });
@@ -3500,8 +3555,7 @@ const Section25 = React.memo(() => {
                 requestResourceData: formData,
             });
             errorEmitter.emit('permission-error', permissionError);
-            setIsSaving(false);
-        });
+        }).finally(() => setIsSaving(false));
     };
 
     const handleDownload = () => {
@@ -3559,14 +3613,14 @@ const Section25 = React.memo(() => {
 
                 <p className="font-bold text-center">Not Valid until signed by the Owner, Architect and Contractor.</p>
                 
-                <div className="space-y-2">
-                    <div className="flex items-center gap-2"><p>The original (Contract Sum) (Guaranteed Maximum Price) was</p> {renderField('original_contract_sum', 'Rs.')}</div>
-                    <div className="flex items-center gap-2"><p>Net change by previously authorized Change Orders</p> {renderField('net_change_orders', 'Rs.')}</div>
-                    <div className="flex items-center gap-2"><p>The (Contract Sum) (Guaranteed Maximum Price) prior to this Change Order was</p> {renderField('contract_sum_prior', 'Rs.')}</div>
-                    <div className="flex items-center gap-2"><p>The (Contract Sum) (Guaranteed Maximum Price) will be (increased) (decreased) (changed) by this Change Order in the amount of</p> {renderField('change_order_amount', 'Rs.')}</div>
-                    <div className="flex items-center gap-2"><p>The new (Contract Sum) (Guaranteed Maximum Price) including this Change Order will be</p> {renderField('new_contract_sum', 'Rs.')}</div>
-                    <div className="flex items-center gap-2"><p>The Contract Time will be (increased) (decreased) by</p> {renderField('contract_time_change', '(_______) days')}</div>
-                    <div className="flex items-center gap-2"><p>the date of Substantial Completion as the date of this Change Order therefore is:</p> {renderField('substantial_completion_date')}</div>
+                 <div className="space-y-2">
+                    <div className="flex items-center gap-2"><div>The original (Contract Sum) (Guaranteed Maximum Price) was</div> {renderField('original_contract_sum', 'Rs.')}</div>
+                    <div className="flex items-center gap-2"><div>Net change by previously authorized Change Orders</div> {renderField('net_change_orders', 'Rs.')}</div>
+                    <div className="flex items-center gap-2"><div>The (Contract Sum) (Guaranteed Maximum Price) prior to this Change Order was</div> {renderField('contract_sum_prior', 'Rs.')}</div>
+                    <div className="flex items-center gap-2"><div>The (Contract Sum) (Guaranteed Maximum Price) will be (increased) (decreased) (changed) by this Change Order in the amount of</div> {renderField('change_order_amount', 'Rs.')}</div>
+                    <div className="flex items-center gap-2"><div>The new (Contract Sum) (Guaranteed Maximum Price) including this Change Order will be</div> {renderField('new_contract_sum', 'Rs.')}</div>
+                    <div className="flex items-center gap-2"><div>The Contract Time will be (increased) (decreased) by</div> {renderField('contract_time_change', '(_______) days')}</div>
+                    <div className="flex items-center gap-2"><div>the date of Substantial Completion as the date of this Change Order therefore is:</div> {renderField('substantial_completion_date')}</div>
                 </div>
                 
                 <p className="text-xs text-center">NOTE: This summary does not reflect changes in the Contract Sum, Contract Time or Guaranteed Maximum Price which have been authorized by Contraction Change Directive.</p>
