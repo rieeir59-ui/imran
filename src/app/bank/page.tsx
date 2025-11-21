@@ -1010,16 +1010,16 @@ const Section5 = React.memo(() => {
                             <p>Final Consultancy Charges</p>
                         </div>
                         <div>
-                            <p>: {renderField("day")}</p>
-                            <p>: {renderField("owner")}</p>
+                            <div>: {renderField("day")}</div>
+                            <div>: {renderField("owner")}</div>
                             <p>: Isbah Hassan & Associates</p>
-                            <p>: {renderField("designOf")}</p>
-                            <p>: {renderField("address")}</p>
-                            <p>: {renderField("coveredArea")}</p>
-                            <p>: {renderField("consultancyCharges")}</p>
-                            <p>: {renderField("salesTax")}</p>
-                            <p>: {renderField("withholdingTax")}</p>
-                            <p>: {renderField("finalCharges")}</p>
+                            <div>: {renderField("designOf")}</div>
+                            <div>: {renderField("address")}</div>
+                            <div>: {renderField("coveredArea")}</div>
+                            <div>: {renderField("consultancyCharges")}</div>
+                            <div>: {renderField("salesTax")}</div>
+                            <div>: {renderField("withholdingTax")}</div>
+                            <div>: {renderField("finalCharges")}</div>
                         </div>
                     </div>
     
@@ -1427,10 +1427,10 @@ const Section7 = React.memo(() => {
 
     const handleDownload = () => {
         const doc = new jsPDF();
-        // Placeholder for PDF generation logic
         doc.text("Requirement Performa", 10, 10);
+        // Add more fields to PDF
         doc.save("requirement-performa.pdf");
-        toast({ title: "Download Started", description: "PDF generation is in progress." });
+        toast({ title: 'Download Started', description: 'PDF is being generated.' });
     };
 
     const renderInput = (name: string, placeholder = "") => {
@@ -2132,7 +2132,7 @@ const Section11 = React.memo(() => {
             <DrawingsList />
         </CardContent>
     </Card>
-    )
+    );
 });
 Section11.displayName = 'Section11';
 
@@ -2371,6 +2371,14 @@ const FieldReportForm = React.memo(() => {
             })
             .finally(() => setIsSaving(false));
     };
+
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        doc.text("Architect Field Report", 10, 10);
+        // PDF generation logic here
+        doc.save("architect-field-report.pdf");
+        toast({ title: 'Download Started' });
+    }
     
     const renderField = (name: string, placeholder?: string, index?: number) => {
         const value = index !== undefined ? formData.items[index]?.[name] : formData[name];
@@ -2384,7 +2392,7 @@ const FieldReportForm = React.memo(() => {
             <div className="flex justify-between items-center mb-4">
                 <h4 className="font-bold">Architect Field Report</h4>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm"><Download className="w-4 h-4 mr-2"/>PDF</Button>
+                    <Button variant="outline" size="sm" onClick={handleDownload}><Download className="w-4 h-4 mr-2"/>PDF</Button>
                     {isEditing ? <Button size="sm" onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button size="sm" onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
                 </div>
             </div>
@@ -2453,6 +2461,14 @@ const TransmittalLetterForm = React.memo(() => {
             .finally(() => setIsSaving(false));
     };
 
+     const handleDownload = () => {
+        const doc = new jsPDF();
+        doc.text("Transmittal Letter", 10, 10);
+        // PDF generation logic here
+        doc.save("transmittal-letter.pdf");
+        toast({ title: 'Download Started' });
+    }
+
     const renderField = (name: string, placeholder?: string, as?: 'textarea') => {
         const value = formData[name] || '';
         if (isEditing) {
@@ -2468,7 +2484,7 @@ const TransmittalLetterForm = React.memo(() => {
             <div className="flex justify-between items-center mb-4">
                 <h4 className="font-bold">Transmittal Letter</h4>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm"><Download className="w-4 h-4 mr-2"/>PDF</Button>
+                    <Button variant="outline" size="sm" onClick={handleDownload}><Download className="w-4 h-4 mr-2"/>PDF</Button>
                     {isEditing ? <Button size="sm" onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button size="sm" onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
                 </div>
             </div>
@@ -2538,6 +2554,14 @@ const MinutesOfMeetingForm = React.memo(() => {
             .finally(() => setIsSaving(false));
     };
 
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        doc.text("Minutes of the Meeting", 10, 10);
+        // PDF generation logic here
+        doc.save("minutes-of-meeting.pdf");
+        toast({ title: 'Download Started' });
+    }
+
     const renderField = (name: string, placeholder?: string, index?: number) => {
         const value = index !== undefined ? formData.items[index]?.[name] : formData[name];
         return isEditing ? <Input name={name} value={value || ''} onChange={(e) => handleInputChange(e, index)} placeholder={placeholder} /> : <div className="p-1 border-b min-h-[24px]">{value}</div>;
@@ -2550,7 +2574,7 @@ const MinutesOfMeetingForm = React.memo(() => {
              <div className="flex justify-between items-center mb-4">
                 <h4 className="font-bold">Minutes of the Meeting</h4>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm"><Download className="w-4 h-4 mr-2"/>PDF</Button>
+                    <Button variant="outline" size="sm" onClick={handleDownload}><Download className="w-4 h-4 mr-2"/>PDF</Button>
                     {isEditing ? <Button size="sm" onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button size="sm" onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
                 </div>
             </div>
@@ -2627,6 +2651,14 @@ const Section15 = React.memo(() => {
             })
             .finally(() => setIsSaving(false));
     };
+    
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        doc.text("List Of Sub consultants", 10, 10);
+        // PDF generation logic here
+        doc.save("sub-consultant-list.pdf");
+        toast({ title: 'Download Started' });
+    }
 
     const renderCell = (name: string, index: number) => {
         const value = formData.rows[index]?.[name] || '';
@@ -2644,7 +2676,7 @@ const Section15 = React.memo(() => {
         <CardHeader className="flex flex-row justify-between items-center">
             <CardTitle>List Of Sub consultants</CardTitle>
             <div className="flex gap-2">
-                <Button variant="outline" size="sm"><Download className="w-4 h-4 mr-2"/>PDF</Button>
+                <Button variant="outline" size="sm" onClick={handleDownload}><Download className="w-4 h-4 mr-2"/>PDF</Button>
                 {isEditing ? <Button size="sm" onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button size="sm" onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
             </div>
         </CardHeader>
@@ -2722,6 +2754,14 @@ const Section16 = React.memo(() => {
             .finally(() => setIsSaving(false));
     };
 
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        doc.text("List of Contractors", 10, 10);
+        // PDF generation logic here
+        doc.save("contractor-list.pdf");
+        toast({ title: 'Download Started' });
+    }
+
     const renderCell = (name: string, index: number) => {
         const value = formData.rows[index]?.[name] || '';
         return isEditing ? <Input name={name} value={value} onChange={e => handleInputChange(e, index)} /> : <p className="p-1">{value}</p>;
@@ -2738,7 +2778,7 @@ const Section16 = React.memo(() => {
         <CardHeader className="flex flex-row justify-between items-center">
             <CardTitle>List of Contractors</CardTitle>
             <div className="flex gap-2">
-                <Button variant="outline" size="sm"><Download className="w-4 h-4 mr-2"/>PDF</Button>
+                <Button variant="outline" size="sm" onClick={handleDownload}><Download className="w-4 h-4 mr-2"/>PDF</Button>
                 {isEditing ? <Button size="sm" onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button size="sm" onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
             </div>
         </CardHeader>
@@ -3476,15 +3516,15 @@ const Section23 = React.memo(() => {
             { id: 5.2, srNo: 'ii', description: 'O.H.W.T', unit: 'R.ft', qty: '60', rate: '', amount: '' },
         ]},
         { id: 6, srNo: '6', description: 'Reinforced Cement Concrete Work (3000 Psi)', isHeader: true, subItems: [
-            { id: 6.01, srNo: '6.1', description: 'Providing, laying, vibrating, compacting, finishing and curing etc. straight or curved, cast in situ reinforced cement concrete at any floor/height/depth, from ready mix plant, 3000 Psi minimum cylinder compressive strength at 28 days, mix using Ordinary Portland Grey Cement, fine aggregate (100% clean lawrence pur sand ) and sargodah crushed coarse aggregate 3/4\'\' down graded with approved quality admixture by Sika/Imporient or approved equivalent, including laying through pump, vibrating through electro mechanical vibrators, placing of all pipes and embedded items before concreting curing finishing complete but excluding the cost of steel reinforcement complete in all respect as per drawings and as directed by the Consultant/Engineer incharge', unit: '', qty: '', rate: '', amount: '' },
-            { id: 6.02, srNo: '6.2', description: 'Basement Retaining Walls', unit: 'C.ft', qty: '4,050', rate: '', amount: '' },
-            { id: 6.03, srNo: '6.3', description: 'Basement Pool Walls', unit: 'C.ft', qty: '1,335', rate: '', amount: '' },
-            { id: 6.04, srNo: '6.4', description: 'Basement Pool Base', unit: 'C.ft', qty: '473', rate: '', amount: '' },
-            { id: 6.05, srNo: '6.5', description: 'Basement water body walls & Base', unit: 'C.ft', qty: '230', rate: '', amount: '' },
-            { id: 6.06, srNo: '6.6', description: 'Basement Column Foundations', unit: 'C.ft', qty: '1,664', rate: '', amount: '' },
-            { id: 6.07, srNo: '6.7', description: 'Basement Basement Coulumn', unit: 'C.ft', qty: '340', rate: '', amount: '' },
-            { id: 6.08, srNo: '6.8', description: 'Basement Lintel', unit: 'C.ft', qty: '495', rate: '', amount: '' },
-            { id: 6.09, srNo: '6.9', description: 'Basement Slab & Beam', unit: 'C.ft', qty: '4,224', rate: '', amount: '' },
+            { id: 6.1, srNo: '6.1', description: 'Providing, laying, vibrating, compacting, finishing and curing etc. straight or curved, cast in situ reinforced cement concrete at any floor/height/depth, from ready mix plant, 3000 Psi minimum cylinder compressive strength at 28 days, mix using Ordinary Portland Grey Cement, fine aggregate (100% clean lawrence pur sand ) and sargodah crushed coarse aggregate 3/4\'\' down graded with approved quality admixture by Sika/Imporient or approved equivalent, including laying through pump, vibrating through electro mechanical vibrators, placing of all pipes and embedded items before concreting curing finishing complete but excluding the cost of steel reinforcement complete in all respect as per drawings and as directed by the Consultant/Engineer incharge', unit: '', qty: '', rate: '', amount: '' },
+            { id: 6.2, srNo: '6.2', description: 'Basement Retaining Walls', unit: 'C.ft', qty: '4,050', rate: '', amount: '' },
+            { id: 6.3, srNo: '6.3', description: 'Basement Pool Walls', unit: 'C.ft', qty: '1,335', rate: '', amount: '' },
+            { id: 6.4, srNo: '6.4', description: 'Basement Pool Base', unit: 'C.ft', qty: '473', rate: '', amount: '' },
+            { id: 6.5, srNo: '6.5', description: 'Basement water body walls & Base', unit: 'C.ft', qty: '230', rate: '', amount: '' },
+            { id: 6.6, srNo: '6.6', description: 'Basement Column Foundations', unit: 'C.ft', qty: '1,664', rate: '', amount: '' },
+            { id: 6.7, srNo: '6.7', description: 'Basement Basement Coulumn', unit: 'C.ft', qty: '340', rate: '', amount: '' },
+            { id: 6.8, srNo: '6.8', description: 'Basement Lintel', unit: 'C.ft', qty: '495', rate: '', amount: '' },
+            { id: 6.9, srNo: '6.9', description: 'Basement Slab & Beam', unit: 'C.ft', qty: '4,224', rate: '', amount: '' },
             { id: 6.10, srNo: '6.10', description: 'Ground Floor Column Foundations', unit: 'C.ft', qty: '36', rate: '', amount: '' },
             { id: 6.11, srNo: '6.11', description: 'Ground Floor Coulumn', unit: 'C.ft', qty: '425', rate: '', amount: '' },
             { id: 6.12, srNo: '6.12', description: 'Ground Floor Lintel', unit: 'C.ft', qty: '375', rate: '', amount: '' },
@@ -3501,15 +3541,15 @@ const Section23 = React.memo(() => {
             { id: 7.1, srNo: '', description: 'Providing fabricating, laying, fixing, Mild Steel deformed bars (non-TMT) grade 60 with minimum yield stress conforming to ASTM specifications A-615. including cost of cutting, bending, placing, binded annealed binding wire 16 guage, removal of rest from bars if any, in specified overlaps, chairs, sports, spacers, wastage, etc. Complete in all respects by an approved source such as Afco steel, Prime steel, Ittefaq steel, Model Steel, City Steel UAE ( if not available, client will specify the alternate brand. Only the lengths shown on Drawings shall be paid for in accordance with the Bar bending schedule prepared the contractors from the drawings and submitted well in advance to the Engineer for the approval, steel lengths from the site multiply by the standard weights will used for the purpose of payment and duly approved by the consultant/Engineer Incharge.', unit: 'Ton', qty: '75', rate: '', amount: '' }
         ]},
         { id: 8, srNo: '8', description: 'Brick Work', isHeader: true, subItems: [
-            { id: 8.01, srNo: '8.1', description: 'Providing and laying first class burnt brick work 9"and above thickness to in cement sand mortar (1:5) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer', unit: '', qty: '', rate: '', amount: '' },
-            { id: 8.02, srNo: '8.1.1', description: 'Basement 9" Thick Wall', unit: 'C.ft', qty: '414', rate: '', amount: '' },
-            { id: 8.03, srNo: '8.1.2', description: 'Basement 13.50" Thick Wall', unit: 'C.ft', qty: '1,384', rate: '', amount: '' },
-            { id: 8.04, srNo: '8.1.3', description: 'Ground Floor 15" Thick Wall', unit: 'C.ft', qty: '900', rate: '', amount: '' },
-            { id: 8.05, srNo: '8.1.4', description: 'Ground Floor 13.50" Thick Wall', unit: 'C.ft', qty: '1,814', rate: '', amount: '' },
-            { id: 8.06, srNo: '8.1.5', description: 'Ground Floor 9" Thick Wall', unit: 'C.ft', qty: '1,206', rate: '', amount: '' },
-            { id: 8.07, srNo: '8.1.6', description: 'First Floor 15" Thick Wall', unit: 'C.ft', qty: '825', rate: '', amount: '' },
-            { id: 8.08, srNo: '8.1.7', description: 'First Floor 13.50" Thick Wall', unit: 'C.ft', qty: '354', rate: '', amount: '' },
-            { id: 8.09, srNo: '8.1.8', description: 'First Floor 9" Thick Wall', unit: 'C.ft', qty: '2,175', rate: '', amount: '' },
+            { id: 8.1, srNo: '8.1', description: 'Providing and laying first class burnt brick work 9"and above thickness to in cement sand mortar (1:5) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer', unit: '', qty: '', rate: '', amount: '' },
+            { id: 8.2, srNo: '8.1.1', description: 'Basement 9" Thick Wall', unit: 'C.ft', qty: '414', rate: '', amount: '' },
+            { id: 8.3, srNo: '8.1.2', description: 'Basement 13.50" Thick Wall', unit: 'C.ft', qty: '1,384', rate: '', amount: '' },
+            { id: 8.4, srNo: '8.1.3', description: 'Ground Floor 15" Thick Wall', unit: 'C.ft', qty: '900', rate: '', amount: '' },
+            { id: 8.5, srNo: '8.1.4', description: 'Ground Floor 13.50" Thick Wall', unit: 'C.ft', qty: '1,814', rate: '', amount: '' },
+            { id: 8.6, srNo: '8.1.5', description: 'Ground Floor 9" Thick Wall', unit: 'C.ft', qty: '1,206', rate: '', amount: '' },
+            { id: 8.7, srNo: '8.1.6', description: 'First Floor 15" Thick Wall', unit: 'C.ft', qty: '825', rate: '', amount: '' },
+            { id: 8.8, srNo: '8.1.7', description: 'First Floor 13.50" Thick Wall', unit: 'C.ft', qty: '354', rate: '', amount: '' },
+            { id: 8.9, srNo: '8.1.8', description: 'First Floor 9" Thick Wall', unit: 'C.ft', qty: '2,175', rate: '', amount: '' },
             { id: 8.10, srNo: '8.2', description: 'Providing and laying first class burnt brick work 4½" thickness to in cement sand mortar (1:4) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer.', unit: '', qty: '', rate: '', amount: '' },
             { id: 8.11, srNo: '8.2.1', description: 'Basement Floor', unit: 'S.ft', qty: '3,264', rate: '', amount: '' },
             { id: 8.12, srNo: '8.2.2', description: 'Ground Floor', unit: 'S.ft', qty: '960', rate: '', amount: '' },
@@ -4036,7 +4076,7 @@ const Section25 = React.memo(() => {
                     {renderField('change_description', '', 'textarea')}
                 </div>
 
-                <p className="font-bold text-center">Not Valid until signed by the Owner, Architect and Contractor.</p>
+                <div className="font-bold text-center">Not Valid until signed by the Owner, Architect and Contractor.</div>
                 
                  <div className="space-y-2">
                     <div className="flex items-center gap-2"><div>The original (Contract Sum) (Guaranteed Maximum Price) was</div> {renderField('original_contract_sum', 'Rs.')}</div>
@@ -4048,7 +4088,7 @@ const Section25 = React.memo(() => {
                     <div className="flex items-center gap-2"><div>the date of Substantial Completion as the date of this Change Order therefore is:</div> {renderField('substantial_completion_date')}</div>
                 </div>
                 
-                <p className="text-xs text-center">NOTE: This summary does not reflect changes in the Contract Sum, Contract Time or Guaranteed Maximum Price which have been authorized by Contraction Change Directive.</p>
+                <div className="text-xs text-center">NOTE: This summary does not reflect changes in the Contract Sum, Contract Time or Guaranteed Maximum Price which have been authorized by Contraction Change Directive.</div>
                 
                 <div className="grid grid-cols-3 gap-8 pt-8">
                     <div><Label>Architect</Label>{renderField('architect_signature_address', 'Address')}{renderField('architect_by', 'By')}{renderField('architect_date', 'Date')}</div>
