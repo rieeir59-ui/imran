@@ -1369,7 +1369,7 @@ const Section7 = React.memo(() => {
     
     const docRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
-        return doc(firestore, `users/${user.uid}/projectData/${REQUIREMENT_PERFORMA_DOC_ID}`);
+        return doc(firestore, `users/${user.uid}/requirementPerforma/${REQUIREMENT_PERFORMA_DOC_ID}`);
     }, [user, firestore]);
     
     useEffect(() => {
@@ -1420,7 +1420,7 @@ const Section7 = React.memo(() => {
         if (isEditing) {
             return <Input name={name} value={formData[name] || ''} onChange={handleInputChange} placeholder={placeholder} />;
         }
-        return <div className="border-b min-h-[24px] py-1">{formData[name] || ''}</div>
+        return <div className="border-b min-h-[24px] py-1">{formData[name] || ''}</div>;
     };
      const renderTextarea = (name: string, placeholder = "") => {
         if (isEditing) {
@@ -1614,7 +1614,7 @@ const Section8 = React.memo(() => {
     
     const docRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
-        return doc(firestore, `users/${user.uid}/projectData/${SITE_SURVEY_DOC_ID}`);
+        return doc(firestore, `users/${user.uid}/siteSurvey/${SITE_SURVEY_DOC_ID}`);
     }, [user, firestore]);
     
     useEffect(() => {
@@ -1898,7 +1898,7 @@ const Section10 = React.memo(() => {
     
     const docRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
-        return doc(firestore, `users/${user.uid}/projectData/${PROPOSAL_REQUEST_DOC_ID}`);
+        return doc(firestore, `users/${user.uid}/proposalRequest/${PROPOSAL_REQUEST_DOC_ID}`);
     }, [user, firestore]);
 
     useEffect(() => {
@@ -1970,20 +1970,20 @@ const Section10 = React.memo(() => {
         <CardContent>
             <div className="space-y-4">
                 <div className="flex justify-between">
-                    <FormField label="Project">{renderFormField('project', 'project')}</FormField>
-                    <FormField label="Proposal Request No.">{renderFormField('proposal_no', 'proposal_no')}</FormField>
+                    <div><Label>Project</Label>{renderFormField('project', 'project')}</div>
+                    <div><Label>Proposal Request No.</Label>{renderFormField('proposal_no', 'proposal_no')}</div>
                 </div>
                  <div className="flex justify-between">
-                    <FormField label="(Name, Address)">{renderFormField('name_address', 'name_address')}</FormField>
-                    <FormField label="Date">{renderFormField('date', 'date')}</FormField>
+                    <div><Label>(Name, Address)</Label>{renderFormField('name_address', 'name_address')}</div>
+                    <div><Label>Date</Label>{renderFormField('date', 'date')}</div>
                 </div>
                  <div className="flex justify-between">
-                    <FormField label="Architects Project No">{renderFormField('architect_project_no', 'architect_project_no')}</FormField>
-                    <FormField label="Contract For">{renderFormField('contract_for', 'contract_for')}</FormField>
+                    <div><Label>Architects Project No</Label>{renderFormField('architect_project_no', 'architect_project_no')}</div>
+                    <div><Label>Contract For</Label>{renderFormField('contract_for', 'contract_for')}</div>
                 </div>
                  <div className="flex justify-between">
-                    <FormField label="Owner">{renderFormField('owner', 'owner')}</FormField>
-                    <FormField label="Contract Date">{renderFormField('contract_date', 'contract_date')}</FormField>
+                    <div><Label>Owner</Label>{renderFormField('owner', 'owner')}</div>
+                    <div><Label>Contract Date</Label>{renderFormField('contract_date', 'contract_date')}</div>
                 </div>
 
                 <div className="border rounded-md p-4 space-y-2">
@@ -1992,8 +1992,8 @@ const Section10 = React.memo(() => {
                     {isEditing && <Input name="to_contractor" value={formData.to_contractor || ''} onChange={handleInputChange} />}
                 </div>
 
-                <FormField label="Description: (Written description of the Work)">{renderFormField('description', 'description', 'textarea')}</FormField>
-                <FormField label="Attachments: (List attached documents that support description)">{renderFormField('attachments', 'attachments', 'textarea')}</FormField>
+                <div><Label>Description: (Written description of the Work)</Label>{renderFormField('description', 'description', 'textarea')}</div>
+                <div><Label>Attachments: (List attached documents that support description)</Label>{renderFormField('attachments', 'attachments', 'textarea')}</div>
                 
                 <p>Please submit an itemized quotation for changes in the Contract Sum and/or Time incidental to proposed modifications to the Contract Documents described herein.</p>
                 <p className="font-bold text-center">THIS IS NOT A CHANGE ORDER NOT A DIRECTION TO PROCEED WITH THE WORK DESCRIBED HEREIN.</p>
@@ -2014,7 +2014,8 @@ const Section10 = React.memo(() => {
             </div>
         </CardContent>
     </Card>
-));
+    );
+});
 Section10.displayName = 'Section10';
 
 const Section11 = React.memo(() => (
@@ -3613,5 +3614,6 @@ export default function BankPage() {
         </main>
     );
 }
+
 
 
