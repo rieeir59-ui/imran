@@ -40,6 +40,9 @@ const CONSTRUCTION_SCHEDULE_DOC_ID = 'construction-activity-schedule';
 const BILL_OF_QUANTITY_DOC_ID = 'bill-of-quantity';
 const RATE_ANALYSIS_DOC_ID = 'rate-analysis';
 const CHANGE_ORDER_DOC_ID = 'change-order';
+const REQUIREMENT_PERFORMA_DOC_ID = 'requirement-performa';
+const SITE_SURVEY_DOC_ID = 'site-survey';
+const PROPOSAL_REQUEST_DOC_ID = 'proposal-request';
 
 
 const fileIndexItems = [
@@ -1355,7 +1358,33 @@ const Section6 = React.memo(() => {
 Section6.displayName = 'Section6';
 
 const Section7 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [formData, setFormData] = useState<any>({});
+    
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+    
+    const docRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectData/${REQUIREMENT_PERFORMA_DOC_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!docRef) return;
+        setIsLoading(true);
+        getDoc(docRef).then(docSnap => {
+            if (docSnap.exists()) {
+                setFormData(docSnap.data());
+            }
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load data.' });
+        }).finally(() => setIsLoading(false));
+    }, [docRef, toast]);
+    
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prev: any) => ({ ...prev, [name]: value }));
@@ -1367,38 +1396,80 @@ const Section7 = React.memo(() => {
       }
     };
     
-    const renderInput = (name: string, placeholder = "") => (
-        <Input name={name} value={formData[name] || ''} onChange={handleInputChange} placeholder={placeholder} />
-    );
-     const renderTextarea = (name: string, placeholder = "") => (
-      <Textarea name={name} value={formData[name] || ''} onChange={handleInputChange} placeholder={placeholder} />
-    );
+    const handleSave = () => {
+        if (!docRef) return;
+        setIsSaving(true);
+        setDoc(docRef, formData, { merge: true }).then(() => {
+            toast({ title: 'Success', description: 'Requirement Performa saved.' });
+            setIsEditing(false);
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save data.' });
+        }).finally(() => setIsSaving(false));
+    };
+
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        // Placeholder for PDF generation logic
+        doc.text("Requirement Performa", 10, 10);
+        doc.save("requirement-performa.pdf");
+        toast({ title: "Download Started", description: "PDF generation is in progress." });
+    };
+
+    const renderInput = (name: string, placeholder = "") => {
+        if (isEditing) {
+            return <Input name={name} value={formData[name] || ''} onChange={handleInputChange} placeholder={placeholder} />;
+        }
+        return <div className="border-b min-h-[24px] py-1">{formData[name] || ''}</div>
+    };
+     const renderTextarea = (name: string, placeholder = "") => {
+        if (isEditing) {
+          return <Textarea name={name} value={formData[name] || ''} onChange={handleInputChange} placeholder={placeholder} />;
+        }
+        return <p className="border-b min-h-[24px] py-1 whitespace-pre-wrap">{formData[name] || ''}</p>
+    };
 
     const renderCheckbox = (name: string, label: string) => (
         <div className="flex items-center gap-2">
-            <Checkbox id={name} name={name} checked={formData[name] || false} onCheckedChange={(checked) => handleCheckboxChange(name, checked)} />
+            <Checkbox id={name} name={name} checked={formData[name] || false} onCheckedChange={(checked) => handleCheckboxChange(name, checked)} disabled={!isEditing} />
             <label htmlFor={name}>{label}</label>
         </div>
     );
-    const renderConsultantRow = (type: string, index: number) => {
+    const renderConsultantRow = (type: string) => {
         const slug = type.toLowerCase().replace(/ /g, '_').replace(/\//g, '_');
         return (
-            <div key={`${slug}-${index}`} className="grid grid-cols-5 gap-2 items-center border-b pb-2">
+            <div key={`${slug}`} className="grid grid-cols-5 gap-2 items-center border-b pb-2">
                 <p>{type}</p>
-                <div className="flex items-center justify-center">{renderCheckbox(`consultant_${slug}_basic`, "")}</div>
-                <div className="flex items-center justify-center">{renderCheckbox(`consultant_${slug}_additional`, "")}</div>
-                <div className="flex items-center justify-center">{renderCheckbox(`consultant_${slug}_architect`, "")}</div>
-                <div className="flex items-center justify-center">{renderCheckbox(`consultant_${slug}_owner`, "")}</div>
+                <div className="flex items-center justify-center">{renderInput(`consultant_${slug}_basic`)}</div>
+                <div className="flex items-center justify-center">{renderInput(`consultant_${slug}_additional`)}</div>
+                <div className="flex items-center justify-center">{renderInput(`consultant_${slug}_architect`)}</div>
+                <div className="flex items-center justify-center">{renderInput(`consultant_${slug}_owner`)}</div>
             </div>
         )
     }
 
-    const consultantTypes = ["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Construction Cost", "Other", " ", "  ", "   ", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"];
+    const consultantTypes = ["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Solar", "Construction Cost", "Other", " ", "  ", "   ", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"];
+
+    if (isLoading || isUserLoading) {
+      return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+    }
 
 
     return (
         <Card>
-            <CardHeader><CardTitle>Requirement Performa (for Residential and Commercial Project)</CardTitle></CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Requirement Performa (for Residential and Commercial Project)</CardTitle>
+                <div className="flex gap-2">
+                    <Button onClick={handleDownload} variant="outline"><Download /> PDF</Button>
+                    {isEditing ? (
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                        </Button>
+                    ) : (
+                        <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                    )}
+                </div>
+            </CardHeader>
             <CardContent>
                 <div className="space-y-4">
                     <FormField label="Project:">{renderInput("project_name")}</FormField>
@@ -1501,7 +1572,7 @@ const Section7 = React.memo(() => {
 
 
                     <SectionTitle>Miscellaneous Notes</SectionTitle>
-                    <Textarea name="misc_notes" value={formData.misc_notes || ''} onChange={handleInputChange} rows={5}/>
+                    <Textarea name="misc_notes" value={formData.misc_notes || ''} onChange={handleInputChange} rows={5} disabled={!isEditing}/>
 
                     <SectionTitle>Requirements</SectionTitle>
                     <FormField label="Residence: Nos.">{renderInput("req_residence_nos")}</FormField>
@@ -1532,21 +1603,111 @@ const Section7 = React.memo(() => {
 Section7.displayName = 'Section7';
 
 const Section8 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [formData, setFormData] = useState<any>({});
+    
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+    
+    const docRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectData/${SITE_SURVEY_DOC_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!docRef) return;
+        setIsLoading(true);
+        getDoc(docRef).then(docSnap => {
+            if (docSnap.exists()) {
+                setFormData(docSnap.data());
+            }
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load data.' });
+        }).finally(() => setIsLoading(false));
+    }, [docRef, toast]);
+    
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!isEditing) return;
         setFormData({...formData, [e.target.name]: e.target.value});
     };
+    
     const handleRadioChange = (name: string, value: string) => {
+        if (!isEditing) return;
         setFormData({...formData, [name]: value});
+    }
+
+    const handleCheckboxChange = (name: string, checked: boolean | 'indeterminate') => {
+        if (!isEditing || typeof checked !== 'boolean') return;
+        setFormData(prev => ({...prev, [name]: checked }));
+    };
+
+    const handleSave = () => {
+        if (!docRef) return;
+        setIsSaving(true);
+        setDoc(docRef, formData, { merge: true }).then(() => {
+            toast({ title: 'Success', description: 'Site Survey saved.' });
+            setIsEditing(false);
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save data.' });
+        }).finally(() => setIsSaving(false));
+    };
+
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        doc.text("SITE SURVEY", 10, 10);
+        // Add more fields to PDF
+        doc.save("site-survey.pdf");
+        toast({ title: 'Download Started', description: 'PDF is being generated.' });
+    };
+    
+    const renderInput = (name: string, placeholder?: string) => {
+        return isEditing ? <Input name={name} value={formData[name] || ''} onChange={handleInputChange} placeholder={placeholder} /> : <div className="border-b min-h-[24px] py-1">{formData[name] || ''}</div>
+    }
+    
+    const renderRadioGroup = (name: string, items: string[]) => {
+        return <RadioGroup name={name} value={formData[name]} onValueChange={(v) => handleRadioChange(name, v)} className="flex gap-4 mt-2" disabled={!isEditing}>
+            {items.map(item => <div key={item} className="flex items-center space-x-2"><RadioGroupItem value={item.toLowerCase()} id={`${name}-${item.toLowerCase()}`} /><Label htmlFor={`${name}-${item.toLowerCase()}`}>{item}</Label></div>)}
+        </RadioGroup>
+    }
+
+    const renderRadioGroupWithNote = (name: string, items: string[], note?: string) => {
+        return <div className="flex items-center gap-2">
+            <Label>{name.split('_').join(' ')}?</Label>
+            <RadioGroup className="flex gap-4" value={formData[name]} onValueChange={(v) => handleRadioChange(name, v)} disabled={!isEditing}>
+              {items.map(item => <div key={item} className="flex items-center space-x-2"><RadioGroupItem value={item.toLowerCase()} /><Label>{item}</Label></div>)}
+            </RadioGroup>
+            {note && <Label className="text-sm text-muted-foreground">{note}</Label>}
+        </div>
+    }
+    
+    if (isLoading || isUserLoading) {
+      return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
     }
 
     return (
     <Card>
-        <CardHeader>
-            <CardTitle className="text-center">SITE SURVEY</CardTitle>
-            <p className='text-center'>REAL ESTATE MANAGEMENT</p>
-            <p className='text-center'>PREMISES REVIEW FOR PROPOSED BRANCH/OFFICE</p>
-            <p className="text-sm text-center">This questionnaire form provides preliminary information for determining the suitability of premises or property to be acquired</p>
+        <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+                <CardTitle className="text-center">SITE SURVEY</CardTitle>
+                <p className='text-center'>REAL ESTATE MANAGEMENT</p>
+                <p className='text-center'>PREMISES REVIEW FOR PROPOSED BRANCH/OFFICE</p>
+                <p className="text-sm text-center">This questionnaire form provides preliminary information for determining the suitability of premises or property to be acquired</p>
+            </div>
+             <div className="flex gap-2">
+                <Button onClick={handleDownload} variant="outline"><Download /> PDF</Button>
+                {isEditing ? (
+                    <Button onClick={handleSave} disabled={isSaving}>
+                        {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                    </Button>
+                ) : (
+                    <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                )}
+            </div>
         </CardHeader>
         <CardContent className="space-y-6">
             <div>
@@ -1554,31 +1715,21 @@ const Section8 = React.memo(() => {
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <Label>Purpose</Label>
-                        <RadioGroup defaultValue="branch" className="flex gap-4 mt-2">
-                            <div className="flex items-center space-x-2"><RadioGroupItem value="branch" id="branch" /><Label htmlFor="branch">Branch</Label></div>
-                            <div className="flex items-center space-x-2"><RadioGroupItem value="office" id="office" /><Label htmlFor="office">Office</Label></div>
-                             <div className="flex items-center space-x-2"><RadioGroupItem value="other" id="other-purpose" /><Label htmlFor="other-purpose">Other</Label></div>
-                        </RadioGroup>
+                        {renderRadioGroup('purpose', ['Branch', 'Office', 'Other'])}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <Input placeholder="City"/>
-                        <Input placeholder="Region"/>
+                        {renderInput('city', 'City')}
+                        {renderInput('region', 'Region')}
                     </div>
-                    <Input placeholder="Address" className="col-span-2"/>
+                    <div className="col-span-2">{renderInput('address', 'Address')}</div>
                 </div>
             </div>
             <div>
                 <Subtitle>Legal File</Subtitle>
                  <div className="grid grid-cols-2 gap-4">
-                    <Input placeholder="Name of Owner"/>
-                    <div className="flex items-center gap-4">
-                        <Label>Is Completion Certificate available?</Label>
-                        <RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="cert-yes" /><Label htmlFor="cert-yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="cert-no" /><Label htmlFor="cert-no">No</Label></div></RadioGroup>
-                    </div>
-                     <div className="flex items-center gap-2">
-                        <Label>Is the property leased?</Label>
-                        <RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="leased-yes" /><Label htmlFor="leased-yes">Yes</Label></div><Label className="text-sm text-muted-foreground">As informed by Owner Representative</Label><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="leased-no" /><Label htmlFor="leased-no">No</Label></div></RadioGroup>
-                    </div>
+                    {renderInput('owner_name', 'Name of Owner')}
+                    {renderRadioGroupWithNote('completion_cert', ['Yes', 'No'])}
+                    {renderRadioGroupWithNote('is_leased', ['Yes', 'No'], 'As informed by Owner Representative')}
                 </div>
             </div>
 
@@ -1588,85 +1739,79 @@ const Section8 = React.memo(() => {
                     <div className="col-span-2">
                         <Label>Dimension (Attach as-built plan(s))</Label>
                         <div className="grid grid-cols-2 gap-4 mt-2">
-                            <Input placeholder="Maximum Frontage in feet" />
-                            <Input placeholder="Maximum Depth in feet" />
+                            {renderInput('frontage', 'Maximum Frontage in feet')}
+                            {renderInput('depth', 'Maximum Depth in feet')}
                         </div>
                     </div>
-                    <Input placeholder="Total Area in Sqft" />
-                    <Input placeholder="Minimum clear height (floor to roof) in ft" />
-                    <Input placeholder="Building plot size of which premises is a part" />
+                    {renderInput('total_area', 'Total Area in Sqft')}
+                    {renderInput('clear_height', 'Minimum clear height (floor to roof) in ft')}
+                    {renderInput('plot_size', 'Building plot size of which premises is a part')}
                     <div className="grid grid-cols-2 gap-4">
-                        <Input placeholder="Covered Area (Basement)"/>
-                        <Input placeholder="Covered Area (Ground Floor)"/>
+                        {renderInput('covered_basement', 'Covered Area (Basement)')}
+                        {renderInput('covered_ground', 'Covered Area (Ground Floor)')}
                     </div>
-                    <Input placeholder="No. of Stories/floors (mention, mezzanine basement, roof parapet wall)" />
+                    {renderInput('stories', 'No. of Stories/floors (mention, mezzanine basement, roof parapet wall)')}
                 </div>
             </div>
 
             <div>
                 <Subtitle>Building Overview</Subtitle>
                  <div className="grid grid-cols-2 gap-4 items-start">
-                    <div><Label>Independent Premises</Label><RadioGroup className="flex gap-4 mt-2"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="ind-yes" /><Label htmlFor="ind-yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="ind-no" /><Label htmlFor="ind-no">No</Label></div></RadioGroup></div>
-                    <div><Label>Status</Label><Input/></div>
-                    <div><Label>Type of Premises</Label><Input/></div>
-                    <div><Label>Age of Premises</Label><Input/></div>
-                    <div><Label>Interior of Premises</Label><Input/></div>
-                    <div><Label>Type of Construction</Label><Input/></div>
+                    <div><Label>Independent Premises</Label>{renderRadioGroup('independent_premises', ['Yes', 'No'])}</div>
+                    <div><Label>Status</Label>{renderInput('status')}</div>
+                    <div><Label>Type of Premises</Label>{renderInput('premises_type')}</div>
+                    <div><Label>Age of Premises</Label>{renderInput('premises_age')}</div>
+                    <div><Label>Interior of Premises</Label>{renderInput('premises_interior')}</div>
+                    <div><Label>Type of Construction</Label>{renderInput('construction_type')}</div>
 
                     <div className="col-span-2"><p className="font-semibold">Condition of premises with reference to structural stability</p></div>
-                    <div className="flex items-center gap-4"><Label>Is entrance independent?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
-                    <div className="flex items-center gap-4"><Label>Staircase for staff use available with its assessment?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
-                    <div className="flex items-center gap-4"><Label>Emergency exit available?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
-                    <div className="flex items-center gap-4"><Label>If not, can be provided?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
-                    <div className="flex items-center gap-4"><Label>Ramp available?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
-                    <div className="flex items-center gap-4"><Label>If not, can be provided?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
-                    <div className="flex items-center gap-4"><Label>Seepage?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
-                    <Input placeholder="Area of seepage (Walls, slab, etc.)"/>
-                    <Input placeholder="Cause of seepage"/>
-                    <div className="flex items-center gap-4"><Label>Generator installation space?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
+                    {renderRadioGroupWithNote('independent_entrance', ['Yes', 'No'])}
+                    {renderRadioGroupWithNote('staff_staircase', ['Yes', 'No'])}
+                    {renderRadioGroupWithNote('emergency_exit', ['Yes', 'No'])}
+                    {renderRadioGroupWithNote('can_provide_exit', ['Yes', 'No'])}
+                    {renderRadioGroupWithNote('ramp_available', ['Yes', 'No'])}
+                    {renderRadioGroupWithNote('can_provide_ramp', ['Yes', 'No'])}
+                    {renderRadioGroupWithNote('seepage', ['Yes', 'No'])}
+                    {renderInput('seepage_area', 'Area of seepage (Walls, slab, etc.)')}
+                    {renderInput('seepage_cause', 'Cause of seepage')}
+                    {renderRadioGroupWithNote('generator_space', ['Yes', 'No'])}
                     <div>
                         <Label>Property Utilization</Label>
                         <div className="flex flex-wrap gap-4 mt-2">
-                           <div className="flex items-center space-x-2"><Checkbox id="pu-res" /><Label htmlFor="pu-res">Fully residential</Label></div>
-                           <div className="flex items-center space-x-2"><Checkbox id="pu-com" /><Label htmlFor="pu-com">Fully Commercial</Label></div>
-                           <div className="flex items-center space-x-2"><Checkbox id="pu-dual" /><Label htmlFor="pu-dual">Dual use</Label></div>
-                           <div className="flex items-center space-x-2"><Checkbox id="pu-ind" /><Label htmlFor="pu-ind">Industrial</Label></div>
+                           <div className="flex items-center space-x-2"><Checkbox id="pu-res" name="pu_res" checked={formData['pu_res']} onCheckedChange={(c) => handleCheckboxChange('pu_res', c)} disabled={!isEditing} /><Label htmlFor="pu-res">Fully residential</Label></div>
+                           <div className="flex items-center space-x-2"><Checkbox id="pu-com" name="pu_com" checked={formData['pu_com']} onCheckedChange={(c) => handleCheckboxChange('pu_com', c)} disabled={!isEditing} /><Label htmlFor="pu-com">Fully Commercial</Label></div>
+                           <div className="flex items-center space-x-2"><Checkbox id="pu-dual" name="pu_dual" checked={formData['pu_dual']} onCheckedChange={(c) => handleCheckboxChange('pu_dual', c)} disabled={!isEditing} /><Label htmlFor="pu-dual">Dual use</Label></div>
+                           <div className="flex items-center space-x-2"><Checkbox id="pu-ind" name="pu_ind" checked={formData['pu_ind']} onCheckedChange={(c) => handleCheckboxChange('pu_ind', c)} disabled={!isEditing} /><Label htmlFor="pu-ind">Industrial</Label></div>
                         </div>
                     </div>
-                    <Input placeholder="Building plinth level from the road"/>
-                    <div className="flex items-center gap-4"><Label>Is area susceptible to flooding during rainfall?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
-                    <div className="flex items-center gap-4"><Label>Disable access available or can be provided?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
-                    <Input placeholder="Condition of roof waterproofing (if applicable)"/>
-                     <div className="flex items-center gap-2">
-                        <Label>Parking available?</Label>
-                        <RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><Label className="text-sm text-muted-foreground">On Main Road</Label><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup>
-                    </div>
-                    <div className="flex items-center gap-4"><Label>Approachable through road?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
-                    <div className="flex items-center gap-2">
-                        <Label>Any hazard like petrol pump/CNG station/in vicinity available?</Label>
-                        <RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><Label className="text-sm text-muted-foreground">300 meter</Label><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup>
-                    </div>
-                    <div className="flex items-center gap-4"><Label>Wall masonary material as per region?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
-                    <div className="flex items-center gap-4"><Label>Space for signage available?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
+                    {renderInput('plinth_level', 'Building plinth level from the road')}
+                    {renderRadioGroupWithNote('flooding_risk', ['Yes', 'No'])}
+                    {renderRadioGroupWithNote('disable_access', ['Yes', 'No'])}
+                    {renderInput('roof_waterproofing', 'Condition of roof waterproofing (if applicable)')}
+                     {renderRadioGroupWithNote('parking_available', ['Yes', 'No'], 'On Main Road')}
+                    {renderRadioGroupWithNote('road_approachable', ['Yes', 'No'])}
+                    {renderRadioGroupWithNote('hazard_vicinity', ['Yes', 'No'], '300 meter')}
+                    {renderRadioGroupWithNote('wall_masonry_material', ['Yes', 'No'])}
+                    {renderRadioGroupWithNote('signage_space', ['Yes', 'No'])}
 
                     <div className="col-span-2">
                         <Label>Major retainable building elements</Label>
                         <div className="flex flex-wrap gap-4 mt-2">
-                           <div className="flex items-center space-x-2"><Checkbox id="mrb-wt" /><Label htmlFor="mrb-wt">Water Tank</Label></div>
-                           <div className="flex items-center space-x-2"><Checkbox id="mrb-v" /><Label htmlFor="mrb-v">Vault</Label></div>
-                           <div className="flex items-center space-x-2"><Checkbox id="mrb-sf" /><Label htmlFor="mrb-sf">Subflooring</Label></div>
-                           <div className="flex items-center space-x-2"><Checkbox id="mrb-sc" /><Label htmlFor="mrb-sc">Staircase</Label></div>
-                           <div className="flex items-center space-x-2"><Checkbox id="mrb-o" /><Label htmlFor="mrb-o">Others</Label></div>
+                           <div className="flex items-center space-x-2"><Checkbox id="mrb-wt" name="mrb_wt" checked={formData.mrb_wt} onCheckedChange={c=>handleCheckboxChange('mrb_wt', c)} disabled={!isEditing} /><Label htmlFor="mrb-wt">Water Tank</Label></div>
+                           <div className="flex items-center space-x-2"><Checkbox id="mrb-v" name="mrb_v" checked={formData.mrb_v} onCheckedChange={c=>handleCheckboxChange('mrb_v', c)} disabled={!isEditing} /><Label htmlFor="mrb-v">Vault</Label></div>
+                           <div className="flex items-center space-x-2"><Checkbox id="mrb-sf" name="mrb_sf" checked={formData.mrb_sf} onCheckedChange={c=>handleCheckboxChange('mrb_sf', c)} disabled={!isEditing} /><Label htmlFor="mrb-sf">Subflooring</Label></div>
+                           <div className="flex items-center space-x-2"><Checkbox id="mrb-sc" name="mrb_sc" checked={formData.mrb_sc} onCheckedChange={c=>handleCheckboxChange('mrb_sc', c)} disabled={!isEditing} /><Label htmlFor="mrb-sc">Staircase</Label></div>
+                           <div className="flex items-center space-x-2"><Checkbox id="mrb-o" name="mrb_o" checked={formData.mrb_o} onCheckedChange={c=>handleCheckboxChange('mrb_o', c)} disabled={!isEditing} /><Label htmlFor="mrb-o">Others</Label></div>
                         </div>
                     </div>
-                     <Input className="col-span-2" placeholder="In case of Plot provide existing level from road & surrounding buildings" />
+                     <div className="col-span-2">{renderInput('plot_levels', 'In case of Plot provide existing level from road & surrounding buildings')}</div>
 
                      <div>
                         <Label>Building Control Violations</Label>
                         <div className="flex gap-4 mt-2">
-                            <div className="flex items-center space-x-2"><Checkbox id="bcv-maj" /><Label htmlFor="bcv-maj">Major</Label></div>
-                            <div className="flex items-center space-x-2"><Checkbox id="bcv-min" /><Label htmlFor="bcv-min">Minor</Label></div>
-                            <div className="flex items-center space-x-2"><Checkbox id="bcv-no" /><Label htmlFor="bcv-no">No Deviation</Label></div>
+                            <div className="flex items-center space-x-2"><Checkbox id="bcv-maj" name="bcv_maj" checked={formData.bcv_maj} onCheckedChange={c=>handleCheckboxChange('bcv_maj', c)} disabled={!isEditing} /><Label htmlFor="bcv-maj">Major</Label></div>
+                            <div className="flex items-center space-x-2"><Checkbox id="bcv-min" name="bcv_min" checked={formData.bcv_min} onCheckedChange={c=>handleCheckboxChange('bcv_min', c)} disabled={!isEditing} /><Label htmlFor="bcv-min">Minor</Label></div>
+                            <div className="flex items-center space-x-2"><Checkbox id="bcv-no" name="bcv_no" checked={formData.bcv_no} onCheckedChange={c=>handleCheckboxChange('bcv_no', c)} disabled={!isEditing} /><Label htmlFor="bcv-no">No Deviation</Label></div>
                             <Label className="text-sm text-muted-foreground">As performed by owner representative</Label>
                         </div>
                     </div>
@@ -1676,62 +1821,59 @@ const Section8 = React.memo(() => {
             <div>
                 <Subtitle>Utilities</Subtitle>
                 <div className="grid grid-cols-2 gap-4">
-                    <Input placeholder="Sanctioned electrical load" />
+                    {renderInput('electrical_load', 'Sanctioned electrical load')}
                     <div>
                         <Label>Type of electrical load</Label>
                          <div className="flex flex-wrap gap-4 mt-2">
-                             <div className="flex items-center space-x-2"><Checkbox id="el-com" /><Label htmlFor="el-com">Commercial</Label></div>
-                             <div className="flex items-center space-x-2"><Checkbox id="el-ind" /><Label htmlFor="el-ind">Industrial</Label></div>
-                             <div className="flex items-center space-x-2"><Checkbox id="el-res" /><Label htmlFor="el-res">Residential</Label></div>
+                             <div className="flex items-center space-x-2"><Checkbox id="el-com" name="el_com" checked={formData.el_com} onCheckedChange={c=>handleCheckboxChange('el_com', c)} disabled={!isEditing} /><Label htmlFor="el-com">Commercial</Label></div>
+                             <div className="flex items-center space-x-2"><Checkbox id="el-ind" name="el_ind" checked={formData.el_ind} onCheckedChange={c=>handleCheckboxChange('el_ind', c)} disabled={!isEditing} /><Label htmlFor="el-ind">Industrial</Label></div>
+                             <div className="flex items-center space-x-2"><Checkbox id="el-res" name="el_res" checked={formData.el_res} onCheckedChange={c=>handleCheckboxChange('el_res', c)} disabled={!isEditing} /><Label htmlFor="el-res">Residential</Label></div>
                         </div>
                     </div>
                     <div>
                         <Label>Electrical Meter</Label>
-                        <RadioGroup className="flex gap-4 mt-2">
-                            <div className="flex items-center space-x-2"><RadioGroupItem value="single" /><Label>Single Phase</Label></div>
-                            <div className="flex items-center space-x-2"><RadioGroupItem value="3phase" /><Label>3 Phase</Label></div>
-                        </RadioGroup>
+                        {renderRadioGroup('electrical_meter', ['Single Phase', '3 Phase'])}
                     </div>
-                    <div className="flex items-center gap-4"><Label>Piped water available?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
-                    <div className="flex items-center gap-4"><Label>Underground tank?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
-                    <div className="flex items-center gap-4"><Label>Overhead tank?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
-                    <Input placeholder="Type of Overhead tank (RCC, Fiber etc.)" />
-                    <Input placeholder="Type of water (boring or liner water)" />
-                    <div className="flex items-center gap-4"><Label>Gas Connection?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
-                    <div className="flex items-center gap-4"><Label>Connected to Sewerage line?</Label><RadioGroup className="flex gap-4"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" /><Label>Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" /><Label>No</Label></div></RadioGroup></div>
+                    {renderRadioGroupWithNote('piped_water', ['Yes', 'No'])}
+                    {renderRadioGroupWithNote('underground_tank', ['Yes', 'No'])}
+                    {renderRadioGroupWithNote('overhead_tank', ['Yes', 'No'])}
+                    {renderInput('overhead_tank_type', 'Type of Overhead tank (RCC, Fiber etc.)')}
+                    {renderInput('water_type', 'Type of water (boring or liner water)')}
+                    {renderRadioGroupWithNote('gas_connection', ['Yes', 'No'])}
+                    {renderRadioGroupWithNote('sewerage_line', ['Yes', 'No'])}
                 </div>
             </div>
 
             <div>
                 <Subtitle>Bounded As</Subtitle>
                 <div className="grid grid-cols-2 gap-4">
-                    <Input placeholder="Front"/>
-                    <Input placeholder="Back"/>
-                    <Input placeholder="Right"/>
-                    <Input placeholder="Left"/>
+                    {renderInput('bound_front', 'Front')}
+                    {renderInput('bound_back', 'Back')}
+                    {renderInput('bound_right', 'Right')}
+                    {renderInput('bound_left', 'Left')}
                 </div>
             </div>
 
             <div>
                 <Subtitle>Rental Detail</Subtitle>
                  <div className="grid grid-cols-2 gap-4">
-                     <Input placeholder="Acquisition" />
-                     <Input placeholder="Expected Rental/month" />
-                     <Input placeholder="Expected Advance (# of month)" />
-                     <Input placeholder="Expected period of lease" />
-                     <Input placeholder="Annual increase in rental" />
+                     {renderInput('acquisition', 'Acquisition')}
+                     {renderInput('expected_rental', 'Expected Rental/month')}
+                     {renderInput('expected_advance', 'Expected Advance (# of month)')}
+                     {renderInput('lease_period', 'Expected period of lease')}
+                     {renderInput('rental_increase', 'Annual increase in rental')}
                  </div>
             </div>
              <div>
                 <Subtitle>Survey Conducted By</Subtitle>
                  <div className="grid grid-cols-2 gap-4">
-                     <Input placeholder="Name" />
-                     <Input placeholder="Designation" />
-                     <Input placeholder="Contact" />
-                     <Input placeholder="Cell" />
-                     <Input placeholder="Landline" />
-                     <Input placeholder="Email" />
-                     <Input placeholder="Date" />
+                     {renderInput('surveyor_name', 'Name')}
+                     {renderInput('surveyor_designation', 'Designation')}
+                     {renderInput('surveyor_contact', 'Contact')}
+                     {renderInput('surveyor_cell', 'Cell')}
+                     {renderInput('surveyor_landline', 'Landline')}
+                     {renderInput('surveyor_email', 'Email')}
+                     {renderInput('survey_date', 'Date')}
                  </div>
             </div>
         </CardContent>
@@ -1744,35 +1886,114 @@ Section8.displayName = 'Section8';
 const Section9 = React.memo(() => (<Card><CardHeader><CardTitle>Project Bylaws</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
 Section9.displayName = 'Section9';
 
-const Section10 = React.memo(() => (
+const Section10 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({});
+    
+    const { toast } = useToast();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+    
+    const docRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/projectData/${PROPOSAL_REQUEST_DOC_ID}`);
+    }, [user, firestore]);
+
+    useEffect(() => {
+        if (!docRef) return;
+        setIsLoading(true);
+        getDoc(docRef).then(docSnap => {
+            if (docSnap.exists()) {
+                setFormData(docSnap.data());
+            }
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load data.' });
+        }).finally(() => setIsLoading(false));
+    }, [docRef, toast]);
+    
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({...prev, [name]: value}));
+    };
+    
+    const handleSave = () => {
+        if (!docRef) return;
+        setIsSaving(true);
+        setDoc(docRef, formData, { merge: true }).then(() => {
+            toast({ title: 'Success', description: 'Proposal Request saved.' });
+            setIsEditing(false);
+        }).catch(err => {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save data.' });
+        }).finally(() => setIsSaving(false));
+    };
+
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        doc.text("Proposal Request", 10, 10);
+        // Add more fields
+        doc.save("proposal-request.pdf");
+        toast({ title: "Download Started", description: "PDF generation is in progress." });
+    };
+
+    const renderFormField = (label: string, name: string, as?: 'textarea') => {
+        if (isEditing) {
+            return as === 'textarea' ?
+                <Textarea name={name} value={formData[name] || ''} onChange={handleInputChange} /> :
+                <Input name={name} value={formData[name] || ''} onChange={handleInputChange} />;
+        }
+        return <div className="border-b min-h-[24px] py-1">{formData[name] || ''}</div>;
+    };
+
+    if (isLoading || isUserLoading) {
+      return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+    }
+
+    return (
     <Card>
-        <CardHeader><CardTitle>Proposal Request</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Proposal Request</CardTitle>
+            <div className="flex gap-2">
+                <Button onClick={handleDownload} variant="outline"><Download /> PDF</Button>
+                {isEditing ? (
+                    <Button onClick={handleSave} disabled={isSaving}>
+                        {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                    </Button>
+                ) : (
+                    <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                )}
+            </div>
+        </CardHeader>
         <CardContent>
             <div className="space-y-4">
                 <div className="flex justify-between">
-                    <FormField label="Project" value="" />
-                    <FormField label="Proposal Request No." value="" />
+                    <FormField label="Project">{renderFormField('project', 'project')}</FormField>
+                    <FormField label="Proposal Request No.">{renderFormField('proposal_no', 'proposal_no')}</FormField>
                 </div>
                  <div className="flex justify-between">
-                    <FormField label="(Name, Address)" value="" />
-                    <FormField label="Date" value="" />
+                    <FormField label="(Name, Address)">{renderFormField('name_address', 'name_address')}</FormField>
+                    <FormField label="Date">{renderFormField('date', 'date')}</FormField>
                 </div>
                  <div className="flex justify-between">
-                    <FormField label="Architects Project No" value="" />
-                    <FormField label="Contract For" value="" />
+                    <FormField label="Architects Project No">{renderFormField('architect_project_no', 'architect_project_no')}</FormField>
+                    <FormField label="Contract For">{renderFormField('contract_for', 'contract_for')}</FormField>
                 </div>
                  <div className="flex justify-between">
-                    <FormField label="Owner" value="" />
-                    <FormField label="Contract Date" value="" />
+                    <FormField label="Owner">{renderFormField('owner', 'owner')}</FormField>
+                    <FormField label="Contract Date">{renderFormField('contract_date', 'contract_date')}</FormField>
                 </div>
 
                 <div className="border rounded-md p-4 space-y-2">
                     <p>To: (Contractor)</p>
-                    <div className="h-16 border-b"></div>
+                    <div className="h-16 border-b">{!isEditing && formData.to_contractor}</div>
+                    {isEditing && <Input name="to_contractor" value={formData.to_contractor || ''} onChange={handleInputChange} />}
                 </div>
 
-                <FormField label="Description: (Written description of the Work)" as="textarea" value="" />
-                <FormField label="Attachments: (List attached documents that support description)" as="textarea" value="" />
+                <FormField label="Description: (Written description of the Work)">{renderFormField('description', 'description', 'textarea')}</FormField>
+                <FormField label="Attachments: (List attached documents that support description)">{renderFormField('attachments', 'attachments', 'textarea')}</FormField>
                 
                 <p>Please submit an itemized quotation for changes in the Contract Sum and/or Time incidental to proposed modifications to the Contract Documents described herein.</p>
                 <p className="font-bold text-center">THIS IS NOT A CHANGE ORDER NOT A DIRECTION TO PROCEED WITH THE WORK DESCRIBED HEREIN.</p>
@@ -1780,7 +2001,8 @@ const Section10 = React.memo(() => (
                 <div className="flex justify-between items-end pt-8">
                     <div>
                         <p>Architect:</p>
-                        <div className="h-10 border-b w-48"></div>
+                        <div className="h-10 border-b w-48">{!isEditing && formData.architect}</div>
+                        {isEditing && <Input name="architect" value={formData.architect || ''} onChange={handleInputChange} />}
                         <p>By:</p>
                     </div>
                      <div><p>Owner</p></div>
@@ -2741,10 +2963,10 @@ const Section23 = React.memo(() => {
     const initialData = {
       items: [
         { id: 1, srNo: '1', description: 'EXCAVATION', unit: '', qty: '', rate: '', amount: '', isHeader: true, subItems: [
-          { id: 1.1, srNo: '', description: 'Excavation for isolated, stripe/combined & Brick foundations in clay and sandy soil including cost of dressing, leveling and compaction in approved manners and disposal of surplus excavated soil away from site, all excavated area will be proof rolled as directed by the Consultant/Engineer incharge.', unit: 'C.FT', qty: '59,972', rate: '', amount: '' },
-          { id: 1.2, srNo: 'Basement', description: '', unit: 'C.FT', qty: '225', rate: '', amount: '' },
+          { id: 1.1, srNo: 'a', description: 'Excavation for isolated, stripe/combined & Brick foundations in clay and sandy soil including cost of dressing, leveling and compaction in approved manners and disposal of surplus excavated soil away from site, all excavated area will be proof rolled as directed by the Consultant/Engineer incharge.', unit: 'C.FT', qty: '59,972', rate: '', amount: '' },
+          { id: 1.2, srNo: 'b', description: 'Basement', unit: 'C.FT', qty: '225', rate: '', amount: '' },
         ]},
-        { id: 2, srNo: '2', description: 'BACK FILLING', unit: 'C.FT', qty: '12,000', rate: '', amount: '', isHeader: false, subItems: [
+        { id: 2, srNo: '2', description: 'BACK FILLING', unit: '', qty: '', rate: '', amount: '', isHeader: true, subItems: [
             { id: 2.1, srNo: '', description: 'Back Filling including watering and compaction in layers not exceeding 150mm compacted thickness to dry Compaction Test (ASTM D-1557) upto 95% Modified AASHTO by using the borrowed local sand from the local nearby site, as directed by the Consultant/Engineer incharge', unit: 'C.FT', qty: '12,000', rate: '', amount: '' },
         ]},
         { id: 3, srNo: '3', description: 'TERMITE PROOFING', isHeader: true, subItems: [
@@ -2785,27 +3007,27 @@ const Section23 = React.memo(() => {
             { id: 6.19, srNo: '6.18', description: 'U.G.W.T Base and walls', unit: 'C.ft', qty: '252', rate: '', amount: '' },
             { id: 6.20, srNo: '6.19', description: 'Septic Tank', unit: 'C.ft', qty: '185', rate: '', amount: '' },
         ]},
-        { id: 7, srNo: '7', description: 'STEEL REINFORCEMENT', unit: 'Ton', qty: '75', rate: '', amount: '', isHeader: false, subItems: [
-            { id: 7.1, srNo: '', description: 'Providing fabricating, laying, fixing, Mild Steel deformed bars (non-TMT) grade 60 with minimum yield stress conforming to ASTM specifications A-615. including cost of cutting, bending, placing, binded annealed binding wire 16 guage, removal of rest from bars if any, in specified overlaps, chairs, sports, spacers, wastage, etc. Complete in all respects by an approved source such as Afco steel, Prime steel, Ittefaq steel, Model Steel, City Steel UAE ( if not available, client will specify the alternate brand. Only the lengths shown on Drawings shall be paid for in accordance with the Bar bending schedule prepared the contractors from the drawings and submitted well in advance to the Engineer for the approval, steel lengths from the site multiply by the standard weights will used for the purpose of payment and duly approved by the consultant/Engineer Incharge.', unit: '', qty: '', rate: '', amount: '' }
+        { id: 7, srNo: '7', description: 'STEEL REINFORCEMENT', unit: '', qty: '', rate: '', amount: '', isHeader: true, subItems: [
+            { id: 7.1, srNo: '', description: 'Providing fabricating, laying, fixing, Mild Steel deformed bars (non-TMT) grade 60 with minimum yield stress conforming to ASTM specifications A-615. including cost of cutting, bending, placing, binded annealed binding wire 16 guage, removal of rest from bars if any, in specified overlaps, chairs, sports, spacers, wastage, etc. Complete in all respects by an approved source such as Afco steel, Prime steel, Ittefaq steel, Model Steel, City Steel UAE ( if not available, client will specify the alternate brand. Only the lengths shown on Drawings shall be paid for in accordance with the Bar bending schedule prepared the contractors from the drawings and submitted well in advance to the Engineer for the approval, steel lengths from the site multiply by the standard weights will used for the purpose of payment and duly approved by the consultant/Engineer Incharge.', unit: 'Ton', qty: '75', rate: '', amount: '' }
         ]},
         { id: 8, srNo: '8', description: 'Brick Work', isHeader: true, subItems: [
             { id: 8.01, srNo: '8.1', description: 'Providing and laying first class burnt brick work 9"and above thickness to in cement sand mortar (1:5) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer', unit: '', qty: '', rate: '', amount: '' },
             { id: 8.02, srNo: '8.1.1', description: 'Basement 9" Thick Wall', unit: 'C.ft', qty: '414', rate: '', amount: '' },
-            { id: 8.03, srNo: '8.2', description: 'Basement 13.50" Thick Wall', unit: 'C.ft', qty: '1,384', rate: '', amount: '' },
-            { id: 8.04, srNo: '8.3', description: 'Ground Floor 15" Thick Wall', unit: 'C.ft', qty: '900', rate: '', amount: '' },
-            { id: 8.05, srNo: '8.4', description: 'Ground Floor 13.50" Thick Wall', unit: 'C.ft', qty: '1,814', rate: '', amount: '' },
-            { id: 8.06, srNo: '8.5', description: 'Ground Floor 9" Thick Wall', unit: 'C.ft', qty: '1,206', rate: '', amount: '' },
-            { id: 8.07, srNo: '8.6', description: 'First Floor 15" Thick Wall', unit: 'C.ft', qty: '825', rate: '', amount: '' },
-            { id: 8.08, srNo: '8.7', description: 'First Floor 13.50" Thick Wall', unit: 'C.ft', qty: '354', rate: '', amount: '' },
-            { id: 8.09, srNo: '8.8', description: 'First Floor 9" Thick Wall', unit: 'C.ft', qty: '2,175', rate: '', amount: '' },
+            { id: 8.03, srNo: '8.1.2', description: 'Basement 13.50" Thick Wall', unit: 'C.ft', qty: '1,384', rate: '', amount: '' },
+            { id: 8.04, srNo: '8.1.3', description: 'Ground Floor 15" Thick Wall', unit: 'C.ft', qty: '900', rate: '', amount: '' },
+            { id: 8.05, srNo: '8.1.4', description: 'Ground Floor 13.50" Thick Wall', unit: 'C.ft', qty: '1,814', rate: '', amount: '' },
+            { id: 8.06, srNo: '8.1.5', description: 'Ground Floor 9" Thick Wall', unit: 'C.ft', qty: '1,206', rate: '', amount: '' },
+            { id: 8.07, srNo: '8.1.6', description: 'First Floor 15" Thick Wall', unit: 'C.ft', qty: '825', rate: '', amount: '' },
+            { id: 8.08, srNo: '8.1.7', description: 'First Floor 13.50" Thick Wall', unit: 'C.ft', qty: '354', rate: '', amount: '' },
+            { id: 8.09, srNo: '8.1.8', description: 'First Floor 9" Thick Wall', unit: 'C.ft', qty: '2,175', rate: '', amount: '' },
             { id: 8.10, srNo: '8.2', description: 'Providing and laying first class burnt brick work 4½" thickness to in cement sand mortar (1:4) including all scaffolding, racking out joints and making all flush or groove joints steel dowels at joints to masonry or columns, complete in all respects as per drawing, specifications, and or as directed by the Engineer.', unit: '', qty: '', rate: '', amount: '' },
             { id: 8.11, srNo: '8.2.1', description: 'Basement Floor', unit: 'S.ft', qty: '3,264', rate: '', amount: '' },
             { id: 8.12, srNo: '8.2.2', description: 'Ground Floor', unit: 'S.ft', qty: '960', rate: '', amount: '' },
             { id: 8.13, srNo: '8.2.3', description: 'First Floor', unit: 'S.ft', qty: '528', rate: '', amount: '' },
             { id: 8.14, srNo: '8.2.4', description: 'Boundary Wall', unit: 'S.ft', qty: '3,960', rate: '', amount: '' },
         ]},
-        { id: 9, srNo: '9', description: 'Plaster Work', unit: 'S.ft', qty: '27,890', rate: '', amount: '', isHeader: false, subItems: [
-            { id: 9.1, srNo: '', description: 'Supply, mix, apply and cure Cement sand plaster of any height, includes making sharp corners, edges, grooves, all scaffolding. complete in all respects as per drawing, specifications, and or as directed by the Engineer', unit: '', qty: '', rate: '', amount: '' }
+        { id: 9, srNo: '9', description: 'Plaster Work', isHeader: true, subItems: [
+            { id: 9.1, srNo: '', description: 'Supply, mix, apply and cure Cement sand plaster of any height, includes making sharp corners, edges, grooves, all scaffolding. complete in all respects as per drawing, specifications, and or as directed by the Engineer', unit: 'S.ft', qty: '27,890', rate: '', amount: '' }
         ]},
         { id: 10, srNo: '10', description: 'Brick Blast', isHeader: true, subItems: [
             { id: 10.1, srNo: '10.1', description: 'Basement Floor', unit: 'C.ft', qty: '1,799', rate: '', amount: '' },
@@ -2818,8 +3040,8 @@ const Section23 = React.memo(() => {
             { id: 11.3, srNo: '11.2', description: 'Ground Floor', unit: 'C.ft', qty: '2,053', rate: '', amount: '' },
             { id: 11.4, srNo: '11.3', description: 'First Floor', unit: 'C.ft', qty: '1,645', rate: '', amount: '' },
         ]},
-        { id: 12, srNo: '12', description: 'Roof insulation and water proofing', unit: 'S.ft', qty: '6,561', rate: '', amount: '', isHeader: false, subItems: [
-            { id: 12.1, srNo: '', description: 'Providing and laying Roof insulation and water proofing to roof consisting of given below of as directed by the Engineer incharge. - Bituminous primer coat. - 2-coats of cold applied rubberized bitumen - One layer of polythene 500 gauge - 1½” thick "extruded polystyrene board" 1½" thick. (density 34 Kg/m³) - One layer of polythene 500 gauge - 4” thick average mud (compacted thickness). - Brick tiles 9”x4-1/2”x1-1/2” laid in cement sand mortar 1:4 and grouted with cement sand mortar 1:3 using 1-part of OPC and 3-parts of clean approved quality sand, complete as per drawings, specifications and instructions of the Consultant.', unit: '', qty: '', rate: '', amount: '' },
+        { id: 12, srNo: '12', description: 'Roof insulation and water proofing', isHeader: true, subItems: [
+            { id: 12.1, srNo: '', description: 'Providing and laying Roof insulation and water proofing to roof consisting of given below of as directed by the Engineer incharge. - Bituminous primer coat. - 2-coats of cold applied rubberized bitumen - One layer of polythene 500 gauge - 1½” thick "extruded polystyrene board" 1½" thick. (density 34 Kg/m³) - One layer of polythene 500 gauge - 4” thick average mud (compacted thickness). - Brick tiles 9”x4-1/2”x1-1/2” laid in cement sand mortar 1:4 and grouted with cement sand mortar 1:3 using 1-part of OPC and 3-parts of clean approved quality sand, complete as per drawings, specifications and instructions of the Consultant.', unit: 'S.ft', qty: '6,561', rate: '', amount: '' },
         ]},
         { id: 13, srNo: '13', description: 'D.P.C', isHeader: true, subItems: [
             { id: 13.1, srNo: '', description: 'Supply, mix, place, cure, compact concrete (1:2:4) 1-1/2" horizontal damp proof course on brick masonry wall includes form work & mixing of rhombic 707 manufactured by MBT in concrete & application of one coat of same chemical on masonry surface before pouring of mixed concrete according to drawings and manufacturers instructions or As directed by the consultant.', unit: '', qty: '', rate: '', amount: '' },
@@ -2844,7 +3066,15 @@ const Section23 = React.memo(() => {
         setIsLoading(true);
         getDoc(boqDocRef).then(docSnap => {
             if (docSnap.exists()) {
-                setFormData(docSnap.data() || initialData);
+                const data = docSnap.data();
+                // Ensure subItems exist, otherwise fall back to initialData structure
+                const sanitizedItems = data.items?.map((item: any) => ({
+                    ...item,
+                    subItems: item.subItems || initialData.items.find(i => i.id === item.id)?.subItems || []
+                }));
+                setFormData({ ...initialData, ...data, items: sanitizedItems || initialData.items });
+            } else {
+                 setFormData(initialData);
             }
         }).catch(err => {
             console.error(err);
@@ -2854,31 +3084,31 @@ const Section23 = React.memo(() => {
     
     const handleItemChange = (itemId: number, field: string, value: string) => {
         const newItems = formData.items.map(item => {
-            if (item.id === itemId) {
-                const updatedItem = { ...item, [field]: value };
-                if ((field === 'qty' || field === 'rate') && updatedItem.qty && updatedItem.rate) {
-                    const qty = parseFloat(updatedItem.qty.replace(/,/g, '')) || 0;
-                    const rate = parseFloat(updatedItem.rate.replace(/,/g, '')) || 0;
-                    updatedItem.amount = (qty * rate).toLocaleString();
+            let updatedItem = { ...item };
+
+            const updateAmount = (i: any) => {
+                if ((field === 'qty' || field === 'rate') && i.qty && i.rate) {
+                    const qty = parseFloat(String(i.qty).replace(/,/g, '')) || 0;
+                    const rate = parseFloat(String(i.rate).replace(/,/g, '')) || 0;
+                    i.amount = (qty * rate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 }
-                return updatedItem;
             }
-            if (item.subItems) {
+
+            if (item.id === itemId) {
+                updatedItem = { ...item, [field]: value };
+                updateAmount(updatedItem);
+            } else if (item.subItems) {
                 const newSubItems = item.subItems.map(subItem => {
                     if (subItem.id === itemId) {
-                         const updatedSubItem = { ...subItem, [field]: value };
-                        if ((field === 'qty' || field === 'rate') && updatedSubItem.qty && updatedSubItem.rate) {
-                            const qty = parseFloat(updatedSubItem.qty.replace(/,/g, '')) || 0;
-                            const rate = parseFloat(updatedSubItem.rate.replace(/,/g, '')) || 0;
-                            updatedSubItem.amount = (qty * rate).toLocaleString();
-                        }
+                        const updatedSubItem = { ...subItem, [field]: value };
+                        updateAmount(updatedSubItem);
                         return updatedSubItem;
                     }
                     return subItem;
                 });
-                return { ...item, subItems: newSubItems };
+                updatedItem.subItems = newSubItems;
             }
-            return item;
+            return updatedItem;
         });
         setFormData({ ...formData, items: newItems });
     };
@@ -2918,23 +3148,21 @@ const Section23 = React.memo(() => {
             }
 
             if (item.subItems) {
-                item.subItems.forEach(sub => {
-                    if (y > 280) { doc.addPage(); y = 15; }
-                    let body;
+                const body = item.subItems.map((sub: any) => {
+                    let desc = sub.description;
                     if(sub.srNo) {
-                        body = [[sub.srNo, sub.description, sub.unit, sub.qty, sub.rate, sub.amount]];
-                    } else {
-                        body = [['', sub.description, '', '', '', '']];
+                        desc = `${sub.srNo}. ${desc}`;
                     }
-                    autoTable(doc, {
-                        startY: y,
-                        body: body,
-                        theme: 'plain',
-                        styles: {fontSize: 8},
-                        columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 100 } },
-                    });
-                    y = (doc as any).lastAutoTable.finalY;
+                    return ['', desc, sub.unit, sub.qty, sub.rate, sub.amount]
                 });
+                 autoTable(doc, {
+                    startY: y,
+                    body: body,
+                    theme: 'plain',
+                    styles: {fontSize: 8},
+                    columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 100 } },
+                });
+                y = (doc as any).lastAutoTable.finalY;
             }
         });
         
@@ -2951,9 +3179,9 @@ const Section23 = React.memo(() => {
     const renderRow = (item: any) => {
         return (
             <Fragment key={item.id}>
-                <TableRow>
+                <TableRow className={cn(item.isHeader && "font-bold bg-muted")}>
                     <TableCell>{item.srNo}</TableCell>
-                    <TableCell colSpan={item.isHeader ? 5 : 1} className={cn(item.isHeader && "font-bold")}>
+                    <TableCell colSpan={item.isHeader ? 5 : 1}>
                         {renderCell(item.id, 'description', item.description)}
                     </TableCell>
                     {!item.isHeader && (
@@ -3300,7 +3528,7 @@ const Section25 = React.memo(() => {
                     <div className="flex items-center gap-2"><p>The (Contract Sum) (Guaranteed Maximum Price) will be (increased) (decreased) (changed) by this Change Order in the amount of</p> {renderField('change_order_amount', 'Rs.')}</div>
                     <div className="flex items-center gap-2"><p>The new (Contract Sum) (Guaranteed Maximum Price) including this Change Order will be</p> {renderField('new_contract_sum', 'Rs.')}</div>
                     <div className="flex items-center gap-2"><p>The Contract Time will be (increased) (decreased) by</p> {renderField('contract_time_change', '(_______) days')}</div>
-                    <div className="flex items-center gap-2"><p>the date of Substantial Completion as the date of this Change Order therefore is:</p> {renderField('substantial_completion_date')}</div>
+                    <div><p>the date of Substantial Completion as the date of this Change Order therefore is: {renderField('substantial_completion_date')}</p></div>
                 </div>
                 
                 <p className="text-xs text-center">NOTE: This summary does not reflect changes in the Contract Sum, Contract Time or Guaranteed Maximum Price which have been authorized by Contraction Change Directive.</p>
@@ -3385,4 +3613,5 @@ export default function BankPage() {
         </main>
     );
 }
+
 
