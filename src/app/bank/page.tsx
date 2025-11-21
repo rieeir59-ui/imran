@@ -2340,7 +2340,10 @@ const FieldReportForm = React.memo(() => {
         setIsLoading(true);
         getDoc(docRef).then(docSnap => {
             if (docSnap.exists()) setFormData(docSnap.data());
-        }).catch(err => console.error(err)).finally(() => setIsLoading(false));
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'get' });
+            errorEmitter.emit('permission-error', permissionError);
+        }).finally(() => setIsLoading(false));
     }, [docRef]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
@@ -2362,7 +2365,10 @@ const FieldReportForm = React.memo(() => {
                 toast({ title: "Success", description: "Field Report saved." });
                 setIsEditing(false);
             })
-            .catch(err => toast({ variant: 'destructive', title: 'Error', description: 'Failed to save report.' }))
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'write', requestResourceData: formData });
+                errorEmitter.emit('permission-error', permissionError);
+            })
             .finally(() => setIsSaving(false));
     };
     
@@ -2424,7 +2430,10 @@ const TransmittalLetterForm = React.memo(() => {
         setIsLoading(true);
         getDoc(docRef).then(docSnap => {
             if (docSnap.exists()) setFormData(docSnap.data());
-        }).catch(err => console.error(err)).finally(() => setIsLoading(false));
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'get' });
+            errorEmitter.emit('permission-error', permissionError);
+        }).finally(() => setIsLoading(false));
     }, [docRef]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData(prev => ({...prev, [e.target.name]: e.target.value}));
@@ -2437,7 +2446,10 @@ const TransmittalLetterForm = React.memo(() => {
                 toast({ title: "Success", description: "Transmittal Letter saved." });
                 setIsEditing(false);
             })
-            .catch(err => toast({ variant: 'destructive', title: 'Error', description: 'Failed to save letter.' }))
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'write', requestResourceData: formData });
+                errorEmitter.emit('permission-error', permissionError);
+            })
             .finally(() => setIsSaving(false));
     };
 
@@ -2494,7 +2506,10 @@ const MinutesOfMeetingForm = React.memo(() => {
         setIsLoading(true);
         getDoc(docRef).then(docSnap => {
             if (docSnap.exists()) setFormData(docSnap.data());
-        }).catch(err => console.error(err)).finally(() => setIsLoading(false));
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'get' });
+            errorEmitter.emit('permission-error', permissionError);
+        }).finally(() => setIsLoading(false));
     }, [docRef]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
@@ -2516,7 +2531,10 @@ const MinutesOfMeetingForm = React.memo(() => {
                 toast({ title: "Success", description: "Minutes of meeting saved." });
                 setIsEditing(false);
             })
-            .catch(err => toast({ variant: 'destructive', title: 'Error', description: 'Failed to save minutes.' }))
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'write', requestResourceData: formData });
+                errorEmitter.emit('permission-error', permissionError);
+            })
             .finally(() => setIsSaving(false));
     };
 
@@ -2578,7 +2596,10 @@ const Section15 = React.memo(() => {
         setIsLoading(true);
         getDoc(docRef).then(docSnap => {
             if (docSnap.exists()) setFormData(docSnap.data());
-        }).catch(err => console.error(err)).finally(() => setIsLoading(false));
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'get' });
+            errorEmitter.emit('permission-error', permissionError);
+        }).finally(() => setIsLoading(false));
     }, [docRef]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
@@ -2600,7 +2621,10 @@ const Section15 = React.memo(() => {
                 toast({ title: "Success", description: "Sub-consultant list saved." });
                 setIsEditing(false);
             })
-            .catch(err => toast({ variant: 'destructive', title: 'Error', description: 'Failed to save list.' }))
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'write', requestResourceData: formData });
+                errorEmitter.emit('permission-error', permissionError);
+            })
             .finally(() => setIsSaving(false));
     };
 
@@ -2666,7 +2690,10 @@ const Section16 = React.memo(() => {
         setIsLoading(true);
         getDoc(docRef).then(docSnap => {
             if (docSnap.exists()) setFormData(docSnap.data());
-        }).catch(err => console.error(err)).finally(() => setIsLoading(false));
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'get' });
+            errorEmitter.emit('permission-error', permissionError);
+        }).finally(() => setIsLoading(false));
     }, [docRef]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
@@ -2688,7 +2715,10 @@ const Section16 = React.memo(() => {
                 toast({ title: "Success", description: "Contractor list saved." });
                 setIsEditing(false);
             })
-            .catch(err => toast({ variant: 'destructive', title: 'Error', description: 'Failed to save list.' }))
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'write', requestResourceData: formData });
+                errorEmitter.emit('permission-error', permissionError);
+            })
             .finally(() => setIsSaving(false));
     };
 
