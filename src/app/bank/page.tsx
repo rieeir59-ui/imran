@@ -208,9 +208,11 @@ const DrawingsList = React.memo(() => {
             
             <div>
                 <h3 className="text-xl font-bold mb-4 text-center">SAMPLE LIST</h3>
-                 <p className="mb-2 text-center"><strong>List of drawings</strong></p>
-                <p className="mb-2 text-center"><strong>Working Drawings</strong></p>
-                <p className="mb-2"><strong>Draftsman Name:</strong> Mr. Adeel</p>
+                 <div className='flex justify-between items-center'>
+                    <p className="mb-2 text-center"><strong>List of drawings</strong></p>
+                    <p className="mb-2 text-center"><strong>Working Drawings</strong></p>
+                    <p className="mb-2"><strong>Draftsman Name:</strong> Mr. Adeel</p>
+                </div>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4">
                     <Table>
                         <TableHeader><TableRow><TableHead>Sr. no.</TableHead><TableHead>Description</TableHead><TableHead>Start Date</TableHead><TableHead>End Date</TableHead><TableHead>Remarks</TableHead></TableRow></TableHeader>
@@ -2025,7 +2027,7 @@ const Section10 = React.memo(() => {
                 </div>
 
                 <div className="border rounded-md p-4 space-y-2">
-                    <p>To: (Contractor)</p>
+                    <div>To: (Contractor)</div>
                     {renderFormField('to_contractor')}
                 </div>
 
