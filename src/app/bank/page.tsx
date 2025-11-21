@@ -1972,8 +1972,70 @@ const Section10 = React.memo(() => {
 
     const handleDownload = () => {
         const doc = new jsPDF();
-        doc.text("Proposal Request", 10, 10);
-        // Add more fields
+        let y = 15;
+
+        const addField = (label: string, value: string, x: number, yPos: number, width: number) => {
+            doc.text(`${label}: ${value || ''}`, x, yPos);
+            doc.line(x + doc.getTextWidth(label) + 2, yPos + 1, x + width, yPos + 1);
+        };
+        
+        doc.setFontSize(14);
+        doc.text("Proposal Request", 105, y, { align: 'center' });
+        y += 15;
+    
+        doc.setFontSize(10);
+        addField('Project', formData.project || '', 14, y, 90);
+        addField('Proposal Request No.', formData.proposal_no || '', 105, y, 90);
+        y += 7;
+    
+        addField('(Name, Address)', formData.name_address || '', 14, y, 90);
+        addField('Date', formData.date || '', 105, y, 90);
+        y += 7;
+    
+        addField('Architects Project No', formData.architect_project_no || '', 14, y, 90);
+        addField('Contract For', formData.contract_for || '', 105, y, 90);
+        y += 7;
+    
+        addField('Owner', formData.owner || '', 14, y, 90);
+        addField('Contract Date', formData.contract_date || '', 105, y, 90);
+        y += 10;
+    
+        doc.rect(14, y, 182, 20);
+        doc.text(`To: (Contractor) ${formData.to_contractor || ''}`, 16, y + 5);
+        y += 25;
+    
+        doc.text('Description: (Written description of the Work)', 14, y);
+        y += 5;
+        const descText = doc.splitTextToSize(formData.description || '', 182);
+        doc.rect(14, y, 182, 30);
+        doc.text(descText, 16, y + 5);
+        y += 35;
+    
+        doc.text('Attachments: (List attached documents that support description)', 14, y);
+        y += 5;
+        const attachText = doc.splitTextToSize(formData.attachments || '', 182);
+        doc.rect(14, y, 182, 20);
+        doc.text(attachText, 16, y + 5);
+        y += 25;
+    
+        doc.text('Please submit an itemized quotation for changes in the Contract Sum and/or Time incidental to proposed modifications to the Contract Documents described herein.', 14, y);
+        y += 10;
+        doc.setFont('helvetica', 'bold');
+        doc.text('THIS IS NOT A CHANGE ORDER NOR A DIRECTION TO PROCEED WITH THE WORK DESCRIBED HEREIN.', 105, y, { align: 'center' });
+        y += 15;
+    
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Architect: ${formData.architect || ''}`, 14, y);
+        y += 7;
+        doc.text('By:', 14, y);
+        y += 15;
+    
+        doc.text('Owner', 14, y);
+        doc.text('Architect', 54, y);
+        doc.text('Contractor', 94, y);
+        doc.text('Field', 134, y);
+        doc.text('Other', 174, y);
+
         doc.save("proposal-request.pdf");
         toast({ title: "Download Started", description: "PDF generation is in progress." });
     };
