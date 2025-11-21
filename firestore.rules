@@ -208,7 +208,7 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
     
-    match /users/{userId}/requirementPerforma/{performaId} {
+    match /users/{userId}/requirementPerformas/{performaId} {
         allow read, write: if isOwner(userId);
     }
     
@@ -221,5 +221,6 @@ service cloud.firestore {
     }
   }
 }
+
 
 
