@@ -1976,7 +1976,7 @@ const Section10 = React.memo(() => {
         toast({ title: "Download Started", description: "PDF generation is in progress." });
     };
 
-    const renderFormField = (label: string, name: string, as?: 'textarea') => {
+    const renderFormField = (name: string, placeholder?: string, as?: 'textarea') => {
         const value = formData[name] || '';
         if (isEditing) {
             return as === 'textarea' ?
@@ -2008,30 +2008,29 @@ const Section10 = React.memo(() => {
         <CardContent>
             <div className="space-y-4">
                 <div className="flex justify-between">
-                    <div><Label>Project</Label>{renderFormField('', 'project')}</div>
-                    <div><Label>Proposal Request No.</Label>{renderFormField('', 'proposal_no')}</div>
+                    <div><Label>Project</Label>{renderFormField('project')}</div>
+                    <div><Label>Proposal Request No.</Label>{renderFormField('proposal_no')}</div>
                 </div>
                  <div className="flex justify-between">
-                    <div><Label>(Name, Address)</Label>{renderFormField('', 'name_address')}</div>
-                    <div><Label>Date</Label>{renderFormField('', 'date')}</div>
+                    <div><Label>(Name, Address)</Label>{renderFormField('name_address')}</div>
+                    <div><Label>Date</Label>{renderFormField('date')}</div>
                 </div>
                  <div className="flex justify-between">
-                    <div><Label>Architects Project No</Label>{renderFormField('', 'architect_project_no')}</div>
-                    <div><Label>Contract For</Label>{renderFormField('', 'contract_for')}</div>
+                    <div><Label>Architects Project No</Label>{renderFormField('architect_project_no')}</div>
+                    <div><Label>Contract For</Label>{renderFormField('contract_for')}</div>
                 </div>
                  <div className="flex justify-between">
-                    <div><Label>Owner</Label>{renderFormField('', 'owner')}</div>
-                    <div><Label>Contract Date</Label>{renderFormField('', 'contract_date')}</div>
+                    <div><Label>Owner</Label>{renderFormField('owner')}</div>
+                    <div><Label>Contract Date</Label>{renderFormField('contract_date')}</div>
                 </div>
 
                 <div className="border rounded-md p-4 space-y-2">
                     <p>To: (Contractor)</p>
-                    <div className="h-16 border-b">{!isEditing && formData.to_contractor}</div>
-                    {isEditing && <Input name="to_contractor" value={formData.to_contractor || ''} onChange={handleInputChange} />}
+                    {renderFormField('to_contractor')}
                 </div>
 
-                <div><Label>Description: (Written description of the Work)</Label>{renderFormField('', 'description', 'textarea')}</div>
-                <div><Label>Attachments: (List attached documents that support description)</Label>{renderFormField('', 'attachments', 'textarea')}</div>
+                <div><Label>Description: (Written description of the Work)</Label>{renderFormField('description', '', 'textarea')}</div>
+                <div><Label>Attachments: (List attached documents that support description)</Label>{renderFormField('attachments', '', 'textarea')}</div>
                 
                 <p>Please submit an itemized quotation for changes in the Contract Sum and/or Time incidental to proposed modifications to the Contract Documents described herein.</p>
                 <p className="font-bold text-center">THIS IS NOT A CHANGE ORDER NOT A DIRECTION TO PROCEED WITH THE WORK DESCRIBED HEREIN.</p>
@@ -2039,8 +2038,7 @@ const Section10 = React.memo(() => {
                 <div className="flex justify-between items-end pt-8">
                     <div>
                         <p>Architect:</p>
-                        <div className="h-10 border-b w-48">{!isEditing && formData.architect}</div>
-                        {isEditing && <Input name="architect" value={formData.architect || ''} onChange={handleInputChange} />}
+                        {renderFormField('architect')}
                         <p>By:</p>
                     </div>
                      <div><p>Owner</p></div>
@@ -2298,45 +2296,442 @@ Section12.displayName = 'Section12';
 const Section13 = React.memo(() => (<Card><CardHeader><CardTitle>Project Chart (Studio)</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
 Section13.displayName = 'Section13';
 
-const Section14 = React.memo(() => (<Card><CardHeader><CardTitle>Architects Field Report / Transmittal Letter / Minutes of Meetings</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section14 = React.memo(() => (
+    <Card>
+        <CardHeader><CardTitle>Architects Field Report / Transmittal Letter / Minutes of Meetings</CardTitle></CardHeader>
+        <CardContent>
+            <Accordion type="single" collapsible>
+                <AccordionItem value="field-report">
+                    <AccordionTrigger>Architect Field Report</AccordionTrigger>
+                    <AccordionContent><FieldReportForm /></AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="transmittal-letter">
+                    <AccordionTrigger>Transmittal Letter</AccordionTrigger>
+                    <AccordionContent><TransmittalLetterForm /></AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="minutes-of-meeting">
+                    <AccordionTrigger>Minutes of the Meeting</AccordionTrigger>
+                    <AccordionContent><MinutesOfMeetingForm /></AccordionContent>
+                </AccordionItem>
+            </Accordion>
+        </CardContent>
+    </Card>
+));
 Section14.displayName = 'Section14';
 
-const Section15 = React.memo(() => (
+
+const FieldReportForm = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({ items: Array(10).fill({}).map((_, i) => ({ id: i + 1 })) });
+
+    const { toast } = useToast();
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
+
+    const docRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/fieldReports/${FIELD_REPORT_DOC_ID}`);
+    }, [user, firestore]);
+
+    useEffect(() => {
+        if (!docRef) return;
+        setIsLoading(true);
+        getDoc(docRef).then(docSnap => {
+            if (docSnap.exists()) setFormData(docSnap.data());
+        }).catch(err => console.error(err)).finally(() => setIsLoading(false));
+    }, [docRef]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
+        const { name, value } = e.target;
+        if (index !== undefined) {
+            const newItems = [...formData.items];
+            newItems[index] = { ...newItems[index], [name]: value };
+            setFormData(prev => ({ ...prev, items: newItems }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
+    };
+
+    const handleSave = () => {
+        if (!docRef) return;
+        setIsSaving(true);
+        setDoc(docRef, formData, { merge: true })
+            .then(() => {
+                toast({ title: "Success", description: "Field Report saved." });
+                setIsEditing(false);
+            })
+            .catch(err => toast({ variant: 'destructive', title: 'Error', description: 'Failed to save report.' }))
+            .finally(() => setIsSaving(false));
+    };
+    
+    const renderField = (name: string, placeholder?: string, index?: number) => {
+        const value = index !== undefined ? formData.items[index]?.[name] : formData[name];
+        return isEditing ? <Input name={name} value={value || ''} onChange={(e) => handleInputChange(e, index)} placeholder={placeholder} /> : <div className="p-1 border-b min-h-[24px]">{value}</div>;
+    }
+    
+    if (isLoading || isUserLoading) return <div className="p-4"><Loader2 className="animate-spin"/></div>
+    
+    return (
+        <div className="p-4 border rounded-md">
+            <div className="flex justify-between items-center mb-4">
+                <h4 className="font-bold">Architect Field Report</h4>
+                <div className="flex gap-2">
+                    <Button variant="outline" size="sm"><Download className="w-4 h-4 mr-2"/>PDF</Button>
+                    {isEditing ? <Button size="sm" onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button size="sm" onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
+                </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                <FormField label="Project">{renderField('project')}</FormField>
+                <FormField label="Architect Project No.">{renderField('architectProjectNo')}</FormField>
+                <FormField label="Date">{renderField('date')}</FormField>
+                <FormField label="Weather">{renderField('weather')}</FormField>
+                <FormField label="Present at Site">{renderField('presentAtSite')}</FormField>
+                <FormField label="Report No.">{renderField('reportNo')}</FormField>
+            </div>
+            <Table className="mt-4">
+                <TableHeader><TableRow><TableHead>Item No.</TableHead><TableHead>Observations</TableHead></TableRow></TableHeader>
+                <TableBody>
+                    {formData.items.map((item: any, i: number) => <TableRow key={i}>
+                        <TableCell className="w-24">{renderField('itemNo', 'Item No.', i)}</TableCell>
+                        <TableCell>{renderField('observations', 'Observations', i)}</TableCell>
+                    </TableRow>)}
+                </TableBody>
+            </Table>
+        </div>
+    );
+});
+FieldReportForm.displayName = 'FieldReportForm';
+
+const TransmittalLetterForm = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({});
+
+    const { toast } = useToast();
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
+
+    const docRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/transmittalLetters/${TRANSMITTAL_LETTER_DOC_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!docRef) return;
+        setIsLoading(true);
+        getDoc(docRef).then(docSnap => {
+            if (docSnap.exists()) setFormData(docSnap.data());
+        }).catch(err => console.error(err)).finally(() => setIsLoading(false));
+    }, [docRef]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData(prev => ({...prev, [e.target.name]: e.target.value}));
+
+    const handleSave = () => {
+        if (!docRef) return;
+        setIsSaving(true);
+        setDoc(docRef, formData, { merge: true })
+            .then(() => {
+                toast({ title: "Success", description: "Transmittal Letter saved." });
+                setIsEditing(false);
+            })
+            .catch(err => toast({ variant: 'destructive', title: 'Error', description: 'Failed to save letter.' }))
+            .finally(() => setIsSaving(false));
+    };
+
+    const renderField = (name: string, placeholder?: string, as?: 'textarea') => {
+        const value = formData[name] || '';
+        if (isEditing) {
+            return as === 'textarea' ? <Textarea name={name} value={value} onChange={handleInputChange} placeholder={placeholder}/> : <Input name={name} value={value} onChange={handleInputChange} placeholder={placeholder}/>
+        }
+        return <div className="p-1 border-b min-h-[24px] whitespace-pre-wrap">{value}</div>
+    }
+
+    if(isLoading || isUserLoading) return <div className="p-4"><Loader2 className="animate-spin"/></div>
+
+    return (
+        <div className="p-4 border rounded-md">
+            <div className="flex justify-between items-center mb-4">
+                <h4 className="font-bold">Transmittal Letter</h4>
+                <div className="flex gap-2">
+                    <Button variant="outline" size="sm"><Download className="w-4 h-4 mr-2"/>PDF</Button>
+                    {isEditing ? <Button size="sm" onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button size="sm" onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
+                </div>
+            </div>
+            <div className="space-y-4">
+                <FormField label="To">{renderField('to', 'Recipient Name and Address')}</FormField>
+                <FormField label="Date">{renderField('date')}</FormField>
+                <FormField label="Architects Project No.">{renderField('architectProjectNo')}</FormField>
+                <FormField label="Re:">{renderField('re', 'Project Name and Address')}</FormField>
+                <div>{renderField('body', 'Letter body...', 'textarea')}</div>
+                <FormField label="Sincerely,">{renderField('sincerely')}</FormField>
+                <FormField label="By">{renderField('by')}</FormField>
+            </div>
+        </div>
+    );
+});
+TransmittalLetterForm.displayName = 'TransmittalLetterForm';
+
+const MinutesOfMeetingForm = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({ items: Array(5).fill({}).map((_, i) => ({ id: i + 1, no: '', description: '' })) });
+
+    const { toast } = useToast();
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
+
+    const docRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/minutesOfMeetings/${MINUTES_OF_MEETING_DOC_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!docRef) return;
+        setIsLoading(true);
+        getDoc(docRef).then(docSnap => {
+            if (docSnap.exists()) setFormData(docSnap.data());
+        }).catch(err => console.error(err)).finally(() => setIsLoading(false));
+    }, [docRef]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
+        const { name, value } = e.target;
+        if (index !== undefined) {
+            const newItems = [...formData.items];
+            newItems[index] = { ...newItems[index], [name]: value };
+            setFormData(prev => ({ ...prev, items: newItems }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
+    };
+    
+    const handleSave = () => {
+        if (!docRef) return;
+        setIsSaving(true);
+        setDoc(docRef, formData, { merge: true })
+            .then(() => {
+                toast({ title: "Success", description: "Minutes of meeting saved." });
+                setIsEditing(false);
+            })
+            .catch(err => toast({ variant: 'destructive', title: 'Error', description: 'Failed to save minutes.' }))
+            .finally(() => setIsSaving(false));
+    };
+
+    const renderField = (name: string, placeholder?: string, index?: number) => {
+        const value = index !== undefined ? formData.items[index]?.[name] : formData[name];
+        return isEditing ? <Input name={name} value={value || ''} onChange={(e) => handleInputChange(e, index)} placeholder={placeholder} /> : <div className="p-1 border-b min-h-[24px]">{value}</div>;
+    }
+    
+    if (isLoading || isUserLoading) return <div className="p-4"><Loader2 className="animate-spin"/></div>
+    
+    return (
+        <div className="p-4 border rounded-md">
+             <div className="flex justify-between items-center mb-4">
+                <h4 className="font-bold">Minutes of the Meeting</h4>
+                <div className="flex gap-2">
+                    <Button variant="outline" size="sm"><Download className="w-4 h-4 mr-2"/>PDF</Button>
+                    {isEditing ? <Button size="sm" onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button size="sm" onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
+                </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                <FormField label="Project">{renderField('project')}</FormField>
+                <FormField label="Architects Project No.">{renderField('architectProjectNo')}</FormField>
+                <FormField label="Date">{renderField('date')}</FormField>
+                <FormField label="Time">{renderField('time')}</FormField>
+                <FormField label="Meeting No.">{renderField('meetingNo')}</FormField>
+                <FormField label="Present">{renderField('present')}</FormField>
+            </div>
+            <Table className="mt-4">
+                <TableHeader><TableRow><TableHead>Item No.</TableHead><TableHead>Description</TableHead></TableRow></TableHeader>
+                <TableBody>
+                    {formData.items.map((item: any, i: number) => <TableRow key={i}>
+                        <TableCell className="w-24">{renderField('no', '', i)}</TableCell>
+                        <TableCell>{renderField('description', '', i)}</TableCell>
+                    </TableRow>)}
+                </TableBody>
+            </Table>
+        </div>
+    );
+});
+MinutesOfMeetingForm.displayName = 'MinutesOfMeetingForm';
+
+const Section15 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({ rows: Array(15).fill({}).map((_, i) => ({ id: i })) });
+
+    const { toast } = useToast();
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
+
+    const docRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/subConsultantList/${SUB_CONSULTANT_LIST_DOC_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!docRef) return;
+        setIsLoading(true);
+        getDoc(docRef).then(docSnap => {
+            if (docSnap.exists()) setFormData(docSnap.data());
+        }).catch(err => console.error(err)).finally(() => setIsLoading(false));
+    }, [docRef]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
+        const { name, value } = e.target;
+        if (index !== undefined) {
+            const newRows = [...formData.rows];
+            newRows[index] = { ...newRows[index], [name]: value };
+            setFormData(prev => ({ ...prev, rows: newRows }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
+    };
+    
+    const handleSave = () => {
+        if (!docRef) return;
+        setIsSaving(true);
+        setDoc(docRef, formData, { merge: true })
+            .then(() => {
+                toast({ title: "Success", description: "Sub-consultant list saved." });
+                setIsEditing(false);
+            })
+            .catch(err => toast({ variant: 'destructive', title: 'Error', description: 'Failed to save list.' }))
+            .finally(() => setIsSaving(false));
+    };
+
+    const renderCell = (name: string, index: number) => {
+        const value = formData.rows[index]?.[name] || '';
+        return isEditing ? <Input name={name} value={value} onChange={e => handleInputChange(e, index)} /> : <p className="p-1">{value}</p>;
+    };
+
+    const renderHeaderField = (name: string) => {
+        return isEditing ? <Input name={name} value={formData[name] || ''} onChange={handleInputChange} /> : <div className="p-1 border-b min-h-[24px]">{formData[name]}</div>;
+    }
+
+    if (isLoading || isUserLoading) return <CardContent><Loader2 className="animate-spin"/></CardContent>
+
+    return(
     <Card>
-        <CardHeader><CardTitle>List Of Sub consultants</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row justify-between items-center">
+            <CardTitle>List Of Sub consultants</CardTitle>
+            <div className="flex gap-2">
+                <Button variant="outline" size="sm"><Download className="w-4 h-4 mr-2"/>PDF</Button>
+                {isEditing ? <Button size="sm" onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button size="sm" onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
+            </div>
+        </CardHeader>
         <CardContent>
-             <FormField label="Project" value="" />
-            <FormField label="Architect" value="" />
-            <FormField label="Architects Project No" value="" />
-            <FormField label="Date" value="" />
-            <div className="border p-2 rounded mt-4">To: (Consultant)</div>
+             <FormField label="Project">{renderHeaderField('project')}</FormField>
+            <FormField label="Architect">{renderHeaderField('architect')}</FormField>
+            <FormField label="Architects Project No">{renderHeaderField('architectsProjectNo')}</FormField>
+            <FormField label="Date">{renderHeaderField('date')}</FormField>
+            <div className="border p-2 rounded mt-4">To: (Consultant) {renderHeaderField('toConsultant')}</div>
             <p className="my-4">List Sub-Consultants and others proposed to be employed on the above Project as required by the bidding documents. (To be filled out by the Contractor and returned to the Architect.)</p>
             <Table>
                 <TableHeader><TableRow><TableHead>Work</TableHead><TableHead>Firm</TableHead><TableHead>Address</TableHead><TableHead>Phone</TableHead><TableHead>Representative</TableHead></TableRow></TableHeader>
-                <TableBody>{[...Array(15)].map((_,i)=><TableRow key={i}><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}</TableBody>
+                <TableBody>{formData.rows.map((row: any, i:number)=><TableRow key={row.id}>
+                    <TableCell>{renderCell('work', i)}</TableCell>
+                    <TableCell>{renderCell('firm', i)}</TableCell>
+                    <TableCell>{renderCell('address', i)}</TableCell>
+                    <TableCell>{renderCell('phone', i)}</TableCell>
+                    <TableCell>{renderCell('representative', i)}</TableCell>
+                </TableRow>)}</TableBody>
             </Table>
         </CardContent>
     </Card>
-));
+)});
 Section15.displayName = 'Section15';
 
-const Section16 = React.memo(() => (
+const Section16 = React.memo(() => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [formData, setFormData] = useState<any>({ rows: Array(15).fill({}).map((_, i) => ({ id: i })) });
+
+    const { toast } = useToast();
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
+    
+    const docRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, `users/${user.uid}/contractorList/${CONTRACTOR_LIST_DOC_ID}`);
+    }, [user, firestore]);
+    
+    useEffect(() => {
+        if (!docRef) return;
+        setIsLoading(true);
+        getDoc(docRef).then(docSnap => {
+            if (docSnap.exists()) setFormData(docSnap.data());
+        }).catch(err => console.error(err)).finally(() => setIsLoading(false));
+    }, [docRef]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
+        const { name, value } = e.target;
+        if (index !== undefined) {
+            const newRows = [...formData.rows];
+            newRows[index] = { ...newRows[index], [name]: value };
+            setFormData(prev => ({ ...prev, rows: newRows }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
+    };
+    
+    const handleSave = () => {
+        if (!docRef) return;
+        setIsSaving(true);
+        setDoc(docRef, formData, { merge: true })
+            .then(() => {
+                toast({ title: "Success", description: "Contractor list saved." });
+                setIsEditing(false);
+            })
+            .catch(err => toast({ variant: 'destructive', title: 'Error', description: 'Failed to save list.' }))
+            .finally(() => setIsSaving(false));
+    };
+
+    const renderCell = (name: string, index: number) => {
+        const value = formData.rows[index]?.[name] || '';
+        return isEditing ? <Input name={name} value={value} onChange={e => handleInputChange(e, index)} /> : <p className="p-1">{value}</p>;
+    };
+
+    const renderHeaderField = (name: string) => {
+        return isEditing ? <Input name={name} value={formData[name] || ''} onChange={handleInputChange} /> : <div className="p-1 border-b min-h-[24px]">{formData[name]}</div>;
+    }
+
+    if (isLoading || isUserLoading) return <CardContent><Loader2 className="animate-spin"/></CardContent>
+
+    return (
      <Card>
-        <CardHeader><CardTitle>List of Contractors</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row justify-between items-center">
+            <CardTitle>List of Contractors</CardTitle>
+            <div className="flex gap-2">
+                <Button variant="outline" size="sm"><Download className="w-4 h-4 mr-2"/>PDF</Button>
+                {isEditing ? <Button size="sm" onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button size="sm" onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
+            </div>
+        </CardHeader>
         <CardContent>
-             <FormField label="Project" value="" />
-            <FormField label="Architect" value="" />
-            <FormField label="Architects Project No" value="" />
-            <FormField label="Date" value="" />
-            <div className="border p-2 rounded mt-4">To: (Contractor)</div>
+            <FormField label="Project">{renderHeaderField('project')}</FormField>
+            <FormField label="Architect">{renderHeaderField('architect')}</FormField>
+            <FormField label="Architects Project No">{renderHeaderField('architectsProjectNo')}</FormField>
+            <FormField label="Date">{renderHeaderField('date')}</FormField>
+            <div className="border p-2 rounded mt-4">To: (Contractor) {renderHeaderField('toContractor')}</div>
             <p className="my-4">List Subcontractors and others proposed to be employed on the above Project as required by the bidding documents. (To be filled out by the Contractor and returned to the Architect.)</p>
             <Table>
                 <TableHeader><TableRow><TableHead>Work</TableHead><TableHead>Firm</TableHead><TableHead>Address</TableHead><TableHead>Phone</TableHead><TableHead>Representative</TableHead></TableRow></TableHeader>
-                <TableBody>{[...Array(15)].map((_,i)=><TableRow key={i}><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell><TableCell></TableCell></TableRow>)}</TableBody>
+                <TableBody>{formData.rows.map((row: any, i: number)=><TableRow key={row.id}>
+                    <TableCell>{renderCell('work', i)}</TableCell>
+                    <TableCell>{renderCell('firm', i)}</TableCell>
+                    <TableCell>{renderCell('address', i)}</TableCell>
+                    <TableCell>{renderCell('phone', i)}</TableCell>
+                    <TableCell>{renderCell('representative', i)}</TableCell>
+                </TableRow>)}</TableBody>
             </Table>
         </CardContent>
     </Card>
-));
+)});
 Section16.displayName = 'Section16';
 
 const Section17 = React.memo(() => {
@@ -2519,7 +2914,7 @@ const Section17 = React.memo(() => {
                 </Accordion>
             </CardContent>
         </Card>
-    )
+    );
 });
 Section17.displayName = 'Section17';
 
@@ -3705,4 +4100,3 @@ export default function BankPage() {
         </main>
     );
 }
-
