@@ -389,30 +389,17 @@ const WeeklySchedule = () => {
         doc.text(projectDateRange, 195, y, { align: 'right' });
         y += 8;
 
-        if (schedule.dailyEntries && schedule.dailyEntries.length > 0) {
-            const tableBody = schedule.dailyEntries.map((d, i) => {
-                const dayLabel = `Day ${i + 1}`;
-                const date = schedule.startDate ? format(addDays(parseISO(schedule.startDate), i), 'EEE, d MMM') : '';
-                return [`${dayLabel}\n${date}`, d.details, `${d.percentage}%`];
-            });
+        const body = [[schedule.details || 'No overall details provided.']];
+         autoTable(doc, {
+            head: [['Overall Details']],
+            body: body,
+            startY: y,
+            theme: 'grid',
+            headStyles: { fillColor: [241, 245, 249], textColor: [51, 65, 85], fontStyle: 'bold' },
+            styles: { fontSize: 9, cellPadding: 2 },
+        });
 
-            autoTable(doc, {
-                head: [['Day', 'Details', 'Progress']],
-                body: tableBody,
-                startY: y,
-                theme: 'grid',
-                headStyles: { fillColor: [40, 58, 83], textColor: 255, fontStyle: 'bold' },
-                styles: { fontSize: 9, cellPadding: 2 },
-                columnStyles: { 1: { cellWidth: 120 } }
-            });
-
-            y = (doc as any).lastAutoTable.finalY + 10;
-        } else {
-             doc.setFontSize(9);
-             doc.setTextColor(100, 116, 139);
-             doc.text('No daily entries for this project.', 14, y);
-             y+= 10;
-        }
+        y = (doc as any).lastAutoTable.finalY + 10;
     });
 
     if (remarks) {
@@ -632,7 +619,7 @@ const WeeklySchedule = () => {
                      </RadioGroup>
                  )}
                 <div className="flex items-center gap-2">
-                    {isEditing ? (<><DatePicker date={scheduleDates.start ? parseISO(scheduleDates.start) : undefined} onDateChange={(date) => handleDateRangeChange('start', date)} /><span className="mx-2">to</span><DatePicker date={scheduleDates.end ? parseISO(scheduleDates.end) : undefined} onDateChange={(date) => handleDateRangeChange('end', date)} disabled={scheduleType==='weekly' || scheduleType==='monthly'} /></>) : (<p className="text-lg font-semibold">{scheduleDates.start && format(parseISO(scheduleDates.start), 'PPP')} - {scheduleDates.end && format(parseISO(scheduleDates.end), 'PPP')}</p>)}
+                    {isEditing ? (<><DatePicker date={scheduleDates.start ? parseISO(scheduleDates.start) : undefined} onDateChange={(date) => handleDateRangeChange('start', date)} /><span className="mx-2">to</span><DatePicker date={scheduleDates.end ? parseISO(scheduleDates.end) : undefined} onDateChange={(date) => handleDateRangeChange('end', date)} disabled={scheduleType==='weekly' || scheduleType==='monthly'} /></>) : (<p className="text-lg font-bold">{scheduleDates.start && format(parseISO(scheduleDates.start), 'PPP')} - {scheduleDates.end && format(parseISO(scheduleDates.end), 'PPP')}</p>)}
                 </div>
             </div>
         </CardHeader>
@@ -717,5 +704,7 @@ const WeeklySchedule = () => {
 };
 
 export default WeeklySchedule;
+
+    
 
     
