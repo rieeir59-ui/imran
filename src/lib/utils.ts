@@ -55,7 +55,7 @@ export function exportDataToPdf(title: string, data: any[], filename:string, ove
     orientation: "landscape",
   });
   
-  doc.setFontSize(14);
+  doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(40, 58, 83);
   doc.text(title, doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
@@ -123,7 +123,7 @@ export function exportDataToPdf(title: string, data: any[], filename:string, ove
       head: [['No.', 'Status']],
       body: overallStatus.map(s => [s.no, s.text]),
       theme: 'grid',
-      headStyles: { fillColor: [241, 245, 249], textColor: [30, 41, 59], fontSize: 10, fontStyle: 'bold' },
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontSize: 10, fontStyle: 'bold' },
       styles: { fontSize: 9 },
     });
     finalY = (doc as any).lastAutoTable.finalY;
@@ -173,9 +173,6 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
   const tableBody: (string | { content: string; colSpan: number; styles: any })[][] = [];
 
   checklistCategories.forEach((categoryKey) => {
-    const mainSectionKey = `mainSection-${categoryKey.toLowerCase()}`;
-    const isMainSectionComplete = formData[mainSectionKey];
-    
     tableBody.push([
       { 
         content: `${categoryKey.toUpperCase()}`, 
@@ -190,7 +187,7 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
         { 
           content: subTitle, 
           colSpan: 2, 
-          styles: { fontStyle: 'bold', fillColor: [236, 240, 241] } 
+          styles: { fontStyle: 'bold', fillColor: [236, 240, 241], textColor: [0,0,0] } 
         }
       ]);
       
@@ -198,7 +195,7 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
       items.forEach((item: string) => {
           const itemKey = `${categoryKey}-${subTitle}-${item}`.toLowerCase().replace(/[^a-z0-9-]/g, '');
           const isChecked = formData[itemKey];
-          tableBody.push([item, isChecked ? '✓' : '☐']);
+          tableBody.push([item, isChecked ? '[✓]' : '[ ]']);
       });
     });
   });
@@ -209,7 +206,7 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
     body: tableBody,
     theme: 'grid',
     headStyles: {
-      fillColor: [41, 128, 185],
+      fillColor: [30, 41, 59],
       textColor: [255, 255, 255],
       fontStyle: 'bold',
     },
