@@ -25,6 +25,10 @@ const architects = [
     { name: "Architect Khizar", href: "/weekly-schedule?employee=Architect%20Khizar" },
 ];
 
+const visualizers = [
+    { name: "M Mohsin", href: "/weekly-schedule?employee=M%20Mohsin" },
+];
+
 export default function TeamDashboard() {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -62,8 +66,23 @@ export default function TeamDashboard() {
                 <CardHeader>
                     <CardTitle>Drafting Team</CardTitle>
                 </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-4">
+                <CardContent className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                      {draftspersons.map((person) => (
+                        <Link href={person.href} key={person.name}>
+                            <div className="p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full">
+                                <User className="h-8 w-8 text-primary mb-2" />
+                                <span className="font-semibold text-center">{person.name}</span>
+                            </div>
+                        </Link>
+                    ))}
+                </CardContent>
+            </Card>
+             <Card className="lg:col-span-3">
+                <CardHeader>
+                    <CardTitle>3D Visualizer Team</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                     {visualizers.map((person) => (
                         <Link href={person.href} key={person.name}>
                             <div className="p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full">
                                 <User className="h-8 w-8 text-primary mb-2" />
