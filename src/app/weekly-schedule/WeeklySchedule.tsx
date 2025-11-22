@@ -128,19 +128,16 @@ const WeeklySchedule = () => {
   }, [user, firestore, scheduleId]);
 
   const tasksCollectionRef = useMemoFirebase(() => {
-      if (!user || !firestore || !employeeName) return null;
-      return query(
-          collection(firestore, `users/${user.uid}/tasks`),
-          where("employeeName", "==", employeeName)
-      );
+    if (!user || !firestore || !employeeName) return null;
+    return query(collection(firestore, `users/${user.uid}/tasks`), where("employeeName", "==", employeeName));
   }, [user, firestore, employeeName]);
-
+  
   useEffect(() => {
     if (!tasksCollectionRef) return;
-
+  
     const unsubscribe = onSnapshot(tasksCollectionRef, (snapshot) => {
         const tasksData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
-        // client-side sort
+        // Perform client-side sorting
         tasksData.sort((a, b) => {
             const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
             const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
@@ -150,7 +147,7 @@ const WeeklySchedule = () => {
     }, (error) => {
         console.error("Error fetching tasks:", error);
     });
-
+  
     return () => unsubscribe();
   }, [tasksCollectionRef]);
 
@@ -352,32 +349,29 @@ const WeeklySchedule = () => {
     const doc = new jsPDF();
     let y = 15;
 
-    // Title
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(40, 58, 83); // A dark blue
+    doc.setTextColor(40, 58, 83);
     doc.text(`Work Schedule: ${employeeName}`, 105, y, { align: 'center' });
     y += 10;
     
-    // Sub-header info
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100, 116, 139); // Muted gray
+    doc.setTextColor(100, 116, 139);
     const scheduleDateString = `For the period of ${scheduleDates.start ? format(parseISO(scheduleDates.start), 'PPP') : ''} to ${scheduleDates.end ? format(parseISO(scheduleDates.end), 'PPP') : ''}`;
     doc.text(`Designation: ${designation}`, 14, y);
-    doc.text(scheduleDateString, 105, y);
+    doc.text(scheduleDateString, 195, y, { align: 'right' });
     y += 10;
 
-    schedules.forEach((schedule, projIndex) => {
+    schedules.forEach((schedule) => {
         if (y > 250) {
             doc.addPage();
             y = 15;
         }
         
-        // Project Header
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(22, 163, 74); // A nice green
+        doc.setTextColor(22, 163, 74);
         doc.text(`Project: ${schedule.projectName}`, 14, y);
         y += 6;
 
@@ -389,17 +383,33 @@ const WeeklySchedule = () => {
         doc.text(projectDateRange, 195, y, { align: 'right' });
         y += 8;
 
-        const body = [[schedule.details || 'No overall details provided.']];
-         autoTable(doc, {
+        autoTable(doc, {
             head: [['Overall Details']],
-            body: body,
+            body: [[schedule.details || 'No overall details provided.']],
             startY: y,
             theme: 'grid',
             headStyles: { fillColor: [241, 245, 249], textColor: [51, 65, 85], fontStyle: 'bold' },
             styles: { fontSize: 9, cellPadding: 2 },
         });
 
-        y = (doc as any).lastAutoTable.finalY + 10;
+        y = (doc as any).lastAutoTable.finalY + 5;
+
+        if (schedule.dailyEntries && schedule.dailyEntries.length > 0) {
+            if (y > 240) {
+                doc.addPage();
+                y = 15;
+            }
+             autoTable(doc, {
+                head: [['Day', 'Details', 'Progress (%)']],
+                body: schedule.dailyEntries.map((d, i) => [`Day ${i+1}`, d.details, d.percentage]),
+                startY: y,
+                theme: 'grid',
+                headStyles: { fillColor: [241, 245, 249], textColor: [51, 65, 85], fontStyle: 'bold' },
+                styles: { fontSize: 8, cellPadding: 2 },
+            });
+            y = (doc as any).lastAutoTable.finalY;
+        }
+        y += 10;
     });
 
     if (remarks) {
