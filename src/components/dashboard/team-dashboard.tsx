@@ -20,7 +20,7 @@ const draftspersons = [
 
 const architects = [
     { name: "Architect Sobia", href: "/weekly-schedule?employee=Architect%20Sobia" },
-    { name: "Luqman Aslam", href: "/weekly-schedule?employee=Luqman%20Aslam" },
+    { name: "Architect Luqman Aslam", href: "/weekly-schedule?employee=Architect%20Luqman%20Aslam" },
     { name: "Architect Asad", href: "/weekly-schedule?employee=Architect%20Asad" },
     { name: "Architect Haseeb", href: "/weekly-schedule?employee=Architect%20Haseeb" },
     { name: "Architect Khizar", href: "/weekly-schedule?employee=Architect%20Khizar" },
