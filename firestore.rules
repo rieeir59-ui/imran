@@ -251,7 +251,14 @@ service cloud.firestore {
     match /users/{userId}/vendorList/{listId} {
         allow read, write: if isOwner(userId);
     }
+    
+    /**
+     * @description Enforces ownership for tasks.
+     * Allows any authenticated user to create tasks, but only the owner can manage them.
+     * @path /users/{userId}/tasks/{taskId}
+     */
+    match /users/{userId}/tasks/{taskId} {
+      allow read, write: if isOwner(userId);
+    }
   }
 }
-
-    
