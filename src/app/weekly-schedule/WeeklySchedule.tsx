@@ -36,10 +36,10 @@ import { Label } from '@/components/ui/label';
 
 const initialDailyEntry = () => ({ details: '', percentage: 0 });
 
-const initialScheduleData = [
+const initialScheduleData = (employeeName: string) => ([
   { 
     id: 1, 
-    employeeName: 'MUJAHID', 
+    employeeName: employeeName, 
     projectName: '', 
     details: '',
     status: 'In Progress', 
@@ -47,7 +47,7 @@ const initialScheduleData = [
     endDate: '', 
     dailyEntries: Array(0).fill(null).map(initialDailyEntry),
   },
-];
+]);
 
 const designations = [
     "CEO",
@@ -66,32 +66,39 @@ const WeeklySchedule = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [schedules, setSchedules] = useState(initialScheduleData);
   const [remarks, setRemarks] = useState('');
   const [scheduleDates, setScheduleDates] = useState({ start: '', end: '' });
   const [designation, setDesignation] = useState<string>('');
   const [scheduleId, setScheduleId] = useState<string | null>(null);
   const [openProjects, setOpenProjects] = useState<Record<number, boolean>>({});
   const [scheduleType, setScheduleType] = useState<'weekly' | 'monthly'>('weekly');
-  const [employeeName, setEmployeeName] = useState('MUJAHID');
+  
+  const searchParams = useSearchParams();
+  const employeeQueryParam = searchParams.get('employee') || 'MUJAHID';
+  const [employeeName, setEmployeeName] = useState(employeeQueryParam);
+  const [schedules, setSchedules] = useState(() => initialScheduleData(employeeName));
+
 
   const { toast } = useToast();
 
   const firestore = useFirestore();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     const id = searchParams.get('id');
+    const employee = searchParams.get('employee');
+    
     if (id) {
         setScheduleId(id);
     } else {
         setIsEditing(true);
-        setSchedules(initialScheduleData.map(s => ({...s, employeeName})));
+        const newEmployeeName = employee || 'New Employee';
+        setEmployeeName(newEmployeeName);
+        setSchedules(initialScheduleData(newEmployeeName));
         setDesignation('');
     }
-  }, [searchParams, employeeName]);
+  }, [searchParams]);
 
   useEffect(() => {
     if (!isUserLoading && !user && auth) {
@@ -195,7 +202,7 @@ const WeeklySchedule = () => {
         if (scheduleType === 'weekly') {
             endDate = addDays(startDate, 6);
         } else { // monthly
-            endDate = addMonths(startDate, 1);
+            endDate = endOfMonth(startDate);
         }
     } else { // field === 'end'
         endDate = value;
