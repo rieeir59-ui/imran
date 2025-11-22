@@ -21,7 +21,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
-import { addDays, format, parseISO, isValid } from 'date-fns';
+import { addDays, format, parseISO, isValid, differenceInDays, subDays } from 'date-fns';
 import { exportDataToPdf } from '@/lib/utils';
 
 const DEFAULT_TIMELINE_ID = "main-project-timeline";
@@ -183,21 +183,41 @@ export default function ProjectTimelinePage() {
         const updatedTasks = [...timelineTasks];
         const task = updatedTasks[index] as any;
         task[field] = value;
-
-        if (field === 'duration' || field === 'start') {
-            const startDate = task.start ? (typeof task.start === 'string' ? parseISO(task.start) : task.start) : null;
-            const duration = task.duration ? parseInt(task.duration, 10) : 0;
-
-            if (startDate && isValid(startDate) && !isNaN(duration) && duration > 0) {
-                const finishDate = addDays(startDate, duration);
-                task.finish = format(finishDate, 'yyyy-MM-dd');
-            }
-        }
-        
+    
+        // Convert dates from pickers (Date objects) to string format
         if (field === 'start' && value instanceof Date) {
             task.start = format(value, 'yyyy-MM-dd');
         }
+        if (field === 'finish' && value instanceof Date) {
+            task.finish = format(value, 'yyyy-MM-dd');
+        }
 
+        const startDate = task.start ? parseISO(task.start) : null;
+        const finishDate = task.finish ? parseISO(task.finish) : null;
+        const duration = task.duration ? parseInt(task.duration, 10) : null;
+
+        // Case 1: Start date and duration are available -> calculate finish date
+        if (field === 'start' || field === 'duration') {
+            if (startDate && isValid(startDate) && duration !== null && !isNaN(duration) && duration > 0) {
+                task.finish = format(addDays(startDate, duration - 1), 'yyyy-MM-dd');
+            }
+        }
+        
+        // Case 2: Start date and finish date are available -> calculate duration
+        if (field === 'start' || field === 'finish') {
+             if (startDate && isValid(startDate) && finishDate && isValid(finishDate) && finishDate >= startDate) {
+                const newDuration = differenceInDays(finishDate, startDate) + 1;
+                task.duration = String(newDuration);
+            }
+        }
+
+        // Case 3: Finish date and duration are available -> calculate start date
+        if (field === 'finish' || field === 'duration') {
+            if (finishDate && isValid(finishDate) && duration !== null && !isNaN(duration) && duration > 0) {
+                task.start = format(subDays(finishDate, duration - 1), 'yyyy-MM-dd');
+            }
+        }
+    
         setTimelineTasks(updatedTasks);
     };
 
@@ -320,7 +340,7 @@ export default function ProjectTimelinePage() {
                                         <>
                                             <TableCell>{renderCell(task.duration || '', (val) => handleTaskChange(index, 'duration', val))}</TableCell>
                                             <TableCell>{renderDateCell(task.start, (val) => handleTaskChange(index, 'start', val))}</TableCell>
-                                            <TableCell>{renderCell(task.finish || '', (val) => handleTaskChange(index, 'finish', val))}</TableCell>
+                                            <TableCell>{renderDateCell(task.finish || '', (val) => handleTaskChange(index, 'finish', val))}</TableCell>
                                             <TableCell>{renderCell(task.predecessor || '', (val) => handleTaskChange(index, 'predecessor', val))}</TableCell>
                                         </>
                                     )}
@@ -333,3 +353,4 @@ export default function ProjectTimelinePage() {
         </main>
     );
 }
+
