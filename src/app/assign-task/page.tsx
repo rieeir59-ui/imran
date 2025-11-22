@@ -21,6 +21,11 @@ const employeeList = [
     "M Mohsin", "M Nouman"
 ];
 
+const projectList = [
+    "Project 1", "Project 2", "Project 3", "Project 4", "Project 5", 
+    "Project 6", "Project 7", "Project 8", "Project 9", "Project 10"
+];
+
 export default function AssignTaskPage() {
     const [employeeName, setEmployeeName] = useState('');
     const [projectName, setProjectName] = useState('');
@@ -111,12 +116,16 @@ export default function AssignTaskPage() {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="project-name">Project Name</Label>
-                            <Input
-                                id="project-name"
-                                value={projectName}
-                                onChange={(e) => setProjectName(e.target.value)}
-                                placeholder="Enter the project name"
-                            />
+                            <Select onValueChange={setProjectName} value={projectName}>
+                                <SelectTrigger id="project-name">
+                                    <SelectValue placeholder="Select a project" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {projectList.map(project => (
+                                        <SelectItem key={project} value={project}>{project}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="task-description">Task Description</Label>
