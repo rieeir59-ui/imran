@@ -369,8 +369,7 @@ const WeeklySchedule = () => {
         }
         
         const projectDetailsBody = [
-          [{content: `Project No: ${schedule.id || 'N/A'}`, styles: {fontStyle: 'bold', fontSize: 12, fillColor: [22, 163, 74], textColor: [255,255,255]}}],
-          [{content: `Project: ${schedule.projectName || 'N/A'}`}],
+          [{content: `Project No: ${schedule.id || 'N/A'} - ${schedule.projectName || 'N/A'}`, styles: {fontStyle: 'bold', fontSize: 12, fillColor: [22, 163, 74], textColor: [255,255,255]}}],
           [{content: `Overall Details: ${schedule.details || 'No details provided.'}`}],
           [{content: `Status: ${schedule.status || 'N/A'}`}],
           [{content: `Date Range: ${schedule.startDate ? format(parseISO(schedule.startDate), 'd MMM') : 'N/A'} - ${schedule.endDate ? format(parseISO(schedule.endDate), 'd MMM') : 'N/A'}`}],
@@ -653,3 +652,4 @@ const WeeklySchedule = () => {
 };
 
 export default WeeklySchedule;
+
