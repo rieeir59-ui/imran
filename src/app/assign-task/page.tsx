@@ -46,7 +46,7 @@ const projectList = [
     "18. FBL Ferozpur Road Lahore",
     "19. FBL Park View City Lahore",
     "20. FBL CPC-KHARIAN-BRANCH",
-    "21. FBL Bhowana.",
+    "21. FBL Bhowana",
     "22. FBL Peer-Wadahi Road Branch Rawalpindi",
     "23. FBL Gulbahar, Peshawer",
     "24. FBL Guest House DHA Phase-4 Lahore",
