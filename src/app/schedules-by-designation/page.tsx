@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, CheckCircle, XCircle, CircleDotDashed } from 'lucide-react';
+import { Briefcase, CheckCircle, XCircle, CircleDotDashed, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { collection, getDocs } from 'firebase/firestore';
@@ -13,6 +13,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
 
 interface Schedule {
   id: string;
@@ -88,13 +89,18 @@ export default function SchedulesByDesignationPage() {
 
   return (
     <main className="p-4 md:p-6 lg:p-8">
+      <div className="mb-4">
+        <Button variant="outline" asChild>
+            <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Link>
+        </Button>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Schedules by Designation</CardTitle>
         </CardHeader>
         <CardContent>
           <Accordion type="multiple" className="w-full" defaultValue={Object.keys(schedulesByDesignation)}>
-            {Object.entries(schedulesByDesignation).map(([designation, schedules]) => (
+            {Object.entries(schedulesByDesignation).sort(([a], [b]) => a.localeCompare(b)).map(([designation, schedules]) => (
               <AccordionItem value={designation} key={designation} id={designation.replace(/\s+/g, '-')}>
                 <AccordionTrigger className="text-xl font-bold">{designation}</AccordionTrigger>
                 <AccordionContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 p-4">
