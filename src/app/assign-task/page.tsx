@@ -23,6 +23,7 @@ const employeeList = [
 
 export default function AssignTaskPage() {
     const [employeeName, setEmployeeName] = useState('');
+    const [projectName, setProjectName] = useState('');
     const [taskDescription, setTaskDescription] = useState('');
     const [startDate, setStartDate] = useState<Date | undefined>();
     const [endDate, setEndDate] = useState<Date | undefined>();
@@ -43,7 +44,7 @@ export default function AssignTaskPage() {
             toast({ variant: 'destructive', title: 'Error', description: 'Cannot assign task. User not authenticated.' });
             return;
         }
-        if (!employeeName || !taskDescription || !startDate || !endDate) {
+        if (!employeeName || !projectName || !taskDescription || !startDate || !endDate) {
             toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out all fields.' });
             return;
         }
@@ -51,6 +52,7 @@ export default function AssignTaskPage() {
         setIsSaving(true);
         const taskData = {
             employeeName,
+            projectName,
             taskDescription,
             startDate: startDate.toISOString().split('T')[0], // format as YYYY-MM-DD
             endDate: endDate.toISOString().split('T')[0], // format as YYYY-MM-DD
@@ -60,14 +62,6 @@ export default function AssignTaskPage() {
         };
 
         addDoc(tasksCollectionRef, taskData)
-          .then(() => {
-            toast({ title: 'Task Assigned!', description: `Task has been assigned to ${employeeName}.` });
-            // Reset form
-            setEmployeeName('');
-            setTaskDescription('');
-            setStartDate(undefined);
-            setEndDate(undefined);
-          })
           .catch(async (serverError) => {
             const permissionError = new FirestorePermissionError({
                 path: tasksCollectionRef.path,
@@ -78,6 +72,13 @@ export default function AssignTaskPage() {
           })
           .finally(() => {
             setIsSaving(false);
+            toast({ title: 'Task Assigned!', description: `Task for ${projectName} has been assigned to ${employeeName}.` });
+            // Reset form
+            setEmployeeName('');
+            setProjectName('');
+            setTaskDescription('');
+            setStartDate(undefined);
+            setEndDate(undefined);
           });
     };
 
@@ -107,6 +108,15 @@ export default function AssignTaskPage() {
                                     ))}
                                 </SelectContent>
                             </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="project-name">Project Name</Label>
+                            <Input
+                                id="project-name"
+                                value={projectName}
+                                onChange={(e) => setProjectName(e.target.value)}
+                                placeholder="Enter the project name"
+                            />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="task-description">Task Description</Label>
