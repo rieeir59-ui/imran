@@ -137,7 +137,6 @@ const WeeklySchedule = () => {
   
     const unsubscribe = onSnapshot(tasksCollectionRef, (snapshot) => {
         const tasksData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
-        // Perform client-side sorting
         tasksData.sort((a, b) => {
             const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
             const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
@@ -369,30 +368,21 @@ const WeeklySchedule = () => {
             y = 15;
         }
         
-        doc.setFontSize(14);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(22, 163, 74);
-        doc.text(`Project: ${schedule.projectName}`, 14, y);
-        y += 6;
-
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(40, 58, 83);
-        doc.text(`Status: ${schedule.status}`, 14, y);
-        const projectDateRange = `(${schedule.startDate ? format(parseISO(schedule.startDate), 'd MMM') : ''} - ${schedule.endDate ? format(parseISO(schedule.endDate), 'd MMM') : ''})`;
-        doc.text(projectDateRange, 195, y, { align: 'right' });
-        y += 8;
-
         autoTable(doc, {
-            head: [['Overall Details']],
-            body: [[schedule.details || 'No overall details provided.']],
+            body: [
+                [{content: `Project: ${schedule.projectName}`, styles: {fontStyle: 'bold', fontSize: 12, fillColor: [22, 163, 74], textColor: [255,255,255]}}],
+                [{content: `Project No: ${schedule.id}`}],
+                [{content: `Overall Details: ${schedule.details || 'No details provided.'}`}],
+                [{content: `Status: ${schedule.status}`}],
+                [{content: `Date Range: ${schedule.startDate ? format(parseISO(schedule.startDate), 'd MMM') : ''} - ${schedule.endDate ? format(parseISO(schedule.endDate), 'd MMM') : ''}`}],
+            ],
             startY: y,
             theme: 'grid',
-            headStyles: { fillColor: [241, 245, 249], textColor: [51, 65, 85], fontStyle: 'bold' },
             styles: { fontSize: 9, cellPadding: 2 },
         });
+        
+        y = (doc as any).lastAutoTable.finalY + 2;
 
-        y = (doc as any).lastAutoTable.finalY + 5;
 
         if (schedule.dailyEntries && schedule.dailyEntries.length > 0) {
             if (y > 240) {
@@ -714,8 +704,3 @@ const WeeklySchedule = () => {
 };
 
 export default WeeklySchedule;
-
-    
-
-    
-
