@@ -352,57 +352,67 @@ const WeeklySchedule = () => {
     const doc = new jsPDF();
     let y = 15;
 
-    const addText = (text: string, x: number, yPos: number, options = {}) => {
-        const pageHeight = doc.internal.pageSize.height;
-        if (yPos > pageHeight - 20) {
-            doc.addPage();
-            y = 15;
-            yPos = 15;
-        }
-        doc.text(text, x, yPos, options);
-        return yPos;
-    };
+    // Title
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(40, 58, 83); // A dark blue
+    doc.text(`Work Schedule: ${employeeName}`, 105, y, { align: 'center' });
+    y += 10;
     
-    doc.setFontSize(16);
-    y = addText(`Work Schedule for ${employeeName}`, doc.internal.pageSize.getWidth() / 2, y, { align: 'center' });
-    y += 7;
-
-    doc.setFontSize(10);
-    const scheduleDateString = `Schedule: ${scheduleDates.start ? format(parseISO(scheduleDates.start), 'PPP') : ''} to ${scheduleDates.end ? format(parseISO(scheduleDates.end), 'PPP') : ''}`;
-    y = addText(`Designation: ${designation}`, 14, y) + 5;
-    y = addText(scheduleDateString, 14, y) + 10;
+    // Sub-header info
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139); // Muted gray
+    const scheduleDateString = `For the period of ${scheduleDates.start ? format(parseISO(scheduleDates.start), 'PPP') : ''} to ${scheduleDates.end ? format(parseISO(scheduleDates.end), 'PPP') : ''}`;
+    doc.text(`Designation: ${designation}`, 14, y);
+    doc.text(scheduleDateString, 105, y);
+    y += 10;
 
     schedules.forEach((schedule, projIndex) => {
-        if (y > 250) { // Check before adding a new project section
+        if (y > 250) {
             doc.addPage();
             y = 15;
         }
         
-        doc.setFontSize(12);
-        const projectTitle = `Project ${projIndex + 1}: ${schedule.projectName} (Status: ${schedule.status})`;
-        y = addText(projectTitle, 14, y);
-        y+=2;
-        
+        // Project Header
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(22, 163, 74); // A nice green
+        doc.text(`Project: ${schedule.projectName}`, 14, y);
+        y += 6;
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(40, 58, 83);
+        doc.text(`Status: ${schedule.status}`, 14, y);
         const projectDateRange = `(${schedule.startDate ? format(parseISO(schedule.startDate), 'd MMM') : ''} - ${schedule.endDate ? format(parseISO(schedule.endDate), 'd MMM') : ''})`;
-        doc.setFontSize(9);
-        y = addText(projectDateRange, 14, y);
-        y += 5; // spacing
+        doc.text(projectDateRange, 195, y, { align: 'right' });
+        y += 8;
 
-        const tableBody = schedule.dailyEntries.map((d, i) => [
-            `Day ${i + 1}`,
-            d.details,
-            `${d.percentage}%`
-        ]);
+        if (schedule.dailyEntries && schedule.dailyEntries.length > 0) {
+            const tableBody = schedule.dailyEntries.map((d, i) => {
+                const dayLabel = `Day ${i + 1}`;
+                const date = schedule.startDate ? format(addDays(parseISO(schedule.startDate), i), 'EEE, d MMM') : '';
+                return [`${dayLabel}\n${date}`, d.details, `${d.percentage}%`];
+            });
 
-        autoTable(doc, {
-            head: [['Day', 'Details', 'Progress']],
-            body: tableBody,
-            startY: y,
-            theme: 'grid',
-            headStyles: { fillColor: [30, 41, 59] },
-        });
+            autoTable(doc, {
+                head: [['Day', 'Details', 'Progress']],
+                body: tableBody,
+                startY: y,
+                theme: 'grid',
+                headStyles: { fillColor: [40, 58, 83], textColor: 255, fontStyle: 'bold' },
+                styles: { fontSize: 9, cellPadding: 2 },
+                columnStyles: { 1: { cellWidth: 120 } }
+            });
 
-        y = (doc as any).lastAutoTable.finalY + 10;
+            y = (doc as any).lastAutoTable.finalY + 10;
+        } else {
+             doc.setFontSize(9);
+             doc.setTextColor(100, 116, 139);
+             doc.text('No daily entries for this project.', 14, y);
+             y+= 10;
+        }
     });
 
     if (remarks) {
@@ -412,14 +422,18 @@ const WeeklySchedule = () => {
         }
         y += 5;
         doc.setFontSize(12);
-        y = addText("Remarks", 14, y) + 5;
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(40, 58, 83);
+        doc.text("Remarks", 14, y);
+        y += 6;
+        
         doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
         const splitRemarks = doc.splitTextToSize(remarks, 180);
-        addText(splitRemarks, 14, y);
+        doc.text(splitRemarks, 14, y);
     }
 
-
-    doc.save('work-schedule.pdf');
+    doc.save(`work-schedule-${employeeName}.pdf`);
   }
   
   const addRow = () => {
