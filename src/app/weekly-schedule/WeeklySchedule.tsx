@@ -18,12 +18,12 @@ import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown, PlusCircl
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
-import { doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, orderBy, updateDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, onSnapshot, updateDoc } from "firebase/firestore";
 import { useSearchParams } from 'next/navigation';
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
-import { format, isValid, parseISO, differenceInDays, addDays, addMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { format, isValid, parseISO, differenceInDays, addDays, endOfMonth } from 'date-fns';
 import { exportDataToCsv } from '@/lib/utils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -368,14 +368,16 @@ const WeeklySchedule = () => {
             y = 15;
         }
         
+        const projectDetailsBody = [
+          [{content: `Project: ${schedule.projectName || 'N/A'}`, styles: {fontStyle: 'bold', fontSize: 12, fillColor: [22, 163, 74], textColor: [255,255,255]}}],
+          [{content: `Project No: ${schedule.id || 'N/A'}`}],
+          [{content: `Overall Details: ${schedule.details || 'No details provided.'}`}],
+          [{content: `Status: ${schedule.status || 'N/A'}`}],
+          [{content: `Date Range: ${schedule.startDate ? format(parseISO(schedule.startDate), 'd MMM') : 'N/A'} - ${schedule.endDate ? format(parseISO(schedule.endDate), 'd MMM') : 'N/A'}`}],
+        ];
+
         autoTable(doc, {
-            body: [
-                [{content: `Project: ${schedule.projectName}`, styles: {fontStyle: 'bold', fontSize: 12, fillColor: [22, 163, 74], textColor: [255,255,255]}}],
-                [{content: `Project No: ${schedule.id}`}],
-                [{content: `Overall Details: ${schedule.details || 'No details provided.'}`}],
-                [{content: `Status: ${schedule.status}`}],
-                [{content: `Date Range: ${schedule.startDate ? format(parseISO(schedule.startDate), 'd MMM') : ''} - ${schedule.endDate ? format(parseISO(schedule.endDate), 'd MMM') : ''}`}],
-            ],
+            body: projectDetailsBody,
             startY: y,
             theme: 'grid',
             styles: { fontSize: 9, cellPadding: 2 },
