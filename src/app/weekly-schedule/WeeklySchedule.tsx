@@ -14,11 +14,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown, PlusCircle, Trash2, CheckCircle, XCircle, CircleDotDashed, ChevronDown, ChevronRight } from 'lucide-react';
+import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown, PlusCircle, Trash2, CheckCircle, XCircle, CircleDotDashed, ChevronDown, ChevronRight, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
-import { doc, getDoc, setDoc, collection, addDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, orderBy, updateDoc } from "firebase/firestore";
 import { useSearchParams } from 'next/navigation';
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -62,6 +62,16 @@ const designations = [
     "AI Manager"
 ];
 
+interface Task {
+    id: string;
+    employeeName: string;
+    taskDescription: string;
+    dueDate: string;
+    status: string;
+    assignedBy: string;
+    createdAt: any;
+}
+
 const WeeklySchedule = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -72,6 +82,7 @@ const WeeklySchedule = () => {
   const [scheduleId, setScheduleId] = useState<string | null>(null);
   const [openProjects, setOpenProjects] = useState<Record<number, boolean>>({});
   const [scheduleType, setScheduleType] = useState<'weekly' | 'monthly'>('weekly');
+  const [assignedTasks, setAssignedTasks] = useState<Task[]>([]);
   
   const searchParams = useSearchParams();
   const employeeQueryParam = searchParams.get('employee') || 'MUJAHID';
@@ -110,6 +121,29 @@ const WeeklySchedule = () => {
     if (!user || !firestore || !scheduleId) return null;
     return doc(firestore, `users/${user.uid}/weeklySchedules/${scheduleId}`);
   }, [user, firestore, scheduleId]);
+
+  const tasksCollectionRef = useMemoFirebase(() => {
+      if (!user || !firestore || !employeeName) return null;
+      return query(
+          collection(firestore, `users/${user.uid}/tasks`),
+          where("employeeName", "==", employeeName),
+          orderBy("createdAt", "desc")
+      );
+  }, [user, firestore, employeeName]);
+
+  useEffect(() => {
+    if (!tasksCollectionRef) return;
+
+    const unsubscribe = onSnapshot(tasksCollectionRef, (snapshot) => {
+        const tasksData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
+        setAssignedTasks(tasksData);
+    }, (error) => {
+        console.error("Error fetching tasks:", error);
+    });
+
+    return () => unsubscribe();
+  }, [tasksCollectionRef]);
+
 
   useEffect(() => {
     if (!scheduleDocRef) {
@@ -436,6 +470,18 @@ const WeeklySchedule = () => {
     return <span className="p-2 block min-h-[32px]">{date ? format(date, 'd-MMM-yy') : ''}</span>;
   };
   
+  const handleTaskStatusChange = async (taskId: string, newStatus: string) => {
+    if (!user || !firestore) return;
+    const taskDocRef = doc(firestore, `users/${user.uid}/tasks/${taskId}`);
+    try {
+        await updateDoc(taskDocRef, { status: newStatus });
+        toast({ title: "Task Updated", description: "Task status has been updated."});
+    } catch (error) {
+        console.error("Error updating task status:", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to update task status.' });
+    }
+  };
+  
   if (isUserLoading || (isLoading && scheduleId)) {
     return <div className="flex h-full w-full items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2">Loading Schedule...</p></div>;
   }
@@ -458,6 +504,46 @@ const WeeklySchedule = () => {
             {isEditing ? (<><Button onClick={addRow} variant="outline"><PlusCircle className="mr-2 h-4 w-4" /> Add Project</Button><Button onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />} Save</Button></>) : (<Button onClick={() => setIsEditing(true)}><Edit className="mr-2" /> Edit</Button>)}
         </div>
       </div>
+
+        {assignedTasks.length > 0 && (
+            <Card className="mb-6">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><ClipboardList /> Assigned Tasks</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Task Description</TableHead>
+                                <TableHead>Due Date</TableHead>
+                                <TableHead>Status</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {assignedTasks.map(task => (
+                                <TableRow key={task.id}>
+                                    <TableCell>{task.taskDescription}</TableCell>
+                                    <TableCell>{task.dueDate ? format(parseISO(task.dueDate), 'PPP') : ''}</TableCell>
+                                    <TableCell>
+                                         <Select value={task.status} onValueChange={(newStatus) => handleTaskStatusChange(task.id, newStatus)}>
+                                            <SelectTrigger className='w-40'>
+                                                <SelectValue/>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Assigned">Assigned</SelectItem>
+                                                <SelectItem value="In Progress">In Progress</SelectItem>
+                                                <SelectItem value="Completed">Completed</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        )}
+
       <Card className="printable-card">
         <CardHeader className="flex flex-col md:flex-row justify-between md:items-center">
             <div className='flex items-center gap-4'>
@@ -568,3 +654,5 @@ const WeeklySchedule = () => {
 };
 
 export default WeeklySchedule;
+
+    

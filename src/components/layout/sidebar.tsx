@@ -11,7 +11,7 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
 } from "@/components/ui/sidebar";
-import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save } from 'lucide-react';
+import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 
@@ -28,6 +28,7 @@ const projectFormsItems = [
   { href: '/weekly-schedule', icon: CalendarClock, label: 'Work Schedule' },
   { href: '/schedules-by-designation', icon: Users, label: 'Schedules by Designation' },
   { href: '/save-record', icon: Save, label: 'Saved Records' },
+  { href: '/assign-task', icon: FilePlus, label: 'Assign Task' },
 ];
 
 const timelineItems = [
@@ -90,3 +91,5 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+    
