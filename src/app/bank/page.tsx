@@ -304,24 +304,27 @@ const Section1 = React.memo(() => {
     }, [checklistDocRef]);
 
     
-    const getInitialChecklistState = (items: string[]) => {
-        return items.reduce((acc, item) => {
-            const key = item.toLowerCase().replace(/[^a-z0-9]/g, '');
-            return {...acc, [key]: false};
-        }, {});
-    };
-
     const initialChecklists = {
-        predesign: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Programming", "Space Schematics/ Flow Diagrams", "Existing Facilities Surveys", "Presentations"]),
-        siteAnalysis: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Site Analysis and Selection", "Site Development and Planning", "Detailed Site Utilization Studies", "Onsite Utility Studies", "Offsite Utility Studies", "Zoning Processing Assistance", "Project Development Scheduling", "Project Budgeting", "Presentations"]),
-        schematicDesign: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design/ Documentation", "Electrical Design/ Documentation", "Civil Design/ Documentation", "Landscape Design/ Documentation", "Interior Design/ Documentation", "Materials Research/ Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"]),
-        designDevelopment: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design / Documentation", "Electrical Design / Documentation", "Civil Design / Documentation", "Landscape Design / Documentation", "Interior Design / Documentation", "Materials Research / Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"]),
-        constructionDocuments: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design/ Documentation", "Electrical Design/ Documentation", "Civil Design/ Documentation", "Landscape Design/ Documentation", "Interior Design/ Documentation", "Materials Research / Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"]),
-        bidding: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Bidding Materials", "Addenda", "Bidding Negotiations", "Analysis Of Alternates/ Substitutions", "Special Bidding Services", "Bid Evaluation", "Construction Contract Agreements"]),
-        constructionAdmin: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Office Construction Administration", "Construction Field Observation", "Project Representation", "Inspection Coordination", "Supplemental Documents", "10.Quotation Requests/ Change Orders", "11.Project Schedule Monitoring", "12.Construction Cost Accounting", "13.Project Closeout"]),
-        postConstruction: getInitialChecklistState(["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Maintenance And Operational Programming", "Start Up Assistance", "Record Drawings", "Warranty Review", "Post Construction Evaluation"]),
-        supplemental: getInitialChecklistState(["Graphics Design", "Fine Arts and Crafts Services", "Special Furnishing Design", "Non-Building Equipment Selection"]),
-        materials: getInitialChecklistState(["Conceptual Site and Building Plans/ Basic Layout", "Preliminary Sections and Elevations", "Air Conditioning/ H.V.A.C Design", "Plumbing", "Fire Protection", "Special Mechanical Systems", "General Space Requirements", "Power Services and Distribution", "Telephones", "Security Systems", "Special Electrical Systems", "Landscaping", "Materials", "Partition Sections", "Furniture Design", "Identification Of Potential Architectural Materials", "Specification Of a. Wall Finishes b. Floor Finishes c. Windows Coverings d. Carpeting", "Specialized Features Construction Details", "Project Administration", "Space Schematic Flow", "Existing Facilities Services", "Project Budgeting", "Presentation"]),
+        Predesign: {
+          "Predesign Services:-": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Programming", "Space Schematics/ Flow Diagrams", "Existing Facilities Surveys", "Presentations"],
+          "Site Analysis Services": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Site Analysis and Selection", "Site Development and Planning", "Detailed Site Utilization Studies", "Onsite Utility Studies", "Offsite Utility Studies", "Zoning Processing Assistance", "Project Development Scheduling", "Project Budgeting", "Presentations"]
+        },
+        Design: {
+          "Schematic Design Services: -": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design/ Documentation", "Electrical Design/ Documentation", "Civil Design/ Documentation", "Landscape Design/ Documentation", "Interior Design/ Documentation", "Materials Research/ Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"],
+          "Design Development Services:-": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design / Documentation", "Electrical Design / Documentation", "Civil Design / Documentation", "Landscape Design / Documentation", "Interior Design / Documentation", "Materials Research / Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"],
+          "Construction Documents Services:-": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Architectural Design/ Documentation", "Structural Design/ Documentation", "Mechanical Design/ Documentation", "Electrical Design/ Documentation", "Civil Design/ Documentation", "Landscape Design/ Documentation", "Interior Design/ Documentation", "Materials Research / Specifications", "Project Development Scheduling", "Statement Of Probable Construction Cost", "Presentations"]
+        },
+        Construction: {
+          "Bidding Or Negotiation Services:": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Bidding Materials", "Addenda", "Bidding Negotiations", "Analysis Of Alternates/ Substitutions", "Special Bidding Services", "Bid Evaluation", "Construction Contract Agreements"],
+          "Construction Contract Administration Services:-": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Office Construction Administration", "Construction Field Observation", "Project Representation", "Inspection Coordination", "Supplemental Documents", "10.Quotation Requests/ Change Orders", "11.Project Schedule Monitoring", "12.Construction Cost Accounting", "13.Project Closeout"]
+        },
+        Post: {
+          "Post Construction Services:-": ["Project Administration", "Disciplines Coordination Document Checking", "Agency Consulting Review/ Approval", "Coordination Of Owner Supplied Data", "Maintenance And Operational Programming", "Start Up Assistance", "Record Drawings", "Warranty Review", "Post Construction Evaluation"]
+        },
+        Supplemental: {
+          "Supplemental Services: -": ["Graphics Design", "Fine Arts and Crafts Services", "Special Furnishing Design", "Non-Building Equipment Selection"],
+          "List Of Materials:-": ["Conceptual Site and Building Plans/ Basic Layout", "Preliminary Sections and Elevations", "Air Conditioning/ H.V.A.C Design", "Plumbing", "Fire Protection", "Special Mechanical Systems", "General Space Requirements", "Power Services and Distribution", "Telephones", "Security Systems", "Special Electrical Systems", "Landscaping", "Materials", "Partition Sections", "Furniture Design", "Identification Of Potential Architectural Materials", "Specification Of a. Wall Finishes b. Floor Finishes c. Windows Coverings d. Carpeting", "Specialized Features Construction Details", "Project Administration", "Space Schematic Flow", "Existing Facilities Services", "Project Budgeting", "Presentation"]
+        }
     };
     const checklistCategories = Object.keys(initialChecklists);
 
@@ -365,33 +368,37 @@ const Section1 = React.memo(() => {
         exportChecklistToPdf(formData, checklistCategories, initialChecklists);
     }
 
-    const renderChecklist = (title: string, category: keyof typeof initialChecklists) => {
-        const items = Object.keys(initialChecklists[category]);
-        return (
-            <div>
-                <Subtitle>{title}</Subtitle>
-                <div className="space-y-2">
-                    {items.map((item, index) => {
-                         const itemKey = item.toLowerCase().replace(/[^a-z0-9]/g, '');
-                         const checkboxName = `${category}-${itemKey}`;
-                         return (
-                            <div key={index} className="flex items-center gap-2">
-                               {isEditing ? (
-                                    <Checkbox
-                                        id={checkboxName}
-                                        checked={(formData as any)[checkboxName] || false}
-                                        onCheckedChange={(checked) => handleCheckboxChange(checkboxName, checked)}
-                                    />
-                                ) : (
-                                    <span className="mr-2">{(formData as any)[checkboxName] ? '✅' : '🔲'}</span>
-                                )}
-                                <label htmlFor={checkboxName} className="flex-grow">{item}</label>
-                            </div>
-                         );
-                    })}
-                </div>
+    const renderChecklist = (mainCategory: keyof typeof initialChecklists) => {
+      const subSections = initialChecklists[mainCategory];
+      return (
+        <div>
+          {Object.entries(subSections).map(([subTitle, items]) => (
+            <div key={subTitle} className="mb-4">
+              <Subtitle>{subTitle}</Subtitle>
+              <div className="space-y-2">
+                {items.map((item, index) => {
+                  const itemKey = item.toLowerCase().replace(/[^a-z0-9]/g, '');
+                  const checkboxName = `${mainCategory}-${itemKey}`;
+                  return (
+                    <div key={index} className="flex items-center gap-2">
+                      {isEditing ? (
+                        <Checkbox
+                          id={checkboxName}
+                          checked={(formData as any)[checkboxName] || false}
+                          onCheckedChange={(checked) => handleCheckboxChange(checkboxName, checked)}
+                        />
+                      ) : (
+                        <span className="mr-2">{(formData as any)[checkboxName] ? '✅' : '🔲'}</span>
+                      )}
+                      <label htmlFor={checkboxName} className="flex-grow">{item}</label>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-        );
+          ))}
+        </div>
+      );
     }
 
     if (isLoading || isUserLoading) {
@@ -421,56 +428,19 @@ const Section1 = React.memo(() => {
                     <FormField label="Architect Project No" name="architectProjectNo" value={(formData as any).architectProjectNo} onChange={handleInputChange} isEditing={isEditing} />
                     <FormField label="Project Date" name="projectDate" value={(formData as any).projectDate} onChange={handleInputChange} isEditing={isEditing} />
                 </div>
-                 <SectionTitle 
-                    id="predesign-check"
-                    isEditing={isEditing} 
-                    checked={(formData as any)['mainSection-predesign']} 
-                    onCheckedChange={(checked) => handleCheckboxChange('mainSection-predesign', checked)}
-                >
-                    1: - Predesign
-                </SectionTitle>
-                {renderChecklist("Predesign Services:-", "predesign")}
-                {renderChecklist("Site Analysis Services", "siteAnalysis")}
-                <SectionTitle 
-                    id="design-check"
-                    isEditing={isEditing} 
-                    checked={(formData as any)['mainSection-design']} 
-                    onCheckedChange={(checked) => handleCheckboxChange('mainSection-design', checked)}
-                >
-                    2: - Design
-                </SectionTitle>
-                {renderChecklist("Schematic Design Services: -", "schematicDesign")}
-                {renderChecklist("Design Development Services:-", "designDevelopment")}
-                {renderChecklist("Construction Documents Services:-", "constructionDocuments")}
-                <SectionTitle 
-                    id="construction-check"
-                    isEditing={isEditing} 
-                    checked={(formData as any)['mainSection-construction']} 
-                    onCheckedChange={(checked) => handleCheckboxChange('mainSection-construction', checked)}
-                >
-                    3: - Construction
-                </SectionTitle>
-                {renderChecklist("Bidding Or Negotiation Services:", "bidding")}
-                {renderChecklist("Construction Contract Administration Services:-", "constructionAdmin")}
-                <SectionTitle 
-                    id="post-check"
-                    isEditing={isEditing} 
-                    checked={(formData as any)['mainSection-post']} 
-                    onCheckedChange={(checked) => handleCheckboxChange('mainSection-post', checked)}
-                >
-                    4: - Post
-                </SectionTitle>
-                {renderChecklist("Post Construction Services:-", "postConstruction")}
-                <SectionTitle 
-                    id="supplemental-check"
-                    isEditing={isEditing} 
-                    checked={(formData as any)['mainSection-supplemental']} 
-                    onCheckedChange={(checked) => handleCheckboxChange('mainSection-supplemental', checked)}
-                >
-                    5: - Supplemental
-                </SectionTitle>
-                {renderChecklist("Supplemental Services: -", "supplemental")}
-                {renderChecklist("List Of Materials:-", "materials")}
+                {checklistCategories.map((category) => (
+                  <div key={category}>
+                    <SectionTitle
+                      id={`mainSection-${category.toLowerCase()}`}
+                      isEditing={isEditing}
+                      checked={(formData as any)[`mainSection-${category.toLowerCase()}`]}
+                      onCheckedChange={(checked) => handleCheckboxChange(`mainSection-${category.toLowerCase()}`, checked)}
+                    >
+                      {category.charAt(0).toUpperCase() + category.slice(1)}
+                    </SectionTitle>
+                    {renderChecklist(category as keyof typeof initialChecklists)}
+                  </div>
+                ))}
             </CardContent>
         </Card>
     );

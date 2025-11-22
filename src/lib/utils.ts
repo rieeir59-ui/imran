@@ -161,37 +161,51 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
   doc.text(`Project Date: ${formData.projectDate || ''}`, 105, y + 10);
   y += 20;
 
-  checklistCategories.forEach((categoryKey, catIndex) => {
-    const categoryTitle = categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1).replace(/([A-Z])/g, ' $1');
+  checklistCategories.forEach((categoryKey) => {
     const mainSectionKey = `mainSection-${categoryKey.toLowerCase().replace(/ /g, '')}`;
     const isMainSectionComplete = formData[mainSectionKey];
 
-    if (y > 270) {
-      doc.addPage();
-      y = 15;
-    }
+    const categoryTitle = categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1);
+    const subSections = initialChecklists[categoryKey];
 
-    doc.setFontSize(12);
-    doc.text(`${catIndex + 1}: - ${categoryTitle}`, 14, y);
-    doc.text(isMainSectionComplete ? '[X]' : '[ ]', 180, y);
-    y += 7;
-
-    const checklistItems = Object.keys(initialChecklists[categoryKey]);
-    checklistItems.forEach(item => {
-        if (y > 280) {
+    Object.keys(subSections).forEach((subTitle, subIndex) => {
+        if (y > 270) {
             doc.addPage();
             y = 15;
         }
-        const itemKey = item.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const checkboxName = `${categoryKey}-${itemKey}`;
-        const isChecked = formData[checkboxName];
 
+        if (subIndex === 0) {
+             doc.setFontSize(12);
+             doc.setFont('helvetica', 'bold');
+             doc.text(`${categoryKey.toUpperCase()}`, 14, y);
+             doc.text(isMainSectionComplete ? '[X]' : '[ ]', 180, y);
+             y += 7;
+             doc.setFont('helvetica', 'normal');
+        }
+        
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text(subTitle, 16, y);
+        y += 6;
+        doc.setFont('helvetica', 'normal');
         doc.setFontSize(10);
-        doc.text(isChecked ? '[X]' : '[ ]', 20, y);
-        doc.text(item, 30, y);
-        y+= 6;
+
+        const items = subSections[subTitle];
+        items.forEach((item: string) => {
+            if (y > 280) {
+                doc.addPage();
+                y = 15;
+            }
+            const itemKey = item.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const checkboxName = `${categoryKey}-${itemKey}`;
+            const isChecked = formData[checkboxName];
+
+            doc.text(isChecked ? '[X]' : '[ ]', 20, y);
+            doc.text(item, 28, y);
+            y += 6;
+        });
+        y += 4;
     });
-    y += 4;
   });
 
   doc.save('project-checklist.pdf');
