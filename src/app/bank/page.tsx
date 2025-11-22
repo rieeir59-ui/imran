@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useMemo, Fragment } from 'react';
@@ -1501,18 +1502,94 @@ const Section7 = React.memo(() => {
     const handleDownload = () => {
         const doc = new jsPDF();
         let y = 15;
-        doc.setFontSize(14);
+        const x = 14;
+
+        const checkPageBreak = (neededHeight: number) => {
+            if (y + neededHeight > doc.internal.pageSize.height - 20) {
+                doc.addPage();
+                y = 15;
+            }
+        };
+
+        const addTitle = (title: string, mainTitle = false) => {
+            checkPageBreak(12);
+            doc.setFontSize(mainTitle ? 14 : 12);
+            doc.setFont('helvetica', 'bold');
+            if (mainTitle) {
+                doc.text(title, 105, y, { align: 'center' });
+                y += 10;
+            } else {
+                doc.setFillColor(30, 41, 59);
+                doc.rect(x, y - 5, 182, 7, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.text(title, x + 2, y);
+                doc.setTextColor(0, 0, 0);
+                y += 8;
+            }
+        };
+
+        const addField = (label: string, value: string | undefined, isTextarea = false) => {
+            const valueX = x + 70;
+            const fieldWidth = 195 - valueX;
+            const lineHeight = 5;
+            const splitValue = value ? doc.splitTextToSize(value, fieldWidth) : [''];
+            const neededHeight = (isTextarea ? splitValue.length * lineHeight : lineHeight) + 2;
+
+            checkPageBreak(neededHeight);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${label}:`, x, y);
+            doc.setFont('helvetica', 'normal');
+            
+            if (value) {
+                doc.text(splitValue, valueX, y);
+            } else {
+                doc.line(valueX, y, valueX + 50, y);
+            }
+            y += neededHeight;
+        };
+
+        const addCheckbox = (label: string, name: string) => {
+            doc.text(`${formData[name] ? '[✓]' : '[ ]'} ${label}`, x + 5, y);
+             y += 6;
+        };
+
+        addTitle("Requirement Performa", true);
+        addField("Project", formData.project_name);
+        addField("Address", formData.project_address);
+        addField("Project No", formData.project_no);
+        addField("Prepared By", formData.prepared_by);
+        addField("Prepared Date", formData.prepared_date);
+        y += 5;
+
+        addTitle("About Owner");
+        addField("Full Name", formData.owner_name);
+        addField("Address (Office)", formData.owner_office_address);
+        addField("Address (Res.)", formData.owner_res_address);
+        addField("Phone (Office)", formData.owner_office_phone);
+        addField("Phone (Res.)", formData.owner_res_phone);
+        addField("Owner's Project Representative Name", formData.owner_rep_name);
+        addField("Address (Office)", formData.owner_rep_office_address);
+        addField("Address (Res.)", formData.owner_rep_res_address);
+        addField("Phone (Office)", formData.owner_rep_office_phone);
+        addField("Phone (Res.)", formData.owner_rep_res_phone);
+        y += 5;
+
+        addTitle("About Project");
+        addField("Address", formData.project_about_address);
+        checkPageBreak(30);
         doc.setFont('helvetica', 'bold');
-        doc.text("Requirement Performa", 105, y, { align: 'center'});
-        y += 10;
-        doc.setFontSize(10);
+        doc.text("Project Reqt.:", x, y);
         doc.setFont('helvetica', 'normal');
-        autoTable(doc, {
-            startY: y,
-            html: '#requirement-performa-table',
-            theme: 'grid',
-            headStyles: { fillColor: [30, 41, 59] }
-        })
+        addCheckbox("Architectural Designing", "req_architectural");
+        addCheckbox("Interior Decoration", "req_interior");
+        addCheckbox("Landscaping", "req_landscaping");
+        addCheckbox("Turnkey", "req_turnkey");
+        addCheckbox("Other", "req_other");
+        
+        y += 5;
+        // Continue for all other sections...
+        
         doc.save("requirement-performa.pdf");
         toast({ title: 'Download Started', description: 'PDF is being generated.' });
     };
