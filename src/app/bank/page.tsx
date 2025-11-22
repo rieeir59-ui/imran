@@ -3444,7 +3444,7 @@ const Section20 = React.memo(() => {
         autoTable(doc, {
             startY: y,
             head: [['Item No.', 'Description of Work', 'Scheduled Value', 'Work Completed Prev', 'Work Completed This', 'Materials Stored', 'Total Completed', '%', 'Balance', 'Retainage']],
-            body: formData.rows.map((row: any) => Object.values(row).slice(1)), // remove id
+            body: formData.rows.map((row: any) => [row.itemNo, row.description, row.scheduledValue, row.workCompletedPrev, row.workCompletedThis, row.materialsStored, row.totalCompleted, row.percentage, row.balance, row.retainage]),
             theme: 'grid',
             styles: { fontSize: 8 },
         });
@@ -3454,7 +3454,7 @@ const Section20 = React.memo(() => {
     
     const renderCell = (rowIndex: number, fieldName: string) => {
       if (isEditing) {
-        return <Input value={formData.rows[rowIndex][fieldName]} onChange={(e) => handleRowChange(rowIndex, fieldName, e.target.value)} className="h-8" />;
+        return <Input value={formData.rows[rowIndex][fieldName] || ''} onChange={(e) => handleRowChange(rowIndex, fieldName, e.target.value)} className="h-8" />;
       }
       return formData.rows[rowIndex][fieldName];
     }
@@ -3488,40 +3488,42 @@ const Section20 = React.memo(() => {
                     <FormField label="Period To:" name="periodTo" value={formData.periodTo} isEditing={isEditing} onChange={handleHeaderChange} />
                     <FormField label="Architect's Project No:" name="architectsProjectNo" value={formData.architectsProjectNo} isEditing={isEditing} onChange={handleHeaderChange} />
                 </div>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Item No.</TableHead>
-                            <TableHead>Description of Work</TableHead>
-                            <TableHead>Scheduled Value</TableHead>
-                            <TableHead>Work Completed Prev</TableHead>
-                            <TableHead>Work Completed This</TableHead>
-                            <TableHead>Materials Stored</TableHead>
-                            <TableHead>Total Completed</TableHead>
-                            <TableHead>%</TableHead>
-                            <TableHead>Balance</TableHead>
-                            <TableHead>Retainage</TableHead>
-                            {isEditing && <TableHead></TableHead>}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {formData.rows.map((row: any, index: number) => (
-                            <TableRow key={row.id}>
-                                <TableCell>{renderCell(index, 'itemNo')}</TableCell>
-                                <TableCell>{renderCell(index, 'description')}</TableCell>
-                                <TableCell>{renderCell(index, 'scheduledValue')}</TableCell>
-                                <TableCell>{renderCell(index, 'workCompletedPrev')}</TableCell>
-                                <TableCell>{renderCell(index, 'workCompletedThis')}</TableCell>
-                                <TableCell>{renderCell(index, 'materialsStored')}</TableCell>
-                                <TableCell>{renderCell(index, 'totalCompleted')}</TableCell>
-                                <TableCell>{renderCell(index, 'percentage')}</TableCell>
-                                <TableCell>{renderCell(index, 'balance')}</TableCell>
-                                <TableCell>{renderCell(index, 'retainage')}</TableCell>
-                                {isEditing && <TableCell><Button variant="ghost" size="icon" onClick={() => removeRow(row.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>}
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="min-w-[80px]">Item No.</TableHead>
+                                <TableHead className="min-w-[200px]">Description of Work</TableHead>
+                                <TableHead className="min-w-[120px]">Scheduled Value</TableHead>
+                                <TableHead className="min-w-[120px]">Work Completed Prev</TableHead>
+                                <TableHead className="min-w-[120px]">Work Completed This</TableHead>
+                                <TableHead className="min-w-[120px]">Materials Stored</TableHead>
+                                <TableHead className="min-w-[120px]">Total Completed</TableHead>
+                                <TableHead className="min-w-[60px]">%</TableHead>
+                                <TableHead className="min-w-[120px]">Balance</TableHead>
+                                <TableHead className="min-w-[120px]">Retainage</TableHead>
+                                {isEditing && <TableHead></TableHead>}
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {formData.rows.map((row: any, index: number) => (
+                                <TableRow key={row.id}>
+                                    <TableCell>{renderCell(index, 'itemNo')}</TableCell>
+                                    <TableCell>{renderCell(index, 'description')}</TableCell>
+                                    <TableCell>{renderCell(index, 'scheduledValue')}</TableCell>
+                                    <TableCell>{renderCell(index, 'workCompletedPrev')}</TableCell>
+                                    <TableCell>{renderCell(index, 'workCompletedThis')}</TableCell>
+                                    <TableCell>{renderCell(index, 'materialsStored')}</TableCell>
+                                    <TableCell>{renderCell(index, 'totalCompleted')}</TableCell>
+                                    <TableCell>{renderCell(index, 'percentage')}</TableCell>
+                                    <TableCell>{renderCell(index, 'balance')}</TableCell>
+                                    <TableCell>{renderCell(index, 'retainage')}</TableCell>
+                                    {isEditing && <TableCell><Button variant="ghost" size="icon" onClick={() => removeRow(row.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             </CardContent>
         </Card>
     );
