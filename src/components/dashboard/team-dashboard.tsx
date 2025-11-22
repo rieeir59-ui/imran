@@ -18,10 +18,17 @@ const draftspersons = [
     { name: "Jabbar", href: "/weekly-schedule?employee=Jabbar" },
 ]
 
+const architects = [
+    { name: "Architect Sobia", href: "/weekly-schedule?employee=Architect%20Sobia" },
+    { name: "Architect Asad", href: "/weekly-schedule?employee=Architect%20Asad" },
+    { name: "Architect Haseeb", href: "/weekly-schedule?employee=Architect%20Haseeb" },
+    { name: "Architect Khizar", href: "/weekly-schedule?employee=Architect%20Khizar" },
+];
+
 export default function TeamDashboard() {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <Card className="lg:col-span-2">
+            <Card className="lg:col-span-3">
                 <CardHeader>
                     <CardTitle>Team Dashboard</CardTitle>
                 </CardHeader>
@@ -31,6 +38,21 @@ export default function TeamDashboard() {
                             <div className="p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full">
                                 <team.icon className="h-8 w-8 text-primary mb-2" />
                                 <span className="font-semibold text-center">{team.name}</span>
+                            </div>
+                        </Link>
+                    ))}
+                </CardContent>
+            </Card>
+            <Card className="lg:col-span-2">
+                <CardHeader>
+                    <CardTitle>Architect Team</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                     {architects.map((person) => (
+                        <Link href={person.href} key={person.name}>
+                            <div className="p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full">
+                                <User className="h-8 w-8 text-primary mb-2" />
+                                <span className="font-semibold text-center">{person.name}</span>
                             </div>
                         </Link>
                     ))}
