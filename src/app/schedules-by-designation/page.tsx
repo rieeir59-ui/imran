@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -94,7 +95,7 @@ export default function SchedulesByDesignationPage() {
         <CardContent>
           <Accordion type="multiple" className="w-full" defaultValue={Object.keys(schedulesByDesignation)}>
             {Object.entries(schedulesByDesignation).map(([designation, schedules]) => (
-              <AccordionItem value={designation} key={designation}>
+              <AccordionItem value={designation} key={designation} id={designation.replace(/\s+/g, '-')}>
                 <AccordionTrigger className="text-xl font-bold">{designation}</AccordionTrigger>
                 <AccordionContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 p-4">
                   {schedules.map(schedule => {

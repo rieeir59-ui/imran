@@ -3,6 +3,7 @@
 
 import EmployeeWorkSchedule from "@/components/dashboard/employee-work-schedule";
 import StatsCards from "@/components/dashboard/stats-cards";
+import TeamDashboard from "@/components/dashboard/team-dashboard";
 
 export default function Home() {
   return (
@@ -15,8 +16,12 @@ export default function Home() {
       <div style={{animationDelay: '200ms'}} className="animate-fade-in">
           <StatsCards />
       </div>
-      
+
       <div style={{animationDelay: '300ms'}} className="animate-fade-in">
+        <TeamDashboard />
+      </div>
+      
+      <div style={{animationDelay: '400ms'}} className="animate-fade-in">
         <EmployeeWorkSchedule />
       </div>
       
