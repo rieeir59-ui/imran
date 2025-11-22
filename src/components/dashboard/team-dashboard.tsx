@@ -29,6 +29,10 @@ const visualizers = [
     { name: "M Mohsin", href: "/weekly-schedule?employee=M%20Mohsin" },
 ];
 
+const boqManagers = [
+    { name: "M Nouman", href: "/weekly-schedule?employee=M%20Nouman" },
+];
+
 export default function TeamDashboard() {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -77,12 +81,27 @@ export default function TeamDashboard() {
                     ))}
                 </CardContent>
             </Card>
-             <Card className="lg:col-span-3">
+             <Card className="lg:col-span-2">
                 <CardHeader>
                     <CardTitle>3D Visualizer Team</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                      {visualizers.map((person) => (
+                        <Link href={person.href} key={person.name}>
+                            <div className="p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full">
+                                <User className="h-8 w-8 text-primary mb-2" />
+                                <span className="font-semibold text-center">{person.name}</span>
+                            </div>
+                        </Link>
+                    ))}
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle>BOQ Team</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {boqManagers.map((person) => (
                         <Link href={person.href} key={person.name}>
                             <div className="p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full">
                                 <User className="h-8 w-8 text-primary mb-2" />
