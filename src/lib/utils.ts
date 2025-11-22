@@ -170,53 +170,61 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
   doc.text(`Project Date: ${formData.projectDate || ''}`, 105, y + 10);
   y += 20;
 
+  const tableBody: (string | { content: string; colSpan: number; styles: any })[][] = [];
+
   checklistCategories.forEach((categoryKey) => {
     const mainSectionKey = `mainSection-${categoryKey.toLowerCase()}`;
     const isMainSectionComplete = formData[mainSectionKey];
+    
+    tableBody.push([
+      { 
+        content: `${categoryKey.toUpperCase()} ${isMainSectionComplete ? '✓' : '☐'}`, 
+        colSpan: 3, 
+        styles: { fontStyle: 'bold', fillColor: [30, 41, 59], textColor: [255, 255, 255] } 
+      }
+    ]);
 
     const subSections = initialChecklists[categoryKey];
-
-    Object.keys(subSections).forEach((subTitle, subIndex) => {
-        if (y > 270) {
-            doc.addPage();
-            y = 15;
+    Object.keys(subSections).forEach((subTitle) => {
+      tableBody.push([
+        { 
+          content: subTitle, 
+          colSpan: 3, 
+          styles: { fontStyle: 'bold', fillColor: [236, 240, 241] } 
         }
-
-        if (subIndex === 0) {
-             doc.setFontSize(12);
-             doc.setFont('helvetica', 'bold');
-             doc.setFillColor(30, 41, 59);
-             doc.rect(14, y - 5, 182, 7, 'F');
-             doc.setTextColor(255, 255, 255);
-             doc.text(categoryKey.toUpperCase(), 16, y);
-             doc.text(isMainSectionComplete ? '[✓]' : '[ ]', 180, y);
-             y += 9;
-             doc.setTextColor(0, 0, 0);
-        }
-        
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.text(subTitle, 16, y);
-        y += 6;
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-
-        const items = subSections[subTitle];
-        items.forEach((item: string) => {
-            if (y > 280) {
-                doc.addPage();
-                y = 15;
-            }
-            const itemKey = `${categoryKey}-${subTitle}-${item}`.toLowerCase().replace(/[^a-z0-9-]/g, '');
-            const isChecked = formData[itemKey];
-
-            doc.text(isChecked ? '[✓]' : '[ ]', 20, y);
-            doc.text(item, 28, y);
-            y += 6;
-        });
-        y += 4;
+      ]);
+      
+      const items = subSections[subTitle];
+      items.forEach((item: string) => {
+          const itemKey = `${categoryKey}-${subTitle}-${item}`.toLowerCase().replace(/[^a-z0-9-]/g, '');
+          const isChecked = formData[itemKey];
+          tableBody.push(['', item, isChecked ? '✓' : '☐']);
+      });
     });
   });
+
+  autoTable(doc, {
+    startY: y,
+    head: [['', 'Item', 'Status']],
+    body: tableBody,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [41, 128, 185],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+    },
+    columnStyles: {
+      0: { cellWidth: 30 },
+      1: { cellWidth: 'auto' },
+      2: { cellWidth: 15, halign: 'center' },
+    },
+    didParseCell: (data) => {
+      if (data.row.raw.length === 1 && typeof data.row.raw[0] === 'object') {
+        data.cell.styles.halign = 'left';
+      }
+    }
+  });
+
 
   doc.save('project-checklist.pdf');
 }
