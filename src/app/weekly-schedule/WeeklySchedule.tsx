@@ -242,7 +242,8 @@ const WeeklySchedule = () => {
     if(numDays <= 0 || !isEditing) return;
 
     const updatedSchedules = schedules.map(schedule => {
-        return { ...schedule, startDate: scheduleDates.start, endDate: scheduleDates.end, employeeName };
+        const newDailyEntries = Array(numDays > 0 ? numDays : 0).fill(null).map((_, i) => schedule.dailyEntries[i] || initialDailyEntry());
+        return { ...schedule, startDate: scheduleDates.start, endDate: scheduleDates.end, employeeName, dailyEntries: newDailyEntries };
     });
     setSchedules(updatedSchedules);
   // eslint-disable-next-line react-hooks/exhaustive-deps
