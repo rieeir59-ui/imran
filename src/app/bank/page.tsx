@@ -930,10 +930,90 @@ const Section5 = React.memo(() => {
 
     const handleDownloadPdf = () => {
         const doc = new jsPDF();
-        // This is a placeholder. A full implementation would require
-        // drawing the entire static form and then filling in the formData.
-        doc.text("Project Agreement", 10, 10);
-        doc.text(`Made as of the day: ${formData.day || '____'}`, 10, 20);
+        let y = 15;
+
+        const addTitle = (title: string, size = 12, align: 'left' | 'center' | 'right' = 'left') => {
+             if (y > 270) { doc.addPage(); y = 15; }
+             doc.setFontSize(size);
+             doc.setFont('helvetica', 'bold');
+             doc.text(title, align === 'center' ? 105 : 14, y, { align });
+             y += 7;
+        }
+
+        const addText = (text: string) => {
+             if (y > 280) { doc.addPage(); y = 15; }
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            const splitText = doc.splitTextToSize(text, 180);
+            doc.text(splitText, 14, y);
+            y += doc.getTextDimensions(splitText).h + 2;
+        }
+
+        const addListItem = (text: string, level = 1, bullet = '•') => {
+            const indent = 14 + (level * 5);
+             if (y > 280) { doc.addPage(); y = 15; }
+            doc.setFontSize(10);
+            doc.text(`${bullet}`, indent, y);
+            const splitText = doc.splitTextToSize(text, 180 - indent);
+            doc.text(splitText, indent + 4, y);
+            y += doc.getTextDimensions(splitText).h + 2;
+        }
+
+        const addFieldRow = (label: string, value: string) => {
+            if (y > 280) { doc.addPage(); y = 15; }
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(label, 14, y);
+            doc.text(`: ${value || '________________'}`, 80, y);
+            y += 7;
+        }
+        
+        addTitle("COMMERCIAL AGREEMENT", 14, 'center');
+        y += 5;
+
+        addFieldRow("Made as of the day", formData.day);
+        addFieldRow("Between the Owner", formData.owner);
+        addFieldRow("And the Firm", "Isbah Hassan & Associates");
+        addFieldRow("For the Design of", formData.designOf);
+        addFieldRow("Address", formData.address);
+        addFieldRow("Covered Area of Project", formData.coveredArea);
+        addFieldRow("Consultancy Charges @ Rs ___/Sft", formData.consultancyCharges);
+        addFieldRow("Sales Tax @ 16%", formData.salesTax);
+        addFieldRow("Withholding Tax @ 10%", formData.withholdingTax);
+        addFieldRow("Final Consultancy Charges", formData.finalCharges);
+        y += 5;
+
+        addTitle("PAYMENT SCHEDULE:");
+        addText("On mobilization (advance payment): 20 %");
+        addText("On approval of schematic designs & 3D’s: 15%");
+        addText("On completion of submission drawings: 15%");
+        addText("On start of construction drawings: 15%");
+        addText("On completion of construction drawings: 10%");
+        addText("On completion of interior drawings: 10%");
+        addText("On preparation of detailed BOQ: 10%");
+        y += 5;
+        
+        addTitle("Project Management:");
+        addTitle("Top Supervision:", 11);
+        addListItem("Please find attached the site visit schedule for the project please intimate the office one week in advance before the required visit for timely surveillance. Any Unscheduled visits would be charged as under.");
+        addListItem("For out of station visits, the travelling by air and lodging in a five-star hotel will be paid by the client.");
+        addListItem("Rs. 50,000 for Principal Architect's site visit per day.", 2, '-');
+        addListItem("Rs. 30,000 for Associate Architect's site visit per day.", 2, '-');
+        addListItem("For International visits, the travelling by air and lodging in a five-star hotel will be paid by the client.");
+        addListItem("Rs. 150,000 for Principal Architect' s fee per day.", 2, '-');
+        addListItem("Rs. 30,000 for Associate Architect' s fee per day.", 2, '-');
+        y += 3;
+        addTitle("Detailed Supervision:", 11);
+        addText("The fee for detailed supervision will be Rs. 300,000 /- per month, which will ensure daily progress at the site.");
+        y += 3;
+        addTitle("Please Note:", 11);
+        addListItem("The above quoted rates do not include any kind of tax.");
+        addListItem("The contract value is lumpsum for the area between 90,000 to 120,000 Sft, if however, the area increases the above amount only the sub-consultants fee @ Rs. 70/Sft will be charged.");
+        addListItem("The above consultancy charges quoted are valid for only two months.");
+        y += 5;
+
+        //... more content
+        
         doc.save("project-agreement.pdf");
         toast({ title: 'Download Started', description: 'Project Agreement PDF is being generated.' });
     };
