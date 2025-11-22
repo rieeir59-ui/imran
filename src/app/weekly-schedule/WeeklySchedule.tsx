@@ -369,8 +369,8 @@ const WeeklySchedule = () => {
         }
         
         const projectDetailsBody = [
-          [{content: `Project: ${schedule.projectName || 'N/A'}`, styles: {fontStyle: 'bold', fontSize: 12, fillColor: [22, 163, 74], textColor: [255,255,255]}}],
-          [{content: `Project No: ${schedule.id || 'N/A'}`}],
+          [{content: `Project No: ${schedule.id || 'N/A'}`, styles: {fontStyle: 'bold', fontSize: 12, fillColor: [22, 163, 74], textColor: [255,255,255]}}],
+          [{content: `Project: ${schedule.projectName || 'N/A'}`}],
           [{content: `Overall Details: ${schedule.details || 'No details provided.'}`}],
           [{content: `Status: ${schedule.status || 'N/A'}`}],
           [{content: `Date Range: ${schedule.startDate ? format(parseISO(schedule.startDate), 'd MMM') : 'N/A'} - ${schedule.endDate ? format(parseISO(schedule.endDate), 'd MMM') : 'N/A'}`}],
@@ -383,7 +383,7 @@ const WeeklySchedule = () => {
             styles: { fontSize: 9, cellPadding: 2 },
         });
         
-        y = (doc as any).lastAutoTable.finalY + 10;
+        y = (doc as any).lastAutoTable.finalY + 5;
     });
 
     if (remarks) {
@@ -612,7 +612,7 @@ const WeeklySchedule = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12"></TableHead>
+                  
                   <TableHead className="w-20">Project No.</TableHead>
                   <TableHead>Project Name</TableHead>
                   <TableHead>Details</TableHead>
@@ -627,11 +627,7 @@ const WeeklySchedule = () => {
                 {schedules.map((schedule, index) => (
                         <Fragment key={schedule.id}>
                              <TableRow>
-                                <TableCell>
-                                    <Button variant="ghost" size="icon" onClick={() => setOpenProjects(prev => ({...prev, [schedule.id]: !prev[schedule.id]}))}>
-                                        {openProjects[schedule.id] ? <ChevronDown className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}
-                                    </Button>
-                                </TableCell>
+                                
                                 <TableCell>{renderCell(String(schedule.id), (val) => handleScheduleChange(index, 'id', Number(val) || 0))}</TableCell>
                                 <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
                                 <TableCell>{renderTextareaCell(schedule.details, (val) => handleScheduleChange(index, 'details', val))}</TableCell>
