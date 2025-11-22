@@ -385,22 +385,6 @@ const WeeklySchedule = () => {
         
         y = (doc as any).lastAutoTable.finalY + 2;
 
-
-        if (schedule.dailyEntries && schedule.dailyEntries.length > 0) {
-            if (y > 240) {
-                doc.addPage();
-                y = 15;
-            }
-             autoTable(doc, {
-                head: [['Day', 'Details', 'Progress (%)']],
-                body: schedule.dailyEntries.map((d, i) => [`Day ${i+1}`, d.details, d.percentage]),
-                startY: y,
-                theme: 'grid',
-                headStyles: { fillColor: [241, 245, 249], textColor: [51, 65, 85], fontStyle: 'bold' },
-                styles: { fontSize: 8, cellPadding: 2 },
-            });
-            y = (doc as any).lastAutoTable.finalY;
-        }
         y += 10;
     });
 
