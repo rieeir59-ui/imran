@@ -378,7 +378,6 @@ const WeeklySchedule = () => {
             y = 15;
         }
         
-        const totalProgress = calculateTotalProgress(schedule.dailyEntries);
         doc.setFontSize(12);
         const projectTitle = `Project ${projIndex + 1}: ${schedule.projectName} (Status: ${schedule.status})`;
         y = addText(projectTitle, 14, y);
@@ -451,12 +450,6 @@ const WeeklySchedule = () => {
     }
   }
   
-  const calculateTotalProgress = (dailyEntries: { percentage: number }[]) => {
-    if (!dailyEntries || dailyEntries.length === 0) return 0;
-    const totalPercentage = dailyEntries.reduce((sum, entry) => sum + (entry.percentage || 0), 0);
-    return Math.round(totalPercentage / dailyEntries.length);
-  }
-
   const renderCell = (value: string | undefined, onChange: (val: any) => void, placeholder?: string) => {
     return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="h-8" /> : <span className="p-2 block min-h-[32px]">{value || ''}</span>;
   }
@@ -625,7 +618,7 @@ const WeeklySchedule = () => {
                      </RadioGroup>
                  )}
                 <div className="flex items-center gap-2">
-                    {isEditing ? (<><DatePicker date={scheduleDates.start ? parseISO(scheduleDates.start) : undefined} onDateChange={(date) => handleDateRangeChange('start', date)} /><span className="mx-2">to</span><DatePicker date={scheduleDates.end ? parseISO(scheduleDates.end) : undefined} onDateChange={(date) => handleDateRangeChange('end', date)} disabled={scheduleType==='weekly' || scheduleType==='monthly'} /></>) : (<p className="text-sm font-medium">{scheduleDates.start && format(parseISO(scheduleDates.start), 'PPP')} - {scheduleDates.end && format(parseISO(scheduleDates.end), 'PPP')}</p>)}
+                    {isEditing ? (<><DatePicker date={scheduleDates.start ? parseISO(scheduleDates.start) : undefined} onDateChange={(date) => handleDateRangeChange('start', date)} /><span className="mx-2">to</span><DatePicker date={scheduleDates.end ? parseISO(scheduleDates.end) : undefined} onDateChange={(date) => handleDateRangeChange('end', date)} disabled={scheduleType==='weekly' || scheduleType==='monthly'} /></>) : (<p className="text-lg font-semibold">{scheduleDates.start && format(parseISO(scheduleDates.start), 'PPP')} - {scheduleDates.end && format(parseISO(scheduleDates.end), 'PPP')}</p>)}
                 </div>
             </div>
         </CardHeader>
