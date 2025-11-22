@@ -13,8 +13,7 @@ const teams = [
 ];
 
 const draftspersons = [
-    { name: "Rana", href: "/weekly-schedule?employee=Rana" },
-    { name: "Mujahid", href: "/weekly-schedule?employee=Mujahid" },
+    { name: "Rana Mujahid", href: "/weekly-schedule?employee=Rana%20Mujahid" },
     { name: "Waqas", href: "/weekly-schedule?employee=Waqas" },
     { name: "Jabbar", href: "/weekly-schedule?employee=Jabbar" },
 ]
