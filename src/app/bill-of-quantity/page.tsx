@@ -191,47 +191,63 @@ const BillOfQuantityPage = () => {
     };
 
     const handleDownload = () => {
-        const doc = new jsPDF();
-        doc.text("BILL OF QUANTITY", 10, 10);
-        let y = 20;
+      const doc = new jsPDF();
+      const body: any[] = [];
 
-        formData.items.forEach(item => {
-            if (y > 270) { doc.addPage(); y = 15; }
-            if (item.isHeader) {
-                doc.setFont('helvetica', 'bold');
-                doc.text(`${item.srNo}. ${item.description}`, 10, y);
-                y += 7;
-                doc.setFont('helvetica', 'normal');
-            } else {
-                 autoTable(doc, {
-                    startY: y,
-                    body: [[item.srNo, item.description, item.unit, item.qty, item.rate, item.amount]],
-                    theme: 'plain',
-                    styles: {fontSize: 8}
-                });
-                y = (doc as any).lastAutoTable.finalY;
-            }
+      formData.items.forEach(item => {
+          if (item.isHeader) {
+              body.push([{ content: `${item.srNo}. ${item.description}`, colSpan: 6, styles: { fontStyle: 'bold', fillColor: [22, 163, 74], textColor: [255,255,255] } }]);
+          } else {
+              body.push([item.srNo, item.description, item.unit, item.qty, item.rate, item.amount]);
+          }
 
-            if (item.subItems) {
-                const body = item.subItems.map((sub: any) => {
-                    let desc = sub.description;
-                    if(sub.srNo) {
-                        desc = `${sub.srNo}. ${desc}`;
-                    }
-                    return ['', desc, sub.unit, sub.qty, sub.rate, sub.amount]
-                });
-                 autoTable(doc, {
-                    startY: y,
-                    body: body,
-                    theme: 'plain',
-                    styles: {fontSize: 8},
-                    columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 100 } },
-                });
-                y = (doc as any).lastAutoTable.finalY;
-            }
-        });
-        
-        doc.save("bill-of-quantity.pdf");
+          if (item.subItems) {
+              item.subItems.forEach((sub: any) => {
+                  let desc = sub.description;
+                  if (sub.srNo) {
+                      desc = `${sub.srNo}. ${desc}`;
+                  }
+                   body.push([
+                      '', // Keep Sr. No empty for sub-items
+                      desc,
+                      sub.unit,
+                      sub.qty,
+                      sub.rate,
+                      sub.amount
+                  ]);
+              });
+          }
+      });
+      
+      doc.setFontSize(16);
+      doc.text("BILL OF QUANTITY", doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+
+
+      autoTable(doc, {
+          startY: 25,
+          head: [['Sr. No', 'Description', 'Unit', 'Qty', 'Rate', 'Amount (Rs)']],
+          body: body,
+          theme: 'grid',
+          headStyles: {
+              fillColor: [41, 128, 185],
+              textColor: [255, 255, 255],
+              fontStyle: 'bold',
+          },
+          columnStyles: {
+              0: { cellWidth: 15 },
+              1: { cellWidth: 85 },
+          },
+          didParseCell: function (data) {
+              if (data.row.raw[0].content) { // check if it's a header row
+                  data.cell.styles.fontStyle = 'bold';
+                  data.cell.styles.fillColor = '#34495e';
+                  data.cell.styles.textColor = '#ffffff';
+              }
+          }
+      });
+      
+      doc.save("bill-of-quantity.pdf");
+      toast({title: "Download Started", description: "Your PDF is being generated."});
     };
     
     const renderCell = (itemId: number, field: string, value: string) => {
@@ -285,7 +301,7 @@ const BillOfQuantityPage = () => {
     }
 
     return (
-        <main className="p-4 md:p-6 lg:p-8">
+        <main className="container mx-auto p-4">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
