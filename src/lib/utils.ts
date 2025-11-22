@@ -178,8 +178,8 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
     
     tableBody.push([
       { 
-        content: `${categoryKey.toUpperCase()} ${isMainSectionComplete ? '✓' : '☐'}`, 
-        colSpan: 3, 
+        content: `${categoryKey.toUpperCase()}`, 
+        colSpan: 2, 
         styles: { fontStyle: 'bold', fillColor: [30, 41, 59], textColor: [255, 255, 255] } 
       }
     ]);
@@ -189,7 +189,7 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
       tableBody.push([
         { 
           content: subTitle, 
-          colSpan: 3, 
+          colSpan: 2, 
           styles: { fontStyle: 'bold', fillColor: [236, 240, 241] } 
         }
       ]);
@@ -198,14 +198,14 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
       items.forEach((item: string) => {
           const itemKey = `${categoryKey}-${subTitle}-${item}`.toLowerCase().replace(/[^a-z0-9-]/g, '');
           const isChecked = formData[itemKey];
-          tableBody.push(['', item, isChecked ? '✓' : '☐']);
+          tableBody.push([item, isChecked ? '✓' : '☐']);
       });
     });
   });
 
   autoTable(doc, {
     startY: y,
-    head: [['', 'Item', 'Status']],
+    head: [['Item', 'Status']],
     body: tableBody,
     theme: 'grid',
     headStyles: {
@@ -214,9 +214,8 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
       fontStyle: 'bold',
     },
     columnStyles: {
-      0: { cellWidth: 30 },
-      1: { cellWidth: 'auto' },
-      2: { cellWidth: 15, halign: 'center' },
+      0: { cellWidth: 'auto' },
+      1: { cellWidth: 15, halign: 'center' },
     },
     didParseCell: (data) => {
       if (data.row.raw.length === 1 && typeof data.row.raw[0] === 'object') {
