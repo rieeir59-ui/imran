@@ -126,8 +126,7 @@ const WeeklySchedule = () => {
       if (!user || !firestore || !employeeName) return null;
       return query(
           collection(firestore, `users/${user.uid}/tasks`),
-          where("employeeName", "==", employeeName),
-          orderBy("createdAt", "desc")
+          where("employeeName", "==", employeeName)
       );
   }, [user, firestore, employeeName]);
 
@@ -136,6 +135,11 @@ const WeeklySchedule = () => {
 
     const unsubscribe = onSnapshot(tasksCollectionRef, (snapshot) => {
         const tasksData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
+        tasksData.sort((a, b) => {
+            const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+            const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+            return dateB.getTime() - dateA.getTime();
+        });
         setAssignedTasks(tasksData);
     }, (error) => {
         console.error("Error fetching tasks:", error);
