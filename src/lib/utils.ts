@@ -45,7 +45,7 @@ type Remarks = {
     date: string;
 }
 
-export function exportDataToPdf(title: string, data: any[], filename: string, overallStatus?: OverallStatus[], remarks?: Remarks) {
+export function exportDataToPdf(title: string, data: any[], filename:string, overallStatus?: OverallStatus[], remarks?: Remarks) {
   if (!data || data.length === 0) {
     console.error("No data available to export.");
     return;
@@ -56,7 +56,10 @@ export function exportDataToPdf(title: string, data: any[], filename: string, ov
   });
   
   doc.setFontSize(14);
-  doc.text(title, 14, 15);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(40, 58, 83);
+  doc.text(title, doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
 
   const headers = Object.keys(data[0]);
   const tableHeaders = headers.map(key => {
@@ -109,17 +112,18 @@ export function exportDataToPdf(title: string, data: any[], filename: string, ov
     finalY = 15;
   }
 
-
   if (overallStatus && overallStatus.length > 0) {
     finalY += 10;
     doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
     doc.text("Overall Status", 14, finalY);
+    doc.setFont('helvetica', 'normal');
     autoTable(doc, {
       startY: finalY + 4,
       head: [['No.', 'Status']],
       body: overallStatus.map(s => [s.no, s.text]),
       theme: 'grid',
-      headStyles: { fillColor: [241, 245, 249], textColor: [30, 41, 59], fontSize: 10 },
+      headStyles: { fillColor: [241, 245, 249], textColor: [30, 41, 59], fontSize: 10, fontStyle: 'bold' },
       styles: { fontSize: 9 },
     });
     finalY = (doc as any).lastAutoTable.finalY;
@@ -132,15 +136,16 @@ export function exportDataToPdf(title: string, data: any[], filename: string, ov
     }
     finalY += 10;
     doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
     doc.text("Remarks", 14, finalY);
     doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
     const splitText = doc.splitTextToSize(remarks.text, 260);
     doc.text(splitText, 14, finalY + 6);
     if(remarks.date) {
         doc.text(`Date: ${remarks.date}`, 14, finalY + 6 + (splitText.length * 5) + 5);
     }
   }
-
 
   doc.save(`${filename}.pdf`);
 }
@@ -150,10 +155,14 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
   let y = 15;
 
   doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(40, 58, 83);
   doc.text("Project Checklist", 105, y, { align: 'center' });
   y += 10;
   
   doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont('helvetica', 'normal');
   doc.text(`Project: ${formData.project || ''}`, 14, y);
   doc.text(`Architect: ${formData.architect || ''}`, 14, y + 5);
   doc.text(`Name, Address: ${formData.nameAddress || ''}`, 105, y);
@@ -176,10 +185,13 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
         if (subIndex === 0) {
              doc.setFontSize(12);
              doc.setFont('helvetica', 'bold');
-             doc.text(`${categoryKey.toUpperCase()}`, 14, y);
+             doc.setFillColor(30, 41, 59);
+             doc.rect(14, y - 5, 182, 7, 'F');
+             doc.setTextColor(255, 255, 255);
+             doc.text(categoryKey.toUpperCase(), 16, y);
              doc.text(isMainSectionComplete ? '[✓]' : '[ ]', 180, y);
-             y += 7;
-             doc.setFont('helvetica', 'normal');
+             y += 9;
+             doc.setTextColor(0, 0, 0);
         }
         
         doc.setFontSize(11);
@@ -214,6 +226,8 @@ export function exportServicesToPdf(formData: any, serviceSections: any) {
     let y = 15;
 
     doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(40, 58, 83);
     doc.text("List of Services", 105, y, { align: 'center' });
     y += 15;
 
@@ -224,8 +238,13 @@ export function exportServicesToPdf(formData: any, serviceSections: any) {
         }
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text(`${mainIndex + 1}: - ${mainTitle}`, 14, y);
-        y += 8;
+        doc.setFillColor(30, 41, 59);
+        doc.rect(14, y - 5, 182, 7, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.text(`${mainIndex + 1}: - ${mainTitle}`, 16, y);
+        y += 9;
+        doc.setTextColor(0, 0, 0);
+
 
         Object.entries(subSections as Record<string, string[]>).forEach(([subTitle, items]) => {
             if (y > 270) {

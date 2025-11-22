@@ -36,7 +36,6 @@ const PROJECT_APP_SUMMARY_DOC_ID = 'project-application-summary';
 const PROJECT_SERVICES_DOC_ID = "project-services-checklist";
 const CONTINUATION_SHEET_DOC_ID = 'continuation-sheet';
 const CONSTRUCTION_SCHEDULE_DOC_ID = 'construction-activity-schedule';
-const BILL_OF_QUANTITY_DOC_ID = 'bill-of-quantity';
 const RATE_ANALYSIS_DOC_ID = 'rate-analysis';
 const CHANGE_ORDER_DOC_ID = 'change-order';
 const REQUIREMENT_PERFORMA_DOC_ID = 'requirement-performa';
@@ -605,14 +604,20 @@ const Section4 = React.memo(() => {
             }
             doc.setFontSize(size);
             doc.setFont('helvetica', 'bold');
-            doc.text(title, 14, y);
+            doc.setFillColor(30, 41, 59);
+            doc.rect(14, y - 5, 182, 7, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.text(title, 16, y);
             y += 8;
+            doc.setTextColor(0, 0, 0);
         };
     
         doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
         doc.text("Project Data", 105, y, { align: 'center' });
         y += 15;
         doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
     
         addDualField("Project", formData.project, "Architect's Project No.", formData.architectsProjectNo);
         addDualField("Address", formData.address, "Date", formData.date);
@@ -653,13 +658,13 @@ const Section4 = React.memo(() => {
         addDualField("Consultant on", formData.consultantOn, undefined, undefined);
 
         y += 10;
-        addTitle("Site Information Sources", 11);
+        addTitle("Site Information Sources");
         addDualField("Property Survey by", formData.propertySurveyBy, "Topographic Survey by", formData.topographicSurveyBy);
         addDualField("Soils Tests by", formData.soilsTestsBy, "Aerial Photos by", formData.aerialPhotosBy);
         addDualField("Maps", formData.maps, undefined, undefined);
 
         y += 10;
-        addTitle("Public Services", 11);
+        addTitle("Public Services");
         autoTable(doc, {
             startY: y,
             head: [['Company', 'Name and Address', 'Representative', 'Tel']],
@@ -669,39 +674,46 @@ const Section4 = React.memo(() => {
                 ['Telephone Co', formData.telco_address, formData.telco_rep, formData.telco_tel],
             ],
             theme: 'grid',
-            styles: { fontSize: 9 }
+            styles: { fontSize: 9 },
+            headStyles: { fillColor: [30, 41, 59] }
         });
         y = (doc as any).lastAutoTable.finalY + 7;
         addDualField("Sewers", formData.sewers, "Water", formData.water);
 
         y += 10;
-        addTitle("Financial Data", 11);
+        addTitle("Financial Data");
         addDualField("Loan Amount", formData.loanAmount, "Loan by", formData.loanBy);
         addDualField("Bonds or Liens", formData.bondsOrLiens, "Grant Amount", formData.grantAmount);
         addDualField("Grant from", formData.grantFrom, undefined, undefined);
 
         y += 10;
-        addTitle("Method of Handling", 11);
+        addTitle("Method of Handling");
         addCheckbox("Single Contract", formData.method_single);
         addCheckbox("Separate Contracts", formData.method_separate, { xOffset: 70 });
         y += 7;
         
-        addTitle("Bidding", 10);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Bidding", 14, y); y+=7;
+        doc.setFont('helvetica', 'normal');
         addCheckbox("Negotiated", formData.negotiatedBid === "negotiated");
         addCheckbox("Bid", formData.negotiatedBid === "bid", { xOffset: 70 });
         y += 7;
 
-        addTitle("Contract", 10);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Contract", 14, y); y+=7;
+        doc.setFont('helvetica', 'normal');
         addCheckbox("Stipulated Sum", formData.stipulatedSum);
         addCheckbox("Cost Plus Fee", formData.costPlusFee, { xOffset: 70 });
         y += 7;
 
-        addTitle("Scope", 10);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Scope", 14, y); y+=7;
+        doc.setFont('helvetica', 'normal');
         addCheckbox("Equipment", formData.equipment);
         addCheckbox("Landscaping", formData.landscaping, { xOffset: 70 });
 
         y += 10;
-        addTitle("Sketch of Property", 11);
+        addTitle("Sketch of Property");
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
         doc.text("Notations on existing improvements, disposal thereof, utilities, tree, etc.; indicated North; notations on other Project provision:", 14, y);
@@ -936,7 +948,17 @@ const Section5 = React.memo(() => {
              if (y > 270) { doc.addPage(); y = 15; }
              doc.setFontSize(size);
              doc.setFont('helvetica', 'bold');
-             doc.text(title, align === 'center' ? 105 : 14, y, { align });
+             if (size === 14) { // Main Title
+                doc.setTextColor(40, 58, 83);
+                doc.text(title, 105, y, { align: 'center'});
+                doc.setTextColor(0, 0, 0);
+             } else {
+                 doc.setFillColor(30, 41, 59);
+                 doc.rect(14, y - 5, 182, 7, 'F');
+                 doc.setTextColor(255, 255, 255);
+                 doc.text(title, 16, y);
+                 doc.setTextColor(0, 0, 0);
+             }
              y += 7;
         }
 
@@ -954,7 +976,7 @@ const Section5 = React.memo(() => {
              if (y > 280) { doc.addPage(); y = 15; }
             doc.setFontSize(10);
             doc.text(`${bullet}`, indent, y);
-            const splitText = doc.splitTextToSize(text, 180 - indent);
+            const splitText = doc.splitTextToSize(text, 180 - indent - 4);
             doc.text(splitText, indent + 4, y);
             y += doc.getTextDimensions(splitText).h + 2;
         }
@@ -1478,8 +1500,19 @@ const Section7 = React.memo(() => {
 
     const handleDownload = () => {
         const doc = new jsPDF();
-        doc.text("Requirement Performa", 10, 10);
-        // Add more fields to PDF
+        let y = 15;
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Requirement Performa", 105, y, { align: 'center'});
+        y += 10;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        autoTable(doc, {
+            startY: y,
+            html: '#requirement-performa-table',
+            theme: 'grid',
+            headStyles: { fillColor: [30, 41, 59] }
+        })
         doc.save("requirement-performa.pdf");
         toast({ title: 'Download Started', description: 'PDF is being generated.' });
     };
@@ -1539,7 +1572,7 @@ const Section7 = React.memo(() => {
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-4" id="requirement-performa-table">
                     <FormField label="Project:">{renderInput("project_name")}</FormField>
                     <FormField label="Address:">{renderInput("project_address")}</FormField>
                     <FormField label="Project No:">{renderInput("project_no")}</FormField>
@@ -1747,8 +1780,12 @@ const Section8 = React.memo(() => {
             if (y > 260) { doc.addPage(); y = 15; }
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
-            doc.text(title, 14, y);
+            doc.setFillColor(30, 41, 59);
+            doc.rect(14, y - 5, 182, 7, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.text(title, 16, y);
             y += 8;
+            doc.setTextColor(0, 0, 0);
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(10);
         };
@@ -1776,6 +1813,7 @@ const Section8 = React.memo(() => {
         }
         
         doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
         doc.text("SITE SURVEY", 105, y, { align: 'center' });
         y += 5;
         doc.setFontSize(10);
@@ -2176,10 +2214,23 @@ const Section10 = React.memo(() => {
             doc.text(`${label}: ${value || ''}`, x, yPos);
             doc.line(x + doc.getTextWidth(label) + 2, yPos + 1, x + width, yPos + 1);
         };
+
+        const addTitle = (title: string) => {
+            if (y > 260) { doc.addPage(); y = 15; }
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setFillColor(30, 41, 59);
+            doc.rect(14, y - 5, 182, 7, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.text(title, 105, y, { align: 'center'});
+            y += 8;
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+        };
         
-        doc.setFontSize(14);
-        doc.text("Proposal Request", 105, y, { align: 'center' });
-        y += 15;
+        addTitle("Proposal Request");
+        y += 5;
     
         doc.setFontSize(10);
         addField('Project', formData.project || '', 14, y, 90);
@@ -2363,8 +2414,17 @@ const Section11 = React.memo(() => {
 
     const handleDownload = () => {
         const doc = new jsPDF();
-        doc.text("Drawings (Architectural / Interiors / submission)", 10, 10);
-        // Add more fields
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Drawings (Architectural / Interiors / submission)", 105, 15, { align: 'center' });
+        
+        autoTable(doc, {
+          startY: 25,
+          html: '#drawings-table',
+          theme: 'grid',
+          headStyles: { fillColor: [30, 41, 59] }
+        })
+
         doc.save("drawings.pdf");
         toast({ title: "Download Started", description: "PDF generation is in progress." });
     };
@@ -2391,7 +2451,9 @@ const Section11 = React.memo(() => {
             </div>
         </CardHeader>
         <CardContent>
-            <DrawingsList />
+            <div id="drawings-table">
+                <DrawingsList />
+            </div>
         </CardContent>
     </Card>
     );
@@ -2459,8 +2521,17 @@ const Section12 = React.memo(() => {
 
     const handleDownload = () => {
         const doc = new jsPDF();
-        doc.text("Shop Drawings Sample Record", 10, 10);
-        // PDF generation logic here
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text("SHOP DRAWINGS & SAMPLE RECORD", 105, 15, { align: 'center'});
+        
+        autoTable(doc, {
+            startY: 25,
+            html: '#shop-drawings-table',
+            theme: 'grid',
+            headStyles: { fillColor: [30, 41, 59] },
+        })
+
         doc.save("shop-drawings-record.pdf");
         toast({ title: "Download Started", description: "PDF generation is in progress." });
     };
@@ -2492,7 +2563,7 @@ const Section12 = React.memo(() => {
             </div>
         </CardHeader>
         <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-4" id="shop-drawings-table">
                 <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-4">
                     <FormField label="Project:">{renderField('project')}</FormField>
                     <FormField label="Architect's Project No:">{renderField('architectProjectNo')}</FormField>
@@ -2636,8 +2707,15 @@ const FieldReportForm = React.memo(() => {
 
     const handleDownload = () => {
         const doc = new jsPDF();
-        doc.text("Architect Field Report", 10, 10);
-        // PDF generation logic here
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Architect Field Report", 105, 15, { align: 'center'});
+        autoTable(doc, {
+          startY: 25,
+          html: '#field-report-table',
+          theme: 'grid',
+          headStyles: { fillColor: [30, 41, 59] }
+        })
         doc.save("architect-field-report.pdf");
         toast({ title: 'Download Started' });
     }
@@ -2658,23 +2736,25 @@ const FieldReportForm = React.memo(() => {
                     {isEditing ? <Button size="sm" onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button size="sm" onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
                 </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-                <FormField label="Project">{renderField('project')}</FormField>
-                <FormField label="Architect Project No.">{renderField('architectProjectNo')}</FormField>
-                <FormField label="Date">{renderField('date')}</FormField>
-                <FormField label="Weather">{renderField('weather')}</FormField>
-                <FormField label="Present at Site">{renderField('presentAtSite')}</FormField>
-                <FormField label="Report No.">{renderField('reportNo')}</FormField>
+            <div id="field-report-table">
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField label="Project">{renderField('project')}</FormField>
+                    <FormField label="Architect Project No.">{renderField('architectProjectNo')}</FormField>
+                    <FormField label="Date">{renderField('date')}</FormField>
+                    <FormField label="Weather">{renderField('weather')}</FormField>
+                    <FormField label="Present at Site">{renderField('presentAtSite')}</FormField>
+                    <FormField label="Report No.">{renderField('reportNo')}</FormField>
+                </div>
+                <Table className="mt-4">
+                    <TableHeader><TableRow><TableHead>Item No.</TableHead><TableHead>Observations</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                        {formData.items.map((item: any, i: number) => <TableRow key={i}>
+                            <TableCell className="w-24">{renderField('itemNo', 'Item No.', i)}</TableCell>
+                            <TableCell>{renderField('observations', 'Observations', i)}</TableCell>
+                        </TableRow>)}
+                    </TableBody>
+                </Table>
             </div>
-            <Table className="mt-4">
-                <TableHeader><TableRow><TableHead>Item No.</TableHead><TableHead>Observations</TableHead></TableRow></TableHeader>
-                <TableBody>
-                    {formData.items.map((item: any, i: number) => <TableRow key={i}>
-                        <TableCell className="w-24">{renderField('itemNo', 'Item No.', i)}</TableCell>
-                        <TableCell>{renderField('observations', 'Observations', i)}</TableCell>
-                    </TableRow>)}
-                </TableBody>
-            </Table>
         </div>
     );
 });
@@ -2725,8 +2805,14 @@ const TransmittalLetterForm = React.memo(() => {
 
      const handleDownload = () => {
         const doc = new jsPDF();
-        doc.text("Transmittal Letter", 10, 10);
-        // PDF generation logic here
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Transmittal Letter", 105, 15, { align: 'center'});
+        autoTable(doc, {
+            startY: 25,
+            html: '#transmittal-letter-table',
+            theme: 'plain',
+        });
         doc.save("transmittal-letter.pdf");
         toast({ title: 'Download Started' });
     }
@@ -2753,7 +2839,7 @@ const TransmittalLetterForm = React.memo(() => {
                     {isEditing ? <Button size="sm" onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button size="sm" onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
                 </div>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4" id="transmittal-letter-table">
                 <FormField label="To">{renderField('to', 'Recipient Name and Address')}</FormField>
                 <FormField label="Date">{renderField('date')}</FormField>
                 <FormField label="Architects Project No.">{renderField('architectProjectNo')}</FormField>
@@ -2821,8 +2907,15 @@ const MinutesOfMeetingForm = React.memo(() => {
 
     const handleDownload = () => {
         const doc = new jsPDF();
-        doc.text("Minutes of the Meeting", 10, 10);
-        // PDF generation logic here
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Minutes of the Meeting", 105, 15, { align: 'center'});
+        autoTable(doc, {
+            startY: 25,
+            html: '#minutes-of-meeting-table',
+            theme: 'grid',
+            headStyles: { fillColor: [30, 41, 59] }
+        })
         doc.save("minutes-of-meeting.pdf");
         toast({ title: 'Download Started' });
     }
@@ -2843,23 +2936,25 @@ const MinutesOfMeetingForm = React.memo(() => {
                     {isEditing ? <Button size="sm" onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button size="sm" onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
                 </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-                <FormField label="Project">{renderField('project')}</FormField>
-                <FormField label="Architects Project No.">{renderField('architectProjectNo')}</FormField>
-                <FormField label="Date">{renderField('date')}</FormField>
-                <FormField label="Time">{renderField('time')}</FormField>
-                <FormField label="Meeting No.">{renderField('meetingNo')}</FormField>
-                <FormField label="Present">{renderField('present')}</FormField>
+            <div id="minutes-of-meeting-table">
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField label="Project">{renderField('project')}</FormField>
+                    <FormField label="Architects Project No.">{renderField('architectProjectNo')}</FormField>
+                    <FormField label="Date">{renderField('date')}</FormField>
+                    <FormField label="Time">{renderField('time')}</FormField>
+                    <FormField label="Meeting No.">{renderField('meetingNo')}</FormField>
+                    <FormField label="Present">{renderField('present')}</FormField>
+                </div>
+                <Table className="mt-4">
+                    <TableHeader><TableRow><TableHead>Item No.</TableHead><TableHead>Description</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                        {formData.items.map((item: any, i: number) => <TableRow key={i}>
+                            <TableCell className="w-24">{renderField('no', '', i)}</TableCell>
+                            <TableCell>{renderField('description', '', i)}</TableCell>
+                        </TableRow>)}
+                    </TableBody>
+                </Table>
             </div>
-            <Table className="mt-4">
-                <TableHeader><TableRow><TableHead>Item No.</TableHead><TableHead>Description</TableHead></TableRow></TableHeader>
-                <TableBody>
-                    {formData.items.map((item: any, i: number) => <TableRow key={i}>
-                        <TableCell className="w-24">{renderField('no', '', i)}</TableCell>
-                        <TableCell>{renderField('description', '', i)}</TableCell>
-                    </TableRow>)}
-                </TableBody>
-            </Table>
         </div>
     );
 });
@@ -2919,8 +3014,15 @@ const Section15 = React.memo(() => {
     
     const handleDownload = () => {
         const doc = new jsPDF();
-        doc.text("List Of Sub consultants", 10, 10);
-        // PDF generation logic here
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text("List Of Sub consultants", 105, 15, {align: 'center'});
+        autoTable(doc, {
+            startY: 25,
+            html: '#subconsultants-table',
+            theme: 'grid',
+            headStyles: { fillColor: [30, 41, 59] }
+        })
         doc.save("sub-consultant-list.pdf");
         toast({ title: 'Download Started' });
     }
@@ -2945,7 +3047,7 @@ const Section15 = React.memo(() => {
                 {isEditing ? <Button size="sm" onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button size="sm" onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
             </div>
         </CardHeader>
-        <CardContent>
+        <CardContent id="subconsultants-table">
              <FormField label="Project">{renderHeaderField('project')}</FormField>
             <FormField label="Architect">{renderHeaderField('architect')}</FormField>
             <FormField label="Architects Project No">{renderHeaderField('architectsProjectNo')}</FormField>
@@ -3021,8 +3123,15 @@ const Section16 = React.memo(() => {
 
     const handleDownload = () => {
         const doc = new jsPDF();
-        doc.text("List of Contractors", 10, 10);
-        // PDF generation logic here
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text("List of Contractors", 105, 15, {align: 'center'});
+        autoTable(doc, {
+            startY: 25,
+            html: '#contractors-table',
+            theme: 'grid',
+            headStyles: { fillColor: [30, 41, 59] }
+        })
         doc.save("contractor-list.pdf");
         toast({ title: 'Download Started' });
     }
@@ -3047,7 +3156,7 @@ const Section16 = React.memo(() => {
                 {isEditing ? <Button size="sm" onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button size="sm" onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
             </div>
         </CardHeader>
-        <CardContent>
+        <CardContent id="contractors-table">
             <FormField label="Project">{renderHeaderField('project')}</FormField>
             <FormField label="Architect">{renderHeaderField('architect')}</FormField>
             <FormField label="Architects Project No">{renderHeaderField('architectsProjectNo')}</FormField>
@@ -3308,27 +3417,31 @@ const Section19 = React.memo(() => {
 
     const handleDownload = () => {
       const doc = new jsPDF();
-      doc.text("PROJECT APPLICATION SUMMARY", 10, 10);
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text("PROJECT APPLICATION SUMMARY", 105, 15, { align: 'center'});
       let y = 30;
-      const addField = (label: string, value: string) => {
-        doc.text(`${label}: ${value || '________________' }`, 10, y);
-        y += 7;
-      }
-      addField("Application Number", formData.applicationNumber);
-      addField("Application Date", formData.applicationDate);
-      addField("Period From", formData.periodFrom);
-      addField("To", formData.periodTo);
-      addField("Architect's Project No", formData.architectsProjectNo);
       
-      y+= 5;
-      doc.text("In tabulations below, amounts are stated to the nearest rupee.", 10, y);
-      y+= 10;
+      const tableBody = [
+          ["Application Number", formData.applicationNumber || ''],
+          ["Application Date", formData.applicationDate || ''],
+          ["Period From", formData.periodFrom || ''],
+          ["To", formData.periodTo || ''],
+          ["Architect's Project No", formData.architectsProjectNo || ''],
+      ];
 
       autoTable(doc, {
-        startY: y,
-        body: [
-            ['Contractor Name', formData.contractorName || ''],
-            ['Portion of Work', formData.portionOfWork || ''],
+          startY: y,
+          body: tableBody,
+          theme: 'plain',
+      });
+      
+      y = (doc as any).lastAutoTable.finalY + 10;
+      doc.setFontSize(8);
+      doc.text("In tabulations below, amounts are stated to the nearest rupee.", 14, y);
+      y+= 5;
+
+      const summaryBody = [
             ['A', 'Original Contract Sum', formData.originalContractSum || ''],
             ['B', 'Net Change Orders to Date', formData.netChangeOrders || ''],
             ['C', 'Contract Sum to Date', formData.contractSumToDate || ''],
@@ -3341,8 +3454,14 @@ const Section19 = React.memo(() => {
             ['J', 'Current Payment Due (F-H-I)', formData.currentPaymentDue || ''],
             ['K', 'Balance to Finish (C-E)', formData.balanceToFinish || ''],
             ['L', 'Percent Complete (F÷C)', formData.percentComplete || ''],
-        ],
-        theme: 'plain',
+      ];
+
+      autoTable(doc, {
+        startY: y,
+        head: [['', 'Item', 'Amount']],
+        body: summaryBody,
+        theme: 'grid',
+        headStyles: { fillColor: [30, 41, 59] },
         columnStyles: { 0: { fontStyle: 'bold' } }
       });
       doc.save("project-application-summary.pdf");
@@ -3479,10 +3598,13 @@ const Section20 = React.memo(() => {
 
     const handleDownloadPdf = () => {
         const doc = new jsPDF({ orientation: 'landscape' });
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
         doc.text("Continuation Sheet", 14, 15);
         
         let y = 25;
         doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
         doc.text(`Application Number: ${formData.applicationNumber || ''}`, 14, y);
         doc.text(`Application Date: ${formData.applicationDate || ''}`, 150, y);
         y+=7;
@@ -3495,7 +3617,8 @@ const Section20 = React.memo(() => {
             head: [['Item No.', 'Description of Work', 'Scheduled Value', 'Work Completed Prev', 'Work Completed This', 'Materials Stored', 'Total Completed', '%', 'Balance', 'Retainage']],
             body: formData.rows.map((row: any) => [row.itemNo, row.description, row.scheduledValue, row.workCompletedPrev, row.workCompletedThis, row.materialsStored, row.totalCompleted, row.percentage, row.balance, row.retainage]),
             theme: 'grid',
-            styles: { fontSize: 8 },
+            styles: { fontSize: 8, cellPadding: 1 },
+            headStyles: { fillColor: [30, 41, 59] }
         });
 
         doc.save("continuation-sheet.pdf");
@@ -3643,9 +3766,12 @@ const Section21 = React.memo(() => {
 
     const handleDownload = () => {
         const doc = new jsPDF({ orientation: 'landscape' });
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
         doc.text("Construction Time Line", 14, 15);
         let y = 25;
         doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
         doc.text(`Client: ${formData.client || ''}`, 14, y);
         doc.text(`Project: ${formData.project || ''}`, 80, y);
         doc.text(`Covered Area: ${formData.coveredArea || ''}`, 150, y);
@@ -3663,6 +3789,7 @@ const Section21 = React.memo(() => {
             body: formData.tasks.map((task: any) => [task.code, task.task, task.duration, task.planStart, task.planFinish, task.actualStart, task.actualFinish, task.progress, task.variancePlan, task.varianceActual, task.remarks]),
             theme: 'grid',
             styles: { fontSize: 7, cellPadding: 1 },
+            headStyles: { fillColor: [30, 41, 59] }
         });
 
         doc.save("construction-activity-schedule.pdf");
@@ -3848,8 +3975,17 @@ const Section24 = React.memo(() => {
 
     const handleDownload = () => {
         const doc = new jsPDF();
-        doc.text("Rate Analysis", 14, 15);
-        // Simplified PDF generation, a full one would require more work with autoTable
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Rate Analysis", 105, 15, { align: 'center'});
+        
+        autoTable(doc, {
+            startY: 25,
+            html: '#rate-analysis-table',
+            theme: 'grid',
+            headStyles: { fillColor: [30, 41, 59] }
+        })
+
         doc.save("rate-analysis.pdf");
     };
 
@@ -3877,6 +4013,7 @@ const Section24 = React.memo(() => {
                 </div>
             </CardHeader>
             <CardContent>
+              <div id="rate-analysis-table">
                 <div className="grid grid-cols-3 gap-4 mb-4">
                     <div><Label>DESCRIPTION OF ITEM:</Label>{renderField(formData.description, (val: string) => handleOtherChange('description', val))}</div>
                     <div><Label>Item No.</Label>{renderField(formData.itemNo, (val: string) => handleOtherChange('itemNo', val))}</div>
@@ -3942,6 +4079,7 @@ const Section24 = React.memo(() => {
                     <h4 className="font-bold text-lg mb-2">Specification of Item</h4>
                      {renderField(formData.specification, (val: string) => handleOtherChange('specification', val))}
                 </div>
+              </div>
             </CardContent>
         </Card>
     );
@@ -4005,8 +4143,16 @@ const Section25 = React.memo(() => {
 
     const handleDownload = () => {
         const doc = new jsPDF();
-        doc.text("CHANGE ORDER", 14, 15);
-        // Simplified PDF generation
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text("CHANGE ORDER", 105, 15, { align: 'center'});
+        
+        autoTable(doc, {
+            startY: 25,
+            html: '#change-order-table',
+            theme: 'plain',
+        });
+
         doc.save("change-order.pdf");
     };
 
@@ -4040,7 +4186,7 @@ const Section25 = React.memo(() => {
                     )}
                 </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4" id="change-order-table">
                  <div className="grid grid-cols-2 gap-4">
                     <div><Label>Project:</Label>{renderField('project_name_address', '(Name, Address)')}</div>
                     <div><Label>Field Report No.:</Label>{renderField('field_report_no')}</div>
