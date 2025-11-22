@@ -65,8 +65,10 @@ const designations = [
 interface Task {
     id: string;
     employeeName: string;
+    projectName: string;
     taskDescription: string;
-    dueDate: string;
+    startDate: string;
+    endDate: string;
     status: string;
     assignedBy: string;
     createdAt: any;
@@ -135,6 +137,7 @@ const WeeklySchedule = () => {
 
     const unsubscribe = onSnapshot(tasksCollectionRef, (snapshot) => {
         const tasksData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Task));
+        // client-side sort
         tasksData.sort((a, b) => {
             const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
             const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
@@ -518,16 +521,20 @@ const WeeklySchedule = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead>Project Name</TableHead>
                                 <TableHead>Task Description</TableHead>
-                                <TableHead>Due Date</TableHead>
+                                <TableHead>Start Date</TableHead>
+                                <TableHead>End Date</TableHead>
                                 <TableHead>Status</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {assignedTasks.map(task => (
                                 <TableRow key={task.id}>
+                                    <TableCell>{task.projectName}</TableCell>
                                     <TableCell>{task.taskDescription}</TableCell>
-                                    <TableCell>{task.dueDate ? format(parseISO(task.dueDate), 'PPP') : ''}</TableCell>
+                                    <TableCell>{task.startDate ? format(parseISO(task.startDate), 'PPP') : ''}</TableCell>
+                                    <TableCell>{task.endDate ? format(parseISO(task.endDate), 'PPP') : ''}</TableCell>
                                     <TableCell>
                                          <Select value={task.status} onValueChange={(newStatus) => handleTaskStatusChange(task.id, newStatus)}>
                                             <SelectTrigger className='w-40'>
@@ -579,7 +586,6 @@ const WeeklySchedule = () => {
                   <TableHead className="w-20">Project No.</TableHead>
                   <TableHead>Project Name</TableHead>
                   <TableHead>Details</TableHead>
-                  <TableHead>Total Progress</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Start Date</TableHead>
                   <TableHead>End Date</TableHead>
@@ -599,12 +605,6 @@ const WeeklySchedule = () => {
                                 <TableCell>{renderCell(String(schedule.id), (val) => handleScheduleChange(index, 'id', Number(val) || 0))}</TableCell>
                                 <TableCell>{renderCell(schedule.projectName, (val) => handleScheduleChange(index, 'projectName', val))}</TableCell>
                                 <TableCell>{renderTextareaCell(schedule.details, (val) => handleScheduleChange(index, 'details', val))}</TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <Progress value={calculateTotalProgress(schedule.dailyEntries)} className="w-24" />
-                                        <span>{calculateTotalProgress(schedule.dailyEntries)}%</span>
-                                    </div>
-                                </TableCell>
                                 <TableCell>{isEditing ? (<Select value={schedule.status} onValueChange={(value) => handleScheduleChange(index, 'status', value)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="In Progress">In Progress</SelectItem><SelectItem value="Completed">Completed</SelectItem><SelectItem value="Incomplete">Incomplete</SelectItem></SelectContent></Select>) : (<span className="p-2 block">{schedule.status}</span>)}</TableCell>
                                 <TableCell>{renderDateCell(schedule.startDate, (date) => handleScheduleChange(index, 'startDate', date ? format(date, 'yyyy-MM-dd') : ''))}</TableCell>
                                 <TableCell>{renderDateCell(schedule.endDate, (date) => handleScheduleChange(index, 'endDate', date ? format(date, 'yyyy-MM-dd') : ''))}</TableCell>
@@ -613,7 +613,7 @@ const WeeklySchedule = () => {
                             </TableRow>
                             {openProjects[schedule.id] && (
                                 <TableRow>
-                                    <TableCell colSpan={isEditing ? 10 : 9} className="p-0">
+                                    <TableCell colSpan={isEditing ? 9 : 8} className="p-0">
                                         <div className="p-4 bg-muted/50">
                                             <h4 className="font-semibold mb-2">Daily Plan</h4>
                                             {getNumberOfDays(schedule.startDate, schedule.endDate) > 0 ? (
