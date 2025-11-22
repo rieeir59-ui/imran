@@ -105,94 +105,116 @@ const RequirementPerformaPage = () => {
     const handleDownload = () => {
         const doc = new jsPDF();
         let y = 15;
-        const x = 14;
-
-        const checkPageBreak = (neededHeight: number) => {
-            if (y + neededHeight > doc.internal.pageSize.height - 20) {
+    
+        doc.setFontSize(16);
+        doc.text("Requirement Performa", 105, y, { align: 'center' });
+        y += 10;
+    
+        const addSection = (title: string, data: (string|string[])[][]) => {
+            if (y > 250) {
                 doc.addPage();
                 y = 15;
             }
-        };
+            autoTable(doc, {
+                startY: y,
+                head: [[title]],
+                headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
+                body: data,
+                theme: 'grid',
+                columnStyles: { 0: { fontStyle: 'bold' } },
+            });
+            y = (doc as any).lastAutoTable.finalY + 10;
+        }
 
-        const addTitle = (title: string, mainTitle = false) => {
-            checkPageBreak(12);
-            doc.setFontSize(mainTitle ? 14 : 12);
-            doc.setFont('helvetica', 'bold');
-            if (mainTitle) {
-                doc.text(title, 105, y, { align: 'center' });
-                y += 10;
-            } else {
-                doc.setFillColor(30, 41, 59);
-                doc.rect(x, y - 5, 182, 7, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.text(title, x + 2, y);
-                doc.setTextColor(0, 0, 0);
-                y += 8;
-            }
-        };
+        const projectDetails = [
+            ["Project", formData.project_name || ''],
+            ["Address", formData.project_address || ''],
+            ["Project No", formData.project_no || ''],
+            ["Prepared By", formData.prepared_by || ''],
+            ["Prepared Date", formData.prepared_date || ''],
+        ];
+        addSection("Project Details", projectDetails);
 
-        const addField = (label: string, value: string | undefined, isTextarea = false) => {
-            const valueX = x + 70;
-            const fieldWidth = 195 - valueX;
-            const lineHeight = 5;
-            const splitValue = value ? doc.splitTextToSize(value, fieldWidth) : [''];
-            const neededHeight = (isTextarea ? splitValue.length * lineHeight : lineHeight) + 2;
-
-            checkPageBreak(neededHeight);
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`${label}:`, x, y);
-            doc.setFont('helvetica', 'normal');
-            
-            if (value) {
-                doc.text(splitValue, valueX, y);
-            } else {
-                doc.line(valueX, y, valueX + 50, y);
-            }
-            y += neededHeight;
-        };
-
-        const addCheckbox = (label: string, name: string) => {
-            doc.text(`${formData[name] ? '[✓]' : '[ ]'} ${label}`, x + 5, y);
-             y += 6;
-        };
-
-        addTitle("Requirement Performa", true);
-        addField("Project", formData.project_name);
-        addField("Address", formData.project_address);
-        addField("Project No", formData.project_no);
-        addField("Prepared By", formData.prepared_by);
-        addField("Prepared Date", formData.prepared_date);
-        y += 5;
-
-        addTitle("About Owner");
-        addField("Full Name", formData.owner_name);
-        addField("Address (Office)", formData.owner_office_address);
-        addField("Address (Res.)", formData.owner_res_address);
-        addField("Phone (Office)", formData.owner_office_phone);
-        addField("Phone (Res.)", formData.owner_res_phone);
-        addField("Owner's Project Representative Name", formData.owner_rep_name);
-        addField("Address (Office)", formData.owner_rep_office_address);
-        addField("Address (Res.)", formData.owner_rep_res_address);
-        addField("Phone (Office)", formData.owner_rep_office_phone);
-        addField("Phone (Res.)", formData.owner_rep_res_phone);
-        y += 5;
-
-        addTitle("About Project");
-        addField("Address", formData.project_about_address);
-        checkPageBreak(30);
-        doc.setFont('helvetica', 'bold');
-        doc.text("Project Reqt.:", x, y);
-        doc.setFont('helvetica', 'normal');
-        addCheckbox("Architectural Designing", "req_architectural");
-        addCheckbox("Interior Decoration", "req_interior");
-        addCheckbox("Landscaping", "req_landscaping");
-        addCheckbox("Turnkey", "req_turnkey");
-        addCheckbox("Other", "req_other");
+        const ownerDetails = [
+            ["Full Name", formData.owner_name || ''],
+            ["Address (Office)", formData.owner_office_address || ''],
+            ["Address (Res.)", formData.owner_res_address || ''],
+            ["Phone (Office)", formData.owner_office_phone || ''],
+            ["Phone (Res.)", formData.owner_res_phone || ''],
+            ["Owner's Project Representative Name", formData.owner_rep_name || ''],
+            ["Address (Office)", formData.owner_rep_office_address || ''],
+            ["Address (Res.)", formData.owner_rep_res_address || ''],
+            ["Phone (Office)", formData.owner_rep_office_phone || ''],
+            ["Phone (Res.)", formData.owner_rep_res_phone || ''],
+        ];
+        addSection("About Owner", ownerDetails);
         
-        y += 5;
-        // Continue for all other sections...
-        
+        const aboutProjectDetails = [
+            ["Address", formData.project_about_address || ''],
+            ["Project Reqt.", [
+                `[${formData.req_architectural ? '✓' : ' '}] Architectural Designing`,
+                `[${formData.req_interior ? '✓' : ' '}] Interior Decoration`,
+                `[${formData.req_landscaping ? '✓' : ' '}] Landscaping`,
+                `[${formData.req_turnkey ? '✓' : ' '}] Turnkey`,
+                `[${formData.req_other ? '✓' : ' '}] Other`
+            ].join('  ')],
+            ["Project Type", `[${formData.type_commercial ? '✓' : ' '}] Commercial  [${formData.type_residential ? '✓' : ' '}] Residential`],
+            ["Project Status", [
+                `[${formData.status_new ? '✓' : ' '}] New`,
+                `[${formData.status_addition ? '✓' : ' '}] Addition`,
+                `[${formData.status_rehab ? '✓' : ' '}] Rehabilitation/Renovation`
+            ].join('  ')],
+            ["Project Area", formData.project_area || ''],
+            ["Special Requirements of Project", formData.project_special_reqs || ''],
+            ["Project's Cost", [
+                `[${formData.cost_architectural ? '✓' : ' '}] Architectural Designing`,
+                `[${formData.cost_interior ? '✓' : ' '}] Interior Decoration`,
+                `[${formData.cost_landscaping ? '✓' : ' '}] Landscaping`,
+                `[${formData.cost_construction ? '✓' : ' '}] Construction`,
+                `[${formData.cost_turnkey ? '✓' : ' '}] Turnkey`,
+                `[${formData.cost_other ? '✓' : ' '}] Other`,
+            ].join('  ')],
+            ["First Information about Project", formData.date_first_info || ''],
+            ["First Meeting", formData.date_first_meeting || ''],
+            ["First Working on Project", formData.date_first_working || ''],
+            ["First Proposal", `Start: ${formData.date_proposal1_start || ''}  Completion: ${formData.date_proposal1_completion || ''}`],
+            ["Second Proposal", `Start: ${formData.date_proposal2_start || ''}  Completion: ${formData.date_proposal2_completion || ''}`],
+            ["Working on Finalized Proposal", formData.date_final_proposal || ''],
+            ["Revised Presentation", formData.date_revised_presentation || ''],
+            ["Quotation", formData.date_quotation || ''],
+            ["Drawings", `Start: ${formData.date_drawings_start || ''}  Completion: ${formData.date_drawings_completion || ''}`],
+            ["Other Major Projects Milestone Dates", formData.date_other_milestones || ''],
+        ];
+        addSection("About Project", aboutProjectDetails);
+
+        const providedByOwnerDetails = [
+            [`[${formData.provided_program ? '✓' : ' '}] Program`, ''],
+            [`[${formData.provided_schedule ? '✓' : ' '}] Suggested Schedule`, ''],
+            [`[${formData.provided_legal ? '✓' : ' '}] Legal Site Description & Other Concerned Documents`, ''],
+            [`[${formData.provided_survey ? '✓' : ' '}] Land Survey Report`, ''],
+            [`[${formData.provided_geo ? '✓' : ' '}] Geo-Technical, Tests and Other Site Information`, ''],
+            [`[${formData.provided_drawings ? '✓' : ' '}] Existing Structure's Drawings`, ''],
+        ];
+        addSection("Provided by Owner", providedByOwnerDetails);
+
+        const compensationDetails = [
+            ["Initial Payment", formData.comp_initial_payment || ''],
+            ["Basic Services (% of Cost of Construction)", formData.comp_basic_services_pct || ''],
+            [{content: "Breakdown by Phase:", styles: {fontStyle: 'bold', halign: 'center', fillColor: '#f8f9fa'}} , ''],
+            ["Schematic Design %", formData.comp_schematic_pct || ''],
+            ["Design Development %", formData.comp_dev_pct || ''],
+            ["Construction Doc's %", formData.comp_docs_pct || ''],
+            ["Bidding / Negotiation %", formData.comp_bidding_pct || ''],
+            ["Construction Contract Admin %", formData.comp_admin_pct || ''],
+            ["Additional Services (Multiple of Times Direct Cost to Architect)", formData.comp_additional_services || ''],
+            ["Reimbursable Expenses", formData.comp_reimbursable || ''],
+            ["Other", formData.comp_other || ''],
+            ["Special Confidential Requirements", formData.comp_confidential || ''],
+        ];
+        addSection("Compensation", compensationDetails);
+
+        addSection("Miscellaneous Notes", [[formData.misc_notes || '']]);
+
         doc.save("requirement-performa.pdf");
         toast({ title: 'Download Started', description: 'PDF is being generated.' });
     };
@@ -407,3 +429,4 @@ const RequirementPerformaPage = () => {
 };
 
 export default RequirementPerformaPage;
+
