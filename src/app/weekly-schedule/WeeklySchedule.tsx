@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown, PlusCircle, Trash2, CheckCircle, XCircle, CircleDotDashed, ChevronDown, ChevronRight, ClipboardList } from 'lucide-react';
+import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown, PlusCircle, Trash2, CheckCircle, XCircle, CircleDotDashed, ChevronDown, ChevronRight, ClipboardList, ChevronsUpDown, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
@@ -33,6 +33,8 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 const initialDailyEntry = () => ({ details: '', percentage: 0 });
 
@@ -85,6 +87,7 @@ const WeeklySchedule = () => {
   const [openProjects, setOpenProjects] = useState<Record<number, boolean>>({});
   const [scheduleType, setScheduleType] = useState<'weekly' | 'monthly'>('weekly');
   const [assignedTasks, setAssignedTasks] = useState<Task[]>([]);
+  const [designationPopoverOpen, setDesignationPopoverOpen] = useState(false);
   
   const searchParams = useSearchParams();
   const employeeQueryParam = searchParams.get('employee') || 'MUJAHID';
@@ -377,7 +380,7 @@ const WeeklySchedule = () => {
         
         const totalProgress = calculateTotalProgress(schedule.dailyEntries);
         doc.setFontSize(12);
-        const projectTitle = `Project ${projIndex + 1}: ${schedule.projectName} (Status: ${schedule.status}) - ${totalProgress}% Complete`;
+        const projectTitle = `Project ${projIndex + 1}: ${schedule.projectName} (Status: ${schedule.status})`;
         y = addText(projectTitle, 14, y);
         y+=2;
         
@@ -561,7 +564,56 @@ const WeeklySchedule = () => {
                 <Avatar className="h-16 w-16"><AvatarImage src={`https://picsum.photos/seed/${employeeName}/200`} alt={employeeName} /><AvatarFallback>{employeeName?.charAt(0) || 'E'}</AvatarFallback></Avatar>
                 <div>
                     {isEditing ? (<Input value={employeeName} onChange={(e) => setEmployeeName(e.target.value)} className="text-2xl font-bold p-0 border-0 h-auto focus-visible:ring-0" placeholder="Employee Name"/>) : (<CardTitle className="text-2xl font-bold">{employeeName}</CardTitle>)}
-                    {isEditing ? (<Select onValueChange={setDesignation} value={designation}><SelectTrigger className="w-[280px] mt-1"><SelectValue placeholder="Select a designation" /></SelectTrigger><SelectContent>{designations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent></Select>) : (<p className="text-muted-foreground">{designation || 'No designation'}</p>)}
+                    {isEditing ? (
+                        <Popover open={designationPopoverOpen} onOpenChange={setDesignationPopoverOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={designationPopoverOpen}
+                              className="w-[280px] justify-between mt-1"
+                            >
+                              {designation || "Select or type a designation..."}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[280px] p-0">
+                            <Command>
+                              <CommandInput 
+                                placeholder="Search designation..."
+                                onValueChange={(search) => {
+                                    if (!designations.some(d => d.toLowerCase() === search.toLowerCase())) {
+                                        setDesignation(search);
+                                    }
+                                }}
+                              />
+                               <CommandList>
+                                <CommandEmpty>No designation found. Type to create.</CommandEmpty>
+                                <CommandGroup>
+                                  {designations.map((d) => (
+                                    <CommandItem
+                                      key={d}
+                                      value={d}
+                                      onSelect={(currentValue) => {
+                                        setDesignation(currentValue === designation ? "" : currentValue)
+                                        setDesignationPopoverOpen(false)
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          designation === d ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {d}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                    ) : (<p className="text-muted-foreground">{designation || 'No designation'}</p>)}
                 </div>
             </div>
             <div className="flex flex-col items-start md:items-end gap-2 mt-4 md:mt-0">
