@@ -18,7 +18,7 @@ import { Edit, Save, Loader2, Download, ArrowLeft, Terminal, FileDown, PlusCircl
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
-import { doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, orderBy, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, orderBy, updateDoc, onSnapshot } from "firebase/firestore";
 import { useSearchParams } from 'next/navigation';
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -654,5 +654,3 @@ const WeeklySchedule = () => {
 };
 
 export default WeeklySchedule;
-
-    
