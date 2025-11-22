@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,10 +10,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth, useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
-import { collection, addDoc, serverTimestamp, getDocs } from 'firebase/firestore';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { Loader2, ArrowLeft, Check, ChevronsUpDown } from 'lucide-react';
 import Link from 'next/link';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
+
 
 const employeeList = [
     "M Waqas", "M Jabbar", "Rana Mujahid",
@@ -58,6 +62,7 @@ export default function AssignTaskPage() {
     const [startDate, setStartDate] = useState<Date | undefined>();
     const [endDate, setEndDate] = useState<Date | undefined>();
     const [isSaving, setIsSaving] = useState(false);
+    const [popoverOpen, setPopoverOpen] = useState(false);
 
     const { toast } = useToast();
     const { user } = useUser();
@@ -65,7 +70,6 @@ export default function AssignTaskPage() {
 
     const tasksCollectionRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
-        // All tasks are in one collection under the admin for now
         return collection(firestore, `users/${user.uid}/tasks`);
     }, [user, firestore]);
     
@@ -84,14 +88,22 @@ export default function AssignTaskPage() {
             employeeName,
             projectName,
             taskDescription,
-            startDate: startDate.toISOString().split('T')[0], // format as YYYY-MM-DD
-            endDate: endDate.toISOString().split('T')[0], // format as YYYY-MM-DD
+            startDate: startDate.toISOString().split('T')[0],
+            endDate: endDate.toISOString().split('T')[0],
             status: 'Assigned',
             assignedBy: user?.uid,
             createdAt: serverTimestamp(),
         };
 
         addDoc(tasksCollectionRef, taskData)
+          .then(() => {
+            toast({ title: 'Task Assigned!', description: `Task for ${projectName} has been assigned to ${employeeName}.` });
+            setEmployeeName('');
+            setProjectName('');
+            setTaskDescription('');
+            setStartDate(undefined);
+            setEndDate(undefined);
+          })
           .catch(async (serverError) => {
             const permissionError = new FirestorePermissionError({
                 path: tasksCollectionRef.path,
@@ -102,13 +114,6 @@ export default function AssignTaskPage() {
           })
           .finally(() => {
             setIsSaving(false);
-            toast({ title: 'Task Assigned!', description: `Task for ${projectName} has been assigned to ${employeeName}.` });
-            // Reset form
-            setEmployeeName('');
-            setProjectName('');
-            setTaskDescription('');
-            setStartDate(undefined);
-            setEndDate(undefined);
           });
     };
 
@@ -141,16 +146,54 @@ export default function AssignTaskPage() {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="project-name">Project Name</Label>
-                            <Select onValueChange={setProjectName} value={projectName}>
-                                <SelectTrigger id="project-name">
-                                    <SelectValue placeholder="Select a project" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {projectList.map(project => (
-                                        <SelectItem key={project} value={project}>{project}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={popoverOpen}
+                                  className="w-full justify-between"
+                                >
+                                  {projectName || "Select or type a project..."}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-full p-0">
+                                <Command>
+                                  <CommandInput 
+                                    placeholder="Search project or type to add..."
+                                    onValueChange={(search) => {
+                                        if (!projectList.some(p => p.toLowerCase() === search.toLowerCase())) {
+                                            setProjectName(search);
+                                        }
+                                    }}
+                                  />
+                                   <CommandList>
+                                    <CommandEmpty>No project found. Type to create a new one.</CommandEmpty>
+                                    <CommandGroup>
+                                      {projectList.map((project) => (
+                                        <CommandItem
+                                          key={project}
+                                          value={project}
+                                          onSelect={(currentValue) => {
+                                            setProjectName(currentValue === projectName ? "" : currentValue)
+                                            setPopoverOpen(false)
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              projectName === project ? "opacity-100" : "opacity-0"
+                                            )}
+                                          />
+                                          {project}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="task-description">Task Description</Label>
