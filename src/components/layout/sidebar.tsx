@@ -30,6 +30,7 @@ const projectFormsItems = [
   { href: '/save-record', icon: Save, label: 'Saved Records' },
   { href: '/assign-task', icon: FilePlus, label: 'Assign Task' },
   { href: '/bill-of-quantity', icon: FileText, label: 'Bill Of Quantity'},
+  { href: '/requirement-performa', icon: FileText, label: 'Requirement Performa' },
 ];
 
 const timelineItems = [
