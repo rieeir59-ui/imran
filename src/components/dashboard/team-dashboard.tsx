@@ -13,9 +13,9 @@ const teams = [
 ];
 
 const draftspersons = [
+    { name: "M Waqas", href: "/weekly-schedule?employee=M%20Waqas" },
+    { name: "M Jabbar", href: "/weekly-schedule?employee=M%20Jabbar" },
     { name: "Rana Mujahid", href: "/weekly-schedule?employee=Rana%20Mujahid" },
-    { name: "Waqas", href: "/weekly-schedule?employee=Waqas" },
-    { name: "Jabbar", href: "/weekly-schedule?employee=Jabbar" },
 ]
 
 const architects = [
