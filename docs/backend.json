@@ -426,7 +426,12 @@
           "type": "string",
           "description": "A detailed description of the task."
         },
-        "dueDate": {
+        "startDate": {
+          "type": "string",
+          "format": "date",
+          "description": "The date the task starts."
+        },
+        "endDate": {
           "type": "string",
           "format": "date",
           "description": "The date the task is due."
@@ -446,7 +451,7 @@
           "description": "The timestamp when the task was created."
         }
       },
-      "required": ["employeeName", "taskDescription", "dueDate", "status", "assignedBy", "createdAt"]
+      "required": ["employeeName", "taskDescription", "startDate", "endDate", "status", "assignedBy", "createdAt"]
     }
   },
   "auth": {

@@ -24,7 +24,8 @@ const employeeList = [
 export default function AssignTaskPage() {
     const [employeeName, setEmployeeName] = useState('');
     const [taskDescription, setTaskDescription] = useState('');
-    const [dueDate, setDueDate] = useState<Date | undefined>();
+    const [startDate, setStartDate] = useState<Date | undefined>();
+    const [endDate, setEndDate] = useState<Date | undefined>();
     const [isSaving, setIsSaving] = useState(false);
 
     const { toast } = useToast();
@@ -42,7 +43,7 @@ export default function AssignTaskPage() {
             toast({ variant: 'destructive', title: 'Error', description: 'Cannot assign task. User not authenticated.' });
             return;
         }
-        if (!employeeName || !taskDescription || !dueDate) {
+        if (!employeeName || !taskDescription || !startDate || !endDate) {
             toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out all fields.' });
             return;
         }
@@ -51,7 +52,8 @@ export default function AssignTaskPage() {
         const taskData = {
             employeeName,
             taskDescription,
-            dueDate: dueDate.toISOString().split('T')[0], // format as YYYY-MM-DD
+            startDate: startDate.toISOString().split('T')[0], // format as YYYY-MM-DD
+            endDate: endDate.toISOString().split('T')[0], // format as YYYY-MM-DD
             status: 'Assigned',
             assignedBy: user?.uid,
             createdAt: serverTimestamp(),
@@ -63,7 +65,8 @@ export default function AssignTaskPage() {
             // Reset form
             setEmployeeName('');
             setTaskDescription('');
-            setDueDate(undefined);
+            setStartDate(undefined);
+            setEndDate(undefined);
           })
           .catch(async (serverError) => {
             const permissionError = new FirestorePermissionError({
@@ -114,9 +117,15 @@ export default function AssignTaskPage() {
                                 placeholder="Enter a detailed description of the task..."
                             />
                         </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="due-date">Due Date</Label>
-                            <DatePicker date={dueDate} onDateChange={setDueDate} />
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="start-date">Start Date</Label>
+                                <DatePicker date={startDate} onDateChange={setStartDate} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="end-date">End Date</Label>
+                                <DatePicker date={endDate} onDateChange={setEndDate} />
+                            </div>
                         </div>
                         <Button onClick={handleAssignTask} disabled={isSaving} className="w-full">
                             {isSaving ? <Loader2 className="mr-2 animate-spin" /> : null}
