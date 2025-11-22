@@ -23,6 +23,7 @@ const mainMenuItems = [
 const projectFormsItems = [
   { href: '/projects', icon: FolderKanban, label: 'Project Information' },
   { href: '/predesign-assessment', icon: ClipboardCheck, label: 'Predesign Assessment' },
+  { href: '/project-checklist', icon: ClipboardCheck, label: 'Project Checklist' },
   { href: '/project-timeline', icon: GanttChart, label: 'Project Timeline' },
   { href: '/bank', icon: ScrollText, label: 'Bank Forms' },
   { href: '/weekly-schedule', icon: CalendarClock, label: 'Work Schedule' },
