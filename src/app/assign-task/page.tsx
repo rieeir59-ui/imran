@@ -33,10 +33,11 @@ export default function AssignTaskPage() {
 
     const tasksCollectionRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
+        // All tasks are in one collection under the admin for now
         return collection(firestore, `users/${user.uid}/tasks`);
     }, [user, firestore]);
     
-    const handleAssignTask = async () => {
+    const handleAssignTask = () => {
         if (!tasksCollectionRef) {
             toast({ variant: 'destructive', title: 'Error', description: 'Cannot assign task. User not authenticated.' });
             return;
@@ -56,23 +57,25 @@ export default function AssignTaskPage() {
             createdAt: serverTimestamp(),
         };
 
-        try {
-            await addDoc(tasksCollectionRef, taskData);
+        addDoc(tasksCollectionRef, taskData)
+          .then(() => {
             toast({ title: 'Task Assigned!', description: `Task has been assigned to ${employeeName}.` });
             // Reset form
             setEmployeeName('');
             setTaskDescription('');
             setDueDate(undefined);
-        } catch (serverError) {
-             const permissionError = new FirestorePermissionError({
+          })
+          .catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({
                 path: tasksCollectionRef.path,
                 operation: 'create',
                 requestResourceData: taskData,
             });
             errorEmitter.emit('permission-error', permissionError);
-        } finally {
+          })
+          .finally(() => {
             setIsSaving(false);
-        }
+          });
     };
 
     return (
@@ -125,5 +128,3 @@ export default function AssignTaskPage() {
         </main>
     );
 }
-
-    
