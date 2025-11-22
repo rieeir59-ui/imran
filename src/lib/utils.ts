@@ -162,10 +162,9 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
   y += 20;
 
   checklistCategories.forEach((categoryKey) => {
-    const mainSectionKey = `mainSection-${categoryKey.toLowerCase().replace(/ /g, '')}`;
+    const mainSectionKey = `mainSection-${categoryKey.toLowerCase()}`;
     const isMainSectionComplete = formData[mainSectionKey];
 
-    const categoryTitle = categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1);
     const subSections = initialChecklists[categoryKey];
 
     Object.keys(subSections).forEach((subTitle, subIndex) => {
@@ -178,7 +177,7 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
              doc.setFontSize(12);
              doc.setFont('helvetica', 'bold');
              doc.text(`${categoryKey.toUpperCase()}`, 14, y);
-             doc.text(isMainSectionComplete ? '[X]' : '[ ]', 180, y);
+             doc.text(isMainSectionComplete ? '[✓]' : '[ ]', 180, y);
              y += 7;
              doc.setFont('helvetica', 'normal');
         }
@@ -196,11 +195,10 @@ export function exportChecklistToPdf(formData: any, checklistCategories: string[
                 doc.addPage();
                 y = 15;
             }
-            const itemKey = item.toLowerCase().replace(/[^a-z0-9]/g, '');
-            const checkboxName = `${categoryKey}-${itemKey}`;
-            const isChecked = formData[checkboxName];
+            const itemKey = `${categoryKey}-${subTitle}-${item}`.toLowerCase().replace(/[^a-z0-9-]/g, '');
+            const isChecked = formData[itemKey];
 
-            doc.text(isChecked ? '[X]' : '[ ]', 20, y);
+            doc.text(isChecked ? '[✓]' : '[ ]', 20, y);
             doc.text(item, 28, y);
             y += 6;
         });
@@ -248,7 +246,7 @@ export function exportServicesToPdf(formData: any, serviceSections: any) {
                 }
                 const itemKey = `${mainTitle}-${subTitle}-${item}`.toLowerCase().replace(/[^a-z0-9-]/g, '');
                 const isChecked = formData[itemKey];
-                doc.text(isChecked ? '[X]' : '[ ]', 22, y);
+                doc.text(isChecked ? '[✓]' : '[ ]', 22, y);
                 doc.text(item, 30, y);
                 y += 6;
             });

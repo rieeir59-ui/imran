@@ -269,7 +269,7 @@ const Section1 = React.memo(() => {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [formData, setFormData] = useState({});
+    const [formData, setFormData] = useState<any>({});
 
     const { toast } = useToast();
     const firestore = useFirestore();
@@ -377,20 +377,19 @@ const Section1 = React.memo(() => {
               <Subtitle>{subTitle}</Subtitle>
               <div className="space-y-2">
                 {items.map((item, index) => {
-                  const itemKey = item.toLowerCase().replace(/[^a-z0-9]/g, '');
-                  const checkboxName = `${mainCategory}-${itemKey}`;
+                  const itemKey = `${mainCategory}-${subTitle}-${item}`.toLowerCase().replace(/[^a-z0-9-]/g, '');
                   return (
                     <div key={index} className="flex items-center gap-2">
                       {isEditing ? (
                         <Checkbox
-                          id={checkboxName}
-                          checked={(formData as any)[checkboxName] || false}
-                          onCheckedChange={(checked) => handleCheckboxChange(checkboxName, checked)}
+                          id={itemKey}
+                          checked={(formData as any)[itemKey] || false}
+                          onCheckedChange={(checked) => handleCheckboxChange(itemKey, checked)}
                         />
                       ) : (
-                        <span className="mr-2">{(formData as any)[checkboxName] ? '✅' : '🔲'}</span>
+                        <span className="mr-2">{(formData as any)[itemKey] ? '✓' : '🔲'}</span>
                       )}
-                      <label htmlFor={checkboxName} className="flex-grow">{item}</label>
+                      <label htmlFor={itemKey} className="flex-grow">{item}</label>
                     </div>
                   );
                 })}
@@ -593,7 +592,7 @@ const Section4 = React.memo(() => {
                 y = 15;
             }
             doc.setFontSize(10);
-            doc.text(`${value ? '[X]' : '[ ]'} ${label}`, options.xOffset || 14, y);
+            doc.text(`${value ? '[✓]' : '[ ]'} ${label}`, options.xOffset || 14, y);
             if (!options.xOffset) {
                  y += 7;
             }
@@ -1288,7 +1287,7 @@ const Section6 = React.memo(() => {
                     onCheckedChange={(checked) => handleCheckboxChange(key, checked)}
                 />
             ) : (
-                <span>{formData[key] ? '✅' : '🔲'}</span>
+                <span>{formData[key] ? '✓' : '🔲'}</span>
             )}
             <Label htmlFor={key} className="font-normal">{item}</Label>
         </div>
@@ -1684,7 +1683,7 @@ const Section8 = React.memo(() => {
              if (y > 280) { doc.addPage(); y = 15; }
              let line = `${label}: `;
              options.forEach(opt => {
-                 line += `   ${(value && value.toLowerCase() === opt.toLowerCase()) ? '[X]' : '[ ]'} ${opt}`;
+                 line += `   ${(value && value.toLowerCase() === opt.toLowerCase()) ? '[✓]' : '[ ]'} ${opt}`;
              });
              addText(line, 14, y);
              y += 7;
@@ -1692,7 +1691,7 @@ const Section8 = React.memo(() => {
 
         const addCheckbox = (label: string, name: string) => {
              if (y > 280) { doc.addPage(); y = 15; }
-             addText(`${formData[name] ? '[X]' : '[ ]'} ${label}`, 14, y);
+             addText(`${formData[name] ? '[✓]' : '[ ]'} ${label}`, 14, y);
              y += 7;
         }
         
