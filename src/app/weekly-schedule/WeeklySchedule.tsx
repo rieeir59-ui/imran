@@ -383,9 +383,7 @@ const WeeklySchedule = () => {
             styles: { fontSize: 9, cellPadding: 2 },
         });
         
-        y = (doc as any).lastAutoTable.finalY + 2;
-
-        y += 10;
+        y = (doc as any).lastAutoTable.finalY + 10;
     });
 
     if (remarks) {
@@ -643,37 +641,6 @@ const WeeklySchedule = () => {
                                 <TableCell>{getStatusIcon(schedule.status)}</TableCell>
                                 {isEditing && <TableCell><Button variant="ghost" size="icon" onClick={() => removeRow(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>}
                             </TableRow>
-                            {openProjects[schedule.id] && (
-                                <TableRow>
-                                    <TableCell colSpan={isEditing ? 9 : 8} className="p-0">
-                                        <div className="p-4 bg-muted/50">
-                                            <h4 className="font-semibold mb-2">Daily Plan</h4>
-                                            {getNumberOfDays(schedule.startDate, schedule.endDate) > 0 ? (
-                                                <Table>
-                                                    <TableHeader>
-                                                        <TableRow>
-                                                            <TableHead className='w-24'>Day</TableHead>
-                                                            <TableHead>Details</TableHead>
-                                                            <TableHead className='w-48'>Progress</TableHead>
-                                                        </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {schedule.dailyEntries.map((daily, dayIndex) => (
-                                                            <TableRow key={dayIndex}>
-                                                                <TableCell>Day {dayIndex + 1}</TableCell>
-                                                                <TableCell>{renderCell(daily.details, (val) => handleDailyEntryChange(index, dayIndex, 'details', val), "What was done today?")}</TableCell>
-                                                                <TableCell>{renderPercentageCell(daily.percentage, (val) => handleDailyEntryChange(index, dayIndex, 'percentage', val))}</TableCell>
-                                                            </TableRow>
-                                                        ))}
-                                                    </TableBody>
-                                                </Table>
-                                            ) : (
-                                                <p className="text-sm text-muted-foreground p-4 text-center">Set a start and end date to create a daily plan.</p>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            )}
                         </Fragment>
                     ))}
               </TableBody>
