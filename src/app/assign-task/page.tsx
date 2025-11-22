@@ -22,8 +22,33 @@ const employeeList = [
 ];
 
 const projectList = [
-    "Project 1", "Project 2", "Project 3", "Project 4", "Project 5", 
-    "Project 6", "Project 7", "Project 8", "Project 9", "Project 10"
+    "1. HBL PRESTIGE JOHER TOWN",
+    "2. 68-A HBL Prestige & RBC CITY HOUSING SIALKOT -II",
+    "3. HBL DHA GUJRANWALA",
+    "4. HBL CITY HOUSING SIALKOT",
+    "5. HBL ASLAM MOR LAYYAH",
+    "6. HBL Hellan Branch 1375 Gujranwala",
+    "7. HBL Jaranwala Road",
+    "8. HBL Poona branch",
+    "9. HBL Raya Branch Lahore",
+    "10. HBL Chowk Azam Branch 0847 Multan",
+    "11. HBL Islamic prestige",
+    "12. FBL-Finance Center-Gulberg LHR",
+    "13. FBL-Finance Center-F10 Islamabad",
+    "14. FBL JEHANGIRA NOWSHERA KPK",
+    "15. FBL IBB Chinar Road Mansehra KPK",
+    "16. FBL Jameel Chowk Peshawar",
+    "17. FBL Jhangi Branch Gujranwala",
+    "18. FBL Ferozpur Road Lahore",
+    "19. FBL Park View City Lahore",
+    "20. FBL CPC-KHARIAN-BRANCH",
+    "21. FBL Bhowana.",
+    "22. FBL Peer-Wadahi Road Branch Rawalpindi",
+    "23. FBL Gulbahar, Peshawer",
+    "24. FBL Guest House DHA Phase-4 Lahore",
+    "25. FBL Shahdara",
+    "26. FBL RHQ (LG + GF)",
+    "27. FBL RHQ (Basment)",
 ];
 
 export default function AssignTaskPage() {
