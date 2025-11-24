@@ -37,6 +37,7 @@ const projectFormsItems = [
   { href: '/assign-task', icon: FilePlus, label: 'Assign Task' },
   { href: '/bill-of-quantity', icon: FileText, label: 'Bill Of Quantity'},
   { href: '/requirement-performa', icon: FileText, label: 'Requirement Performa' },
+  { href: '/site-survey', icon: FileText, label: 'Site Survey' },
 ];
 
 const timelineItems = [
