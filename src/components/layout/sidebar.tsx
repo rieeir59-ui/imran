@@ -74,7 +74,7 @@ export function AppSidebar() {
       <SidebarHeader>
         <a href="/" className="flex items-center gap-2">
           <BriefcaseBusiness className="size-8 text-sidebar-primary" />
-          {state === 'expanded' && <h1 className="text-xl font-semibold">Isbah Dashboard</h1>}
+          {state === 'expanded' && <h1 className="text-xl font-semibold gradient-text">Isbah Dashboard</h1>}
         </a>
         <SidebarInput placeholder="Search..." />
       </SidebarHeader>
