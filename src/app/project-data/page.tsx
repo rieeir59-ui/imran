@@ -16,6 +16,14 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Download, Edit, Save, Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 const PROJECT_DATA_DOC_ID = "main-project-data";
 
