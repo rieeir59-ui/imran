@@ -19,7 +19,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 
 const teams = [
-  { name: 'Architect', icon: Paintbrush, href: '/schedules-by-designation#Architect' },
+  { name: 'Architects', icon: Paintbrush, href: '/schedules-by-designation#Architect' },
   { name: 'Draftsperson', icon: DraftingCompass, href: '/schedules-by-designation#Draftsperson' },
   { name: '3D Visualizer', icon: Camera, href: '/schedules-by-designation#3D-Visualizer' },
   { name: 'BOQ Manager', icon: Calculator, href: '/schedules-by-designation#Quantity-Surveyor' },
@@ -132,7 +132,7 @@ export default function TeamDashboard() {
       </Card>
       <Card className="lg:col-span-2">
         <CardHeader>
-          <CardTitle>Architect Team</CardTitle>
+          <CardTitle>Architects Team</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {architects.map(renderEmployeeCard)}
