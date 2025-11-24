@@ -10,6 +10,7 @@ import {
   SidebarMenuButton,
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarInput,
 } from "@/components/ui/sidebar";
 import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -72,6 +73,7 @@ export function AppSidebar() {
           <BriefcaseBusiness className="size-8 text-sidebar-primary" />
           {state === 'expanded' && <h1 className="text-xl font-semibold">Isbah Dashboard</h1>}
         </a>
+        <SidebarInput placeholder="Search..." />
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
