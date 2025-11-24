@@ -11,6 +11,7 @@ import {
   User,
   CheckCircle,
   XCircle,
+  Construction,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
@@ -112,7 +113,7 @@ export default function TeamDashboard() {
         <CardHeader>
           <CardTitle>Team Dashboard</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
           {teams.map((team) => (
             <Link href={team.href} key={team.name}>
               <div className="p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full">
@@ -121,6 +122,12 @@ export default function TeamDashboard() {
               </div>
             </Link>
           ))}
+           <Link href="/schedules-by-designation#Draftsperson" key="Draftsperson">
+              <div className="p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full">
+                <Construction className="h-8 w-8 text-primary mb-2" />
+                <span className="font-semibold text-center">Draftperson</span>
+              </div>
+            </Link>
         </CardContent>
       </Card>
       <Card className="lg:col-span-2">
