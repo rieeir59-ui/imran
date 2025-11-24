@@ -1,7 +1,7 @@
 
 
 'use client';
-
+import { useState, useEffect } from 'react';
 import { 
   Sidebar, 
   SidebarHeader,
@@ -57,6 +57,11 @@ const timelineItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const pathname = usePathname();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   
   const renderMenuItems = (items: typeof mainMenuItems) => {
     return items.map((item) => (
@@ -74,7 +79,7 @@ export function AppSidebar() {
       <SidebarHeader>
         <a href="/" className="flex items-center gap-2">
           <BriefcaseBusiness className="size-8 text-sidebar-primary" />
-          {state === 'expanded' && <h1 className="text-xl font-semibold gradient-text">Isbah Dashboard</h1>}
+          {isClient && state === 'expanded' && <h1 className="text-xl font-semibold gradient-text">Isbah Dashboard</h1>}
         </a>
         <SidebarInput placeholder="Search..." />
       </SidebarHeader>
