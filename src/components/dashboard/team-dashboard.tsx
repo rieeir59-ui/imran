@@ -11,7 +11,7 @@ import {
   User,
   CheckCircle,
   XCircle,
-  Construction,
+  Code,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
@@ -24,6 +24,7 @@ const teams = [
   { name: '3D Visualizer', icon: Camera, href: '/schedules-by-designation#3D-Visualizer' },
   { name: 'BOQ Manager', icon: Calculator, href: '/schedules-by-designation#Quantity-Surveyor' },
   { name: 'Finance', icon: Banknote, href: '/schedules-by-designation#Finance-Manager' },
+  { name: 'Software Engineers', icon: Code, href: '/schedules-by-designation#Software-Engineers' },
 ];
 
 const allEmployees = [
@@ -46,11 +47,11 @@ const draftspersons = [
 ];
 
 const architects = [
-  { name: 'Sobia Razzak', href: '/weekly-schedule?employee=Sobia%20Razzak' },
-  { name: 'M Asad', href: '/weekly-schedule?employee=M%20Asad' },
-  { name: 'M Haseeb', href: '/weekly-schedule?employee=M%20Haseeb' },
-  { name: 'M Waleed Zahid', href: '/weekly-schedule?employee=M%20Waleed%20Zahid' },
-  { name: 'M Khizar', href: '/weekly-schedule?employee=M%20Khizar' },
+    { name: 'Sobia Razzak', href: '/weekly-schedule?employee=Sobia%20Razzak' },
+    { name: 'M Asad', href: '/weekly-schedule?employee=M%20Asad' },
+    { name: 'M Haseeb', href: '/weekly-schedule?employee=M%20Haseeb' },
+    { name: 'M Waleed Zahid', href: '/weekly-schedule?employee=M%20Waleed%20Zahid' },
+    { name: 'M Khizar', href: '/weekly-schedule?employee=M%20Khizar' },
 ];
 
 const visualizers = [{ name: 'M Mohsin', href: '/weekly-schedule?employee=M%20Mohsin' }];
@@ -58,6 +59,11 @@ const visualizers = [{ name: 'M Mohsin', href: '/weekly-schedule?employee=M%20Mo
 const boqManagers = [{ name: 'M Nouman', href: '/weekly-schedule?employee=M%20Nouman' }];
 
 const financeManagers = [{ name: 'M Waqas', href: '/weekly-schedule?employee=M%20Waqas' }];
+
+const softwareEngineers = [
+    { name: 'Imran Abbas', href: '/weekly-schedule?employee=Imran%20Abbas' },
+    { name: 'Rabiya Eman', href: '/weekly-schedule?employee=Rabiya%20Eman' },
+];
 
 interface Task {
   employeeName: string;
@@ -122,12 +128,6 @@ export default function TeamDashboard() {
               </div>
             </Link>
           ))}
-           <Link href="/schedules-by-designation#Draftsperson" key="Draftsperson">
-              <div className="p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full">
-                <Construction className="h-8 w-8 text-primary mb-2" />
-                <span className="font-semibold text-center">Draftperson</span>
-              </div>
-            </Link>
         </CardContent>
       </Card>
       <Card className="lg:col-span-2">
@@ -144,6 +144,14 @@ export default function TeamDashboard() {
         </CardHeader>
         <CardContent className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {draftspersons.map(renderEmployeeCard)}
+        </CardContent>
+      </Card>
+       <Card className="lg:col-span-3">
+        <CardHeader>
+          <CardTitle>Software Engineering Team</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {softwareEngineers.map(renderEmployeeCard)}
         </CardContent>
       </Card>
       <Card className="lg:col-span-2">
