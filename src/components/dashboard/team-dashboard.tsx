@@ -12,19 +12,20 @@ import {
   CheckCircle,
   XCircle,
   Code,
+  PlusCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
+import { Button } from '../ui/button';
 
 const teams = [
-  { name: 'Architects', icon: Paintbrush, href: '/schedules-by-designation#Architect' },
-  { name: 'Draftsperson', icon: DraftingCompass, href: '/schedules-by-designation#Draftsperson' },
+  { name: 'Architects', icon: Paintbrush, href: '/schedules-by-designation#Architects' },
+  { name: 'Software Engineers', icon: Code, href: '/schedules-by-designation#Software-Engineers' },
   { name: '3D Visualizer', icon: Camera, href: '/schedules-by-designation#3D-Visualizer' },
   { name: 'BOQ Manager', icon: Calculator, href: '/schedules-by-designation#Quantity-Surveyor' },
   { name: 'Finance', icon: Banknote, href: '/schedules-by-designation#Finance-Manager' },
-  { name: 'Software Engineers', icon: Code, href: '/schedules-by-designation#Software-Engineers' },
 ];
 
 const allEmployees = [
@@ -113,6 +114,15 @@ export default function TeamDashboard() {
     );
   };
 
+  const AddEmployeeCard = ({href}: {href: string}) => (
+    <Link href={href} passHref>
+        <div className="p-4 rounded-lg border-dashed border-2 hover:bg-accent hover:border-solid transition-colors flex flex-col items-center justify-center h-full">
+            <PlusCircle className="h-8 w-8 text-muted-foreground mb-2" />
+            <span className="text-muted-foreground text-center">Add Employee</span>
+        </div>
+    </Link>
+  );
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <Card className="lg:col-span-3">
@@ -130,52 +140,49 @@ export default function TeamDashboard() {
           ))}
         </CardContent>
       </Card>
-      <Card className="lg:col-span-2">
+      <Card className="lg:col-span-3">
         <CardHeader>
           <CardTitle>Architects Team</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {architects.map(renderEmployeeCard)}
+          <AddEmployeeCard href="/weekly-schedule?designation=Architect" />
         </CardContent>
       </Card>
-      <Card>
+      <Card className="lg:col-span-3">
         <CardHeader>
-          <CardTitle>Drafting Team</CardTitle>
+          <CardTitle>Software Engineering Team</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          {draftspersons.map(renderEmployeeCard)}
+        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {softwareEngineers.map(renderEmployeeCard)}
+           <AddEmployeeCard href="/weekly-schedule?designation=Software%20Engineer" />
         </CardContent>
       </Card>
        <Card className="lg:col-span-3">
         <CardHeader>
-          <CardTitle>Software Engineering Team</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {softwareEngineers.map(renderEmployeeCard)}
-        </CardContent>
-      </Card>
-      <Card className="lg:col-span-2">
-        <CardHeader>
           <CardTitle>3D Visualizer Team</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {visualizers.map(renderEmployeeCard)}
+          <AddEmployeeCard href="/weekly-schedule?designation=3D%20Visualizer" />
         </CardContent>
       </Card>
-      <Card>
+      <Card className="lg:col-span-3">
         <CardHeader>
           <CardTitle>BOQ Team</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {boqManagers.map(renderEmployeeCard)}
+           <AddEmployeeCard href="/weekly-schedule?designation=Quantity%20Surveyor" />
         </CardContent>
       </Card>
-      <Card>
+      <Card className="lg:col-span-3">
         <CardHeader>
           <CardTitle>Finance Team</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {financeManagers.map(renderEmployeeCard)}
+          <AddEmployeeCard href="/weekly-schedule?designation=Finance%20Manager" />
         </CardContent>
       </Card>
     </div>

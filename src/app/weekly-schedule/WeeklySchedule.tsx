@@ -90,7 +90,9 @@ const WeeklySchedule = () => {
   const [designationPopoverOpen, setDesignationPopoverOpen] = useState(false);
   
   const searchParams = useSearchParams();
-  const employeeQueryParam = searchParams.get('employee') || 'MUJAHID';
+  const employeeQueryParam = searchParams.get('employee') || 'New Employee';
+  const designationQueryParam = searchParams.get('designation') || '';
+
   const [employeeName, setEmployeeName] = useState(employeeQueryParam);
   const [schedules, setSchedules] = useState(() => initialScheduleData(employeeName));
 
@@ -104,6 +106,7 @@ const WeeklySchedule = () => {
   useEffect(() => {
     const id = searchParams.get('id');
     const employee = searchParams.get('employee');
+    const des = searchParams.get('designation');
     
     if (id) {
         setScheduleId(id);
@@ -112,7 +115,7 @@ const WeeklySchedule = () => {
         const newEmployeeName = employee || 'New Employee';
         setEmployeeName(newEmployeeName);
         setSchedules(initialScheduleData(newEmployeeName));
-        setDesignation('');
+        setDesignation(des || '');
     }
   }, [searchParams]);
 
@@ -652,4 +655,3 @@ const WeeklySchedule = () => {
 };
 
 export default WeeklySchedule;
-
