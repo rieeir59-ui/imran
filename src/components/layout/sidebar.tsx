@@ -11,7 +11,7 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
 } from "@/components/ui/sidebar";
-import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText } from 'lucide-react';
+import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 
@@ -24,6 +24,7 @@ const projectFormsItems = [
   { href: '/projects', icon: FolderKanban, label: 'Project Information' },
   { href: '/predesign-assessment', icon: ClipboardCheck, label: 'Predesign Assessment' },
   { href: '/project-checklist', icon: ClipboardCheck, label: 'Project Checklist' },
+  { href: '/project-data', icon: Database, label: 'Project Data' },
   { href: '/project-timeline', icon: GanttChart, label: 'Project Timeline' },
   { href: '/bank', icon: ScrollText, label: 'Bank Forms' },
   { href: '/weekly-schedule', icon: CalendarClock, label: 'Work Schedule' },
