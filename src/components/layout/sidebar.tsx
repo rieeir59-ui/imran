@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { 
@@ -27,6 +28,7 @@ const projectFormsItems = [
   { href: '/project-checklist', icon: ClipboardCheck, label: 'Project Checklist' },
   { href: '/project-data', icon: Database, label: 'Project Data' },
   { href: '/project-agreement', icon: FileText, label: 'Project Agreement' },
+  { href: '/list-of-services', icon: ScrollText, label: 'List of Services' },
   { href: '/project-timeline', icon: GanttChart, label: 'Project Timeline' },
   { href: '/bank', icon: ScrollText, label: 'Bank Forms' },
   { href: '/weekly-schedule', icon: CalendarClock, label: 'Work Schedule' },
