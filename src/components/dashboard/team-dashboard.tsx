@@ -26,6 +26,7 @@ const teams = [
   { name: '3D Visualizer', icon: Camera, href: '/schedules-by-designation#3D-Visualizer' },
   { name: 'BOQ Manager', icon: Calculator, href: '/schedules-by-designation#Quantity-Surveyor' },
   { name: 'Finance', icon: Banknote, href: '/schedules-by-designation#Finance-Manager' },
+  { name: 'Draftspersons', icon: DraftingCompass, href: '/schedules-by-designation#Draftspersons' },
 ];
 
 const allEmployees = [
@@ -42,28 +43,28 @@ const allEmployees = [
 ];
 
 const draftspersons = [
-  { name: 'M Mujahid', href: '/weekly-schedule?employee=M%20Mujahid' },
-  { name: 'M Jabbar', href: '/weekly-schedule?employee=M%20Jabbar' },
-  { name: 'M Waqas', href: '/weekly-schedule?employee=M%20Waqas' },
+  { name: 'M Mujahid', href: '/weekly-schedule?employee=M%20Mujahid&designation=Draftsperson' },
+  { name: 'M Jabbar', href: '/weekly-schedule?employee=M%20Jabbar&designation=Draftsperson' },
+  { name: 'M Waqas', href: '/weekly-schedule?employee=M%20Waqas&designation=Draftsperson' },
 ];
 
 const architects = [
-    { name: 'Sobia Razzak', href: '/weekly-schedule?employee=Sobia%20Razzak' },
-    { name: 'M Asad', href: '/weekly-schedule?employee=M%20Asad' },
-    { name: 'M Haseeb', href: '/weekly-schedule?employee=M%20Haseeb' },
-    { name: 'M Waleed Zahid', href: '/weekly-schedule?employee=M%20Waleed%20Zahid' },
-    { name: 'M Khizar', href: '/weekly-schedule?employee=M%20Khizar' },
+    { name: 'Sobia Razzak', href: '/weekly-schedule?employee=Sobia%20Razzak&designation=Architect' },
+    { name: 'M Asad', href: '/weekly-schedule?employee=M%20Asad&designation=Architect' },
+    { name: 'M Haseeb', href: '/weekly-schedule?employee=M%20Haseeb&designation=Architect' },
+    { name: 'M Waleed Zahid', href: '/weekly-schedule?employee=M%20Waleed%20Zahid&designation=Architect' },
+    { name: 'M Khizar', href: '/weekly-schedule?employee=M%20Khizar&designation=Architect' },
 ];
 
-const visualizers = [{ name: 'M Mohsin', href: '/weekly-schedule?employee=M%20Mohsin' }];
+const visualizers = [{ name: 'M Mohsin', href: '/weekly-schedule?employee=M%20Mohsin&designation=3D%20Visualizer' }];
 
-const boqManagers = [{ name: 'M Nouman', href: '/weekly-schedule?employee=M%20Nouman' }];
+const boqManagers = [{ name: 'M Nouman', href: '/weekly-schedule?employee=M%20Nouman&designation=Quantity%20Surveyor' }];
 
-const financeManagers = [{ name: 'M Waqas', href: '/weekly-schedule?employee=M%20Waqas' }];
+const financeManagers = [{ name: 'M Waqas', href: '/weekly-schedule?employee=M%20Waqas&designation=Finance%20Manager' }];
 
 const softwareEngineers = [
-    { name: 'Imran Abbas', href: '/weekly-schedule?employee=Imran%20Abbas' },
-    { name: 'Rabiya Eman', href: '/weekly-schedule?employee=Rabiya%20Eman' },
+    { name: 'Imran Abbas', href: '/weekly-schedule?employee=Imran%20Abbas&designation=Software%20Engineer' },
+    { name: 'Rabiya Eman', href: '/weekly-schedule?employee=Rabiya%20Eman&designation=Software%20Engineer' },
 ];
 
 interface Task {
