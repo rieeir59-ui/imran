@@ -15,8 +15,14 @@ import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { jsPDF } from "jspdf";
+import autoTable from 'jspdf-autotable';
 
 const DEFAULT_ASSESSMENT_ID = "main-predesign-assessment";
+
+const humanFactors = ["Activities", "Behavior", "Objectives / Goals", "Organization", "Hierarchy", "Groups", "Positions", "Classifications", "Leadership", "Characteristics (Demographics)", "Social Forces", "Political Forces", "Interactions", "Communication", "Relationships", "Transfer of materials", "Policies / Codes", "Attitudes / Values", "Customs / Beliefs", "Perceptions", "Preferences", "Qualities", "Comfort", "Productivity", "Efficiency", "Security", "Safety", "Access", "Privacy", "Territory", "Control", "Convenience"];
+const physicalFactors = ["Location", "Region", "Locality", "Community", "Vicinity", "Site Conditions", "Building / Facility", "Envelope", "Structure", "Systems", "Engineering", "Communications", "Lighting", "Security", "Space", "Types", "Dimensions", "Relationship", "Equipment / Furnishings", "Materials / Finishes", "Support Services", "Storage", "Parking", "Access", "Waste removal", "Utilities (water, sewage, telephone)", "Operations", "Environment", "Comfort", "Visual", "Acoustical", "Energy Use / Conservation", "Durability / Flexibility"];
+const externalFactors = ["Legal Restrictions", "(Codes / Standards/Regulations)", "Building", "Land use", "Systems", "Energy", "Environment", "Materials", "Safety", "Solar access", "Topography", "Climate", "Ecology", "Resource Availability", "Energy Supplies / Prices", "Conventional", "Solar", "Alternatives", "Economy", "Financing", "Time", "Schedule", "Deadlines", "Operations", "Costs / Budget", "Construction", "Material", "Services", "Operations", "Cost / Benefits"];
+
 
 const Section = ({ title, items, formData, handleInputChange, isEditing }: { title: string, items: string[], formData: any, handleInputChange: any, isEditing: boolean }) => (
     <div className="flex-1 space-y-2">
@@ -131,23 +137,80 @@ export default function PredesignAssessmentPage() {
     const handleDownloadPdf = () => {
         const doc = new jsPDF();
         let y = 15;
-
+    
         doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
         doc.text("Predesign Assessment", 105, y, { align: 'center' });
         y += 10;
-        
+    
         doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
         doc.text(`Project (Name, Address): ${formData.project_name_address || ''}`, 14, y);
         doc.text(`Architect: ${formData.architect || ''}`, 105, y);
         y += 5;
         doc.text(`Architects Project No: ${formData.architect_project_no || ''}`, 14, y);
         doc.text(`Project Date: ${formData.project_date || ''}`, 105, y);
-        y += 10;
-
-        // ... logic to draw sections
+        y += 15;
+    
+        const sections = [
+            { title: "Human Factors", items: humanFactors },
+            { title: "Physical Factors", items: physicalFactors },
+            { title: "External Factors", items: externalFactors },
+        ];
+    
+        const allItems = sections.flatMap(section => 
+            section.items.map((item, index) => {
+                const sectionPrefix = section.title.toLowerCase().replace(/ /g, '-');
+                const fieldName = item.toLowerCase().replace(/ \/ /g, '-').replace(/ /g, '-');
+                const uniqueFieldName = `${sectionPrefix}-${fieldName}-${index}`;
+                return { 
+                    section: section.title, 
+                    item, 
+                    value: formData[uniqueFieldName] || '' 
+                };
+            })
+        );
+    
+        const body = allItems.map(row => [row.item, row.value]);
+    
+        let lastSection = '';
+        const groupedBody = allItems.reduce((acc, row) => {
+            if (row.section !== lastSection) {
+                acc.push([{ content: row.section, colSpan: 2, styles: { fontStyle: 'bold', fillColor: [22, 163, 74], textColor: [255,255,255] } }]);
+                lastSection = row.section;
+            }
+            acc.push([row.item, row.value]);
+            return acc;
+        }, [] as any[]);
+    
+        autoTable(doc, {
+            startY: y,
+            head: [['Factor', 'Value']],
+            body: groupedBody,
+            theme: 'grid',
+            headStyles: {
+                fillColor: [41, 128, 185],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+            },
+            columnStyles: {
+                0: { cellWidth: 80 },
+                1: { cellWidth: 'auto' },
+            },
+            didParseCell: (data) => {
+                if (data.row.raw.length === 1 && typeof data.row.raw[0] === 'object') {
+                    data.cell.styles.halign = 'left';
+                }
+            }
+        });
         
         doc.save("predesign-assessment.pdf");
+        toast({
+            title: "Download Started",
+            description: "Your PDF is being generated."
+        })
     };
+    
 
     if (isUserLoading || isLoading) {
         return (
@@ -174,10 +237,6 @@ export default function PredesignAssessmentPage() {
          </main>
        )
     }
-
-    const humanFactors = ["Activities", "Behavior", "Objectives / Goals", "Organization", "Hierarchy", "Groups", "Positions", "Classifications", "Leadership", "Characteristics (Demographics)", "Social Forces", "Political Forces", "Interactions", "Communication", "Relationships", "Transfer of materials", "Policies / Codes", "Attitudes / Values", "Customs / Beliefs", "Perceptions", "Preferences", "Qualities", "Comfort", "Productivity", "Efficiency", "Security", "Safety", "Access", "Privacy", "Territory", "Control", "Convenience"];
-    const physicalFactors = ["Location", "Region", "Locality", "Community", "Vicinity", "Site Conditions", "Building / Facility", "Envelope", "Structure", "Systems", "Engineering", "Communications", "Lighting", "Security", "Space", "Types", "Dimensions", "Relationship", "Equipment / Furnishings", "Materials / Finishes", "Support Services", "Storage", "Parking", "Access", "Waste removal", "Utilities (water, sewage, telephone)", "Operations", "Environment", "Comfort", "Visual", "Acoustical", "Energy Use / Conservation", "Durability / Flexibility"];
-    const externalFactors = ["Legal Restrictions", "(Codes / Standards/Regulations)", "Building", "Land use", "Systems", "Energy", "Environment", "Materials", "Safety", "Solar access", "Topography", "Climate", "Ecology", "Resource Availability", "Energy Supplies / Prices", "Conventional", "Solar", "Alternatives", "Economy", "Financing", "Time", "Schedule", "Deadlines", "Operations", "Costs / Budget", "Construction", "Material", "Services", "Operations", "Cost / Benefits"];
 
     const renderHeaderInput = (name: string, placeholder = "") => {
         const value = formData[name] || '';
