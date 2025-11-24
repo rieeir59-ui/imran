@@ -29,6 +29,8 @@ const projectFormsItems = [
   { href: '/project-data', icon: Database, label: 'Project Data' },
   { href: '/project-agreement', icon: FileText, label: 'Project Agreement' },
   { href: '/list-of-services', icon: ScrollText, label: 'List of Services' },
+  { href: '/site-survey', icon: FileText, label: 'Site Survey' },
+  { href: '/proposal-request', icon: FileText, label: 'Proposal Request' },
   { href: '/project-timeline', icon: GanttChart, label: 'Project Timeline' },
   { href: '/bank', icon: ScrollText, label: 'Bank Forms' },
   { href: '/weekly-schedule', icon: CalendarClock, label: 'Work Schedule' },
@@ -37,7 +39,6 @@ const projectFormsItems = [
   { href: '/assign-task', icon: FilePlus, label: 'Assign Task' },
   { href: '/bill-of-quantity', icon: FileText, label: 'Bill Of Quantity'},
   { href: '/requirement-performa', icon: FileText, label: 'Requirement Performa' },
-  { href: '/site-survey', icon: FileText, label: 'Site Survey' },
 ];
 
 const timelineItems = [
