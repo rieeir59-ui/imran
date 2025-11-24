@@ -40,17 +40,17 @@ const allEmployees = [
 ];
 
 const draftspersons = [
-  { name: 'M Waqas', href: '/weekly-schedule?employee=M%20Waqas' },
+  { name: 'M Mujahid', href: '/weekly-schedule?employee=M%20Mujahid' },
   { name: 'M Jabbar', href: '/weekly-schedule?employee=M%20Jabbar' },
-  { name: 'Rana Mujahid', href: '/weekly-schedule?employee=Rana%20Mujahid' },
+  { name: 'M Waqas', href: '/weekly-schedule?employee=M%20Waqas' },
 ];
 
 const architects = [
-  { name: 'Architect Sobia', href: '/weekly-schedule?employee=Architect%20Sobia' },
-  { name: 'Architect Luqman Aslam', href: '/weekly-schedule?employee=Architect%20Luqman%20Aslam' },
-  { name: 'Architect Asad', href: '/weekly-schedule?employee=Architect%20Asad' },
-  { name: 'Architect Haseeb', href: '/weekly-schedule?employee=Architect%20Haseeb' },
-  { name: 'Architect Khizar', href: '/weekly-schedule?employee=Architect%20Khizar' },
+  { name: 'Sobia Razzak', href: '/weekly-schedule?employee=Sobia%20Razzak' },
+  { name: 'M Asad', href: '/weekly-schedule?employee=M%20Asad' },
+  { name: 'M Haseeb', href: '/weekly-schedule?employee=M%20Haseeb' },
+  { name: 'M Waleed Zahid', href: '/weekly-schedule?employee=M%20Waleed%20Zahid' },
+  { name: 'M Khizar', href: '/weekly-schedule?employee=M%20Khizar' },
 ];
 
 const visualizers = [{ name: 'M Mohsin', href: '/weekly-schedule?employee=M%20Mohsin' }];
