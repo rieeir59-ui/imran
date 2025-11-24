@@ -19,6 +19,7 @@ import { useState, useEffect } from 'react';
 
 const teams = [
   { name: 'Architect', icon: Paintbrush, href: '/schedules-by-designation#Architect' },
+  { name: 'Draftsperson', icon: DraftingCompass, href: '/schedules-by-designation#Draftsperson' },
   { name: '3D Visualizer', icon: Camera, href: '/schedules-by-designation#3D-Visualizer' },
   { name: 'BOQ Manager', icon: Calculator, href: '/schedules-by-designation#Quantity-Surveyor' },
   { name: 'Finance', icon: Banknote, href: '/schedules-by-designation#Finance-Manager' },
@@ -111,7 +112,7 @@ export default function TeamDashboard() {
         <CardHeader>
           <CardTitle>Team Dashboard</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           {teams.map((team) => (
             <Link href={team.href} key={team.name}>
               <div className="p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full">
