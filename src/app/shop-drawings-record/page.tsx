@@ -66,6 +66,7 @@ export default function ShopDrawingsRecordPage() {
     
     useEffect(() => {
         if (!docRef) {
+            setFormData({ records: Array(12).fill(null).map(() => initialRecord()) });
             setIsLoading(false);
             return;
         }
@@ -73,11 +74,11 @@ export default function ShopDrawingsRecordPage() {
         getDoc(docRef).then(docSnap => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                const records = data.records?.map((r: any) => ({
+                 const records = data.records && data.records.length > 0 ? data.records.map((r: any) => ({
                     ...initialRecord(),
                     ...r,
-                    subRecords: r.subRecords?.map((sr: any) => ({...initialSubRecord(), ...sr})) || Array(3).fill(null).map(() => initialSubRecord())
-                })) || Array(12).fill(null).map(() => initialRecord());
+                    subRecords: r.subRecords && r.subRecords.length > 0 ? r.subRecords.map((sr: any) => ({...initialSubRecord(), ...sr})) : Array(3).fill(null).map(() => initialSubRecord())
+                })) : Array(12).fill(null).map(() => initialRecord());
 
                 setFormData({ ...data, records });
             } else {
@@ -284,5 +285,3 @@ export default function ShopDrawingsRecordPage() {
     </main>
     )
 };
-
-    
