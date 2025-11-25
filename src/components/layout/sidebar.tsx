@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState, useEffect } from 'react';
 import { 
@@ -12,7 +13,7 @@ import {
   SidebarGroupLabel,
   SidebarInput,
 } from "@/components/ui/sidebar";
-import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList } from 'lucide-react';
+import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList, MessageSquare, BookUser } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 
@@ -40,6 +41,9 @@ const projectFormsItems = [
   { href: '/assign-task', icon: FilePlus, label: 'Assign Task' },
   { href: '/bill-of-quantity', icon: FileText, label: 'Bill Of Quantity'},
   { href: '/requirement-performa', icon: FileText, label: 'Requirement Performa' },
+  { href: '/field-report', icon: BookUser, label: 'Field Report' },
+  { href: '/transmittal-letter', icon: MessageSquare, label: 'Transmittal Letter' },
+  { href: '/minutes-of-meeting', icon: ClipboardCheck, label: 'Minutes of Meeting' },
 ];
 
 const timelineItems = [
