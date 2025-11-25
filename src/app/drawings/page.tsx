@@ -98,6 +98,14 @@ const DrawingsList = React.memo(({ formData, handleInputChange, isEditing, setFo
             <Table>
                 <TableHeader><TableRow><TableHead>Serial No.</TableHead><TableHead>Drawings Title</TableHead><TableHead>Starting Date</TableHead><TableHead>Completion Date</TableHead><TableHead>Remarks</TableHead></TableRow></TableHeader>
                 <TableBody>
+                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Introduction (AR-01-AR-10)</TableCell></TableRow>
+                    {formData.introduction?.map((item: any, i: number) => renderDrawingRow(item, 'introduction', i, `AR-${String(i + 1).padStart(2, '0')}`))}
+                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Working Layout Drawings (AR-11-AR-20)</TableCell></TableRow>
+                    {formData.workingLayoutDrawings?.map((item: any, i: number) => renderDrawingRow(item, 'workingLayoutDrawings', i, `AR-${i + 11}`))}
+                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Elevation & Section Drawings (AR-21-AR-40)</TableCell></TableRow>
+                    {formData.elevationAndSectionDrawings?.map((item: any, i: number) => renderDrawingRow(item, 'elevationAndSectionDrawings', i, `AR-${i + 21}`))}
+                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Doors & Windows Drawings (AR-41-AR-80)</TableCell></TableRow>
+                    {formData.doorsAndWindowsDrawings?.map((item: any, i: number) => renderDrawingRow(item, 'doorsAndWindowsDrawings', i, `AR-${i + 41}`))}
                     <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Architectural Drawings</TableCell></TableRow>
                     {formData.architecturalDrawings?.map((item: any, i: number) => renderDrawingRow(item, 'architecturalDrawings', i, i + 1))}
                     <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Details</TableCell></TableRow>
@@ -121,6 +129,10 @@ export default function DrawingsPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [formData, setFormData] = useState<any>({
+        introduction: [],
+        workingLayoutDrawings: [],
+        elevationAndSectionDrawings: [],
+        doorsAndWindowsDrawings: [],
         architecturalDrawings: [],
         details: [],
         structureDrawings: [],
@@ -138,6 +150,10 @@ export default function DrawingsPage() {
     }, [user, firestore]);
     
     const initialDrawingData = {
+        introduction: ["General Notes and Conditions", "Survey Plan", "Site Setting Drawings", "", "", "", "", "ing", "", ""].map(title => ({title, startDate: '', endDate: '', remarks: ''})),
+        workingLayoutDrawings: ["Master Working Layout Plan", "Working Layout Plan(Basement Floor)", "Working Layout Plan(Ground Floor)", "Working Layout Plan(First Floor)", "Working Layout Plan(MezzanineFloor)", "Working Layout Plan(Roof Top)", "", "", "", ""].map(title => ({title, startDate: '', endDate: '', remarks: ''})),
+        elevationAndSectionDrawings: ["Front elevation", "Right Side Elevation", "Rear Side Elevation", "Left Side Elevation", "Section A-A", "Section B-B", "Section C-C", "Section D-D", "Parapet & Slab Sectional Details", "Lift Section", "Elevation Blow up Detail", "Exterior Wall Cladding Detail", "", "", "", "", "", "", "", ""].map(title => ({title, startDate: '', endDate: '', remarks: ''})),
+        doorsAndWindowsDrawings: ["Door & Window Schedule Plan (ground Floor)", "Door & Window Schedule Plan (First Floor)", "Door & Window Schedule Plan (Basement Floor)", "Door & Window Schedule Plan (Roof Top)", "Door Elevation Schedule", "Windows Elevation Schedule", "Door & Frame Details", "Window Sill and Header Details", "Window Blow up Detail", "Door Blow Up Detail", ...Array(30).fill('')].map(title => ({title, startDate: '', endDate: '', remarks: ''})),
         architecturalDrawings: ["Submission Drawings", "Demolition Plan", "Excavation Plan", "Site Plan", "Basement Plan", "Ground Floor Plan", "First Floor Plan", "Second Floor Plan", "Roof Plan", "Section A", "Section B", "Section C", "Elevation 1", "Elevation 2", "Elevation 3", "Elevation 4"].map(title => ({title, startDate: '', endDate: '', remarks: ''})),
         details: ["Baths Details", "Doors Details", "Floors Details", "Entrance Detail", "Stair Detail"].map(title => ({title, startDate: '', endDate: '', remarks: ''})),
         structureDrawings: ["Foundation Plan", "Floor Farming Plan", "Ground Floor Slab", "First Floor Slab", "Second Floor Slab", "Wall elev & slab sec.", "Wall sec & details", "Stairs", "Schedules", "Space of Concrete"].map(title => ({title, startDate: '', endDate: '', remarks: ''})),
@@ -153,6 +169,10 @@ export default function DrawingsPage() {
                 const data = docSnap.data();
                 setFormData({
                     ...data,
+                    introduction: data.introduction || initialDrawingData.introduction,
+                    workingLayoutDrawings: data.workingLayoutDrawings || initialDrawingData.workingLayoutDrawings,
+                    elevationAndSectionDrawings: data.elevationAndSectionDrawings || initialDrawingData.elevationAndSectionDrawings,
+                    doorsAndWindowsDrawings: data.doorsAndWindowsDrawings || initialDrawingData.doorsAndWindowsDrawings,
                     architecturalDrawings: data.architecturalDrawings || initialDrawingData.architecturalDrawings,
                     details: data.details || initialDrawingData.details,
                     structureDrawings: data.structureDrawings || initialDrawingData.structureDrawings,
