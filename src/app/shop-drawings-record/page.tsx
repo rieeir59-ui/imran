@@ -17,6 +17,32 @@ import Link from 'next/link';
 
 const SHOP_DRAWING_RECORD_DOC_ID = 'shop-drawing-record';
 
+const initialSubRecord = () => ({
+    dateRecord: '',
+    title: '',
+    contractorSubcontractorTrade: '',
+    recordNo: '',
+    referredTo: '',
+    dateSent: '',
+    numCopies: '',
+    dateRetdReferred: '',
+    actionApproved: false,
+    actionApprovedAsNoted: false,
+    actionReviseResubmit: false,
+    actionNotApproved: false,
+    actionDateRetd: '',
+    copiesToContractor: false,
+    copiesToOwner: false,
+    copiesToField: false,
+    copiesToFile: false,
+});
+
+const initialRecord = () => ({
+    specSectionNo: '',
+    shopDrawingOrSampleNo: '',
+    subRecords: [initialSubRecord(), initialSubRecord(), initialSubRecord()],
+});
+
 const FormField = ({ label, children }: { label: string, children: React.ReactNode }) => (
     <div className="flex flex-col space-y-1">
         <span className="font-semibold text-sm">{label}:</span>
@@ -28,7 +54,7 @@ export default function ShopDrawingsRecordPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [formData, setFormData] = useState<any>({ records: Array(12).fill({}).map((_, i) => ({ id: i + 1 })) });
+    const [formData, setFormData] = useState<any>({ records: Array(12).fill(null).map(() => initialRecord()) });
     
     const { toast } = useToast();
     const firestore = useFirestore();
@@ -44,26 +70,33 @@ export default function ShopDrawingsRecordPage() {
         setIsLoading(true);
         getDoc(docRef).then(docSnap => {
             if (docSnap.exists()) {
-                setFormData(docSnap.data());
+                const data = docSnap.data();
+                const records = data.records?.map((r: any) => ({
+                    ...initialRecord(),
+                    ...r,
+                    subRecords: r.subRecords?.map((sr: any) => ({...initialSubRecord(), ...sr})) || [initialSubRecord(), initialSubRecord(), initialSubRecord()]
+                })) || Array(12).fill(null).map(() => initialRecord());
+
+                setFormData({ ...data, records });
+            } else {
+                setFormData({ records: Array(12).fill(null).map(() => initialRecord()) });
             }
         }).finally(() => setIsLoading(false));
     }, [docRef]);
-    
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
-        const { name, value } = e.target;
-        if(index !== undefined) {
-            const newRecords = [...formData.records];
-            newRecords[index] = {...newRecords[index], [name]: value};
-            setFormData(prev => ({...prev, records: newRecords}));
-        } else {
-            setFormData(prev => ({...prev, [name]: value}));
-        }
-    };
 
-     const handleCheckboxChange = (index: number, name: string, checked: boolean | 'indeterminate') => {
-        if (!isEditing || typeof checked !== 'boolean') return;
+    const handleHeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData(prev => ({...prev, [e.target.name]: e.target.value}));
+    };
+    
+    const handleRecordChange = (recordIndex: number, field: string, value: string) => {
         const newRecords = [...formData.records];
-        newRecords[index] = {...newRecords[index], [name]: checked};
+        newRecords[recordIndex] = {...newRecords[recordIndex], [field]: value};
+        setFormData(prev => ({...prev, records: newRecords}));
+    };
+    
+    const handleSubRecordChange = (recordIndex: number, subIndex: number, field: string, value: any) => {
+        const newRecords = [...formData.records];
+        newRecords[recordIndex].subRecords[subIndex] = {...newRecords[recordIndex].subRecords[subIndex], [field]: value};
         setFormData(prev => ({...prev, records: newRecords}));
     };
 
@@ -77,56 +110,57 @@ export default function ShopDrawingsRecordPage() {
     };
 
     const handleDownload = () => {
-        const doc = new jsPDF();
+        const doc = new jsPDF({ orientation: 'landscape' });
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text("SHOP DRAWINGS & SAMPLE RECORD", 105, 15, { align: 'center'});
+        doc.text("SHOP DRAWING AND SAMPLE RECORD", 148, 15, { align: 'center'});
 
-        const head = [['#', 'Record Date', 'Referred To', 'Date Sent', '# Copies', "Date Ret'd.", 'Action', 'Copies To', 'Title']];
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Project: ${formData.project || ''}`, 14, 25);
+        doc.text(`Architect's Project No: ${formData.architectProjectNo || ''}`, 200, 25);
+        doc.text(`Contractor: ${formData.contractor || ''}`, 14, 30);
         
-        const body = formData.records.map((record: any, i: number) => {
-            const actionItems = [];
-            if(record.approved) actionItems.push("Approved");
-            if(record.approvedAsNoted) actionItems.push("App'd as Noted");
-            if(record.reviseResubmit) actionItems.push("Revise & Resubmit");
-            if(record.notApproved) actionItems.push("Not Approved");
+        let startY = 35;
+        formData.records.forEach((record: any, recordIndex: number) => {
+            if (recordIndex > 0 && recordIndex % 4 === 0) { // Add new page for every 4 records to avoid overflow
+                doc.addPage();
+                startY = 15;
+            }
 
-            const copyItems = [];
-            if(record.copyContractor) copyItems.push("Contractor");
-            if(record.copyOwner) copyItems.push("Owner");
-            if(record.copyField) copyItems.push("Field");
-            if(record.copyFile) copyItems.push("File");
-
-            return [
-                i + 1,
-                record.recordDate || '',
-                record.referredTo || '',
-                record.dateSent || '',
-                record.numCopies || '',
-                record.dateRetd || '',
-                actionItems.join('\n'),
-                copyItems.join('\n'),
-                record.title || '',
-            ];
+            autoTable(doc, {
+                startY,
+                html: `#record-table-${recordIndex}`,
+                theme: 'grid',
+                styles: { fontSize: 6, cellPadding: 1, lineColor: 0, lineWidth: 0.1 },
+                didDrawPage: (data) => {
+                    startY = data.cursor?.y || 15;
+                }
+            });
+            startY = (doc as any).lastAutoTable.finalY;
         });
 
-        autoTable(doc, {
-            startY: 25,
-            head,
-            body,
-            theme: 'grid',
-            headStyles: { fillColor: [30, 41, 59] },
-            styles: { fontSize: 8 }
-        })
 
         doc.save("shop-drawings-record.pdf");
         toast({ title: "Download Started", description: "PDF generation is in progress." });
     };
 
-    const renderField = (name: string, index?: number) => {
-        const value = index !== undefined ? formData.records[index]?.[name] : formData[name];
-        return isEditing ? <Input name={name} value={value || ''} onChange={(e) => handleInputChange(e, index)} /> : <div className="border-b min-h-[24px] py-1">{value || ''}</div>
-    }
+    const renderHeaderInput = (name: string, placeholder?: string) => isEditing ? 
+        <Input name={name} value={formData[name] || ''} onChange={handleHeaderChange} placeholder={placeholder} /> :
+        <span className="p-1">{formData[name] || ''}</span>;
+
+    const renderRecordInput = (recordIndex: number, field: string, placeholder?: string) => isEditing ? 
+        <Input name={field} value={formData.records[recordIndex][field] || ''} onChange={e => handleRecordChange(recordIndex, field, e.target.value)} placeholder={placeholder} className="h-6 text-xs" /> : 
+        <span className="p-1 text-xs">{formData.records[recordIndex][field] || ''}</span>;
+
+    const renderSubRecordInput = (recordIndex: number, subIndex: number, field: string, placeholder?: string) => isEditing ?
+        <Input name={field} value={formData.records[recordIndex].subRecords[subIndex][field] || ''} onChange={e => handleSubRecordChange(recordIndex, subIndex, field, e.target.value)} placeholder={placeholder} className="h-6 text-xs" /> :
+        <span className="p-1 text-xs">{formData.records[recordIndex].subRecords[subIndex][field] || ''}</span>;
+        
+    const renderSubRecordCheckbox = (recordIndex: number, subIndex: number, field: string) => isEditing ?
+        <Checkbox checked={formData.records[recordIndex].subRecords[subIndex][field]} onCheckedChange={c => handleSubRecordChange(recordIndex, subIndex, field, c)} /> :
+        (formData.records[recordIndex].subRecords[subIndex][field] ? '✓' : ' ');
+
 
     if (isLoading) {
       return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
@@ -141,8 +175,8 @@ export default function ShopDrawingsRecordPage() {
         </div>
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-center font-bold text-2xl">
-                    SHOP DRAWINGS & SAMPLE RECORD
+                <CardTitle className="text-center font-bold text-xl">
+                    SHOP DRAWING AND SAMPLE RECORD
                 </CardTitle>
                  <div className="flex gap-2">
                     <Button onClick={handleDownload} variant="outline"><Download /> PDF</Button>
@@ -156,62 +190,79 @@ export default function ShopDrawingsRecordPage() {
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-4">
-                        <FormField label="Project:">{renderField('project')}</FormField>
-                        <FormField label="Architect's Project No:">{renderField('architectProjectNo')}</FormField>
-                        <FormField label="Contractor:">{renderField('contractor')}</FormField>
-                        <FormField label="Date:">{renderField('date')}</FormField>
-                    </div>
-                    <div className="border-t border-b py-2 my-2">
-                        <FormField label="Spec. Section No.:">{renderField('specSectionNo')}</FormField>
-                        <FormField label="Shop Drawing or Sample Drawing No.:">{renderField('drawingNo')}</FormField>
-                    </div>
-                    <div className="grid grid-cols-3 gap-x-8 gap-y-2 mb-4">
-                        <FormField label="Contractor:">{renderField('contractor2')}</FormField>
-                        <FormField label="Subcontractor:">{renderField('subcontractor')}</FormField>
-                        <FormField label="Trade:">{renderField('trade')}</FormField>
-                    </div>
-                    <Table>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-4">
+                    <FormField label="Project:">{renderHeaderInput('project')}</FormField>
+                    <FormField label="Architect's Project No:">{renderHeaderInput('architectProjectNo')}</FormField>
+                    <FormField label="Contractor:">{renderHeaderInput('contractor')}</FormField>
+                </div>
+                <div className="space-y-2">
+                    {formData.records.map((record: any, recordIndex: number) => (
+                    <Table key={recordIndex} id={`record-table-${recordIndex}`} className="border">
                         <TableHeader>
                             <TableRow>
-                                <TableHead>#</TableHead>
-                                <TableHead>Record Date</TableHead>
-                                <TableHead>Referred To</TableHead>
+                                <TableHead className="w-20">Date Record</TableHead>
+                                <TableHead className="w-48">
+                                    Spec. Section No.
+                                    {renderRecordInput(recordIndex, 'specSectionNo')}
+                                    Shop Drawing or Sample Drawing No.
+                                    {renderRecordInput(recordIndex, 'shopDrawingOrSampleNo')}
+                                    Title
+                                </TableHead>
+                                <TableHead className="w-24">Contractor Subcontractor Trade</TableHead>
+                                <TableHead className="w-16"># Record</TableHead>
+                                <TableHead colSpan={4} className="text-center">Referred</TableHead>
+                                <TableHead colSpan={2} className="text-center">Action</TableHead>
+                                <TableHead colSpan={4} className="text-center">Copies To</TableHead>
+                            </TableRow>
+                            <TableRow>
+                                <TableHead></TableHead>
+                                <TableHead></TableHead>
+                                <TableHead></TableHead>
+                                <TableHead></TableHead>
+                                <TableHead>To</TableHead>
                                 <TableHead>Date Sent</TableHead>
                                 <TableHead># Copies</TableHead>
                                 <TableHead>Date Ret'd.</TableHead>
-                                <TableHead>Action</TableHead>
-                                <TableHead>Copies To</TableHead>
-                                <TableHead>Title</TableHead>
+                                <TableHead className="w-48">
+                                    <div className="flex items-center gap-1"><Checkbox disabled/> Approved</div>
+                                    <div className="flex items-center gap-1"><Checkbox disabled/> App'd as Noted</div>
+                                    <div className="flex items-center gap-1"><Checkbox disabled/> Revise & Resubmit</div>
+                                    <div className="flex items-center gap-1"><Checkbox disabled/> Not Approved</div>
+                                </TableHead>
+                                <TableHead>Date Ret'd.</TableHead>
+                                <TableHead><Checkbox disabled/> Contractor</TableHead>
+                                <TableHead><Checkbox disabled/> Owner</TableHead>
+                                <TableHead><Checkbox disabled/> Field</TableHead>
+                                <TableHead><Checkbox disabled/> File</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {formData.records.map((record: any, i: number) => (
-                                <TableRow key={record.id}>
-                                    <TableCell>{i + 1}</TableCell>
-                                    <TableCell>{renderField('recordDate', i)}</TableCell>
-                                    <TableCell>{renderField('referredTo', i)}</TableCell>
-                                    <TableCell>{renderField('dateSent', i)}</TableCell>
-                                    <TableCell>{renderField('numCopies', i)}</TableCell>
-                                    <TableCell>{renderField('dateRetd', i)}</TableCell>
-                                    <TableCell className="space-y-1 text-xs">
-                                        <div className="flex items-center gap-1"><Checkbox id={`a${i}`} checked={record.approved} onCheckedChange={(c) => handleCheckboxChange(i, 'approved', c)} disabled={!isEditing}/> Approved</div>
-                                        <div className="flex items-center gap-1"><Checkbox id={`an${i}`} checked={record.approvedAsNoted} onCheckedChange={(c) => handleCheckboxChange(i, 'approvedAsNoted', c)} disabled={!isEditing}/> App'd as Noted</div>
-                                        <div className="flex items-center gap-1"><Checkbox id={`rr${i}`} checked={record.reviseResubmit} onCheckedChange={(c) => handleCheckboxChange(i, 'reviseResubmit', c)} disabled={!isEditing}/> Revise & Resubmit</div>
-                                        <div className="flex items-center gap-1"><Checkbox id={`na${i}`} checked={record.notApproved} onCheckedChange={(c) => handleCheckboxChange(i, 'notApproved', c)} disabled={!isEditing}/> Not Approved</div>
-                                    </TableCell>
-                                    <TableCell className="space-y-1 text-xs">
-                                        <div className="flex items-center gap-1"><Checkbox id={`co${i}`} checked={record.copyContractor} onCheckedChange={(c) => handleCheckboxChange(i, 'copyContractor', c)} disabled={!isEditing}/> Contractor</div>
-                                        <div className="flex items-center gap-1"><Checkbox id={`ow${i}`} checked={record.copyOwner} onCheckedChange={(c) => handleCheckboxChange(i, 'copyOwner', c)} disabled={!isEditing}/> Owner</div>
-                                        <div className="flex items-center gap-1"><Checkbox id={`fi${i}`} checked={record.copyField} onCheckedChange={(c) => handleCheckboxChange(i, 'copyField', c)} disabled={!isEditing}/> Field</div>
-                                        <div className="flex items-center gap-1"><Checkbox id={`f${i}`} checked={record.copyFile} onCheckedChange={(c) => handleCheckboxChange(i, 'copyFile', c)} disabled={!isEditing}/> File</div>
-                                    </TableCell>
-                                    <TableCell>{renderField('title', i)}</TableCell>
-                                </TableRow>
+                            {record.subRecords.map((subRecord: any, subIndex: number) => (
+                            <TableRow key={subIndex}>
+                                <TableCell>{renderSubRecordInput(recordIndex, subIndex, 'dateRecord')}</TableCell>
+                                <TableCell>{renderSubRecordInput(recordIndex, subIndex, 'title')}</TableCell>
+                                <TableCell>{renderSubRecordInput(recordIndex, subIndex, 'contractorSubcontractorTrade')}</TableCell>
+                                <TableCell>{renderSubRecordInput(recordIndex, subIndex, 'recordNo')}</TableCell>
+                                <TableCell>{renderSubRecordInput(recordIndex, subIndex, 'referredTo')}</TableCell>
+                                <TableCell>{renderSubRecordInput(recordIndex, subIndex, 'dateSent')}</TableCell>
+                                <TableCell>{renderSubRecordInput(recordIndex, subIndex, 'numCopies')}</TableCell>
+                                <TableCell>{renderSubRecordInput(recordIndex, subIndex, 'dateRetdReferred')}</TableCell>
+                                <TableCell>
+                                    {renderSubRecordCheckbox(recordIndex, subIndex, 'actionApproved')}
+                                    {renderSubRecordCheckbox(recordIndex, subIndex, 'actionApprovedAsNoted')}
+                                    {renderSubRecordCheckbox(recordIndex, subIndex, 'actionReviseResubmit')}
+                                    {renderSubRecordCheckbox(recordIndex, subIndex, 'actionNotApproved')}
+                                </TableCell>
+                                <TableCell>{renderSubRecordInput(recordIndex, subIndex, 'actionDateRetd')}</TableCell>
+                                <TableCell>{renderSubRecordCheckbox(recordIndex, subIndex, 'copiesToContractor')}</TableCell>
+                                <TableCell>{renderSubRecordCheckbox(recordIndex, subIndex, 'copiesToOwner')}</TableCell>
+                                <TableCell>{renderSubRecordCheckbox(recordIndex, subIndex, 'copiesToField')}</TableCell>
+                                <TableCell>{renderSubRecordCheckbox(recordIndex, subIndex, 'copiesToFile')}</TableCell>
+                            </TableRow>
                             ))}
                         </TableBody>
                     </Table>
+                    ))}
                 </div>
             </CardContent>
         </Card>
