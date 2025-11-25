@@ -17,6 +17,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const TRANSMITTAL_LETTER_DOC_ID = 'transmittal-letter';
 
@@ -240,6 +241,12 @@ export default function TransmittalLetterPage() {
                         </div>
                          <Separator />
                          <p className="text-center text-xs text-muted-foreground">101, Y-Block, Commercial, Defence, Lahore, Pakistan. 92-42-35692789-90 92-42-35692791 info@isbahhassan.com www.isbahhassan.com</p>
+                    </div>
+                    <div className="flex justify-end mt-4">
+                         <Button onClick={handleSave} disabled={isSaving} className={`${isEditing ? '' : 'hidden'}`}>
+                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                        </Button>
+                        <Button onClick={() => setIsEditing(!isEditing)} className={`${isEditing ? 'hidden' : ''}`}><Edit/> Edit</Button>
                     </div>
                 </CardContent>
             </Card>
