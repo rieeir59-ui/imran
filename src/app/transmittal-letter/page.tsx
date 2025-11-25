@@ -100,7 +100,7 @@ export default function TransmittalLetterPage() {
             y += 6;
             doc.setFontSize(8);
             doc.setFont('helvetica', 'normal');
-            doc.text("ARCHITECTS - ENGINEERS - REAL ESTATE - CONTRACTORS - DEVELOPERS", 105, y, { align: 'center' });
+            doc.text("ARCHITECTS - ENGINEERS - CONSTRUCTIONS", 105, y, { align: 'center' });
             y += 4;
             doc.setLineWidth(0.5);
             doc.line(14, y, 196, y);
@@ -276,7 +276,7 @@ export default function TransmittalLetterPage() {
             <Card>
                 <CardHeader className="flex flex-col items-center justify-between">
                     <CardTitle className="text-2xl">ISBAH HASSAN & ASSOCIATES</CardTitle>
-                    <p className="text-sm text-muted-foreground">ARCHITECTS - ENGINEERS - REAL ESTATE - CONTRACTORS - DEVELOPERS</p>
+                    <p className="text-sm text-muted-foreground">ARCHITECTS - ENGINEERS - CONSTRUCTIONS</p>
                     <Separator className="w-full my-2"/>
                     <h2 className="text-xl font-bold">TRANSMITTAL LETTER</h2>
                 </CardHeader>
@@ -377,18 +377,6 @@ export default function TransmittalLetterPage() {
                         </div>
                          <Separator />
                          <p className="text-center text-xs text-muted-foreground">101, Y-Block, Commercial, Defence, Lahore, Pakistan. 92-42-35692789-90 92-42-35692791 info@isbahhassan.com www.isbahhassan.com</p>
-                    </div>
-                    <div className="flex justify-end mt-4">
-                        <Button onClick={handleDownload} variant="outline" className="mr-2"><Download/> PDF</Button>
-                        {isEditing ? (
-                          <Button onClick={handleSave} disabled={isSaving}>
-                            {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
-                          </Button>
-                        ) : (
-                          <Button onClick={() => setIsEditing(true)}>
-                            <Edit/> Edit
-                          </Button>
-                        )}
                     </div>
                 </CardContent>
             </Card>
