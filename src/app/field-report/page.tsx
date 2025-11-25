@@ -86,7 +86,7 @@ export default function FieldReportPage() {
         doc.text("ISBAH HASSAN & ASSOCIATES", 105, y, { align: 'center'});
         y+=5;
         doc.setFontSize(8);
-        doc.text("ARCHITECTS - ENGINEERS - REAL ESTATE - CONTRACTORS - DEVELOPERS", 105, y, { align: 'center'});
+        doc.text("ARCHITECTS - ENGINEERS - CONSTRUCTIONS", 105, y, { align: 'center'});
         y+=8;
 
         doc.setFontSize(12);
@@ -160,7 +160,7 @@ export default function FieldReportPage() {
     
     const renderField = (name: string, placeholder?: string) => {
         const value = formData[name];
-        return isEditing ? <Input name={name} value={value || ''} onChange={handleInputChange} placeholder={placeholder} /> : <div className="p-1 border-b min-h-[24px]">{value}</div>;
+        return isEditing ? <Input name={name} value={value || ''} onChange={handleInputChange} placeholder={placeholder} /> : <div className="p-1 border-b min-h-[36px]">{value}</div>;
     }
     
     const renderCheckbox = (name: string, label: string) => {
@@ -182,7 +182,7 @@ export default function FieldReportPage() {
             <Card>
                 <CardHeader className="text-center">
                     <CardTitle className="text-xl">ISBAH HASSAN & ASSOCIATES</CardTitle>
-                    <p className="text-xs text-muted-foreground">ARCHITECTS - ENGINEERS - REAL ESTATE - CONTRACTORS - DEVELOPERS</p>
+                    <p className="text-xs text-muted-foreground">ARCHITECTS - ENGINEERS - CONSTRUCTIONS</p>
                 </CardHeader>
                 <CardContent>
                      <div className="flex justify-between items-start mb-4">
@@ -230,4 +230,3 @@ export default function FieldReportPage() {
         </main>
     );
 }
-
