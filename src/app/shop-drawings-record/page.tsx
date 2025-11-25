@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -88,7 +89,7 @@ export default function ShopDrawingsRecordPage() {
                     subRecords: r.subRecords && r.subRecords.length > 0 ? r.subRecords.map((sr: any) => ({...initialSubRecord(), ...sr})) : Array(3).fill(null).map(() => initialSubRecord())
                 })) : Array(12).fill(null).map(() => initialRecord());
 
-                setFormData({ ...data, records });
+                setFormData({ ...getInitialFormData(), ...data, records });
             } else {
                 setFormData(getInitialFormData());
             }
