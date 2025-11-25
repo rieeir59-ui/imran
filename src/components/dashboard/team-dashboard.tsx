@@ -143,6 +143,15 @@ export default function TeamDashboard() {
       </Card>
       <Card className="lg:col-span-3">
         <CardHeader>
+          <CardTitle>Draftspersons Team</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {draftspersons.map(renderEmployeeCard)}
+          <AddEmployeeCard href="/weekly-schedule?designation=Draftsperson" />
+        </CardContent>
+      </Card>
+      <Card className="lg:col-span-3">
+        <CardHeader>
           <CardTitle>Architects Team</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
