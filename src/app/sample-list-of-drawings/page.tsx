@@ -163,8 +163,8 @@ export default function SampleListOfDrawingsPage() {
                 // Ensure all parts of initial data are present
                 const mergedData = { ...initialDrawingData, ...data };
                 Object.keys(initialDrawingData).forEach(key => {
-                    if (!mergedData[key]) {
-                        mergedData[key] = initialDrawingData[key as keyof typeof initialDrawingData];
+                    if (!mergedData[key as keyof typeof initialDrawingData]) {
+                        mergedData[key as keyof typeof initialDrawingData] = initialDrawingData[key as keyof typeof initialDrawingData];
                     }
                 });
                 setFormData(mergedData);
@@ -203,7 +203,7 @@ export default function SampleListOfDrawingsPage() {
             const item1 = list1[i];
             const item2 = list2[i];
             rows.push(
-                 <TableRow key={`${list1Name}-${list2Name}-${i}`}>
+                 <TableRow key={`${list1Name as string}-${list2Name as string}-${i}`}>
                     {item1 ? <>
                         <TableCell>{item1.srNo}</TableCell>
                         <TableCell>{isEditing ? <Input value={item1.description} onChange={(e) => handleDrawingChange(list1Name as string, i, 'description', e.target.value)} /> : item1.description}</TableCell>
