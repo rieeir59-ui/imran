@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
@@ -6,11 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { UploadCloud, File as FileIcon, MoreVertical, Edit, Trash2, Save, Loader2, PlusCircle, ArrowLeft } from 'lucide-react';
+import { UploadCloud, File as FileIcon, MoreVertical, Edit, Trash2, Save, Loader2, PlusCircle, ArrowLeft, Terminal } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useStorage } from '@/firebase';
+import { useUser, useStorage, useAuth } from '@/firebase';
 import { ref, uploadBytes, getDownloadURL, listAll, getMetadata, deleteObject } from 'firebase/storage';
+import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,8 +39,15 @@ export default function FileManagerPage() {
   const [editorContent, setEditorContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const storage = useStorage();
+  const auth = useAuth();
+
+  useEffect(() => {
+    if (!isUserLoading && !user && auth) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [isUserLoading, user, auth]);
 
   const fetchFiles = useCallback(async () => {
     if (!user || !storage) return;
@@ -73,8 +81,10 @@ export default function FileManagerPage() {
   }, [user, storage, toast]);
 
   useEffect(() => {
-    fetchFiles();
-  }, [fetchFiles]);
+    if (user && storage) {
+        fetchFiles();
+    }
+  }, [user, storage, fetchFiles]);
 
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -88,15 +98,6 @@ export default function FileManagerPage() {
     const uploadPromises = acceptedFiles.map(async file => {
       const fileRef = ref(storage, `users/${user.uid}/uploads/${file.name}`);
       await uploadBytes(fileRef, file);
-      const url = await getDownloadURL(fileRef);
-      const metadata = await getMetadata(fileRef);
-      return {
-        name: metadata.name,
-        size: metadata.size,
-        type: metadata.contentType || 'unknown',
-        url: url,
-        fullPath: fileRef.fullPath,
-      };
     });
 
     try {
@@ -188,17 +189,7 @@ export default function FileManagerPage() {
 
     try {
         await uploadBytes(fileRef, newContentBlob);
-        const url = await getDownloadURL(fileRef);
-        const metadata = await getMetadata(fileRef);
-        
-        const updatedFile = { 
-            ...activeFile, 
-            url, 
-            size: metadata.size,
-            content: editorContent 
-        };
-        
-        setFiles(files.map(f => f.fullPath === activeFile.fullPath ? updatedFile : f));
+        fetchFiles(); // Re-fetch to update URL and metadata
         setActiveFile(null);
         toast({
             title: "Text File Saved",
@@ -257,6 +248,32 @@ export default function FileManagerPage() {
             </Card>
         </main>
     );
+  }
+
+  if (isUserLoading) {
+    return (
+        <div className="flex h-full w-full items-center justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="ml-2">Authenticating...</p>
+        </div>
+    );
+  }
+
+  if (!user && !isUserLoading) {
+      return (
+        <main className="p-4 md:p-6 lg:p-8">
+         <Card>
+           <CardHeader><CardTitle>Authentication Required</CardTitle></CardHeader>
+           <CardContent>
+             <Alert variant="destructive">
+               <Terminal className="h-4 w-4" />
+               <AlertTitle>Unable to Authenticate</AlertTitle>
+               <AlertDescription>We could not sign you in. Please refresh the page to try again.</AlertDescription>
+             </Alert>
+           </CardContent>
+         </Card>
+       </main>
+     )
   }
 
   return (
