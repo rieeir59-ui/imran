@@ -46,6 +46,10 @@ service cloud.firestore {
     function isExistingOwner(userId) {
       return isOwner(userId) && resource != null;
     }
+    
+    match /users/{userId}/siteVisits/{visitId} {
+        allow read, write: if isOwner(userId);
+    }
 
     /**
      * @description Enforces ownership for commercial properties.

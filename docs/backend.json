@@ -1,6 +1,67 @@
 
 {
   "entities": {
+    "SiteVisit": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SiteVisit",
+      "type": "object",
+      "description": "Represents a detailed site visit proforma for an architect.",
+      "properties": {
+        "siteName": { "type": "string" },
+        "city": { "type": "string" },
+        "date": { "type": "string" },
+        "visitNumber": { "type": "string" },
+        "architectName": { "type": "string" },
+        "exterior_facade": { "type": "boolean" },
+        "exterior_signage": { "type": "boolean" },
+        "exterior_lighting": { "type": "boolean" },
+        "exterior_door": { "type": "boolean" },
+        "exterior_branding": { "type": "boolean" },
+        "flooring_tiles": { "type": "boolean" },
+        "flooring_alignment": { "type": "boolean" },
+        "flooring_skirting": { "type": "boolean" },
+        "flooring_grouting": { "type": "boolean" },
+        "flooring_damage": { "type": "boolean" },
+        "ceiling_gypsum": { "type": "boolean" },
+        "ceiling_paint": { "type": "boolean" },
+        "ceiling_height": { "type": "boolean" },
+        "ceiling_panels": { "type": "boolean" },
+        "ceiling_moisture": { "type": "boolean" },
+        "lighting_all": { "type": "boolean" },
+        "lighting_emergency": { "type": "boolean" },
+        "lighting_atm": { "type": "boolean" },
+        "lighting_hall": { "type": "boolean" },
+        "lighting_db": { "type": "boolean" },
+        "furniture_counters": { "type": "boolean" },
+        "furniture_seating": { "type": "boolean" },
+        "furniture_bm": { "type": "boolean" },
+        "furniture_cash": { "type": "boolean" },
+        "furniture_atm": { "type": "boolean" },
+        "furniture_storage": { "type": "boolean" },
+        "furniture_shelving": { "type": "boolean" },
+        "washroom_tiles": { "type": "boolean" },
+        "washroom_wc": { "type": "boolean" },
+        "washroom_drainage": { "type": "boolean" },
+        "washroom_exhaust": { "type": "boolean" },
+        "washroom_accessories": { "type": "boolean" },
+        "mep_wiring": { "type": "boolean" },
+        "mep_ac": { "type": "boolean" },
+        "mep_diffusers": { "type": "boolean" },
+        "mep_fire": { "type": "boolean" },
+        "mep_cctv": { "type": "boolean" },
+        "mep_plumbing": { "type": "boolean" },
+        "observations": { "type": "string" },
+        "issues": { "type": "string" },
+        "actions": { "type": "string" },
+        "comment1": { "type": "string" },
+        "comment2": { "type": "string" },
+        "comment3": { "type": "string" },
+        "comment4": { "type": "string" },
+        "comment5": { "type": "string" },
+        "comment6": { "type": "string" },
+        "comment7": { "type": "string" }
+      }
+    },
     "CommercialProperty": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "CommercialProperty",
@@ -466,6 +527,16 @@
   },
   "firestore": {
     "structure": [
+       {
+        "path": "/users/{userId}/siteVisits/{visitId}",
+        "definition": {
+          "entityName": "SiteVisit",
+          "schema": {
+            "$ref": "#/entities/SiteVisit"
+          },
+          "description": "Stores site visit data for a specific user."
+        }
+      },
       {
         "path": "/users/{userId}/commercialProperties/{propertyId}",
         "definition": {

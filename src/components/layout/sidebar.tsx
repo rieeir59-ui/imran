@@ -13,7 +13,7 @@ import {
   SidebarGroupLabel,
   SidebarInput,
 } from "@/components/ui/sidebar";
-import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList, MessageSquare, BookUser } from 'lucide-react';
+import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList, MessageSquare, BookUser, LocateFixed } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 
@@ -30,6 +30,7 @@ const projectFormsItems = [
   { href: '/project-agreement', icon: FileText, label: 'Project Agreement' },
   { href: '/list-of-services', icon: ScrollText, label: 'List of Services' },
   { href: '/site-survey', icon: FileText, label: 'Site Survey' },
+  { href: '/site-visit', icon: LocateFixed, label: 'Site Visit Form' },
   { href: '/proposal-request', icon: FileText, label: 'Proposal Request' },
   { href: '/drawings', icon: Image, label: 'List of Drawings' },
   { href: '/shop-drawings-record', icon: LayoutList, label: 'Shop Drawings Record' },
