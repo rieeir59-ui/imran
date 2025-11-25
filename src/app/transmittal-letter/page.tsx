@@ -89,19 +89,155 @@ export default function TransmittalLetterPage() {
             .finally(() => setIsSaving(false));
     };
 
-     const handleDownload = () => {
+    const handleDownload = () => {
         const doc = new jsPDF();
-        doc.setFontSize(14);
+        let y = 15;
+
+        const addHeader = () => {
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text("ISBAH HASSAN & ASSOCIATES", 105, y, { align: 'center' });
+            y += 6;
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'normal');
+            doc.text("ARCHITECTS - ENGINEERS - REAL ESTATE - CONTRACTORS - DEVELOPERS", 105, y, { align: 'center' });
+            y += 4;
+            doc.setLineWidth(0.5);
+            doc.line(14, y, 196, y);
+            y += 6;
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text("TRANSMITTAL LETTER", 105, y, { align: 'center' });
+            y += 10;
+        }
+
+        addHeader();
+
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        
+        let startY = y;
+        doc.text(`Project: ${formData.project_name_address || ''}`, 14, y);
+        doc.text(`Project No: ${formData.project_no || ''}`, 130, y);
+        y += 5;
+        doc.text(`Architect: ${formData.architect || ''}`, 14, y);
+        doc.text(`Date: ${formData.date || ''}`, 130, y);
+        y += 7;
+
+        let leftY = y;
+        let rightY = y;
+        
+        doc.text(`To:`, 14, leftY);
+        const toText = doc.splitTextToSize(formData.to_address || '', 80);
+        doc.text(toText, 25, leftY);
+        leftY += (toText.length * 4) + 5;
+        
+        doc.text(`Attn: ${formData.attn || ''}`, 14, leftY);
+        leftY += 10;
+
+        doc.setFontSize(8);
+        doc.text("If Enclosures are not as noted, Please Inform us immediately.", 130, rightY);
+        rightY += 5;
+        doc.text("If checked below, please:", 130, rightY);
+        rightY += 5;
+        doc.text(formData.ack_receipt ? '[X] Acknowledge Receipt of Enclosures.' : '[ ] Acknowledge Receipt of Enclosures.', 135, rightY);
+        rightY += 5;
+        doc.text(formData.return_enclosures ? '[X] Return Enclosures to us.' : '[ ] Return Enclosures to us.', 135, rightY);
+        
+        y = Math.max(leftY, rightY) + 5;
+
+        doc.setFontSize(9);
         doc.setFont('helvetica', 'bold');
-        doc.text("Transmittal Letter", 105, 15, { align: 'center'});
+        doc.text("We Transmit:", 14, y);
+        doc.setFont('helvetica', 'normal');
+        y += 5;
+        doc.text(`${formData.transmit_method === 'herewith' ? '(X)' : '( )'} herewith`, 18, y);
+        doc.text(`${formData.transmit_method === 'separate' ? '(X)' : '( )'} under separate cover via ${formData.separate_via || '______'}`, 60, y);
+        y += 5;
+        doc.text(`${formData.transmit_method === 'request' ? '(X)' : '( )'} in accordance with your request`, 18, y);
+        y += 8;
+
+        const addCheckboxColumn = (title: string, items: {name: string, label: string}[], startX: number) => {
+            doc.setFont('helvetica', 'bold');
+            doc.text(title, startX, y);
+            doc.setFont('helvetica', 'normal');
+            let itemY = y + 5;
+            items.forEach(item => {
+                doc.text(`${formData[item.name] ? '[X]' : '[ ]'} ${item.label}`, startX, itemY);
+                itemY += 5;
+            });
+        }
+        
+        addCheckboxColumn("For Your:", [
+            { name: 'for_approval', label: 'approval' },
+            { name: 'for_review', label: 'review & comment' },
+            { name: 'for_use', label: 'use' },
+        ], 14);
+        
+        addCheckboxColumn("", [
+            { name: 'for_distribution', label: 'distribution to parties' },
+            { name: 'for_record', label: 'record' },
+            { name: 'for_info', label: 'information' },
+        ], 70);
+        y += 25;
+
+        addCheckboxColumn("The Following:", [
+            { name: 'following_drawings', label: 'Drawings' },
+            { name: 'following_specs', label: 'Specifications' },
+            { name: 'following_co', label: 'Change Order' },
+        ], 14);
+
+        addCheckboxColumn("", [
+            { name: 'following_prints', label: 'Shop Drawing Prints' },
+            { name: 'following_repro', label: 'Shop Drawing Reproducible' },
+        ], 70);
+
+        addCheckboxColumn("", [
+            { name: 'following_samples', label: 'Samples' },
+            { name: 'following_literature', label: 'Product Literature' },
+        ], 130);
+        y += 25;
+
+        const tableHead = [['Copies', 'Date', 'Rev. No.', 'Description', 'Action Code']];
+        const tableBody = formData.items.map((item: any) => [item.copies, item.date, item.revNo, item.description, item.actionCode]);
+        
         autoTable(doc, {
-            startY: 25,
-            html: '#transmittal-letter-table',
-            theme: 'plain',
+            head: tableHead,
+            body: tableBody,
+            startY: y,
+            theme: 'grid'
         });
-        doc.save("transmittal-letter.pdf");
-        toast({ title: 'Download Started' });
-    }
+
+        y = (doc as any).lastAutoTable.finalY + 10;
+        
+        doc.setFont('helvetica', 'bold');
+        doc.text("Action Code", 14, y);
+        y+=5;
+        doc.setFont('helvetica', 'normal');
+        doc.text("A. Action indicated on item transmitted", 18, y);
+        doc.text("D. For signature and forwarding as noted below under REMARKS", 100, y);
+        y+=5;
+        doc.text("B. No action required", 18, y);
+        doc.text("E. See REMARKS below", 100, y);
+        y+=5;
+        doc.text("C. For signature and return to this office", 18, y);
+        y += 10;
+        
+        doc.text(`Remarks: ${formData.remarks || ''}`, 14, y);
+        y += 20;
+
+        doc.text(`Copies To: ${formData.copies_to || ''}`, 14, y);
+        doc.text(`Received By: ____________________`, 130, y);
+        
+        y = doc.internal.pageSize.height - 10;
+        doc.setLineWidth(0.2);
+        doc.line(14, y, 196, y);
+        y += 4;
+        doc.setFontSize(7);
+        doc.text("101, Y-Block, Commercial, Defence, Lahore, Pakistan. 92-42-35692789-90 92-42-35692791 info@isbahhassan.com www.isbahhassan.com", 105, y, { align: 'center'});
+
+        doc.save('transmittal-letter.pdf');
+    };
 
     const renderField = (name: string, placeholder?: string, as?: 'textarea') => {
         const value = formData[name] || '';
@@ -243,10 +379,15 @@ export default function TransmittalLetterPage() {
                          <p className="text-center text-xs text-muted-foreground">101, Y-Block, Commercial, Defence, Lahore, Pakistan. 92-42-35692789-90 92-42-35692791 info@isbahhassan.com www.isbahhassan.com</p>
                     </div>
                     <div className="flex justify-end mt-4">
-                         <Button onClick={handleSave} disabled={isSaving} className={`${isEditing ? '' : 'hidden'}`}>
+                        {isEditing ? (
+                          <Button onClick={handleSave} disabled={isSaving}>
                             {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
-                        </Button>
-                        <Button onClick={() => setIsEditing(!isEditing)} className={`${isEditing ? 'hidden' : ''}`}><Edit/> Edit</Button>
+                          </Button>
+                        ) : (
+                          <Button onClick={() => setIsEditing(true)}>
+                            <Edit/> Edit
+                          </Button>
+                        )}
                     </div>
                 </CardContent>
             </Card>
