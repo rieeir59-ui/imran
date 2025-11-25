@@ -96,15 +96,15 @@ export default function FieldReportPage() {
           startY: y - 2,
           body: [
               [
-                  { content: `Owner ${formData.owner ? '[X]' : '[ ]'}`, styles: { halign: 'left' } },
-                  { content: `Field ${formData.field ? '[X]' : '[ ]'}`, styles: { halign: 'right' } }
+                  { content: `${formData.owner ? '[✓]' : '[ ]'} Owner`, styles: { halign: 'left' } },
+                  { content: `${formData.field ? '[✓]' : '[ ]'} Field`, styles: { halign: 'right' } }
               ],
               [
-                  { content: `Architect ${formData.architect_check ? '[X]' : '[ ]'}`, styles: { halign: 'left' } },
-                   { content: `Other ${formData.other ? '[X]' : '[ ]'}`, styles: { halign: 'right' } }
+                  { content: `${formData.architect_check ? '[✓]' : '[ ]'} Architect`, styles: { halign: 'left' } },
+                   { content: `${formData.other ? '[✓]' : '[ ]'} Other`, styles: { halign: 'right' } }
               ],
               [
-                  { content: `Contractor ${formData.contractor_check ? '[X]' : '[ ]'}`, styles: { halign: 'left' } },
+                  { content: `${formData.contractor_check ? '[✓]' : '[ ]'} Contractor`, styles: { halign: 'left' } },
                   ''
               ],
           ],
