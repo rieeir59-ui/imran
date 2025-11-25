@@ -19,14 +19,7 @@ const initialDrawingData = {
         { srNo: "AR-01", description: "General Notes and Conditions" },
         { srNo: "AR-02", description: "Survey Plan" },
         { srNo: "AR-03", description: "Site Setting Drawings" },
-        { srNo: "AR-04", description: "" },
-        { srNo: "AR-05", description: "" },
-        { srNo: "AR-06", description: "" },
-        { srNo: "AR-07", description: "" },
-        { srNo: "AR-08", description: "ing" },
-        { srNo: "AR-09", description: "" },
-        { srNo: "AR-10", description: "" },
-    ].map(item => ({...item, startDate: '', endDate: '', remarks: ''})),
+    ].concat(Array.from({ length: 7 }, (_, i) => ({ srNo: `AR-${String(i + 4).padStart(2, '0')}`, description: "" }))).map(item => ({...item, startDate: '', endDate: '', remarks: ''})),
     workingLayoutDrawings: [
         { srNo: "AR-11", description: "Master Working Layout Plan" },
         { srNo: "AR-12", description: "Working Layout Plan (Basement Floor)" },
@@ -34,11 +27,7 @@ const initialDrawingData = {
         { srNo: "AR-14", description: "Working Layout Plan (First Floor)" },
         { srNo: "AR-15", description: "Working Layout Plan (Mezzanine Floor)" },
         { srNo: "AR-16", description: "Working Layout Plan (Roof Top)" },
-        { srNo: "AR-17", description: "" },
-        { srNo: "AR-18", description: "" },
-        { srNo: "AR-19", description: "" },
-        { srNo: "AR-20", description: "" },
-    ].map(item => ({...item, startDate: '', endDate: '', remarks: ''})),
+    ].concat(Array.from({ length: 4 }, (_, i) => ({ srNo: `AR-${17 + i}`, description: "" }))).map(item => ({...item, startDate: '', endDate: '', remarks: ''})),
     elevationAndSectionDrawings: [
         { srNo: "AR-21", description: "Front elevation" },
         { srNo: "AR-22", description: "Right Side Elevation" },
@@ -52,8 +41,7 @@ const initialDrawingData = {
         { srNo: "AR-30", description: "Lift Section" },
         { srNo: "AR-31", description: "Elevation Blow up Detail" },
         { srNo: "AR-32", description: "Exterior Wall Cladding Detail" },
-        ...Array.from({ length: 8 }, (_, i) => ({ srNo: `AR-${33 + i}`, description: "" }))
-    ].map(item => ({...item, startDate: '', endDate: '', remarks: ''})),
+    ].concat(Array.from({ length: 8 }, (_, i) => ({ srNo: `AR-${33 + i}`, description: "" }))).map(item => ({...item, startDate: '', endDate: '', remarks: ''})),
     doorsAndWindowsDrawings: [
         { srNo: "AR-41", description: "Door & Window Schedule Plan (ground Floor)" },
         { srNo: "AR-42", description: "Door & Window Schedule Plan (First Floor)" },
@@ -65,11 +53,49 @@ const initialDrawingData = {
         { srNo: "AR-48", description: "Window Sill and Header Details" },
         { srNo: "AR-49", description: "Window Blow up Detail" },
         { srNo: "AR-50", description: "Door Blow Up Detail" },
-        ...Array.from({ length: 30 }, (_, i) => ({ srNo: `AR-${51 + i}`, description: "" }))
-    ].map(item => ({...item, startDate: '', endDate: '', remarks: ''})),
+    ].concat(Array.from({ length: 30 }, (_, i) => ({ srNo: `AR-${51 + i}`, description: "" }))).map(item => ({...item, startDate: '', endDate: '', remarks: ''})),
+    stairStepRampDrawings: [
+        { srNo: "AR-81", description: "Main Stair Case Detail" },
+        { srNo: "AR-82", description: "Main Stair Case Detail Section" },
+        { srNo: "AR-83", description: "Main Entrance Steps Detail" },
+        { srNo: "AR-84", description: "Back Entrance step Detail" },
+    ].concat(Array.from({ length: 16 }, (_, i) => ({ srNo: `AR-${85 + i}`, description: "" }))).map(item => ({...item, startDate: '', endDate: '', remarks: ''})),
+    bathroomDrawings: [
+        { srNo: "AR-101", description: "Toilet Layout (Ground floor)" },
+        { srNo: "AR-102", description: "Toilet Layout (First floor)" },
+        { srNo: "AR-103", description: "Toilet Layout (Mezzanine floor)" },
+        { srNo: "AR-104", description: "Toilet Layout (Basement floor)" },
+        { srNo: "AR-105", description: "Toilet Layout (Roof Top)" },
+        { srNo: "AR-106", description: "Toilet Detail (Ground floor)" },
+        { srNo: "AR-107", description: "Toilet Detail (First floor)" },
+        { srNo: "AR-108", description: "Toilet Detail (Mezzanine floor)" },
+        { srNo: "AR-109", description: "Toilet Detail (Basement floor)" },
+        { srNo: "AR-110", description: "Toilet Detail (Roof Top)" },
+        { srNo: "AR-111", description: "Blow Up Detail" },
+    ].concat(Array.from({ length: 29 }, (_, i) => ({ srNo: `AR-${112 + i}`, description: "" }))).map(item => ({...item, startDate: '', endDate: '', remarks: ''})),
+    kitchenDrawings: [
+        { srNo: "AR-141", description: "Kitchen Layout (Ground floor)" },
+        { srNo: "AR-142", description: "Kitchen Layout (First floor)" },
+        { srNo: "AR-143", description: "Kitchen Layout (Mezzanine floor)" },
+        { srNo: "AR-144", description: "Kitchen Layout (Basement floor)" },
+        { srNo: "AR-145", description: "Kitchen Detail (Ground floor)" },
+        { srNo: "AR-146", description: "Kitchen Detail (First floor)" },
+        { srNo: "AR-147", description: "Kitchen Detail (Mezzanine floor)" },
+        { srNo: "AR-148", description: "Kitchen Detail (Basement floor)" },
+    ].concat(Array.from({ length: 12 }, (_, i) => ({ srNo: `AR-${149 + i}`, description: "" }))).map(item => ({...item, startDate: '', endDate: '', remarks: ''})),
+    floorPatternDrawings: [
+        { srNo: "AR-161", description: "Exterior Paving Pattern" },
+        { srNo: "AR-162", description: "Floor Pattern (Ground Floor)" },
+        { srNo: "AR-163", description: "Floor Pattern (First Floor)" },
+        { srNo: "AR-164", description: "Floor Pattern (Mazzenine Floor)" },
+        { srNo: "AR-165", description: "Floor Pattern (Basement Floor)" },
+        { srNo: "AR-166", description: "Floor Pattern (Roof Top)" },
+        { srNo: "AR-167", description: "Floor Pattern Blow up Details" },
+        { srNo: "AR-168", description: "Floor Floor Finishes and Transition Details" },
+    ].concat(Array.from({ length: 12 }, (_, i) => ({ srNo: `AR-${169 + i}`, description: "" }))).map(item => ({...item, startDate: '', endDate: '', remarks: ''})),
 };
 
-const DrawingList = ({ list, listName, handleDrawingChange, isEditing, title, colSpan, otherList }: { list: any[], listName: string, handleDrawingChange: any, isEditing: boolean, title: string, colSpan: number, otherList?: any[] }) => (
+const DrawingList = ({ list, listName, handleDrawingChange, isEditing, title, colSpan, otherList, otherListName }: { list: any[], listName: string, handleDrawingChange: any, isEditing: boolean, title: string, colSpan: number, otherList?: any[], otherListName?: string }) => (
     <>
         <TableRow><TableCell colSpan={colSpan} className="font-bold bg-muted">{title}</TableCell></TableRow>
         {list.map((item: any, i: number) => {
@@ -89,20 +115,20 @@ const DrawingList = ({ list, listName, handleDrawingChange, isEditing, title, co
                     <TableCell>
                         {isEditing ? <Input value={item.remarks} onChange={(e) => handleDrawingChange(listName, i, 'remarks', e.target.value)} /> : item.remarks}
                     </TableCell>
-                    {otherList && otherItem && (
+                    {otherList && otherItem && otherListName && (
                         <>
                             <TableCell>{otherItem.srNo}</TableCell>
                             <TableCell>
-                                {isEditing ? <Input value={otherItem.description} onChange={(e) => handleDrawingChange('doorsAndWindowsDrawings', i, 'description', e.target.value)} /> : otherItem.description}
+                                {isEditing ? <Input value={otherItem.description} onChange={(e) => handleDrawingChange(otherListName, i, 'description', e.target.value)} /> : otherItem.description}
                             </TableCell>
                             <TableCell>
-                                {isEditing ? <Input value={otherItem.startDate} onChange={(e) => handleDrawingChange('doorsAndWindowsDrawings', i, 'startDate', e.target.value)} /> : otherItem.startDate}
+                                {isEditing ? <Input value={otherItem.startDate} onChange={(e) => handleDrawingChange(otherListName, i, 'startDate', e.target.value)} /> : otherItem.startDate}
                             </TableCell>
                             <TableCell>
-                                {isEditing ? <Input value={otherItem.endDate} onChange={(e) => handleDrawingChange('doorsAndWindowsDrawings', i, 'endDate', e.target.value)} /> : otherItem.endDate}
+                                {isEditing ? <Input value={otherItem.endDate} onChange={(e) => handleDrawingChange(otherListName, i, 'endDate', e.target.value)} /> : otherItem.endDate}
                             </TableCell>
                             <TableCell>
-                                {isEditing ? <Input value={otherItem.remarks} onChange={(e) => handleDrawingChange('doorsAndWindowsDrawings', i, 'remarks', e.target.value)} /> : otherItem.remarks}
+                                {isEditing ? <Input value={otherItem.remarks} onChange={(e) => handleDrawingChange(otherListName, i, 'remarks', e.target.value)} /> : otherItem.remarks}
                             </TableCell>
                         </>
                     )}
@@ -134,10 +160,14 @@ export default function SampleListOfDrawingsPage() {
         getDoc(docRef).then(docSnap => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                setFormData({
-                    ...initialDrawingData,
-                    ...data,
+                // Ensure all parts of initial data are present
+                const mergedData = { ...initialDrawingData, ...data };
+                Object.keys(initialDrawingData).forEach(key => {
+                    if (!mergedData[key]) {
+                        mergedData[key] = initialDrawingData[key as keyof typeof initialDrawingData];
+                    }
                 });
+                setFormData(mergedData);
             } else {
                 setFormData(initialDrawingData);
             }
@@ -162,6 +192,44 @@ export default function SampleListOfDrawingsPage() {
     };
     
     if (isLoading) return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+
+    const renderTableRows = (list1Name: keyof typeof initialDrawingData, list2Name: keyof typeof initialDrawingData, title1: string, title2: string) => {
+        const list1 = formData[list1Name] || [];
+        const list2 = formData[list2Name] || [];
+        const maxLength = Math.max(list1.length, list2.length);
+        const rows = [];
+        
+        for (let i = 0; i < maxLength; i++) {
+            const item1 = list1[i];
+            const item2 = list2[i];
+            rows.push(
+                 <TableRow key={`${list1Name}-${list2Name}-${i}`}>
+                    {item1 ? <>
+                        <TableCell>{item1.srNo}</TableCell>
+                        <TableCell>{isEditing ? <Input value={item1.description} onChange={(e) => handleDrawingChange(list1Name as string, i, 'description', e.target.value)} /> : item1.description}</TableCell>
+                        <TableCell>{isEditing ? <Input value={item1.startDate} onChange={(e) => handleDrawingChange(list1Name as string, i, 'startDate', e.target.value)} /> : item1.startDate}</TableCell>
+                        <TableCell>{isEditing ? <Input value={item1.endDate} onChange={(e) => handleDrawingChange(list1Name as string, i, 'endDate', e.target.value)} /> : item1.endDate}</TableCell>
+                        <TableCell>{isEditing ? <Input value={item1.remarks} onChange={(e) => handleDrawingChange(list1Name as string, i, 'remarks', e.target.value)} /> : item1.remarks}</TableCell>
+                    </> : <><TableCell/><TableCell/><TableCell/><TableCell/><TableCell/></>}
+                    {item2 ? <>
+                        <TableCell>{item2.srNo}</TableCell>
+                        <TableCell>{isEditing ? <Input value={item2.description} onChange={(e) => handleDrawingChange(list2Name as string, i, 'description', e.target.value)} /> : item2.description}</TableCell>
+                        <TableCell>{isEditing ? <Input value={item2.startDate} onChange={(e) => handleDrawingChange(list2Name as string, i, 'startDate', e.target.value)} /> : item2.startDate}</TableCell>
+                        <TableCell>{isEditing ? <Input value={item2.endDate} onChange={(e) => handleDrawingChange(list2Name as string, i, 'endDate', e.target.value)} /> : item2.endDate}</TableCell>
+                        <TableCell>{isEditing ? <Input value={item2.remarks} onChange={(e) => handleDrawingChange(list2Name as string, i, 'remarks', e.target.value)} /> : item2.remarks}</TableCell>
+                    </> : <><TableCell/><TableCell/><TableCell/><TableCell/><TableCell/></>}
+                 </TableRow>
+            );
+        }
+
+        return <>
+            <TableRow>
+                <TableCell colSpan={5} className="font-bold bg-muted">{title1}</TableCell>
+                <TableCell colSpan={5} className="font-bold bg-muted">{title2}</TableCell>
+            </TableRow>
+            {rows}
+        </>;
+    }
 
     return (
     <main className="p-4 md:p-6 lg:p-8">
@@ -218,9 +286,10 @@ export default function SampleListOfDrawingsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <DrawingList list={formData.introduction} listName="introduction" handleDrawingChange={handleDrawingChange} isEditing={isEditing} title="Introduction (AR-01-AR-10)" colSpan={5} otherList={formData.doorsAndWindowsDrawings.slice(0, 10)} />
-                        <DrawingList list={formData.workingLayoutDrawings} listName="workingLayoutDrawings" handleDrawingChange={handleDrawingChange} isEditing={isEditing} title="Working Layout Drawings (AR-11-AR-20)" colSpan={5} otherList={formData.doorsAndWindowsDrawings.slice(10, 20)} />
-                        <DrawingList list={formData.elevationAndSectionDrawings} listName="elevationAndSectionDrawings" handleDrawingChange={handleDrawingChange} isEditing={isEditing} title="Elevation & Section Drawings (AR-21-AR-40)" colSpan={5} otherList={formData.doorsAndWindowsDrawings.slice(20, 40)} />
+                        {renderTableRows('introduction', 'stairStepRampDrawings', 'Introduction (AR-01-AR-10)', 'Stair, Step & Ramp Drawings (AR-81-AR-100)')}
+                        {renderTableRows('workingLayoutDrawings', 'bathroomDrawings', 'Working Layout Drawings (AR-11-AR-20)', 'Bathroom Drawings (AR-101-AR-140)')}
+                        {renderTableRows('elevationAndSectionDrawings', 'kitchenDrawings', 'Elevation & Section Drawings (AR-21-AR-40)', 'Kitchen Drawings (AR-141-AR-160)')}
+                        {renderTableRows('doorsAndWindowsDrawings', 'floorPatternDrawings', 'Doors & Windows Drawings (AR-41-AR-80)', 'Floor Pattern Drawings (AR-161-AR-180)')}
                     </TableBody>
                 </Table>
             </CardContent>
