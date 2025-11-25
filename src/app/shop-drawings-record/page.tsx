@@ -79,28 +79,10 @@ export default function ShopDrawingsRecordPage() {
             setIsLoading(false);
             return;
         }
-        setIsLoading(true);
-        getDoc(docRef).then(docSnap => {
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                 const records = data.records && data.records.length > 0 ? data.records.map((r: any) => ({
-                    ...initialRecord(),
-                    ...r,
-                    subRecords: r.subRecords && r.subRecords.length > 0 ? r.subRecords.map((sr: any) => ({...initialSubRecord(), ...sr})) : Array(3).fill(null).map(() => initialSubRecord())
-                })) : Array(12).fill(null).map(() => initialRecord());
-
-                setFormData({ ...getInitialFormData(), ...data, records });
-            } else {
-                setFormData(getInitialFormData());
-            }
-        }).catch(err => {
-            console.error("Firebase read error:", err);
-            const permissionError = new FirestorePermissionError({
-                path: docRef.path,
-                operation: 'get',
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        }).finally(() => setIsLoading(false));
+        // For this page, we will always start with a clean slate.
+        // We are not loading existing data.
+        setFormData(getInitialFormData());
+        setIsLoading(false);
     }, [docRef]);
 
     const handleHeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,6 +104,7 @@ export default function ShopDrawingsRecordPage() {
     const handleSave = () => {
         if (!docRef) return;
         setIsSaving(true);
+        // This will save the current state, which is now always initialized as empty.
         setDoc(docRef, formData, { merge: true }).then(() => {
             toast({ title: 'Success', description: 'Shop Drawings Record saved.' });
             setIsEditing(false);
@@ -148,23 +131,25 @@ export default function ShopDrawingsRecordPage() {
         doc.text(`Contractor: ${formData.contractor || ''}`, 14, 30);
         
         let startY = 35;
-        formData.records.forEach((record: any, recordIndex: number) => {
-            if (startY > 160) { 
-                doc.addPage();
-                startY = 15;
-            }
-
-            autoTable(doc, {
-                startY,
-                html: `#record-table-${recordIndex}`,
-                theme: 'grid',
-                styles: { fontSize: 6, cellPadding: 1, lineColor: 0, lineWidth: 0.1 },
-                didDrawPage: (data) => {
-                    startY = data.cursor?.y || 15;
+        if (formData.records && Array.isArray(formData.records)) {
+            formData.records.forEach((record: any, recordIndex: number) => {
+                if (startY > 160) { 
+                    doc.addPage();
+                    startY = 15;
                 }
+
+                autoTable(doc, {
+                    startY,
+                    html: `#record-table-${recordIndex}`,
+                    theme: 'grid',
+                    styles: { fontSize: 6, cellPadding: 1, lineColor: 0, lineWidth: 0.1 },
+                    didDrawPage: (data) => {
+                        startY = data.cursor?.y || 15;
+                    }
+                });
+                startY = (doc as any).lastAutoTable.finalY;
             });
-            startY = (doc as any).lastAutoTable.finalY;
-        });
+        }
 
         doc.save("shop-drawings-record.pdf");
         toast({ title: "Download Started", description: "PDF generation is in progress." });
@@ -221,7 +206,7 @@ export default function ShopDrawingsRecordPage() {
                     <FormField label="Contractor:">{renderHeaderInput('contractor')}</FormField>
                 </div>
                 <div className="space-y-2">
-                    {formData.records.map((record: any, recordIndex: number) => (
+                    {formData.records && formData.records.map((record: any, recordIndex: number) => (
                     <Table key={recordIndex} id={`record-table-${recordIndex}`} className="border text-xs">
                         <TableHeader>
                             <TableRow>
