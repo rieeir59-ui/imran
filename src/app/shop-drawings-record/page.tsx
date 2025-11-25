@@ -81,12 +81,42 @@ export default function ShopDrawingsRecordPage() {
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
         doc.text("SHOP DRAWINGS & SAMPLE RECORD", 105, 15, { align: 'center'});
+
+        const head = [['#', 'Record Date', 'Referred To', 'Date Sent', '# Copies', "Date Ret'd.", 'Action', 'Copies To', 'Title']];
         
+        const body = formData.records.map((record: any, i: number) => {
+            const actionItems = [];
+            if(record.approved) actionItems.push("Approved");
+            if(record.approvedAsNoted) actionItems.push("App'd as Noted");
+            if(record.reviseResubmit) actionItems.push("Revise & Resubmit");
+            if(record.notApproved) actionItems.push("Not Approved");
+
+            const copyItems = [];
+            if(record.copyContractor) copyItems.push("Contractor");
+            if(record.copyOwner) copyItems.push("Owner");
+            if(record.copyField) copyItems.push("Field");
+            if(record.copyFile) copyItems.push("File");
+
+            return [
+                i + 1,
+                record.recordDate || '',
+                record.referredTo || '',
+                record.dateSent || '',
+                record.numCopies || '',
+                record.dateRetd || '',
+                actionItems.join('\n'),
+                copyItems.join('\n'),
+                record.title || '',
+            ];
+        });
+
         autoTable(doc, {
             startY: 25,
-            html: '#shop-drawings-table',
+            head,
+            body,
             theme: 'grid',
             headStyles: { fillColor: [30, 41, 59] },
+            styles: { fontSize: 8 }
         })
 
         doc.save("shop-drawings-record.pdf");
@@ -126,7 +156,7 @@ export default function ShopDrawingsRecordPage() {
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="space-y-4" id="shop-drawings-table">
+                <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-4">
                         <FormField label="Project:">{renderField('project')}</FormField>
                         <FormField label="Architect's Project No:">{renderField('architectProjectNo')}</FormField>
