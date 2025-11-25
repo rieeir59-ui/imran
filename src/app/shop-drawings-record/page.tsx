@@ -42,6 +42,14 @@ const initialRecord = () => ({
     subRecords: Array(3).fill(null).map(() => initialSubRecord()),
 });
 
+const getInitialFormData = () => ({
+    project: '',
+    architectProjectNo: '',
+    contractor: '',
+    records: Array(12).fill(null).map(() => initialRecord()),
+});
+
+
 const FormField = ({ label, children }: { label: string, children: React.ReactNode }) => (
     <div className="flex flex-col space-y-1">
         <span className="font-semibold text-sm">{label}:</span>
@@ -53,7 +61,7 @@ export default function ShopDrawingsRecordPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [formData, setFormData] = useState<any>({ records: Array(12).fill(null).map(() => initialRecord()) });
+    const [formData, setFormData] = useState<any>(getInitialFormData());
     
     const { toast } = useToast();
     const firestore = useFirestore();
@@ -66,7 +74,7 @@ export default function ShopDrawingsRecordPage() {
     
     useEffect(() => {
         if (!docRef) {
-            setFormData({ records: Array(12).fill(null).map(() => initialRecord()) });
+            setFormData(getInitialFormData());
             setIsLoading(false);
             return;
         }
@@ -82,7 +90,7 @@ export default function ShopDrawingsRecordPage() {
 
                 setFormData({ ...data, records });
             } else {
-                setFormData({ records: Array(12).fill(null).map(() => initialRecord()) });
+                setFormData(getInitialFormData());
             }
         }).catch(err => {
             console.error("Firebase read error:", err);
