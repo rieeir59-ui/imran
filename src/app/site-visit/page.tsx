@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -182,134 +181,148 @@ const SiteVisitPage = () => {
       .finally(() => setIsSaving(false));
   };
   
-  const handleDownload = () => {
-    const doc = new jsPDF();
-    let y = 15;
+    const toDataURL = (url: string) => fetch(url)
+        .then(response => response.blob())
+        .then(blob => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        }));
 
-    doc.setFontSize(16);
-    doc.text("Detailed Site Visit Proforma – Architect Visit", 105, y, { align: 'center' });
-    y += 10;
-    
-    const drawCheckbox = (x: number, yPos: number, isChecked: boolean) => {
-        const boxSize = 3.5;
-        doc.setDrawColor(0);
-        if (isChecked) {
-            doc.setFillColor(60, 110, 180);
-            doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
-            doc.setFont('ZapfDingbats');
-            doc.setTextColor(255,255,255);
-            doc.text('✓', x + 0.5, yPos - 0.5);
-            doc.setTextColor(0,0,0);
-        } else {
-            doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
-        }
-        doc.setFont('helvetica', 'normal');
-    };
+    const handleDownload = async () => {
+        const doc = new jsPDF();
+        let y = 15;
 
-    const addSection = (title: string, fields: (string | {label: string, name: string, type: 'checkbox' | 'text'})[]) => {
-        if(y > 250) { doc.addPage(); y = 15; }
-        y += 5;
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text(title, 14, y);
-        y += 7;
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(16);
+        doc.text("Detailed Site Visit Proforma – Architect Visit", 105, y, { align: 'center' });
+        y += 10;
 
-        fields.forEach(field => {
-            if (typeof field === 'string') {
-                 y += 2; // small space
-            } else if (field.type === 'checkbox') {
-                 drawCheckbox(18, y, formData[field.name]);
-                 doc.text(field.label, 24, y);
-                 y += 6;
+        const drawCheckbox = (x: number, yPos: number, isChecked: boolean) => {
+            const boxSize = 3.5;
+            doc.setLineWidth(0.2);
+            doc.setDrawColor(0);
+            if (isChecked) {
+                doc.setFillColor(60, 110, 180);
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
             } else {
-                 const value = formData[field.name] || '';
-                 doc.text(`${field.label}:`, 18, y);
-                 const splitValue = doc.splitTextToSize(value, 120);
-                 doc.text(splitValue, 70, y);
-                 y += (splitValue.length * 5) + 2;
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
             }
-        })
-    }
+        };
 
-    addSection("Basic Information", [
-        {label: "Site / Branch Name", name: "siteName", type: 'text'},
-        {label: "City", name: "city", type: 'text'},
-        {label: "Date", name: "date", type: 'text'},
-        {label: "Visit Number", name: "visitNumber", type: 'text'},
-        {label: "Architect Name", name: "architectName", type: 'text'},
-    ]);
-    
-    addSection("1. Exterior Works", [
-        {label: "Facade condition", name: "exterior_facade", type: 'checkbox'},
-        {label: "External signage installed", name: "exterior_signage", type: 'checkbox'},
-        {label: "Outdoor lighting functional", name: "exterior_lighting", type: 'checkbox'},
-        {label: "Entrance door alignment & quality", name: "exterior_door", type: 'checkbox'},
-        {label: "Branding elements (panels/vinyls) installed", name: "exterior_branding", type: 'checkbox'},
-    ]);
-    
-    addSection("2. Flooring", [
-        {label: "Tiles installed as per approved design", name: "flooring_tiles", type: 'checkbox'},
-        {label: "Tile alignment and leveling", name: "flooring_alignment", type: 'checkbox'},
-        {label: "Skirting installation", name: "flooring_skirting", type: 'checkbox'},
-        {label: "Grouting quality", name: "flooring_grouting", type: 'checkbox'},
-        {label: "Any cracks or damages observed", name: "flooring_damage", type: 'checkbox'},
-    ]);
-    
-    addSection("3. Ceiling", [
-        {label: "Gypsum ceiling installed", name: "ceiling_gypsum", type: 'checkbox'},
-        {label: "Ceiling paint finish", name: "ceiling_paint", type: 'checkbox'},
-        {label: "Ceiling height as per plan", name: "ceiling_height", type: 'checkbox'},
-        {label: "Access panels installed", name: "ceiling_panels", type: 'checkbox'},
-        {label: "No moisture / cracks visible", name: "ceiling_moisture", type: 'checkbox'},
-    ]);
-    
-    addSection("4. Lighting", [
-        {label: "All lights installed (LED panels, spotlights, etc.)", name: "lighting_all", type: 'checkbox'},
-        {label: "Emergency lights operational", name: "lighting_emergency", type: 'checkbox'},
-        {label: "ATM room lighting", name: "lighting_atm", type: 'checkbox'},
-        {label: "Customer hall lighting uniformity", name: "lighting_hall", type: 'checkbox'},
-        {label: "DB (Distribution Board) labeling", name: "lighting_db", type: 'checkbox'},
-    ]);
+        const addSection = (title: string, fields: (string | {label: string, name: string, type: 'checkbox' | 'text'})[]) => {
+            if(y > 250) { doc.addPage(); y = 15; }
+            y += 5;
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(title, 14, y);
+            y += 7;
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
 
-    doc.addPage();
-    y = 15;
+            fields.forEach(field => {
+                if (typeof field === 'string') {
+                    y += 2;
+                } else if (field.type === 'checkbox') {
+                    drawCheckbox(18, y, formData[field.name]);
+                    doc.text(field.label, 24, y);
+                    y += 6;
+                } else {
+                    const value = formData[field.name] || '';
+                    doc.text(`${field.label}:`, 18, y);
+                    const splitValue = doc.splitTextToSize(value, 120);
+                    doc.text(splitValue, 70, y);
+                    y += (splitValue.length * 5) + 2;
+                }
+            })
+        }
 
-    addSection("5. Furniture & Fixtures", [
-        {label: "Teller counters installed", name: "furniture_counters", type: 'checkbox'},
-        {label: "Customer waiting area seating", name: "furniture_seating", type: 'checkbox'},
-        {label: "Branch Manager table and chair", name: "furniture_bm", type: 'checkbox'},
-        {label: "Cash cabin partitions", name: "furniture_cash", type: 'checkbox'},
-        {label: "ATM Lobby furniture", name: "furniture_atm", type: 'checkbox'},
-        {label: "Storage cabinetry & drawers", name: "furniture_storage", type: 'checkbox'},
-        {label: "File shelving", name: "furniture_shelving", type: 'checkbox'},
-    ]);
+        addSection("Basic Information", [
+            {label: "Site / Branch Name", name: "siteName", type: 'text'},
+            {label: "City", name: "city", type: 'text'},
+            {label: "Date", name: "date", type: 'text'},
+            {label: "Visit Number", name: "visitNumber", type: 'text'},
+            {label: "Architect Name", name: "architectName", type: 'text'},
+        ]);
 
-    addSection("6. Washrooms", [
-        {label: "Floor & wall tiles installed", name: "washroom_tiles", type: 'checkbox'},
-        {label: "WC & washbasin installed", name: "washroom_wc", type: 'checkbox'},
-        {label: "Water pressure & drainage", name: "washroom_drainage", type: 'checkbox'},
-        {label: "Exhaust fan functional", name: "washroom_exhaust", type: 'checkbox'},
-        {label: "Accessories (soap, tissue, mirrors)", name: "washroom_accessories", type: 'checkbox'},
-    ]);
+        const sections = [
+            { title: "1. Exterior Works", fields: ["exterior_facade", "exterior_signage", "exterior_lighting", "exterior_door", "exterior_branding"] },
+            { title: "2. Flooring", fields: ["flooring_tiles", "flooring_alignment", "flooring_skirting", "flooring_grouting", "flooring_damage"] },
+            { title: "3. Ceiling", fields: ["ceiling_gypsum", "ceiling_paint", "ceiling_height", "ceiling_panels", "ceiling_moisture"] },
+            { title: "4. Lighting", fields: ["lighting_all", "lighting_emergency", "lighting_atm", "lighting_hall", "lighting_db"] },
+            { title: "5. Furniture & Fixtures", fields: ["furniture_counters", "furniture_seating", "furniture_bm", "furniture_cash", "furniture_atm", "furniture_storage", "furniture_shelving"] },
+            { title: "6. Washrooms", fields: ["washroom_tiles", "washroom_wc", "washroom_drainage", "washroom_exhaust", "washroom_accessories"] },
+            { title: "7. MEP", fields: ["mep_wiring", "mep_ac", "mep_diffusers", "mep_fire", "mep_cctv", "mep_plumbing"] },
+        ];
+        
+        doc.setFontSize(10);
+        sections.forEach(section => {
+            if (y > 260) { doc.addPage(); y = 15; }
+            y += 5;
+            doc.setFont('helvetica', 'bold');
+            doc.text(section.title, 14, y);
+            y += 5;
+            doc.setFont('helvetica', 'normal');
+            section.fields.forEach(fieldName => {
+                 const fieldLabel = fieldName.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                 if(y > 280) { doc.addPage(); y = 15; }
+                 drawCheckbox(18, y, formData[fieldName]);
+                 doc.text(fieldLabel, 24, y);
+                 y += 6;
+            });
+        });
+        
+        const addNotesSection = (title: string, fieldName: string) => {
+             if (y > 260) { doc.addPage(); y = 15; }
+            y += 5;
+            doc.setFont('helvetica', 'bold');
+            doc.text(title, 14, y);
+            y += 5;
+            doc.setFont('helvetica', 'normal');
+            const text = doc.splitTextToSize(formData[fieldName] || '', 180);
+            doc.text(text, 14, y);
+            y += (text.length * 5) + 5;
+        }
 
-    addSection("7. MEP (Mechanical, Electrical, Plumbing)", [
-        {label: "Electrical wiring completed", name: "mep_wiring", type: 'checkbox'},
-        {label: "AC indoor/outdoor units installed & operational", name: "mep_ac", type: 'checkbox'},
-        {label: "Air diffusers installed", name: "mep_diffusers", type: 'checkbox'},
-        {label: "Fire alarm system installed and tested", name: "mep_fire", type: 'checkbox'},
-        {label: "CCTV cameras installed & positioned properly", name: "mep_cctv", type: 'checkbox'},
-        {label: "Plumbing leak test", name: "mep_plumbing", type: 'checkbox'},
-    ]);
+        addNotesSection("8. Observations", "observations");
+        addNotesSection("9. Issues Identified", "issues");
+        addNotesSection("10. Actions & Recommendations", "actions");
 
-    addSection("8. Observations", [{label: "", name: "observations", type: 'text'}]);
-    addSection("9. Issues Identified", [{label: "", name: "issues", type: 'text'}]);
-    addSection("10. Actions & Recommendations", [{label: "", name: "actions", type: 'text'}]);
-    
-    doc.save('site-visit-proforma.pdf');
-    toast({ title: 'Download Started', description: 'Your PDF is being generated.' });
-  }
+        y += 5;
+        doc.setFont('helvetica', 'bold');
+        doc.text("11. Pictures with Comments", 14, y);
+        y += 5;
+
+        for(let i=1; i<=7; i++) {
+            const imageUrl = formData[`image${i}`];
+            const comment = formData[`comment${i}`];
+
+            if (imageUrl) {
+                 if (y > 190) { doc.addPage(); y = 15; }
+                try {
+                    const dataUrl = await toDataURL(imageUrl);
+                    doc.addImage(dataUrl as string, 'JPEG', 14, y, 80, 60);
+                    y += 65;
+
+                    if (comment) {
+                        const splitComment = doc.splitTextToSize(`Comment: ${comment}`, 180);
+                        if (y + (splitComment.length * 5) > 280) { doc.addPage(); y = 15; }
+                        doc.text(splitComment, 14, y);
+                        y += (splitComment.length * 5) + 5;
+                    }
+
+                } catch (error) {
+                    console.error("Error adding image to PDF:", error);
+                     if (y > 280) { doc.addPage(); y = 15; }
+                    doc.text("Error loading image. Please check the URL.", 14, y);
+                    y += 10;
+                }
+            }
+        }
+
+        doc.save('site-visit-proforma.pdf');
+        toast({ title: 'Download Started', description: 'Your PDF is being generated.' });
+    };
 
   const renderInput = (name: string) => {
       if (isEditing) {
@@ -484,5 +497,3 @@ const SiteVisitPage = () => {
 };
 
 export default SiteVisitPage;
-
-    
