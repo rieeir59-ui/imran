@@ -81,85 +81,100 @@ export default function FieldReportPage() {
     const handleDownload = () => {
         const doc = new jsPDF();
         let y = 15;
-        doc.setFontSize(14);
+    
+        // Header
+        doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
         doc.text("ISBAH HASSAN & ASSOCIATES", 105, y, { align: 'center'});
-        y+=5;
+        y += 6;
         doc.setFontSize(8);
         doc.text("ARCHITECTS - ENGINEERS - CONSTRUCTIONS", 105, y, { align: 'center'});
-        y+=8;
-
+        y += 8;
+    
+        // Title and checkboxes
         doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
         doc.text("ARCHITECT'S FIELD REPORT", 14, y);
-        
-        autoTable(doc, {
-          startY: y - 2,
-          body: [
-              [
-                  { content: `${formData.owner ? '[✓]' : '[ ]'} Owner`, styles: { halign: 'left' } },
-                  { content: `${formData.field ? '[✓]' : '[ ]'} Field`, styles: { halign: 'right' } }
-              ],
-              [
-                  { content: `${formData.architect_check ? '[✓]' : '[ ]'} Architect`, styles: { halign: 'left' } },
-                   { content: `${formData.other ? '[✓]' : '[ ]'} Other`, styles: { halign: 'right' } }
-              ],
-              [
-                  { content: `${formData.contractor_check ? '[✓]' : '[ ]'} Contractor`, styles: { halign: 'left' } },
-                  ''
-              ],
-          ],
-          theme: 'plain',
-          styles: { fontSize: 8 },
-          columnStyles: { 0: { cellWidth: 100 } }
-        });
-        
-        y = (doc as any).lastAutoTable.finalY + 2;
-
+    
+        let checkboxY = y - 2;
+        const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
+            doc.setFontSize(8);
+            doc.text(`${isChecked ? '[✓]' : '[ ]'} ${label}`, x, yPos);
+        };
+    
+        drawCheckbox(150, checkboxY, 'Owner', formData.owner);
+        drawCheckbox(175, checkboxY, 'Field', formData.field);
+        checkboxY += 5;
+        drawCheckbox(150, checkboxY, 'Architect', formData.architect_check);
+        drawCheckbox(175, checkboxY, 'Other', formData.other);
+        checkboxY += 5;
+        drawCheckbox(150, checkboxY, 'Contractor', formData.contractor_check);
+    
+        y = checkboxY + 2;
+    
+        // Separator
         doc.setLineWidth(0.5);
         doc.line(14, y, 200, y);
         y += 5;
-
+    
+        // Main Info Table
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
         autoTable(doc, {
             startY: y,
             body: [
                 [`Project: ${formData.project || ''}`, `Field Report No: ${formData.fieldReportNo || ''}`],
                 [`Contract: ${formData.contract || ''}`, `Architects Project No: ${formData.architectsProjectNo || ''}`],
-                [`Date: ${formData.date || ''}`, `Time: ${formData.time || ''}`, `Weather: ${formData.weather || ''}`, `Tem. Range: ${formData.tempRange || ''}`],
+                [`Date: ${formData.date || ''}  Time: ${formData.time || ''}`, `Weather: ${formData.weather || ''}  Tem. Range: ${formData.tempRange || ''}`],
                 [`Est. % of Completion: ${formData.estCompletion || ''}`, `Conformance with Schedule: ${formData.conformance || ''}`],
                 [`Work in Progress: ${formData.workInProgress || ''}`, `Present at Site: ${formData.presentAtSite || ''}`],
             ],
             theme: 'plain',
-            styles: { fontSize: 8, cellPadding: 1 },
+            styles: { fontSize: 8, cellPadding: 1, cellWidth: 'wrap' },
+            columnStyles: { 0: { cellWidth: 90 }, 1: { cellWidth: 90 } }
         });
         y = (doc as any).lastAutoTable.finalY + 3;
-
+    
+        // Sections with Textareas
         const addSection = (title: string, value: string) => {
+            const splitValue = doc.splitTextToSize(value || '', 182);
+            const requiredHeight = Math.max(splitValue.length * 4 + 10, 25);
+            if (y + requiredHeight > 280) { // Check for page break
+                doc.addPage();
+                y = 15;
+            }
             doc.setFont('helvetica', 'bold');
             doc.text(title, 14, y);
             y += 5;
             doc.setFont('helvetica', 'normal');
-            const lines = doc.splitTextToSize(value || '', 180);
-            const requiredLines = Math.max(lines.length, 5);
-            for(let i = 0; i < requiredLines; i++) {
-                doc.line(14, y, 200, y);
-                if(lines[i]) doc.text(lines[i], 14, y - 1);
-                y += 5;
-            }
-            y+=3;
+            doc.setDrawColor(200); // light grey for box
+            doc.rect(14, y, 182, requiredHeight - 8);
+            doc.text(splitValue, 15, y + 4);
+            y += requiredHeight;
         }
-
+    
         addSection("Observations:", formData.observations);
         addSection("Items to Verify:", formData.itemsToVerify);
         addSection("Information or Action Required:", formData.infoOrAction);
         addSection("Attachments:", formData.attachments);
-        addSection("Report By:", formData.reportBy);
+    
+        // Signature
+        if (y > 270) { doc.addPage(); y = 15; }
+        doc.setFont('helvetica', 'bold');
+        doc.text("Report By:", 14, y);
+        doc.setFont('helvetica', 'normal');
+        doc.text(formData.reportBy || '', 50, y);
+        doc.line(48, y + 1, 120, y + 1);
+        y+=10;
         
-        y = doc.internal.pageSize.height - 10;
+        // Footer
+        y = doc.internal.pageSize.height - 15;
         doc.setLineWidth(0.2);
         doc.line(14, y, 196, y);
         y += 4;
         doc.setFontSize(7);
-        doc.text("Y-101 (Com), Phase-III, DHA Lahore Cantt | 0321-6995378, 042-35692522 | info@isbahhassan.com | www.isbahhassan.com", 105, y, { align: 'center'});
+        const footerText = "Y-101 (Com), Phase-III, DHA Lahore Cantt | 0321-6995378, 042-35692522 | info@isbahhassan.com | www.isbahhassan.com";
+        doc.text(footerText, 105, y, { align: 'center'});
 
         doc.save("architect-field-report.pdf");
         toast({ title: 'Download Started' });
@@ -172,7 +187,7 @@ export default function FieldReportPage() {
     
     const renderCheckbox = (name: string, label: string) => {
         return <div className="flex items-center gap-2">
-            <Checkbox id={name} name={name} checked={formData[name]} onCheckedChange={(checked) => handleCheckboxChange(name, checked)} disabled={!isEditing} />
+            <Checkbox id={name} name={name} checked={formData[name]} onCheckedChange={(checked) => handleCheckboxChange(name, checked as boolean)} disabled={!isEditing} />
             <Label htmlFor={name} className="font-normal">{label}</Label>
         </div>
     }
@@ -246,3 +261,4 @@ export default function FieldReportPage() {
         </main>
     );
 }
+
