@@ -166,6 +166,23 @@ const SiteVisitPage = () => {
     doc.setFontSize(16);
     doc.text("Detailed Site Visit Proforma – Architect Visit", 105, y, { align: 'center' });
     y += 10;
+    
+    const drawCheckbox = (x: number, yPos: number, isChecked: boolean) => {
+        const boxSize = 3.5;
+        doc.setDrawColor(0);
+        if (isChecked) {
+            doc.setFillColor(0, 0, 0);
+            doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
+            doc.setFont('ZapfDingbats');
+            doc.setTextColor(255,255,255);
+            doc.text('✓', x + 0.5, yPos - 0.5);
+            doc.setTextColor(0,0,0);
+        } else {
+             doc.setFillColor(255, 255, 255);
+            doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
+        }
+        doc.setFont('helvetica', 'normal');
+    };
 
     const addSection = (title: string, fields: (string | {label: string, name: string, type: 'checkbox' | 'text'})[]) => {
         if(y > 250) { doc.addPage(); y = 15; }
@@ -181,7 +198,8 @@ const SiteVisitPage = () => {
             if (typeof field === 'string') {
                  y += 2; // small space
             } else if (field.type === 'checkbox') {
-                 doc.text(`${formData[field.name] ? '[✓]' : '[ ]'} ${field.label}`, 18, y);
+                 drawCheckbox(18, y, formData[field.name]);
+                 doc.text(field.label, 24, y);
                  y += 6;
             } else {
                  const value = formData[field.name] || '';
@@ -267,8 +285,6 @@ const SiteVisitPage = () => {
     addSection("9. Issues Identified", [{label: "", name: "issues", type: 'text'}]);
     addSection("10. Actions & Recommendations", [{label: "", name: "actions", type: 'text'}]);
     
-    // Comments are not included in PDF as pictures cannot be embedded easily.
-
     doc.save('site-visit-proforma.pdf');
     toast({ title: 'Download Started', description: 'Your PDF is being generated.' });
   }

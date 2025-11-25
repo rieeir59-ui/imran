@@ -135,14 +135,33 @@ export default function TransmittalLetterPage() {
         doc.text(`Attn: ${formData.attn || ''}`, 14, leftY);
         leftY += 10;
 
+        const drawCheckbox = (x: number, yPos: number, isChecked: boolean) => {
+            const boxSize = 3;
+            doc.setDrawColor(0);
+            if (isChecked) {
+                doc.setFillColor(0, 0, 0);
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
+                doc.setFont('ZapfDingbats');
+                doc.setTextColor(255, 255, 255);
+                doc.text('✓', x + 0.5, yPos - 0.5);
+                doc.setTextColor(0, 0, 0);
+            } else {
+                doc.setFillColor(255, 255, 255);
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
+            }
+            doc.setFont('helvetica', 'normal');
+        };
+
         doc.setFontSize(8);
         doc.text("If Enclosures are not as noted, Please Inform us immediately.", 130, rightY);
         rightY += 5;
         doc.text("If checked below, please:", 130, rightY);
         rightY += 5;
-        doc.text(formData.ack_receipt ? '[X] Acknowledge Receipt of Enclosures.' : '[ ] Acknowledge Receipt of Enclosures.', 135, rightY);
+        drawCheckbox(135, rightY, formData.ack_receipt);
+        doc.text('Acknowledge Receipt of Enclosures.', 140, rightY);
         rightY += 5;
-        doc.text(formData.return_enclosures ? '[X] Return Enclosures to us.' : '[ ] Return Enclosures to us.', 135, rightY);
+        drawCheckbox(135, rightY, formData.return_enclosures);
+        doc.text('Return Enclosures to us.', 140, rightY);
         
         y = Math.max(leftY, rightY) + 5;
 
@@ -157,46 +176,49 @@ export default function TransmittalLetterPage() {
         doc.text(`${formData.transmit_method === 'request' ? '(X)' : '( )'} in accordance with your request`, 18, y);
         y += 8;
 
-        const addCheckboxColumn = (title: string, items: {name: string, label: string}[], startX: number) => {
+        const addCheckboxColumn = (title: string, items: {name: string, label: string}[], startX: number, startY: number) => {
             doc.setFont('helvetica', 'bold');
-            doc.text(title, startX, y);
+            doc.text(title, startX, startY);
             doc.setFont('helvetica', 'normal');
-            let itemY = y + 5;
+            let itemY = startY + 5;
             items.forEach(item => {
-                doc.text(`${formData[item.name] ? '[X]' : '[ ]'} ${item.label}`, startX, itemY);
+                drawCheckbox(startX, itemY, formData[item.name]);
+                doc.text(item.label, startX + 5, itemY);
                 itemY += 5;
             });
+            return itemY;
         }
         
-        addCheckboxColumn("For Your:", [
+        let y1 = addCheckboxColumn("For Your:", [
             { name: 'for_approval', label: 'approval' },
             { name: 'for_review', label: 'review & comment' },
             { name: 'for_use', label: 'use' },
-        ], 14);
+        ], 14, y);
         
-        addCheckboxColumn("", [
+        let y2 = addCheckboxColumn("", [
             { name: 'for_distribution', label: 'distribution to parties' },
             { name: 'for_record', label: 'record' },
             { name: 'for_info', label: 'information' },
-        ], 70);
-        y += 25;
+        ], 70, y);
+        
+        y = Math.max(y1, y2) + 5;
 
-        addCheckboxColumn("The Following:", [
+        y1 = addCheckboxColumn("The Following:", [
             { name: 'following_drawings', label: 'Drawings' },
             { name: 'following_specs', label: 'Specifications' },
             { name: 'following_co', label: 'Change Order' },
-        ], 14);
+        ], 14, y);
 
-        addCheckboxColumn("", [
+        y2 = addCheckboxColumn("", [
             { name: 'following_prints', label: 'Shop Drawing Prints' },
             { name: 'following_repro', label: 'Shop Drawing Reproducible' },
-        ], 70);
+        ], 70, y);
 
-        addCheckboxColumn("", [
+        let y3 = addCheckboxColumn("", [
             { name: 'following_samples', label: 'Samples' },
             { name: 'following_literature', label: 'Product Literature' },
-        ], 130);
-        y += 25;
+        ], 130, y);
+        y = Math.max(y1, y2, y3) + 5;
 
         const tableHead = [['Copies', 'Date', 'Rev. No.', 'Description', 'Action Code']];
         const tableBody = formData.items.map((item: any) => [item.copies, item.date, item.revNo, item.description, item.actionCode]);
@@ -400,3 +422,5 @@ export default function TransmittalLetterPage() {
         </main>
     );
 }
+
+    
