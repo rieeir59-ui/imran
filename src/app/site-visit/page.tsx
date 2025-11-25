@@ -159,6 +159,120 @@ const SiteVisitPage = () => {
       .finally(() => setIsSaving(false));
   };
   
+  const handleDownload = () => {
+    const doc = new jsPDF();
+    let y = 15;
+
+    doc.setFontSize(16);
+    doc.text("Detailed Site Visit Proforma – Architect Visit", 105, y, { align: 'center' });
+    y += 10;
+
+    const addSection = (title: string, fields: (string | {label: string, name: string, type: 'checkbox' | 'text'})[]) => {
+        if(y > 250) { doc.addPage(); y = 15; }
+        y += 5;
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text(title, 14, y);
+        y += 7;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+
+        fields.forEach(field => {
+            if (typeof field === 'string') {
+                 y += 2; // small space
+            } else if (field.type === 'checkbox') {
+                 doc.text(`${formData[field.name] ? '[✓]' : '[ ]'} ${field.label}`, 18, y);
+                 y += 6;
+            } else {
+                 const value = formData[field.name] || '';
+                 doc.text(`${field.label}:`, 18, y);
+                 const splitValue = doc.splitTextToSize(value, 120);
+                 doc.text(splitValue, 70, y);
+                 y += (splitValue.length * 5) + 2;
+            }
+        })
+    }
+
+    addSection("Basic Information", [
+        {label: "Site / Branch Name", name: "siteName", type: 'text'},
+        {label: "City", name: "city", type: 'text'},
+        {label: "Date", name: "date", type: 'text'},
+        {label: "Visit Number", name: "visitNumber", type: 'text'},
+        {label: "Architect Name", name: "architectName", type: 'text'},
+    ]);
+    
+    addSection("1. Exterior Works", [
+        {label: "Facade condition", name: "exterior_facade", type: 'checkbox'},
+        {label: "External signage installed", name: "exterior_signage", type: 'checkbox'},
+        {label: "Outdoor lighting functional", name: "exterior_lighting", type: 'checkbox'},
+        {label: "Entrance door alignment & quality", name: "exterior_door", type: 'checkbox'},
+        {label: "Branding elements (panels/vinyls) installed", name: "exterior_branding", type: 'checkbox'},
+    ]);
+    
+    addSection("2. Flooring", [
+        {label: "Tiles installed as per approved design", name: "flooring_tiles", type: 'checkbox'},
+        {label: "Tile alignment and leveling", name: "flooring_alignment", type: 'checkbox'},
+        {label: "Skirting installation", name: "flooring_skirting", type: 'checkbox'},
+        {label: "Grouting quality", name: "flooring_grouting", type: 'checkbox'},
+        {label: "Any cracks or damages observed", name: "flooring_damage", type: 'checkbox'},
+    ]);
+    
+    addSection("3. Ceiling", [
+        {label: "Gypsum ceiling installed", name: "ceiling_gypsum", type: 'checkbox'},
+        {label: "Ceiling paint finish", name: "ceiling_paint", type: 'checkbox'},
+        {label: "Ceiling height as per plan", name: "ceiling_height", type: 'checkbox'},
+        {label: "Access panels installed", name: "ceiling_panels", type: 'checkbox'},
+        {label: "No moisture / cracks visible", name: "ceiling_moisture", type: 'checkbox'},
+    ]);
+    
+    addSection("4. Lighting", [
+        {label: "All lights installed (LED panels, spotlights, etc.)", name: "lighting_all", type: 'checkbox'},
+        {label: "Emergency lights operational", name: "lighting_emergency", type: 'checkbox'},
+        {label: "ATM room lighting", name: "lighting_atm", type: 'checkbox'},
+        {label: "Customer hall lighting uniformity", name: "lighting_hall", type: 'checkbox'},
+        {label: "DB (Distribution Board) labeling", name: "lighting_db", type: 'checkbox'},
+    ]);
+
+    doc.addPage();
+    y = 15;
+
+    addSection("5. Furniture & Fixtures", [
+        {label: "Teller counters installed", name: "furniture_counters", type: 'checkbox'},
+        {label: "Customer waiting area seating", name: "furniture_seating", type: 'checkbox'},
+        {label: "Branch Manager table and chair", name: "furniture_bm", type: 'checkbox'},
+        {label: "Cash cabin partitions", name: "furniture_cash", type: 'checkbox'},
+        {label: "ATM Lobby furniture", name: "furniture_atm", type: 'checkbox'},
+        {label: "Storage cabinetry & drawers", name: "furniture_storage", type: 'checkbox'},
+        {label: "File shelving", name: "furniture_shelving", type: 'checkbox'},
+    ]);
+
+    addSection("6. Washrooms", [
+        {label: "Floor & wall tiles installed", name: "washroom_tiles", type: 'checkbox'},
+        {label: "WC & washbasin installed", name: "washroom_wc", type: 'checkbox'},
+        {label: "Water pressure & drainage", name: "washroom_drainage", type: 'checkbox'},
+        {label: "Exhaust fan functional", name: "washroom_exhaust", type: 'checkbox'},
+        {label: "Accessories (soap, tissue, mirrors)", name: "washroom_accessories", type: 'checkbox'},
+    ]);
+
+    addSection("7. MEP (Mechanical, Electrical, Plumbing)", [
+        {label: "Electrical wiring completed", name: "mep_wiring", type: 'checkbox'},
+        {label: "AC indoor/outdoor units installed & operational", name: "mep_ac", type: 'checkbox'},
+        {label: "Air diffusers installed", name: "mep_diffusers", type: 'checkbox'},
+        {label: "Fire alarm system installed and tested", name: "mep_fire", type: 'checkbox'},
+        {label: "CCTV cameras installed & positioned properly", name: "mep_cctv", type: 'checkbox'},
+        {label: "Plumbing leak test", name: "mep_plumbing", type: 'checkbox'},
+    ]);
+
+    addSection("8. Observations", [{label: "", name: "observations", type: 'text'}]);
+    addSection("9. Issues Identified", [{label: "", name: "issues", type: 'text'}]);
+    addSection("10. Actions & Recommendations", [{label: "", name: "actions", type: 'text'}]);
+    
+    // Comments are not included in PDF as pictures cannot be embedded easily.
+
+    doc.save('site-visit-proforma.pdf');
+    toast({ title: 'Download Started', description: 'Your PDF is being generated.' });
+  }
+
   const renderInput = (name: string) => {
       if (isEditing) {
           return <Input name={name} value={formData[name] || ''} onChange={handleInputChange} />
@@ -210,7 +324,7 @@ const SiteVisitPage = () => {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Detailed Site Visit Proforma – Architect Visit</CardTitle>
            <div className="flex gap-2">
-            <Button variant="outline"><Download className="mr-2"/>PDF</Button>
+            <Button variant="outline" onClick={handleDownload}><Download className="mr-2"/>PDF</Button>
             {isEditing ? (
                 <Button onClick={handleSave} disabled={isSaving}>
                     {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />} Save
@@ -317,3 +431,5 @@ const SiteVisitPage = () => {
 };
 
 export default SiteVisitPage;
+
+    
