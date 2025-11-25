@@ -5,10 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useUser, useMemoFirebase } from "@/firebase";
+import { useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -40,7 +39,7 @@ const initialSubRecord = () => ({
 const initialRecord = () => ({
     specSectionNo: '',
     shopDrawingOrSampleNo: '',
-    subRecords: [initialSubRecord(), initialSubRecord(), initialSubRecord()],
+    subRecords: Array(3).fill(null).map(() => initialSubRecord()),
 });
 
 const FormField = ({ label, children }: { label: string, children: React.ReactNode }) => (
@@ -66,7 +65,10 @@ export default function ShopDrawingsRecordPage() {
     }, [user, firestore]);
     
     useEffect(() => {
-        if (!docRef) return;
+        if (!docRef) {
+            setIsLoading(false);
+            return;
+        }
         setIsLoading(true);
         getDoc(docRef).then(docSnap => {
             if (docSnap.exists()) {
@@ -74,13 +76,20 @@ export default function ShopDrawingsRecordPage() {
                 const records = data.records?.map((r: any) => ({
                     ...initialRecord(),
                     ...r,
-                    subRecords: r.subRecords?.map((sr: any) => ({...initialSubRecord(), ...sr})) || [initialSubRecord(), initialSubRecord(), initialSubRecord()]
+                    subRecords: r.subRecords?.map((sr: any) => ({...initialSubRecord(), ...sr})) || Array(3).fill(null).map(() => initialSubRecord())
                 })) || Array(12).fill(null).map(() => initialRecord());
 
                 setFormData({ ...data, records });
             } else {
                 setFormData({ records: Array(12).fill(null).map(() => initialRecord()) });
             }
+        }).catch(err => {
+            console.error("Firebase read error:", err);
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'get',
+            });
+            errorEmitter.emit('permission-error', permissionError);
         }).finally(() => setIsLoading(false));
     }, [docRef]);
 
@@ -106,6 +115,13 @@ export default function ShopDrawingsRecordPage() {
         setDoc(docRef, formData, { merge: true }).then(() => {
             toast({ title: 'Success', description: 'Shop Drawings Record saved.' });
             setIsEditing(false);
+        }).catch(serverError => {
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'write',
+                requestResourceData: formData
+            });
+            errorEmitter.emit('permission-error', permissionError);
         }).finally(() => setIsSaving(false));
     };
 
@@ -123,7 +139,7 @@ export default function ShopDrawingsRecordPage() {
         
         let startY = 35;
         formData.records.forEach((record: any, recordIndex: number) => {
-            if (recordIndex > 0 && recordIndex % 4 === 0) { // Add new page for every 4 records to avoid overflow
+            if (startY > 160) { 
                 doc.addPage();
                 startY = 15;
             }
@@ -139,7 +155,6 @@ export default function ShopDrawingsRecordPage() {
             });
             startY = (doc as any).lastAutoTable.finalY;
         });
-
 
         doc.save("shop-drawings-record.pdf");
         toast({ title: "Download Started", description: "PDF generation is in progress." });
@@ -197,16 +212,16 @@ export default function ShopDrawingsRecordPage() {
                 </div>
                 <div className="space-y-2">
                     {formData.records.map((record: any, recordIndex: number) => (
-                    <Table key={recordIndex} id={`record-table-${recordIndex}`} className="border">
+                    <Table key={recordIndex} id={`record-table-${recordIndex}`} className="border text-xs">
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-20">Date Record</TableHead>
                                 <TableHead className="w-48">
-                                    Spec. Section No.
+                                    <div className="mb-1">Spec. Section No.</div>
                                     {renderRecordInput(recordIndex, 'specSectionNo')}
-                                    Shop Drawing or Sample Drawing No.
+                                    <div className="mt-2 mb-1">Shop Drawing or Sample Drawing No.</div>
                                     {renderRecordInput(recordIndex, 'shopDrawingOrSampleNo')}
-                                    Title
+                                    <div className="mt-2">Title</div>
                                 </TableHead>
                                 <TableHead className="w-24">Contractor Subcontractor Trade</TableHead>
                                 <TableHead className="w-16"># Record</TableHead>
@@ -224,10 +239,10 @@ export default function ShopDrawingsRecordPage() {
                                 <TableHead># Copies</TableHead>
                                 <TableHead>Date Ret'd.</TableHead>
                                 <TableHead className="w-48">
-                                    <div className="flex items-center gap-1"><Checkbox disabled/> Approved</div>
-                                    <div className="flex items-center gap-1"><Checkbox disabled/> App'd as Noted</div>
-                                    <div className="flex items-center gap-1"><Checkbox disabled/> Revise & Resubmit</div>
-                                    <div className="flex items-center gap-1"><Checkbox disabled/> Not Approved</div>
+                                    <div className="flex items-center gap-1 text-xs"><Checkbox disabled/> Approved</div>
+                                    <div className="flex items-center gap-1 text-xs"><Checkbox disabled/> App'd as Noted</div>
+                                    <div className="flex items-center gap-1 text-xs"><Checkbox disabled/> Revise & Resubmit</div>
+                                    <div className="flex items-center gap-1 text-xs"><Checkbox disabled/> Not Approved</div>
                                 </TableHead>
                                 <TableHead>Date Ret'd.</TableHead>
                                 <TableHead><Checkbox disabled/> Contractor</TableHead>
@@ -248,10 +263,10 @@ export default function ShopDrawingsRecordPage() {
                                 <TableCell>{renderSubRecordInput(recordIndex, subIndex, 'numCopies')}</TableCell>
                                 <TableCell>{renderSubRecordInput(recordIndex, subIndex, 'dateRetdReferred')}</TableCell>
                                 <TableCell>
-                                    {renderSubRecordCheckbox(recordIndex, subIndex, 'actionApproved')}
-                                    {renderSubRecordCheckbox(recordIndex, subIndex, 'actionApprovedAsNoted')}
-                                    {renderSubRecordCheckbox(recordIndex, subIndex, 'actionReviseResubmit')}
-                                    {renderSubRecordCheckbox(recordIndex, subIndex, 'actionNotApproved')}
+                                    <div className='flex items-center'>{renderSubRecordCheckbox(recordIndex, subIndex, 'actionApproved')}</div>
+                                    <div className='flex items-center'>{renderSubRecordCheckbox(recordIndex, subIndex, 'actionApprovedAsNoted')}</div>
+                                    <div className='flex items-center'>{renderSubRecordCheckbox(recordIndex, subIndex, 'actionReviseResubmit')}</div>
+                                    <div className='flex items-center'>{renderSubRecordCheckbox(recordIndex, subIndex, 'actionNotApproved')}</div>
                                 </TableCell>
                                 <TableCell>{renderSubRecordInput(recordIndex, subIndex, 'actionDateRetd')}</TableCell>
                                 <TableCell>{renderSubRecordCheckbox(recordIndex, subIndex, 'copiesToContractor')}</TableCell>
