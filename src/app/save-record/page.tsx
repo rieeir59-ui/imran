@@ -9,6 +9,7 @@ import { useFirestore, useUser, useMemoFirebase } from "@/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from "react";
 
 
 interface Schedule {
@@ -115,9 +116,9 @@ export default function SaveRecordPage() {
                     <CardTitle>Employee Work Schedules</CardTitle>
                 </CardHeader>
                 <CardContent>
-                   <React.Suspense fallback={<div className="p-4 rounded-lg border animate-pulse bg-muted h-32"></div>}>
+                   <Suspense fallback={<div className="p-4 rounded-lg border animate-pulse bg-muted h-32"></div>}>
                         <SchedulesList />
-                   </React.Suspense>
+                   </Suspense>
                 </CardContent>
             </Card>
         </main>
