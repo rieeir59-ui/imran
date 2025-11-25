@@ -1,12 +1,12 @@
 
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { UploadCloud, File, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { UploadCloud, File, MoreVertical, Edit, Trash2, Save } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -21,11 +21,14 @@ interface UploadedFile {
   name: string;
   size: number;
   type: string;
+  url: string;
 }
 
 export default function FileManagerPage() {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const { toast } = useToast();
+  const [editingFile, setEditingFile] = useState<string | null>(null);
+  const [newFileName, setNewFileName] = useState('');
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles: UploadedFile[] = acceptedFiles.map(file => ({
@@ -33,6 +36,7 @@ export default function FileManagerPage() {
       name: file.name,
       size: file.size,
       type: file.type,
+      url: URL.createObjectURL(file)
     }));
 
     setFiles(prevFiles => [...prevFiles, ...newFiles]);
@@ -42,6 +46,13 @@ export default function FileManagerPage() {
       description: `${newFiles.length} file(s) have been added.`,
     });
   }, [toast]);
+  
+  useEffect(() => {
+    // Cleanup object URLs on unmount
+    return () => {
+        files.forEach(file => URL.revokeObjectURL(file.url));
+    }
+  }, [files]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
@@ -53,13 +64,31 @@ export default function FileManagerPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const removeFile = (fileName: string) => {
-    setFiles(files.filter(f => f.name !== fileName));
+  const removeFile = (fileUrl: string) => {
+    const fileToRemove = files.find(f => f.url === fileUrl);
+    if(fileToRemove) {
+        URL.revokeObjectURL(fileUrl);
+        setFiles(files.filter(f => f.url !== fileUrl));
+        toast({
+            title: "File Removed",
+            description: `${fileToRemove.name} has been removed from the list.`,
+            variant: "destructive"
+        })
+    }
+  }
+  
+  const handleEdit = (file: UploadedFile) => {
+    setEditingFile(file.url);
+    setNewFileName(file.name);
+  }
+
+  const handleSaveRename = (fileUrl: string) => {
+    setFiles(files.map(f => f.url === fileUrl ? { ...f, name: newFileName } : f));
+    setEditingFile(null);
     toast({
-        title: "File Removed",
-        description: `${fileName} has been removed from the list.`,
-        variant: "destructive"
-    })
+      title: "File Renamed",
+      description: `The file has been renamed to ${newFileName}.`,
+    });
   }
 
   return (
@@ -109,9 +138,20 @@ export default function FileManagerPage() {
                             </TableRow>
                         ) : (
                             files.map((uploadedFile, index) => (
-                                <TableRow key={index}>
+                                <TableRow key={uploadedFile.url}>
                                     <TableCell><File className="h-5 w-5 text-muted-foreground" /></TableCell>
-                                    <TableCell className="font-medium">{uploadedFile.name}</TableCell>
+                                    <TableCell className="font-medium">
+                                        {editingFile === uploadedFile.url ? (
+                                            <div className="flex items-center gap-2">
+                                                <Input value={newFileName} onChange={(e) => setNewFileName(e.target.value)} className="h-8"/>
+                                                <Button size="sm" onClick={() => handleSaveRename(uploadedFile.url)}><Save className="h-4 w-4"/></Button>
+                                            </div>
+                                        ) : (
+                                            <a href={uploadedFile.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary">
+                                                {uploadedFile.name}
+                                            </a>
+                                        )}
+                                    </TableCell>
                                     <TableCell className="text-muted-foreground">{uploadedFile.type}</TableCell>
                                     <TableCell className="text-right text-muted-foreground">{formatFileSize(uploadedFile.size)}</TableCell>
                                     <TableCell>
@@ -122,11 +162,11 @@ export default function FileManagerPage() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
-                                                <DropdownMenuItem disabled>
+                                                <DropdownMenuItem onClick={() => handleEdit(uploadedFile)}>
                                                     <Edit className="mr-2 h-4 w-4" />
-                                                    <span>Edit</span>
+                                                    <span>Rename</span>
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => removeFile(uploadedFile.name)} className="text-destructive">
+                                                <DropdownMenuItem onClick={() => removeFile(uploadedFile.url)} className="text-destructive">
                                                     <Trash2 className="mr-2 h-4 w-4" />
                                                     <span>Delete</span>
                                                 </DropdownMenuItem>
