@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { UploadCloud, File, MoreVertical, Edit, Trash2, Save, Loader2 } from 'lucide-react';
+import { UploadCloud, File, MoreVertical, Edit, Trash2, Save, Loader2, PlusCircle, ArrowLeft } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Textarea } from '@/components/ui/textarea';
 
 interface UploadedFile {
   file: File;
@@ -22,6 +23,7 @@ interface UploadedFile {
   size: number;
   type: string;
   url: string;
+  content?: string; // For text files
 }
 
 export default function FileManagerPage() {
@@ -30,6 +32,9 @@ export default function FileManagerPage() {
   const [editingFile, setEditingFile] = useState<string | null>(null);
   const [newFileName, setNewFileName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [activeFile, setActiveFile] = useState<UploadedFile | null>(null);
+  const [editorContent, setEditorContent] = useState('');
+
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles: UploadedFile[] = acceptedFiles.map(file => ({
@@ -51,7 +56,11 @@ export default function FileManagerPage() {
   useEffect(() => {
     // Cleanup object URLs on unmount
     return () => {
-        files.forEach(file => URL.revokeObjectURL(file.url));
+        files.forEach(file => {
+          if (file.url.startsWith('blob:')) {
+            URL.revokeObjectURL(file.url)
+          }
+        });
     }
   }, [files]);
 
@@ -68,7 +77,9 @@ export default function FileManagerPage() {
   const removeFile = (fileUrl: string) => {
     const fileToRemove = files.find(f => f.url === fileUrl);
     if(fileToRemove) {
-        URL.revokeObjectURL(fileUrl);
+        if (fileToRemove.url.startsWith('blob:')) {
+          URL.revokeObjectURL(fileUrl);
+        }
         setFiles(files.filter(f => f.url !== fileUrl));
         toast({
             title: "File Removed",
@@ -103,6 +114,68 @@ export default function FileManagerPage() {
         });
     }, 1500);
   }
+  
+  const handleFileClick = (file: UploadedFile) => {
+    if (file.type === 'text/plain') {
+        setActiveFile(file);
+        setEditorContent(file.content || '');
+    } else {
+        window.open(file.url, '_blank');
+    }
+  }
+  
+  const handleSaveTextFile = () => {
+    if (!activeFile) return;
+    const updatedFile = { ...activeFile, content: editorContent, size: new Blob([editorContent]).size };
+    setFiles(files.map(f => f.url === activeFile.url ? updatedFile : f));
+    setActiveFile(null);
+    toast({
+        title: "Text File Saved",
+        description: `${activeFile.name} has been updated.`,
+    });
+  }
+
+  const createNewTextFile = () => {
+    const fileNumber = files.filter(f => f.name.startsWith('new-text-file')).length + 1;
+    const newFile: UploadedFile = {
+        name: `new-text-file-${fileNumber}.txt`,
+        type: 'text/plain',
+        content: '',
+        size: 0,
+        url: `text-file-${Date.now()}`,
+        file: new File([''], `new-text-file-${fileNumber}.txt`, {type: 'text/plain'})
+    };
+    setFiles(prev => [newFile, ...prev]);
+    setActiveFile(newFile);
+    setEditorContent('');
+    toast({ title: 'New Text File Created' });
+  }
+
+  if (activeFile) {
+    return (
+        <main className="p-4 md:p-6 lg:p-8">
+            <Card>
+                <CardHeader>
+                    <div className="flex justify-between items-center">
+                        <CardTitle>Editing: {activeFile.name}</CardTitle>
+                        <div className="flex gap-2">
+                           <Button variant="outline" onClick={() => setActiveFile(null)}><ArrowLeft className="mr-2"/> Back to Files</Button>
+                           <Button onClick={handleSaveTextFile}><Save className="mr-2"/> Save and Close</Button>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <Textarea 
+                        value={editorContent}
+                        onChange={(e) => setEditorContent(e.target.value)}
+                        className="h-[60vh] font-mono"
+                        placeholder="Start writing your text file here..."
+                    />
+                </CardContent>
+            </Card>
+        </main>
+    );
+  }
 
   return (
     <main className="p-4 md:p-6 lg:p-8">
@@ -127,6 +200,10 @@ export default function FileManagerPage() {
                 <p>Drag 'n' drop some files here, or click to select files</p>
                 )}
             </div>
+          </div>
+          
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={createNewTextFile}><PlusCircle className="mr-2"/> Create New Text File</Button>
           </div>
 
           <div>
@@ -160,9 +237,9 @@ export default function FileManagerPage() {
                                                 <Button size="icon" className="h-8 w-8" onClick={() => handleSaveRename(uploadedFile.url)}><Save className="h-4 w-4"/></Button>
                                             </div>
                                         ) : (
-                                            <a href={uploadedFile.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary">
+                                            <button onClick={() => handleFileClick(uploadedFile)} className="hover:underline text-primary text-left">
                                                 {uploadedFile.name}
-                                            </a>
+                                            </button>
                                         )}
                                     </TableCell>
                                     <TableCell className="text-muted-foreground">{uploadedFile.type}</TableCell>
