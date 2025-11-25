@@ -98,14 +98,6 @@ const DrawingsList = React.memo(({ formData, handleInputChange, isEditing, setFo
             <Table>
                 <TableHeader><TableRow><TableHead>Serial No.</TableHead><TableHead>Drawings Title</TableHead><TableHead>Starting Date</TableHead><TableHead>Completion Date</TableHead><TableHead>Remarks</TableHead></TableRow></TableHeader>
                 <TableBody>
-                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Introduction (AR-01-AR-10)</TableCell></TableRow>
-                    {formData.introduction?.map((item: any, i: number) => renderDrawingRow(item, 'introduction', i, `AR-${String(i + 1).padStart(2, '0')}`))}
-                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Working Layout Drawings (AR-11-AR-20)</TableCell></TableRow>
-                    {formData.workingLayoutDrawings?.map((item: any, i: number) => renderDrawingRow(item, 'workingLayoutDrawings', i, `AR-${i + 11}`))}
-                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Elevation & Section Drawings (AR-21-AR-40)</TableCell></TableRow>
-                    {formData.elevationAndSectionDrawings?.map((item: any, i: number) => renderDrawingRow(item, 'elevationAndSectionDrawings', i, `AR-${i + 21}`))}
-                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Doors & Windows Drawings (AR-41-AR-80)</TableCell></TableRow>
-                    {formData.doorsAndWindowsDrawings?.map((item: any, i: number) => renderDrawingRow(item, 'doorsAndWindowsDrawings', i, `AR-${i + 41}`))}
                     <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Architectural Drawings</TableCell></TableRow>
                     {formData.architecturalDrawings?.map((item: any, i: number) => renderDrawingRow(item, 'architecturalDrawings', i, i + 1))}
                     <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Details</TableCell></TableRow>
@@ -116,6 +108,14 @@ const DrawingsList = React.memo(({ formData, handleInputChange, isEditing, setFo
                     {formData.plumbingDrawings?.map((item: any, i: number) => renderDrawingRow(item, 'plumbingDrawings', i, i + 1 + (formData.architecturalDrawings?.length || 0) + (formData.details?.length || 0) + (formData.structureDrawings?.length || 0)))}
                     <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Electrification Drawings</TableCell></TableRow>
                     {formData.electrificationDrawings?.map((item: any, i: number) => renderDrawingRow(item, 'electrificationDrawings', i, i + 1 + (formData.architecturalDrawings?.length || 0) + (formData.details?.length || 0) + (formData.structureDrawings?.length || 0) + (formData.plumbingDrawings?.length || 0)))}
+                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Introduction (AR-01-AR-10)</TableCell></TableRow>
+                    {formData.introduction?.map((item: any, i: number) => renderDrawingRow(item, 'introduction', i, `AR-${String(i + 1).padStart(2, '0')}`))}
+                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Working Layout Drawings (AR-11-AR-20)</TableCell></TableRow>
+                    {formData.workingLayoutDrawings?.map((item: any, i: number) => renderDrawingRow(item, 'workingLayoutDrawings', i, `AR-${i + 11}`))}
+                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Elevation & Section Drawings (AR-21-AR-40)</TableCell></TableRow>
+                    {formData.elevationAndSectionDrawings?.map((item: any, i: number) => renderDrawingRow(item, 'elevationAndSectionDrawings', i, `AR-${i + 21}`))}
+                    <TableRow><TableCell colSpan={5} className="font-bold bg-muted">Doors & Windows Drawings (AR-41-AR-80)</TableCell></TableRow>
+                    {formData.doorsAndWindowsDrawings?.map((item: any, i: number) => renderDrawingRow(item, 'doorsAndWindowsDrawings', i, `AR-${i + 41}`))}
                 </TableBody>
             </Table>
         </div>
@@ -256,3 +256,4 @@ export default function DrawingsPage() {
     </main>
     );
 };
+
