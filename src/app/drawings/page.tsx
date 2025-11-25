@@ -11,6 +11,7 @@ const drawingCategories = [
     { title: 'Structural Drawings', href: '/structural-drawings', icon: Hammer },
     { title: 'Plumbing Drawings', href: '/plumbing-drawings', icon: Wrench },
     { title: 'Electrification Drawings', href: '/electrification-drawings', icon: Zap },
+    { title: 'Shop Drawings Sample Record', href: '/shop-drawings-record', icon: LayoutList },
     { title: 'Lighting Drawings', href: '/lighting-drawings', icon: Lamp },
 ];
 

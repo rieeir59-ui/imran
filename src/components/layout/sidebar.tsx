@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useState, useEffect } from 'react';
 import { 
@@ -13,7 +12,7 @@ import {
   SidebarGroupLabel,
   SidebarInput,
 } from "@/components/ui/sidebar";
-import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image } from 'lucide-react';
+import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 
@@ -32,6 +31,7 @@ const projectFormsItems = [
   { href: '/site-survey', icon: FileText, label: 'Site Survey' },
   { href: '/proposal-request', icon: FileText, label: 'Proposal Request' },
   { href: '/drawings', icon: Image, label: 'List of Drawings' },
+  { href: '/shop-drawings-record', icon: LayoutList, label: 'Shop Drawings Record' },
   { href: '/project-timeline', icon: GanttChart, label: 'Project Timeline' },
   { href: '/bank', icon: ScrollText, label: 'Bank Forms' },
   { href: '/weekly-schedule', icon: CalendarClock, label: 'Work Schedule' },
@@ -58,7 +58,7 @@ const timelineItems = [
 
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile } = useSidebar();
   const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
 
@@ -76,38 +76,40 @@ export function AppSidebar() {
       </SidebarMenuItem>
     ));
   };
+  
+  const SidebarContentHolder = () => (
+    <>
+      <SidebarMenu>
+        {renderMenuItems(mainMenuItems)}
+      </SidebarMenu>
+  
+      <SidebarGroup>
+        <SidebarGroupLabel>Project Forms</SidebarGroupLabel>
+        <SidebarMenu>
+          {renderMenuItems(projectFormsItems)}
+        </SidebarMenu>
+      </SidebarGroup>
+      
+      <SidebarGroup>
+        <SidebarGroupLabel>Timelines</SidebarGroupLabel>
+        <SidebarMenu>
+          {renderMenuItems(timelineItems)}
+        </SidebarMenu>
+      </SidebarGroup>
+    </>
+  );
 
   return (
     <Sidebar className="no-print">
       <SidebarHeader>
         <a href="/" className="flex items-center gap-2">
           <BriefcaseBusiness className="size-8 text-sidebar-primary" />
-          {isClient && state === 'expanded' && <h1 className="text-xl font-semibold gradient-text">Isbah Dashboard</h1>}
+          {isClient && (state === 'expanded' || isMobile) && <h1 className="text-xl font-semibold gradient-text">Isbah Dashboard</h1>}
         </a>
         <SidebarInput placeholder="Search..." />
       </SidebarHeader>
       <SidebarContent>
-        {isClient ? (
-        <>
-          <SidebarMenu>
-            {renderMenuItems(mainMenuItems)}
-          </SidebarMenu>
-
-          <SidebarGroup>
-            <SidebarGroupLabel>Project Forms</SidebarGroupLabel>
-            <SidebarMenu>
-              {renderMenuItems(projectFormsItems)}
-            </SidebarMenu>
-          </SidebarGroup>
-          
-          <SidebarGroup>
-            <SidebarGroupLabel>Timelines</SidebarGroupLabel>
-            <SidebarMenu>
-              {renderMenuItems(timelineItems)}
-            </SidebarMenu>
-          </SidebarGroup>
-        </>
-        ) : null}
+        {isClient ? <SidebarContentHolder /> : null}
       </SidebarContent>
     </Sidebar>
   );
