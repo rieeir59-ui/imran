@@ -379,6 +379,7 @@ export default function TransmittalLetterPage() {
                          <p className="text-center text-xs text-muted-foreground">101, Y-Block, Commercial, Defence, Lahore, Pakistan. 92-42-35692789-90 92-42-35692791 info@isbahhassan.com www.isbahhassan.com</p>
                     </div>
                     <div className="flex justify-end mt-4">
+                        <Button onClick={handleDownload} variant="outline" className="mr-2"><Download/> PDF</Button>
                         {isEditing ? (
                           <Button onClick={handleSave} disabled={isSaving}>
                             {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
