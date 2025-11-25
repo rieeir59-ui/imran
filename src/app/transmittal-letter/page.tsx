@@ -234,7 +234,7 @@ export default function TransmittalLetterPage() {
         doc.line(14, y, 196, y);
         y += 4;
         doc.setFontSize(7);
-        doc.text("101, Y-Block, Commercial, Defence, Lahore, Pakistan. 92-42-35692789-90 92-42-35692791 info@isbahhassan.com www.isbahhassan.com", 105, y, { align: 'center'});
+        doc.text("Y-101 (Com), Phase-III, DHA Lahore Cantt 0321-6995378, 042-35692522 , info@isbahhassan.com , www.isbahhassan.com", 105, y, { align: 'center'});
 
         doc.save('transmittal-letter.pdf');
     };
@@ -376,7 +376,7 @@ export default function TransmittalLetterPage() {
                             <FormField label="Received By:">{renderField('received_by')}</FormField>
                         </div>
                          <Separator />
-                         <p className="text-center text-xs text-muted-foreground">101, Y-Block, Commercial, Defence, Lahore, Pakistan. 92-42-35692789-90 92-42-35692791 info@isbahhassan.com www.isbahhassan.com</p>
+                         <p className="text-center text-xs text-muted-foreground">Y-101 (Com), Phase-III, DHA Lahore Cantt 0321-6995378, 042-35692522 , info@isbahhassan.com , www.isbahhassan.com</p>
                     </div>
                 </CardContent>
             </Card>
