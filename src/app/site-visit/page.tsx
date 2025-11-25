@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -173,11 +174,10 @@ const SiteVisitPage = () => {
   }
   
   const renderPictureField = (index: number) => {
-      const pictureName = `picture${index}`;
       const commentName = `comment${index}`;
 
       return (
-           <div className="border p-4 rounded-md space-y-2">
+           <div key={`picture-field-${index}`} className="border p-4 rounded-md space-y-2">
                 <div className="bg-muted h-40 flex items-center justify-center rounded-md">
                     <Camera className="w-10 h-10 text-muted-foreground" />
                 </div>
