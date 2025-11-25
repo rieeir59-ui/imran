@@ -24,7 +24,7 @@ const teams = [
   { name: 'Architects', icon: Paintbrush, href: '/schedules-by-designation#Architects' },
   { name: 'Software Engineers', icon: Code, href: '/schedules-by-designation#Software-Engineers' },
   { name: '3D Visualizer', icon: Camera, href: '/schedules-by-designation#3D-Visualizer' },
-  { name: 'BOQ Manager', icon: Calculator, href: '/schedules-by-designation#Quantity-Surveyor' },
+  { name: 'BOQ Management', icon: Calculator, href: '/schedules-by-designation#Quantity-Surveyor' },
   { name: 'Finance', icon: Banknote, href: '/schedules-by-designation#Finance-Manager' },
   { name: 'Draftspersons', icon: DraftingCompass, href: '/schedules-by-designation#Draftspersons' },
 ];
