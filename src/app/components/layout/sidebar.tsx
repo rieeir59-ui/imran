@@ -1,5 +1,3 @@
-
-
 'use client';
 import { useState, useEffect } from 'react';
 import { 
@@ -58,7 +56,7 @@ const timelineItems = [
 
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile } = useSidebar();
   const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
 
@@ -76,38 +74,40 @@ export function AppSidebar() {
       </SidebarMenuItem>
     ));
   };
+  
+  const SidebarContentHolder = () => (
+    <>
+      <SidebarMenu>
+        {renderMenuItems(mainMenuItems)}
+      </SidebarMenu>
+  
+      <SidebarGroup>
+        <SidebarGroupLabel>Project Forms</SidebarGroupLabel>
+        <SidebarMenu>
+          {renderMenuItems(projectFormsItems)}
+        </SidebarMenu>
+      </SidebarGroup>
+      
+      <SidebarGroup>
+        <SidebarGroupLabel>Timelines</SidebarGroupLabel>
+        <SidebarMenu>
+          {renderMenuItems(timelineItems)}
+        </SidebarMenu>
+      </SidebarGroup>
+    </>
+  );
 
   return (
     <Sidebar className="no-print">
       <SidebarHeader>
         <a href="/" className="flex items-center gap-2">
           <BriefcaseBusiness className="size-8 text-sidebar-primary" />
-          {isClient && state === 'expanded' && <h1 className="text-xl font-semibold gradient-text">Isbah Dashboard</h1>}
+          {isClient && (state === 'expanded' || isMobile) && <h1 className="text-xl font-semibold gradient-text">Isbah Dashboard</h1>}
         </a>
         <SidebarInput placeholder="Search..." />
       </SidebarHeader>
       <SidebarContent>
-        {isClient ? (
-        <>
-          <SidebarMenu>
-            {renderMenuItems(mainMenuItems)}
-          </SidebarMenu>
-
-          <SidebarGroup>
-            <SidebarGroupLabel>Project Forms</SidebarGroupLabel>
-            <SidebarMenu>
-              {renderMenuItems(projectFormsItems)}
-            </SidebarMenu>
-          </SidebarGroup>
-          
-          <SidebarGroup>
-            <SidebarGroupLabel>Timelines</SidebarGroupLabel>
-            <SidebarMenu>
-              {renderMenuItems(timelineItems)}
-            </SidebarMenu>
-          </SidebarGroup>
-        </>
-        ) : null}
+        {isClient ? <SidebarContentHolder /> : null}
       </SidebarContent>
     </Sidebar>
   );
