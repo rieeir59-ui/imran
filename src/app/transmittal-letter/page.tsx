@@ -274,11 +274,23 @@ export default function TransmittalLetterPage() {
                 </Button>
             </div>
             <Card>
-                <CardHeader className="flex flex-col items-center justify-between">
-                    <CardTitle className="text-2xl">ISBAH HASSAN & ASSOCIATES</CardTitle>
-                    <p className="text-sm text-muted-foreground">ARCHITECTS - ENGINEERS - CONSTRUCTIONS</p>
-                    <Separator className="w-full my-2"/>
-                    <h2 className="text-xl font-bold">TRANSMITTAL LETTER</h2>
+                 <CardHeader className="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="text-center md:text-left">
+                        <CardTitle className="text-2xl">ISBAH HASSAN & ASSOCIATES</CardTitle>
+                        <p className="text-sm text-muted-foreground">ARCHITECTS - ENGINEERS - CONSTRUCTIONS</p>
+                        <Separator className="mt-2 hidden md:block"/>
+                        <h2 className="text-xl font-bold mt-2">TRANSMITTAL LETTER</h2>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button onClick={handleDownload} variant="outline"><Download className="mr-2"/> PDF</Button>
+                        {isEditing ? (
+                            <Button onClick={handleSave} disabled={isSaving}>
+                                {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />} Save
+                            </Button>
+                        ) : (
+                            <Button onClick={() => setIsEditing(true)}><Edit className="mr-2" /> Edit</Button>
+                        )}
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4" id="transmittal-letter-table">
