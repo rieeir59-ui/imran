@@ -5,7 +5,10 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -16,10 +19,10 @@ import autoTable from 'jspdf-autotable';
 
 const FIELD_REPORT_DOC_ID = 'field-report';
 
-const FormField = ({ label, children }: { label: string, children: React.ReactNode }) => (
-    <div>
-        <label className="font-semibold text-sm">{label}</label>
-        {children}
+const FormField = ({ label, children }: { label?: string, children: React.ReactNode }) => (
+    <div className="flex items-center gap-2">
+        {label && <label className="font-semibold text-sm whitespace-nowrap">{label}</label>}
+        <div className="w-full">{children}</div>
     </div>
 );
 
@@ -27,7 +30,7 @@ export default function FieldReportPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [formData, setFormData] = useState<any>({ items: Array(10).fill({}).map((_, i) => ({ id: i + 1 })) });
+    const [formData, setFormData] = useState<any>({});
 
     const { toast } = useToast();
     const { user, isUserLoading } = useUser();
@@ -49,14 +52,14 @@ export default function FieldReportPage() {
         }).finally(() => setIsLoading(false));
     }, [docRef]);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        if (index !== undefined) {
-            const newItems = [...formData.items];
-            newItems[index] = { ...newItems[index], [name]: value };
-            setFormData(prev => ({ ...prev, items: newItems }));
-        } else {
-            setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+    
+    const handleCheckboxChange = (name: string, checked: boolean | 'indeterminate') => {
+        if (typeof checked === 'boolean') {
+            setFormData((prev: any) => ({ ...prev, [name]: checked }));
         }
     };
 
@@ -77,24 +80,96 @@ export default function FieldReportPage() {
 
     const handleDownload = () => {
         const doc = new jsPDF();
+        let y = 15;
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text("Architect Field Report", 105, 15, { align: 'center'});
+        doc.text("ISBAH HASSAN & ASSOCIATES", 105, y, { align: 'center'});
+        y+=5;
+        doc.setFontSize(8);
+        doc.text("ARCHITECTS - ENGINEERS - REAL ESTATE - CONTRACTORS - DEVELOPERS", 105, y, { align: 'center'});
+        y+=8;
+
+        doc.setFontSize(12);
+        doc.text("ARCHITECT'S FIELD REPORT", 14, y);
+        
         autoTable(doc, {
-          startY: 25,
-          html: '#field-report-table',
-          theme: 'grid',
-          headStyles: { fillColor: [30, 41, 59] }
-        })
+          startY: y - 2,
+          body: [
+              [
+                  { content: `Owner ${formData.owner ? '[X]' : '[ ]'}`, styles: { halign: 'left' } },
+                  { content: `Field ${formData.field ? '[X]' : '[ ]'}`, styles: { halign: 'right' } }
+              ],
+              [
+                  { content: `Architect ${formData.architect_check ? '[X]' : '[ ]'}`, styles: { halign: 'left' } },
+                   { content: `Other ${formData.other ? '[X]' : '[ ]'}`, styles: { halign: 'right' } }
+              ],
+              [
+                  { content: `Contractor ${formData.contractor_check ? '[X]' : '[ ]'}`, styles: { halign: 'left' } },
+                  ''
+              ],
+          ],
+          theme: 'plain',
+          styles: { fontSize: 8 },
+          columnStyles: { 0: { cellWidth: 100 } }
+        });
+        
+        y = (doc as any).lastAutoTable.finalY + 2;
+
+        doc.setLineWidth(0.5);
+        doc.line(14, y, 200, y);
+        y += 5;
+
+        autoTable(doc, {
+            startY: y,
+            body: [
+                [`Project: ${formData.project || ''}`, `Field Report No: ${formData.fieldReportNo || ''}`],
+                [`Contract: ${formData.contract || ''}`, `Architects Project No: ${formData.architectsProjectNo || ''}`],
+                [`Date: ${formData.date || ''}`, `Time: ${formData.time || ''}`, `Weather: ${formData.weather || ''}`, `Tem. Range: ${formData.tempRange || ''}`],
+                [`Est. % of Completion: ${formData.estCompletion || ''}`, `Conformance with Schedule: ${formData.conformance || ''}`],
+                [`Work in Progress: ${formData.workInProgress || ''}`, `Present at Site: ${formData.presentAtSite || ''}`],
+            ],
+            theme: 'plain',
+            styles: { fontSize: 8, cellPadding: 1 },
+        });
+        y = (doc as any).lastAutoTable.finalY + 3;
+
+        const addSection = (title: string, value: string) => {
+            doc.setFont('helvetica', 'bold');
+            doc.text(title, 14, y);
+            y += 5;
+            doc.setFont('helvetica', 'normal');
+            const lines = doc.splitTextToSize(value || '', 180);
+            const requiredLines = Math.max(lines.length, 5);
+            for(let i = 0; i < requiredLines; i++) {
+                doc.line(14, y, 200, y);
+                if(lines[i]) doc.text(lines[i], 14, y - 1);
+                y += 5;
+            }
+            y+=3;
+        }
+
+        addSection("Observations:", formData.observations);
+        addSection("Items to Verify:", formData.itemsToVerify);
+        addSection("Information or Action Required:", formData.infoOrAction);
+        addSection("Attachments:", formData.attachments);
+        addSection("Report By:", formData.reportBy);
+
         doc.save("architect-field-report.pdf");
         toast({ title: 'Download Started' });
     }
     
-    const renderField = (name: string, placeholder?: string, index?: number) => {
-        const value = index !== undefined ? formData.items[index]?.[name] : formData[name];
-        return isEditing ? <Input name={name} value={value || ''} onChange={(e) => handleInputChange(e, index)} placeholder={placeholder} /> : <div className="p-1 border-b min-h-[24px]">{value}</div>;
+    const renderField = (name: string, placeholder?: string) => {
+        const value = formData[name];
+        return isEditing ? <Input name={name} value={value || ''} onChange={handleInputChange} placeholder={placeholder} /> : <div className="p-1 border-b min-h-[24px]">{value}</div>;
     }
     
+    const renderCheckbox = (name: string, label: string) => {
+        return <div className="flex items-center gap-2">
+            <Checkbox id={name} name={name} checked={formData[name]} onCheckedChange={(checked) => handleCheckboxChange(name, checked)} disabled={!isEditing} />
+            <Label htmlFor={name} className="font-normal">{label}</Label>
+        </div>
+    }
+
     if (isLoading || isUserLoading) return <div className="p-4 flex justify-center items-center"><Loader2 className="animate-spin"/> Loading...</div>
     
     return (
@@ -105,35 +180,54 @@ export default function FieldReportPage() {
                 </Button>
             </div>
             <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Architect Field Report</CardTitle>
-                    <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleDownload}><Download className="w-4 h-4 mr-2"/>PDF</Button>
-                        {isEditing ? <Button onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
-                    </div>
+                <CardHeader className="text-center">
+                    <CardTitle className="text-xl">ISBAH HASSAN & ASSOCIATES</CardTitle>
+                    <p className="text-xs text-muted-foreground">ARCHITECTS - ENGINEERS - REAL ESTATE - CONTRACTORS - DEVELOPERS</p>
                 </CardHeader>
                 <CardContent>
-                    <div id="field-report-table">
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField label="Project">{renderField('project')}</FormField>
-                            <FormField label="Architect Project No.">{renderField('architectProjectNo')}</FormField>
-                            <FormField label="Date">{renderField('date')}</FormField>
-                            <FormField label="Weather">{renderField('weather')}</FormField>
-                            <FormField label="Present at Site">{renderField('presentAtSite')}</FormField>
-                            <FormField label="Report No.">{renderField('reportNo')}</FormField>
+                     <div className="flex justify-between items-start mb-4">
+                        <h2 className="text-lg font-bold">ARCHITECT'S FIELD REPORT</h2>
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={handleDownload}><Download className="w-4 h-4 mr-2"/>PDF</Button>
+                            {isEditing ? <Button onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
                         </div>
-                        <Table className="mt-4">
-                            <TableHeader><TableRow><TableHead>Item No.</TableHead><TableHead>Observations</TableHead></TableRow></TableHeader>
-                            <TableBody>
-                                {formData.items.map((item: any, i: number) => <TableRow key={i}>
-                                    <TableCell className="w-24">{renderField('itemNo', 'Item No.', i)}</TableCell>
-                                    <TableCell>{renderField('observations', 'Observations', i)}</TableCell>
-                                </TableRow>)}
-                            </TableBody>
-                        </Table>
                     </div>
+                    <div className="grid grid-cols-2 gap-x-4">
+                         <div className="space-y-1">
+                            {renderCheckbox('owner', 'Owner')}
+                            {renderCheckbox('architect_check', 'Architect')}
+                            {renderCheckbox('contractor_check', 'Contractor')}
+                        </div>
+                         <div className="space-y-1">
+                            {renderCheckbox('field', 'Field')}
+                            {renderCheckbox('other', 'Other')}
+                        </div>
+                    </div>
+                    <Separator className="my-4"/>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField label="Project:">{renderField('project')}</FormField>
+                        <FormField label="Field Report No.:">{renderField('fieldReportNo')}</FormField>
+                        <FormField label="Contract:">{renderField('contract')}</FormField>
+                        <FormField label="Architects Project No:">{renderField('architectsProjectNo')}</FormField>
+                        <FormField label="Date:">{renderField('date')}</FormField>
+                        <FormField label="Time:">{renderField('time')}</FormField>
+                        <FormField label="Weather:">{renderField('weather')}</FormField>
+                        <FormField label="Tem. Range:">{renderField('tempRange')}</FormField>
+                        <FormField label="Est. % of Completion:">{renderField('estCompletion')}</FormField>
+                        <FormField label="Conformance with Schedule:">{renderField('conformance')}</FormField>
+                        <FormField label="Work in Progress:">{renderField('workInProgress')}</FormField>
+                        <FormField label="Present at Site:">{renderField('presentAtSite')}</FormField>
+                    </div>
+                     <div className="space-y-6 mt-6">
+                        <FormField label="Observations:"><Textarea name="observations" value={formData.observations || ''} onChange={handleInputChange} disabled={!isEditing} rows={5}/></FormField>
+                        <FormField label="Items to Verify:"><Textarea name="itemsToVerify" value={formData.itemsToVerify || ''} onChange={handleInputChange} disabled={!isEditing} rows={3}/></FormField>
+                        <FormField label="Information or Action Required:"><Textarea name="infoOrAction" value={formData.infoOrAction || ''} onChange={handleInputChange} disabled={!isEditing} rows={3}/></FormField>
+                        <FormField label="Attachments:"><Textarea name="attachments" value={formData.attachments || ''} onChange={handleInputChange} disabled={!isEditing} rows={2}/></FormField>
+                        <FormField label="Report By:">{renderField('reportBy')}</FormField>
+                     </div>
                 </CardContent>
             </Card>
         </main>
     );
 }
+
