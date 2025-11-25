@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { UploadCloud, File, MoreVertical, Edit, Trash2, Save, Loader2, PlusCircle, ArrowLeft } from 'lucide-react';
+import { UploadCloud, File as FileIcon, MoreVertical, Edit, Trash2, Save, Loader2, PlusCircle, ArrowLeft } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -229,7 +229,7 @@ export default function FileManagerPage() {
                         ) : (
                             files.map((uploadedFile) => (
                                 <TableRow key={uploadedFile.url}>
-                                    <TableCell><File className="h-5 w-5 text-muted-foreground" /></TableCell>
+                                    <TableCell><FileIcon className="h-5 w-5 text-muted-foreground" /></TableCell>
                                     <TableCell className="font-medium">
                                         {editingFile === uploadedFile.url ? (
                                             <div className="flex items-center gap-2">
