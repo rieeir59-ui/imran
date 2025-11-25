@@ -31,7 +31,7 @@ const projectFormsItems = [
   { href: '/list-of-services', icon: ScrollText, label: 'List of Services' },
   { href: '/site-survey', icon: FileText, label: 'Site Survey' },
   { href: '/proposal-request', icon: FileText, label: 'Proposal Request' },
-  { href: '/drawings', icon: Image, label: 'Drawings' },
+  { href: '/drawings', icon: Image, label: 'List of Drawings' },
   { href: '/project-timeline', icon: GanttChart, label: 'Project Timeline' },
   { href: '/bank', icon: ScrollText, label: 'Bank Forms' },
   { href: '/weekly-schedule', icon: CalendarClock, label: 'Work Schedule' },
