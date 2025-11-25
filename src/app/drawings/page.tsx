@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, DraftingCompass, Lamp, LayoutList, Hammer, Zap, FileText } from 'lucide-react';
+import { ArrowLeft, DraftingCompass, Lamp, LayoutList, Hammer, Zap, FileText, Wrench } from 'lucide-react';
 
 const drawingCategories = [
     { title: 'Sample List of Drawings', href: '/sample-list-of-drawings', icon: FileText },
