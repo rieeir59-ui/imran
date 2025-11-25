@@ -87,23 +87,27 @@ export function AppSidebar() {
         <SidebarInput placeholder="Search..." />
       </SidebarHeader>
       <SidebarContent>
-        <SidebarMenu>
-          {renderMenuItems(mainMenuItems)}
-        </SidebarMenu>
+        {isClient ? (
+        <>
+          <SidebarMenu>
+            {renderMenuItems(mainMenuItems)}
+          </SidebarMenu>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Project Forms</SidebarGroupLabel>
-          <SidebarMenu>
-            {renderMenuItems(projectFormsItems)}
-          </SidebarMenu>
-        </SidebarGroup>
-        
-        <SidebarGroup>
-          <SidebarGroupLabel>Timelines</SidebarGroupLabel>
-          <SidebarMenu>
-            {renderMenuItems(timelineItems)}
-          </SidebarMenu>
-        </SidebarGroup>
+          <SidebarGroup>
+            <SidebarGroupLabel>Project Forms</SidebarGroupLabel>
+            <SidebarMenu>
+              {renderMenuItems(projectFormsItems)}
+            </SidebarMenu>
+          </SidebarGroup>
+          
+          <SidebarGroup>
+            <SidebarGroupLabel>Timelines</SidebarGroupLabel>
+            <SidebarMenu>
+              {renderMenuItems(timelineItems)}
+            </SidebarMenu>
+          </SidebarGroup>
+        </>
+        ) : null}
       </SidebarContent>
     </Sidebar>
   );
