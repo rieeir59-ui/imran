@@ -525,6 +525,14 @@
       "anonymous"
     ]
   },
+  "storage": {
+    "structure": [
+      {
+        "path": "/users/{userId}/uploads/{fileName}",
+        "description": "Stores user-uploaded files for the File Manager. Each user has their own directory."
+      }
+    ]
+  },
   "firestore": {
     "structure": [
        {

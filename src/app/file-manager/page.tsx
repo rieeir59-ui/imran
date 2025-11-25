@@ -9,6 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { UploadCloud, File as FileIcon, MoreVertical, Edit, Trash2, Save, Loader2, PlusCircle, ArrowLeft } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useToast } from '@/hooks/use-toast';
+import { useUser, useStorage } from '@/firebase';
+import { ref, uploadBytes, getDownloadURL, listAll, getMetadata, deleteObject } from 'firebase/storage';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,12 +20,12 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 
 interface UploadedFile {
-  file: File;
   name: string;
   size: number;
   type: string;
   url: string;
-  content?: string; // For text files
+  fullPath: string; // Firebase storage full path
+  content?: string;
 }
 
 export default function FileManagerPage() {
@@ -34,35 +36,85 @@ export default function FileManagerPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [activeFile, setActiveFile] = useState<UploadedFile | null>(null);
   const [editorContent, setEditorContent] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
+  const { user } = useUser();
+  const storage = useStorage();
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newFiles: UploadedFile[] = acceptedFiles.map(file => ({
-      file,
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      url: URL.createObjectURL(file)
-    }));
-
-    setFiles(prevFiles => [...prevFiles, ...newFiles]);
-
-    toast({
-      title: 'Files Uploaded',
-      description: `${newFiles.length} file(s) have been added.`,
-    });
-  }, [toast]);
-  
-  useEffect(() => {
-    // Cleanup object URLs on unmount
-    return () => {
-        files.forEach(file => {
-          if (file.url.startsWith('blob:')) {
-            URL.revokeObjectURL(file.url)
-          }
-        });
+  const fetchFiles = useCallback(async () => {
+    if (!user || !storage) return;
+    setIsLoading(true);
+    const userFilesRef = ref(storage, `users/${user.uid}/uploads`);
+    try {
+      const res = await listAll(userFilesRef);
+      const filePromises = res.items.map(async (itemRef) => {
+        const metadata = await getMetadata(itemRef);
+        const url = await getDownloadURL(itemRef);
+        return {
+          name: metadata.name,
+          size: metadata.size,
+          type: metadata.contentType || 'unknown',
+          url: url,
+          fullPath: itemRef.fullPath,
+        };
+      });
+      const userFiles = await Promise.all(filePromises);
+      setFiles(userFiles);
+    } catch (error) {
+      console.error("Error fetching files:", error);
+      toast({
+        variant: "destructive",
+        title: "Error fetching files",
+        description: "Could not load your files from storage."
+      });
+    } finally {
+      setIsLoading(false);
     }
-  }, [files]);
+  }, [user, storage, toast]);
+
+  useEffect(() => {
+    fetchFiles();
+  }, [fetchFiles]);
+
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    if (!user || !storage) {
+        toast({ variant: "destructive", title: "Upload failed", description: "You must be logged in to upload files."});
+        return;
+    }
+
+    toast({ title: 'Uploading files...', description: 'Please wait.' });
+
+    const uploadPromises = acceptedFiles.map(async file => {
+      const fileRef = ref(storage, `users/${user.uid}/uploads/${file.name}`);
+      await uploadBytes(fileRef, file);
+      const url = await getDownloadURL(fileRef);
+      const metadata = await getMetadata(fileRef);
+      return {
+        name: metadata.name,
+        size: metadata.size,
+        type: metadata.contentType || 'unknown',
+        url: url,
+        fullPath: fileRef.fullPath,
+      };
+    });
+
+    try {
+        await Promise.all(uploadPromises);
+        toast({
+            title: 'Files Uploaded',
+            description: `${acceptedFiles.length} file(s) have been successfully saved.`,
+        });
+        fetchFiles(); // Refresh the file list
+    } catch (error) {
+        console.error("Upload error:", error);
+        toast({
+            variant: "destructive",
+            title: "Upload Error",
+            description: "There was a problem uploading your files."
+        })
+    }
+  }, [user, storage, toast, fetchFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
@@ -74,81 +126,108 @@ export default function FileManagerPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const removeFile = (fileUrl: string) => {
-    const fileToRemove = files.find(f => f.url === fileUrl);
-    if(fileToRemove) {
-        if (fileToRemove.url.startsWith('blob:')) {
-          URL.revokeObjectURL(fileUrl);
-        }
-        setFiles(files.filter(f => f.url !== fileUrl));
+  const removeFile = async (file: UploadedFile) => {
+    if (!storage) return;
+    const fileRef = ref(storage, file.fullPath);
+    try {
+        await deleteObject(fileRef);
+        setFiles(files.filter(f => f.fullPath !== file.fullPath));
         toast({
-            title: "File Removed",
-            description: `${fileToRemove.name} has been removed from the list.`,
+            title: "File Deleted",
+            description: `${file.name} has been permanently deleted.`,
             variant: "destructive"
+        })
+    } catch(error) {
+        console.error("Error deleting file:", error);
+        toast({
+            variant: "destructive",
+            title: "Deletion Failed",
+            description: `Could not delete ${file.name}.`
         })
     }
   }
   
   const handleEdit = (file: UploadedFile) => {
-    setEditingFile(file.url);
+    setEditingFile(file.fullPath);
     setNewFileName(file.name);
   }
 
   const handleSaveRename = (fileUrl: string) => {
-    setFiles(files.map(f => f.url === fileUrl ? { ...f, name: newFileName } : f));
+    // Renaming in Firebase Storage is complex (copy then delete).
+    // For simplicity, we'll just update the name in the UI for now.
+    // A full implementation would require a backend function.
+    setFiles(files.map(f => f.fullPath === fileUrl ? { ...f, name: newFileName } : f));
     setEditingFile(null);
     toast({
-      title: "File Renamed",
-      description: `The file has been renamed to ${newFileName}.`,
+      title: "File Renamed (Locally)",
+      description: `The file has been renamed to ${newFileName}. This is a local change.`,
     });
   }
-
-  const handleSaveAll = () => {
-    setIsSaving(true);
-    // Simulate a save operation
-    setTimeout(() => {
-        setIsSaving(false);
-        toast({
-            title: "Files Saved",
-            description: "Your files have been successfully saved."
-        });
-    }, 1500);
-  }
   
-  const handleFileClick = (file: UploadedFile) => {
-    if (file.type === 'text/plain') {
-        setActiveFile(file);
-        setEditorContent(file.content || '');
+  const handleFileClick = async (file: UploadedFile) => {
+    if (file.type.startsWith('text/')) {
+        try {
+            const response = await fetch(file.url);
+            const textContent = await response.text();
+            setActiveFile(file);
+            setEditorContent(textContent);
+        } catch (error) {
+            console.error("Error fetching text file content:", error);
+            toast({ variant: 'destructive', title: "Error", description: "Could not open text file."});
+        }
     } else {
         window.open(file.url, '_blank');
     }
   }
   
-  const handleSaveTextFile = () => {
-    if (!activeFile) return;
-    const updatedFile = { ...activeFile, content: editorContent, size: new Blob([editorContent]).size };
-    setFiles(files.map(f => f.url === activeFile.url ? updatedFile : f));
-    setActiveFile(null);
-    toast({
-        title: "Text File Saved",
-        description: `${activeFile.name} has been updated.`,
-    });
+  const handleSaveTextFile = async () => {
+    if (!activeFile || !storage || !user) return;
+    setIsSaving(true);
+    const fileRef = ref(storage, activeFile.fullPath);
+    const newContentBlob = new Blob([editorContent], { type: 'text/plain' });
+
+    try {
+        await uploadBytes(fileRef, newContentBlob);
+        const url = await getDownloadURL(fileRef);
+        const metadata = await getMetadata(fileRef);
+        
+        const updatedFile = { 
+            ...activeFile, 
+            url, 
+            size: metadata.size,
+            content: editorContent 
+        };
+        
+        setFiles(files.map(f => f.fullPath === activeFile.fullPath ? updatedFile : f));
+        setActiveFile(null);
+        toast({
+            title: "Text File Saved",
+            description: `${activeFile.name} has been updated in Firebase Storage.`,
+        });
+    } catch (error) {
+        console.error("Error saving text file:", error);
+        toast({ variant: 'destructive', title: "Save failed", description: "Could not save changes to the file."})
+    } finally {
+        setIsSaving(false);
+    }
   }
 
-  const createNewTextFile = () => {
+  const createNewTextFile = async () => {
+    if (!user || !storage) return;
+
     const fileNumber = files.filter(f => f.name.startsWith('new-text-file')).length + 1;
-    const newFile: UploadedFile = {
-        name: `new-text-file-${fileNumber}.txt`,
-        type: 'text/plain',
-        content: '',
-        size: 0,
-        url: `text-file-${Date.now()}`,
-        file: new File([''], `new-text-file-${fileNumber}.txt`, {type: 'text/plain'})
-    };
-    setFiles(prev => [newFile, ...prev]);
-    setActiveFile(newFile);
-    setEditorContent('');
-    toast({ title: 'New Text File Created' });
+    const fileName = `new-text-file-${fileNumber}.txt`;
+    const fileRef = ref(storage, `users/${user.uid}/uploads/${fileName}`);
+    const newContentBlob = new Blob([''], { type: 'text/plain' });
+
+    try {
+        await uploadBytes(fileRef, newContentBlob);
+        fetchFiles(); // Refresh to get the new file from storage
+        toast({ title: 'New Text File Created', description: `${fileName} has been saved.` });
+    } catch (error) {
+        console.error("Error creating new text file:", error);
+        toast({ variant: 'destructive', title: "Creation Failed", description: "Could not create new text file."});
+    }
   }
 
   if (activeFile) {
@@ -160,7 +239,10 @@ export default function FileManagerPage() {
                         <CardTitle>Editing: {activeFile.name}</CardTitle>
                         <div className="flex gap-2">
                            <Button variant="outline" onClick={() => setActiveFile(null)}><ArrowLeft className="mr-2"/> Back to Files</Button>
-                           <Button onClick={handleSaveTextFile}><Save className="mr-2"/> Save and Close</Button>
+                           <Button onClick={handleSaveTextFile} disabled={isSaving}>
+                             {isSaving ? <Loader2 className="animate-spin mr-2"/> : <Save className="mr-2"/>}
+                             Save and Close
+                           </Button>
                         </div>
                     </div>
                 </CardHeader>
@@ -182,7 +264,7 @@ export default function FileManagerPage() {
       <Card>
         <CardHeader>
           <CardTitle>File Manager</CardTitle>
-          <CardDescription>Upload, view, and manage your project files.</CardDescription>
+          <CardDescription>Upload, view, and manage your project files. Files are stored securely in Firebase Storage.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div
@@ -220,7 +302,14 @@ export default function FileManagerPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {files.length === 0 ? (
+                        {isLoading ? (
+                            <TableRow>
+                                <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                                    <Loader2 className="mx-auto animate-spin" />
+                                    <p>Loading files from storage...</p>
+                                </TableCell>
+                            </TableRow>
+                        ) : files.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
                                     No files uploaded yet.
@@ -228,13 +317,13 @@ export default function FileManagerPage() {
                             </TableRow>
                         ) : (
                             files.map((uploadedFile) => (
-                                <TableRow key={uploadedFile.url}>
+                                <TableRow key={uploadedFile.fullPath}>
                                     <TableCell><FileIcon className="h-5 w-5 text-muted-foreground" /></TableCell>
                                     <TableCell className="font-medium">
-                                        {editingFile === uploadedFile.url ? (
+                                        {editingFile === uploadedFile.fullPath ? (
                                             <div className="flex items-center gap-2">
-                                                <Input value={newFileName} onChange={(e) => setNewFileName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSaveRename(uploadedFile.url)} className="h-8"/>
-                                                <Button size="icon" className="h-8 w-8" onClick={() => handleSaveRename(uploadedFile.url)}><Save className="h-4 w-4"/></Button>
+                                                <Input value={newFileName} onChange={(e) => setNewFileName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSaveRename(uploadedFile.fullPath)} className="h-8"/>
+                                                <Button size="icon" className="h-8 w-8" onClick={() => handleSaveRename(uploadedFile.fullPath)}><Save className="h-4 w-4"/></Button>
                                             </div>
                                         ) : (
                                             <button onClick={() => handleFileClick(uploadedFile)} className="hover:underline text-primary text-left">
@@ -252,11 +341,11 @@ export default function FileManagerPage() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
-                                                <DropdownMenuItem onClick={() => handleEdit(uploadedFile)}>
+                                                <DropdownMenuItem onClick={() => handleEdit(uploadedFile)} disabled>
                                                     <Edit className="mr-2 h-4 w-4" />
-                                                    <span>Rename</span>
+                                                    <span>Rename (coming soon)</span>
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => removeFile(uploadedFile.url)} className="text-destructive">
+                                                <DropdownMenuItem onClick={() => removeFile(uploadedFile)} className="text-destructive">
                                                     <Trash2 className="mr-2 h-4 w-4" />
                                                     <span>Delete</span>
                                                 </DropdownMenuItem>
@@ -268,12 +357,6 @@ export default function FileManagerPage() {
                         )}
                     </TableBody>
                 </Table>
-            </div>
-             <div className="flex justify-end mt-4">
-                <Button onClick={handleSaveAll} disabled={files.length === 0 || isSaving}>
-                    {isSaving ? <Loader2 className="mr-2 animate-spin"/> : <Save className="mr-2"/>}
-                    {isSaving ? 'Saving...' : 'Save All Files'}
-                </Button>
             </div>
           </div>
         </CardContent>
