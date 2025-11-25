@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { UploadCloud, File, MoreVertical, Edit, Trash2, Save } from 'lucide-react';
+import { UploadCloud, File, MoreVertical, Edit, Trash2, Save, Loader2 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -29,6 +29,7 @@ export default function FileManagerPage() {
   const { toast } = useToast();
   const [editingFile, setEditingFile] = useState<string | null>(null);
   const [newFileName, setNewFileName] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles: UploadedFile[] = acceptedFiles.map(file => ({
@@ -91,6 +92,18 @@ export default function FileManagerPage() {
     });
   }
 
+  const handleSaveAll = () => {
+    setIsSaving(true);
+    // Simulate a save operation
+    setTimeout(() => {
+        setIsSaving(false);
+        toast({
+            title: "Files Saved",
+            description: "Your files have been successfully saved."
+        });
+    }, 1500);
+  }
+
   return (
     <main className="p-4 md:p-6 lg:p-8">
       <Card>
@@ -137,14 +150,14 @@ export default function FileManagerPage() {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            files.map((uploadedFile, index) => (
+                            files.map((uploadedFile) => (
                                 <TableRow key={uploadedFile.url}>
                                     <TableCell><File className="h-5 w-5 text-muted-foreground" /></TableCell>
                                     <TableCell className="font-medium">
                                         {editingFile === uploadedFile.url ? (
                                             <div className="flex items-center gap-2">
-                                                <Input value={newFileName} onChange={(e) => setNewFileName(e.target.value)} className="h-8"/>
-                                                <Button size="sm" onClick={() => handleSaveRename(uploadedFile.url)}><Save className="h-4 w-4"/></Button>
+                                                <Input value={newFileName} onChange={(e) => setNewFileName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSaveRename(uploadedFile.url)} className="h-8"/>
+                                                <Button size="icon" className="h-8 w-8" onClick={() => handleSaveRename(uploadedFile.url)}><Save className="h-4 w-4"/></Button>
                                             </div>
                                         ) : (
                                             <a href={uploadedFile.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary">
@@ -157,7 +170,7 @@ export default function FileManagerPage() {
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon">
+                                                <Button variant="ghost" size="icon" disabled={editingFile !== null}>
                                                     <MoreVertical className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
@@ -180,7 +193,10 @@ export default function FileManagerPage() {
                 </Table>
             </div>
              <div className="flex justify-end mt-4">
-                <Button disabled={files.length === 0}>Save All Files</Button>
+                <Button onClick={handleSaveAll} disabled={files.length === 0 || isSaving}>
+                    {isSaving ? <Loader2 className="mr-2 animate-spin"/> : <Save className="mr-2"/>}
+                    {isSaving ? 'Saving...' : 'Save All Files'}
+                </Button>
             </div>
           </div>
         </CardContent>
