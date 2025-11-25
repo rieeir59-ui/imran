@@ -30,10 +30,13 @@ import {
   useMemoFirebase,
   FirestorePermissionError,
   errorEmitter,
+  useStorage,
 } from '@/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import Image from 'next/image';
 
 const SITE_VISIT_DOC_ID = 'site-visit-proforma';
 
@@ -94,6 +97,7 @@ const SiteVisitPage = () => {
   const { toast } = useToast();
   const { user } = useUser();
   const firestore = useFirestore();
+  const storage = useStorage();
 
   const docRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -131,6 +135,25 @@ const SiteVisitPage = () => {
 
   const handleCheckboxChange = (name: string, checked: boolean) => {
     setFormData((prev: any) => ({ ...prev, [name]: checked }));
+  };
+
+  const handleImageUpload = async (file: File, fieldName: string) => {
+    if (!user || !storage) {
+        toast({ variant: 'destructive', title: 'Upload failed', description: 'User not authenticated.' });
+        return;
+    }
+
+    const storageRef = ref(storage, `users/${user.uid}/siteVisits/${SITE_VISIT_DOC_ID}/${file.name}`);
+    
+    try {
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        setFormData((prev: any) => ({ ...prev, [fieldName]: url }));
+        toast({ title: 'Image Uploaded', description: 'Image has been saved.'});
+    } catch (error) {
+        console.error('Error uploading image: ', error);
+        toast({ variant: 'destructive', title: 'Upload Error', description: 'Could not upload the image.' });
+    }
   };
 
   const handleSave = () => {
@@ -171,14 +194,13 @@ const SiteVisitPage = () => {
         const boxSize = 3.5;
         doc.setDrawColor(0);
         if (isChecked) {
-            doc.setFillColor(0, 0, 0);
+            doc.setFillColor(60, 110, 180);
             doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
             doc.setFont('ZapfDingbats');
             doc.setTextColor(255,255,255);
             doc.text('✓', x + 0.5, yPos - 0.5);
             doc.setTextColor(0,0,0);
         } else {
-             doc.setFillColor(255, 255, 255);
             doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
         }
         doc.setFont('helvetica', 'normal');
@@ -305,13 +327,28 @@ const SiteVisitPage = () => {
   
   const renderPictureField = (index: number) => {
       const commentName = `comment${index}`;
+      const imageName = `image${index}`;
+      const imageUrl = formData[imageName];
 
       return (
            <div key={`picture-field-${index}`} className="border p-4 rounded-md space-y-2">
-                <div className="bg-muted h-40 flex items-center justify-center rounded-md">
-                    <Camera className="w-10 h-10 text-muted-foreground" />
+                <div className="bg-muted h-40 flex items-center justify-center rounded-md relative">
+                    {imageUrl ? (
+                        <Image src={imageUrl} alt={`Site visit image ${index}`} layout="fill" objectFit="contain" />
+                    ) : (
+                        <Camera className="w-10 h-10 text-muted-foreground" />
+                    )}
                 </div>
-                {isEditing && <Input type="file" className="text-sm" />}
+                {isEditing && (
+                    <Input 
+                        type="file" 
+                        className="text-sm"
+                        onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleImageUpload(file, imageName);
+                        }}
+                    />
+                )}
                 <FormRow label="Comment:">
                     {renderTextarea(commentName)}
                 </FormRow>
