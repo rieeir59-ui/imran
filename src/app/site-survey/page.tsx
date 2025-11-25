@@ -110,23 +110,77 @@ export default function SiteSurveyPage() {
 
         const addField = (label: string, value: string | undefined) => {
              if (y > 280) { doc.addPage(); y = 15; }
-            addText(`${label}: ${value || '________________'}`, 14, y);
+            addText(`${label}:`, 14, y);
+            const splitValue = doc.splitTextToSize(value || '', 120);
+            doc.text(splitValue, 70, y);
+            y += (splitValue.length * 5) + 2;
+        };
+        
+        const drawRadio = (x: number, yPos: number, isChecked: boolean) => {
+            const radioSize = 1.5; // radius
+            doc.setDrawColor(0);
+            doc.setLineWidth(0.5);
+            doc.circle(x, yPos - radioSize, radioSize, 'S');
+            if (isChecked) {
+                doc.setFillColor(0, 0, 139);
+                doc.circle(x, yPos - radioSize, radioSize, 'F');
+            }
+        };
+
+        const addRadio = (label: string, value: string | undefined, options: string[]) => {
+            if (y > 280) { doc.addPage(); y = 15; }
+            addText(`${label}:`, 14, y);
+            let currentX = 70;
+            options.forEach(opt => {
+                const isChecked = (value && value.toLowerCase() === opt.toLowerCase());
+                drawRadio(currentX, y, isChecked);
+                doc.text(opt, currentX + 4, y);
+                currentX += doc.getTextWidth(opt) + 15;
+            });
             y += 7;
         };
         
-        const addRadio = (label: string, value: string | undefined, options: string[]) => {
+        const addRadioWithNote = (label: string, value: string | undefined, options: string[], note?: string) => {
              if (y > 280) { doc.addPage(); y = 15; }
-             let line = `${label}: `;
+             addText(`${label}?`, 14, y);
+             let currentX = 70;
              options.forEach(opt => {
-                 line += `   ${(value && value.toLowerCase() === opt.toLowerCase()) ? '[✓]' : '[ ]'} ${opt}`;
+                const isChecked = (value && value.toLowerCase() === opt.toLowerCase());
+                drawRadio(currentX, y, isChecked);
+                doc.text(opt, currentX + 4, y);
+                currentX += doc.getTextWidth(opt) + 15;
              });
-             addText(line, 14, y);
+             if(note) {
+                doc.setFontSize(8);
+                doc.setTextColor(150);
+                doc.text(note, currentX, y);
+                doc.setFontSize(10);
+                doc.setTextColor(0);
+             }
              y += 7;
         };
-
+        
+        const drawCheckbox = (x: number, yPos: number, isChecked: boolean) => {
+            const boxSize = 3.5;
+            doc.setDrawColor(0);
+            if (isChecked) {
+                doc.setFillColor(0, 0, 139); // Dark blue fill
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
+                doc.setFont('ZapfDingbats');
+                doc.setTextColor(255,255,255);
+                doc.text('✓', x + 0.5, yPos - 0.5);
+            } else {
+                 doc.setFillColor(255, 255, 255);
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
+            }
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0,0,0);
+        };
+        
         const addCheckbox = (label: string, name: string) => {
              if (y > 280) { doc.addPage(); y = 15; }
-             addText(`${formData[name] ? '[✓]' : '[ ]'} ${label}`, 14, y);
+             drawCheckbox(18, y, formData[name]);
+             addText(label, 24, y);
              y += 7;
         }
         
@@ -141,7 +195,7 @@ export default function SiteSurveyPage() {
         y += 10;
         
         addTitle("Location");
-        addField("Purpose", formData.purpose);
+        addRadio("Purpose", formData.purpose, ['Branch', 'Office', 'Other']);
         addField("City", formData.city);
         addField("Region", formData.region);
         addField("Address", formData.address);
@@ -149,8 +203,8 @@ export default function SiteSurveyPage() {
         
         addTitle("Legal File");
         addField("Name of Owner", formData.owner_name);
-        addRadio("Completion Certificate", formData.completion_cert, ["Yes", "No"]);
-        addRadio("Is Leased", formData.is_leased, ["Yes", "No"]);
+        addRadioWithNote("Completion Certificate", formData.completion_cert, ["Yes", "No"]);
+        addRadioWithNote("Is Leased", formData.is_leased, ["Yes", "No"], "As informed by Owner Representative");
         y += 5;
 
         addTitle("Area");
@@ -171,12 +225,12 @@ export default function SiteSurveyPage() {
         addField("Age of Premises", formData.premises_age);
         addField("Interior of Premises", formData.premises_interior);
         addField("Type of Construction", formData.construction_type);
-        addRadio("Independent Entrance", formData.independent_entrance, ["Yes", "No"]);
-        addRadio("Staff Staircase", formData.staff_staircase, ["Yes", "No"]);
-        addRadio("Emergency Exit", formData.emergency_exit, ["Yes", "No"]);
-        addRadio("Can provide exit if not available?", formData.can_provide_exit, ["Yes", "No"]);
-        addRadio("Ramp Available", formData.ramp_available, ["Yes", "No"]);
-        addRadio("Can provide ramp if not available?", formData.can_provide_ramp, ["Yes", "No"]);
+        addRadioWithNote("Independent Entrance", formData.independent_entrance, ["Yes", "No"]);
+        addRadioWithNote("Staff Staircase", formData.staff_staircase, ["Yes", "No"]);
+        addRadioWithNote("Emergency Exit", formData.emergency_exit, ["Yes", "No"]);
+        addRadioWithNote("Can provide exit if not available?", formData.can_provide_exit, ["Yes", "No"]);
+        addRadioWithNote("Ramp Available", formData.ramp_available, ["Yes", "No"]);
+        addRadioWithNote("Can provide ramp if not available?", formData.can_provide_ramp, ["Yes", "No"]);
         addRadio("Seepage", formData.seepage, ["Yes", "No"]);
         addField("Area of Seepage", formData.seepage_area);
         addField("Cause of Seepage", formData.seepage_cause);
@@ -189,14 +243,14 @@ export default function SiteSurveyPage() {
         addCheckbox("Industrial", "pu_ind");
 
         addField("Building plinth level from the road", formData.plinth_level);
-        addRadio("Flooding Risk", formData.flooding_risk, ["Yes", "No"]);
-        addRadio("Disable Access", formData.disable_access, ["Yes", "No"]);
+        addRadioWithNote("Flooding Risk", formData.flooding_risk, ["Yes", "No"]);
+        addRadioWithNote("Disable Access", formData.disable_access, ["Yes", "No"]);
         addField("Condition of roof waterproofing", formData.roof_waterproofing);
-        addRadio("Parking Available", formData.parking_available, ["Yes", "No"]);
-        addRadio("Road Approachable", formData.road_approachable, ["Yes", "No"]);
-        addRadio("Hazard in Vicinity (300m)", formData.hazard_vicinity, ["Yes", "No"]);
-        addRadio("Wall Masonry Material", formData.wall_masonry_material, ["Yes", "No"]);
-        addRadio("Signage Space", formData.signage_space, ["Yes", "No"]);
+        addRadioWithNote("Parking Available", formData.parking_available, ["Yes", "No"], "On Main Road");
+        addRadioWithNote("Road Approachable", formData.road_approachable, ["Yes", "No"]);
+        addRadioWithNote("Hazard in Vicinity (300m)", formData.hazard_vicinity, ["Yes", "No"]);
+        addRadioWithNote("Wall Masonry Material", formData.wall_masonry_material, ["Yes", "No"]);
+        addRadioWithNote("Signage Space", formData.signage_space, ["Yes", "No"]);
 
         doc.text("Major retainable building elements:", 14, y); y+=7;
         addCheckbox("Water Tank", "mrb_wt");
@@ -211,13 +265,13 @@ export default function SiteSurveyPage() {
         addTitle("Utilities");
         addField("Sanctioned Electrical Load", formData.electrical_load);
         addRadio("Electrical Meter", formData.electrical_meter, ["Single Phase", "3 Phase"]);
-        addRadio("Piped Water", formData.piped_water, ["Yes", "No"]);
-        addRadio("Underground Tank", formData.underground_tank, ["Yes", "No"]);
-        addRadio("Overhead Tank", formData.overhead_tank, ["Yes", "No"]);
+        addRadioWithNote("Piped Water", formData.piped_water, ["Yes", "No"]);
+        addRadioWithNote("Underground Tank", formData.underground_tank, ["Yes", "No"]);
+        addRadioWithNote("Overhead Tank", formData.overhead_tank, ["Yes", "No"]);
         addField("Type of Overhead Tank", formData.overhead_tank_type);
         addField("Type of Water", formData.water_type);
-        addRadio("Gas Connection", formData.gas_connection, ["Yes", "No"]);
-        addRadio("Sewerage Line", formData.sewerage_line, ["Yes", "No"]);
+        addRadioWithNote("Gas Connection", formData.gas_connection, ["Yes", "No"]);
+        addRadioWithNote("Sewerage Line", formData.sewerage_line, ["Yes", "No"]);
         y += 5;
 
         addTitle("Bounded As");
@@ -259,8 +313,9 @@ export default function SiteSurveyPage() {
     }
 
     const renderRadioGroupWithNote = (name: string, items: string[], note?: string) => {
-        return <div className="flex items-center gap-2">
-            <Label>{name.split('_').join(' ')}?</Label>
+        const title = name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        return <div className="flex items-center gap-2 flex-wrap">
+            <Label>{title}?</Label>
             <RadioGroup className="flex gap-4" value={formData[name]} onValueChange={(v) => handleRadioChange(name, v)} disabled={!isEditing}>
               {items.map(item => <div key={item} className="flex items-center space-x-2"><RadioGroupItem value={item.toLowerCase()} /><Label>{item}</Label></div>)}
             </RadioGroup>
@@ -317,7 +372,7 @@ export default function SiteSurveyPage() {
                         <Subtitle>Legal File</Subtitle>
                          <div className="grid grid-cols-2 gap-4">
                             {renderInput('owner_name', 'Name of Owner')}
-                            {renderRadioGroupWithNote('completion_cert', ['Yes', 'No'])}
+                            {renderRadioGroupWithNote('completion_cert', ['Yes', 'No'], 'Completion Certificate')}
                             {renderRadioGroupWithNote('is_leased', ['Yes', 'No'], 'As informed by Owner Representative')}
                         </div>
                     </div>
@@ -423,13 +478,13 @@ export default function SiteSurveyPage() {
                                 <Label>Electrical Meter</Label>
                                 {renderRadioGroup('electrical_meter', ['Single Phase', '3 Phase'])}
                             </div>
-                            {renderRadioGroupWithNote('piped_water', ['Yes', 'No'])}
-                            {renderRadioGroupWithNote('underground_tank', ['Yes', 'No'])}
-                            {renderRadioGroupWithNote('overhead_tank', ['Yes', 'No'])}
+                            {renderRadioGroupWithNote('piped_water', ['Yes', 'No'], 'Piped Water')}
+                            {renderRadioGroupWithNote('underground_tank', ['Yes', 'No'], 'Underground Tank')}
+                            {renderRadioGroupWithNote('overhead_tank', ['Yes', 'No'], 'Overhead Tank')}
                             {renderInput('overhead_tank_type', 'Type of Overhead tank (RCC, Fiber etc.)')}
                             {renderInput('water_type', 'Type of water (boring or liner water)')}
-                            {renderRadioGroupWithNote('gas_connection', ['Yes', 'No'])}
-                            {renderRadioGroupWithNote('sewerage_line', ['Yes', 'No'])}
+                            {renderRadioGroupWithNote('gas_connection', ['Yes', 'No'], 'Gas Connection')}
+                            {renderRadioGroupWithNote('sewerage_line', ['Yes', 'No'], 'Sewerage Line')}
                         </div>
                     </div>
         

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -161,6 +160,23 @@ export default function ProjectDataPage() {
             }
             y += 10;
         }
+        
+        const drawCheckbox = (x: number, yPos: number, isChecked: boolean) => {
+            const boxSize = 3.5;
+            doc.setDrawColor(0);
+            if (isChecked) {
+                doc.setFillColor(0, 0, 139); // Dark blue fill
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
+                doc.setFont('ZapfDingbats');
+                doc.setTextColor(255, 255, 255);
+                doc.text('✓', x + 0.5, yPos - 0.5);
+            } else {
+                doc.setFillColor(255, 255, 255);
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
+            }
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0, 0, 0);
+        };
     
         const addCheckbox = (label: string, value: boolean | undefined, options: { xOffset?: number } = {}) => {
             if (y > 280) {
@@ -168,25 +184,36 @@ export default function ProjectDataPage() {
                 y = 15;
             }
             doc.setFontSize(10);
-            doc.text(`${value ? '[✓]' : '[ ]'} ${label}`, options.xOffset || 14, y);
+            drawCheckbox(options.xOffset || 14, y, !!value);
+            doc.text(label, (options.xOffset || 14) + 5, y);
             if (!options.xOffset) {
                  y += 7;
             }
         };
-    
-        const addTitle = (title: string, size = 12) => {
-            if (y > 260) {
-                doc.addPage();
-                y = 15;
+
+        const drawRadio = (x: number, yPos: number, isChecked: boolean) => {
+            const radioSize = 1.5; // radius
+            doc.setDrawColor(0);
+            doc.setLineWidth(0.5);
+            doc.circle(x, yPos - radioSize, radioSize, 'S');
+            if (isChecked) {
+                doc.setFillColor(0, 0, 139);
+                doc.circle(x, yPos - radioSize, radioSize, 'F');
             }
-            doc.setFontSize(size);
-            doc.setFont('helvetica', 'bold');
-            doc.setFillColor(30, 41, 59);
-            doc.rect(14, y - 5, 182, 7, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.text(title, 16, y);
-            y += 8;
-            doc.setTextColor(0, 0, 0);
+        };
+
+        const addRadioGroup = (label: string, value: string, options: string[]) => {
+            if (y > 280) { doc.addPage(); y = 15; }
+            doc.setFontSize(10);
+            doc.text(`${label}: `, 14, y);
+            let currentX = 14 + doc.getTextWidth(`${label}: `) + 2;
+            options.forEach(opt => {
+                const isChecked = (formData[value] && formData[value].toLowerCase() === opt.toLowerCase());
+                drawRadio(currentX, y, isChecked);
+                doc.text(opt, currentX + 4, y);
+                currentX += doc.getTextWidth(opt) + 15;
+            });
+            y+=7;
         };
     
         doc.setFontSize(14);
@@ -269,13 +296,9 @@ export default function ProjectDataPage() {
         addCheckbox("Separate Contracts", formData.method_separate, { xOffset: 70 });
         y += 7;
         
-        doc.setFont('helvetica', 'bold');
-        doc.text("Bidding", 14, y); y+=7;
-        doc.setFont('helvetica', 'normal');
-        addCheckbox("Negotiated", formData.negotiatedBid === "negotiated");
-        addCheckbox("Bid", formData.negotiatedBid === "bid", { xOffset: 70 });
-        y += 7;
-
+        addRadioGroup("Bidding", "negotiatedBid", ["Negotiated", "Bid"]);
+        
+        y += 5;
         doc.setFont('helvetica', 'bold');
         doc.text("Contract", 14, y); y+=7;
         doc.setFont('helvetica', 'normal');

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -136,20 +135,31 @@ export default function TransmittalLetterPage() {
         leftY += 10;
 
         const drawCheckbox = (x: number, yPos: number, isChecked: boolean) => {
-            const boxSize = 3;
+            const boxSize = 3.5;
             doc.setDrawColor(0);
             if (isChecked) {
-                doc.setFillColor(0, 0, 0);
+                doc.setFillColor(0, 0, 139); // Dark blue fill
                 doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
                 doc.setFont('ZapfDingbats');
                 doc.setTextColor(255, 255, 255);
                 doc.text('✓', x + 0.5, yPos - 0.5);
-                doc.setTextColor(0, 0, 0);
             } else {
-                doc.setFillColor(255, 255, 255);
+                 doc.setFillColor(255, 255, 255);
                 doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
             }
             doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0,0,0);
+        };
+        
+        const drawRadio = (x: number, yPos: number, isChecked: boolean) => {
+            const radioSize = 1.5; // radius
+            doc.setDrawColor(0);
+            doc.setLineWidth(0.5);
+            doc.circle(x, yPos - radioSize, radioSize, 'S');
+            if (isChecked) {
+                doc.setFillColor(0, 0, 139);
+                doc.circle(x, yPos - radioSize, radioSize, 'F');
+            }
         };
 
         doc.setFontSize(8);
@@ -170,10 +180,13 @@ export default function TransmittalLetterPage() {
         doc.text("We Transmit:", 14, y);
         doc.setFont('helvetica', 'normal');
         y += 5;
-        doc.text(`${formData.transmit_method === 'herewith' ? '(X)' : '( )'} herewith`, 18, y);
-        doc.text(`${formData.transmit_method === 'separate' ? '(X)' : '( )'} under separate cover via ${formData.separate_via || '______'}`, 60, y);
+        drawRadio(18, y, formData.transmit_method === 'herewith');
+        doc.text('herewith', 22, y);
+        drawRadio(60, y, formData.transmit_method === 'separate');
+        doc.text(`under separate cover via ${formData.separate_via || '______'}`, 64, y);
         y += 5;
-        doc.text(`${formData.transmit_method === 'request' ? '(X)' : '( )'} in accordance with your request`, 18, y);
+        drawRadio(18, y, formData.transmit_method === 'request');
+        doc.text('in accordance with your request', 22, y);
         y += 8;
 
         const addCheckboxColumn = (title: string, items: {name: string, label: string}[], startX: number, startY: number) => {
@@ -422,5 +435,3 @@ export default function TransmittalLetterPage() {
         </main>
     );
 }
-
-    
