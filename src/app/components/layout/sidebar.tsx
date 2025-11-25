@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { 
@@ -11,7 +12,7 @@ import {
   SidebarGroupLabel,
   SidebarInput,
 } from "@/components/ui/sidebar";
-import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image } from 'lucide-react';
+import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList, MessageSquare, BookUser, LocateFixed, Folder } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 
@@ -28,8 +29,10 @@ const projectFormsItems = [
   { href: '/project-agreement', icon: FileText, label: 'Project Agreement' },
   { href: '/list-of-services', icon: ScrollText, label: 'List of Services' },
   { href: '/site-survey', icon: FileText, label: 'Site Survey' },
+  { href: '/site-visit', icon: LocateFixed, label: 'Site Visit Form' },
   { href: '/proposal-request', icon: FileText, label: 'Proposal Request' },
   { href: '/drawings', icon: Image, label: 'List of Drawings' },
+  { href: '/shop-drawings-record', icon: LayoutList, label: 'Shop Drawings Record' },
   { href: '/project-timeline', icon: GanttChart, label: 'Project Timeline' },
   { href: '/bank', icon: ScrollText, label: 'Bank Forms' },
   { href: '/weekly-schedule', icon: CalendarClock, label: 'Work Schedule' },
@@ -38,6 +41,10 @@ const projectFormsItems = [
   { href: '/assign-task', icon: FilePlus, label: 'Assign Task' },
   { href: '/bill-of-quantity', icon: FileText, label: 'Bill Of Quantity'},
   { href: '/requirement-performa', icon: FileText, label: 'Requirement Performa' },
+  { href: '/field-report', icon: BookUser, label: 'Field Report' },
+  { href: '/transmittal-letter', icon: MessageSquare, label: 'Transmittal Letter' },
+  { href: '/minutes-of-meeting', icon: ClipboardCheck, label: 'Minutes of Meeting' },
+  { href: '/file-manager', icon: Folder, label: 'File Manager' },
 ];
 
 const timelineItems = [
