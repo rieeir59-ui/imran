@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { Download, Edit, Save, Loader2, ArrowLeft } from 'lucide-react';
+import { Download, Edit, Save, Loader2, ArrowLeft, Globe, Mail, MapPin, Phone } from 'lucide-react';
 import Link from 'next/link';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -234,7 +234,7 @@ export default function TransmittalLetterPage() {
         doc.line(14, y, 196, y);
         y += 4;
         doc.setFontSize(7);
-        doc.text("Y-101 (Com), Phase-III, DHA Lahore Cantt 0321-6995378, 042-35692522 , info@isbahhassan.com , www.isbahhassan.com", 105, y, { align: 'center'});
+        doc.text("Y-101 (Com), Phase-III, DHA Lahore Cantt | 0321-6995378, 042-35692522 | info@isbahhassan.com | www.isbahhassan.com", 105, y, { align: 'center'});
 
         doc.save('transmittal-letter.pdf');
     };
@@ -376,7 +376,12 @@ export default function TransmittalLetterPage() {
                             <FormField label="Received By:">{renderField('received_by')}</FormField>
                         </div>
                          <Separator />
-                         <p className="text-center text-xs text-muted-foreground">Y-101 (Com), Phase-III, DHA Lahore Cantt 0321-6995378, 042-35692522 , info@isbahhassan.com , www.isbahhassan.com</p>
+                         <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 text-xs text-muted-foreground mt-4">
+                            <div className="flex items-center gap-1"><MapPin size={12}/> Y-101 (Com), Phase-III, DHA Lahore Cantt</div>
+                            <div className="flex items-center gap-1"><Phone size={12}/> 0321-6995378, 042-35692522</div>
+                            <div className="flex items-center gap-1"><Mail size={12}/> info@isbahhassan.com</div>
+                            <div className="flex items-center gap-1"><Globe size={12}/> www.isbahhassan.com</div>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
