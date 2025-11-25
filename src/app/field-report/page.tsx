@@ -98,8 +98,24 @@ export default function FieldReportPage() {
     
         let checkboxY = y - 2;
         const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
+            const boxSize = 3.5;
+            doc.setDrawColor(0);
+            doc.setFillColor(255, 255, 255);
+            
+            if (isChecked) {
+                doc.setFillColor(60, 110, 180); // A blue color similar to the UI
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
+                doc.setFont('ZapfDingbats');
+                doc.setTextColor(255,255,255);
+                doc.text('✓', x + 0.5, yPos - 0.5);
+                doc.setTextColor(0,0,0);
+            } else {
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
+            }
+
+            doc.setFont('helvetica', 'normal');
             doc.setFontSize(8);
-            doc.text(`${isChecked ? '[✓]' : '[ ]'} ${label}`, x, yPos);
+            doc.text(label, x + boxSize + 1.5, yPos);
         };
     
         drawCheckbox(150, checkboxY, 'Owner', formData.owner);
@@ -261,5 +277,6 @@ export default function FieldReportPage() {
         </main>
     );
 }
+
 
 
