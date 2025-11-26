@@ -853,7 +853,13 @@ const Section25 = React.memo(() => {
 });
 Section25.displayName = 'Section25';
 
-const Section26 = React.memo(() => (<Card><CardHeader><CardTitle>Application and Certificate for Payment</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section26 = React.memo(() => (
+<Card>
+    <CardHeader><CardTitle>Application and Certificate for Payment</CardTitle></CardHeader>
+    <CardContent>
+        <p>This form can be filled out on the <Link href="/application-for-payment" className="text-primary underline">Application for Payment page</Link>.</p>
+    </CardContent>
+</Card>));
 Section26.displayName = 'Section26';
 
 const Section27 = React.memo(() => (<Card><CardHeader><CardTitle>Instruction Sheet</CardTitle></CardHeader><CardContent>...</CardContent></Card>));

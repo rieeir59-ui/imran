@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect } from 'react';
 import { 
@@ -12,7 +11,7 @@ import {
   SidebarGroupLabel,
   SidebarInput,
 } from "@/components/ui/sidebar";
-import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList, MessageSquare, BookUser, LocateFixed, Folder, UserCheck } from 'lucide-react';
+import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList, MessageSquare, BookUser, LocateFixed, Folder, UserCheck, DollarSign, FileEdit, FileSignature } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 
@@ -47,6 +46,11 @@ const projectFormsItems = [
   { href: '/file-manager', icon: Folder, label: 'File Manager' },
   { href: '/sub-consultant-list', icon: UserCheck, label: 'Sub-consultant List' },
   { href: '/contractor-list', icon: Users, label: 'List of Contractors' },
+  { href: '/project-application-summary', icon: FileText, label: 'Project Application Summary' },
+  { href: '/preliminary-project-budget', icon: DollarSign, label: 'Preliminary Project Budget' },
+  { href: '/rate-analysis', icon: DollarSign, label: 'Rate Analysis' },
+  { href: '/change-order', icon: FileEdit, label: 'Change Order' },
+  { href: '/application-for-payment', icon: FileSignature, label: 'Application for Payment' },
 ];
 
 const timelineItems = [
