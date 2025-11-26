@@ -86,17 +86,82 @@ export default function InstructionSheetPage() {
 
     const handleDownload = () => {
         const doc = new jsPDF();
+        let y = 15;
+    
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text("INSTRUCTION SHEET", 14, 15);
+        doc.text("INSTRUCTION SHEET", 105, y, { align: 'center' });
+        y += 10;
+    
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        
+        const drawCheckbox = (label: string, x: number, yPos: number, isChecked: boolean) => {
+            const boxSize = 3;
+            doc.rect(x, yPos - boxSize, boxSize, boxSize);
+            if (isChecked) {
+                doc.text('X', x + 0.8, yPos);
+            }
+            doc.text(label, x + 5, yPos);
+        }
+
+        let leftY = y;
+        let rightY = y;
+        
+        doc.text(`Project: ${formData.project || ''}`, 14, leftY);
+        leftY += 7;
+        doc.text(`Contract: ${formData.contract || ''}`, 14, leftY);
+        leftY += 7;
+        
+        doc.text('TO:', 120, rightY);
+        drawCheckbox('Owner', 130, rightY, formData.to_owner);
+        drawCheckbox('Architect', 150, rightY, formData.to_architect);
+        drawCheckbox('Contractor', 175, rightY, formData.to_contractor);
+        rightY += 5;
+        drawCheckbox('Field', 150, rightY, formData.to_field);
+        drawCheckbox('Other', 175, rightY, formData.to_other);
+        rightY += 7;
+
+        y = Math.max(leftY, rightY);
+
+        doc.text(`Field Report No. ${formData.fieldReportNo || ''}`, 14, y);
+        doc.text(`Architects Project No: ${formData.architectsProjectNo || ''}`, 120, y);
+        y += 10;
+
         autoTable(doc, {
-            startY: 20,
-            html: '#instruction-sheet-content',
+            startY: y,
+            head: [['Important Steps (What?)', 'Key Points (How?)', 'Reasons (Why?)']],
+            body: formData.steps.map((step: any, index: number) => [
+                `${index + 1}. ${step.what || ''}`,
+                step.how || '',
+                step.why || ''
+            ]),
             theme: 'grid',
-            styles: { fontSize: 8 },
             headStyles: { fillColor: [22, 163, 74] },
+            columnStyles: {
+                0: { cellWidth: 60 },
+                1: { cellWidth: 60 },
+                2: { cellWidth: 60 },
+            }
         });
+
+        y = (doc as any).lastAutoTable.finalY + 10;
+
+        if (y > 270) {
+            doc.addPage();
+            y = 20;
+        }
+
+        doc.text('BY:', 120, y);
+        drawCheckbox('Owner', 130, y, formData.by_owner);
+        drawCheckbox('Architect', 150, y, formData.by_architect);
+        drawCheckbox('Contractor', 175, y, formData.by_contractor);
+        y += 5;
+        drawCheckbox('Field', 150, y, formData.by_field);
+        drawCheckbox('Other', 175, y, formData.by_other);
+        
         doc.save('instruction-sheet.pdf');
+        toast({ title: 'Download Started', description: 'Your PDF is being generated.' });
     };
 
     const renderField = (name: string) => {
@@ -162,9 +227,9 @@ export default function InstructionSheetPage() {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex justify-end gap-4 mb-4">
-                            <div className="flex gap-2 items-center"><Label>Field Report No.</Label>{renderField('fieldReportNo')}</div>
-                            <div className="flex gap-2 items-center"><Label>Architects Project No:</Label>{renderField('architectsProjectNo')}</div>
+                        <div className="flex justify-between gap-4 mb-4">
+                            <div className="flex gap-2 items-center w-1/2"><Label>Field Report No.</Label>{renderField('fieldReportNo')}</div>
+                            <div className="flex gap-2 items-center w-1/2"><Label>Architects Project No:</Label>{renderField('architectsProjectNo')}</div>
                         </div>
 
                         <Table>
