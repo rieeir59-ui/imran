@@ -56,6 +56,7 @@ const projectFormsItems = [
   { href: '/construction-activity-schedule', icon: GanttChart, label: 'Construction Activity Schedule' },
   { href: '/instruction-sheet', icon: FileText, label: 'Instruction Sheet' },
   { href: '/consent-of-surety', icon: ShieldCheck, label: 'Consent of Surety' },
+  { href: '/consent-of-surety-final', icon: ShieldCheck, label: 'Consent of Surety (Final)' },
 ];
 
 const timelineItems = [
@@ -130,3 +131,5 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+    
