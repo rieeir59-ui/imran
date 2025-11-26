@@ -127,7 +127,7 @@ export default function ApplicationForPaymentPage() {
 
     const renderField = (name: string) => {
         const value = formData[name] || '';
-        return isEditing ? <Input name={name} value={value} onChange={handleInputChange} /> : <div className="p-1 border-b min-h-[24px]">{value}</div>;
+        return isEditing ? <Input name={name} value={value} onChange={handleInputChange} /> : <span className="p-1 border-b min-h-[24px] inline-block">{value}</span>;
     }
 
     const renderNestedField = (section: string, field: string) => {
@@ -236,7 +236,7 @@ export default function ApplicationForPaymentPage() {
                                     </TableBody>
                                 </Table>
 
-                                <p className="text-xs my-2">The undersigned Contractor certifies that the best of the Contractor's knowledge, information and belief the Work covered by this Application for Payment has been completed in accordance with the Contract Documents, that all amounts have been paid by the Contractor for Work for which previous Project Certificates for Payments were issued and payments received from the Owner, and that Current Payment shown herein is now due.</p>
+                                <div className="text-xs my-2">The undersigned Contractor certifies that the best of the Contractor's knowledge, information and belief the Work covered by this Application for Payment has been completed in accordance with the Contract Documents, that all amounts have been paid by the Contractor for Work for which previous Project Certificates for Payments were issued and payments received from the Owner, and that Current Payment shown herein is now due.</div>
                                 <FormField label="Contractor:">{renderField('cmName')}</FormField>
                                 <div className="flex gap-4 mt-4">
                                     <FormField label="By:">{renderField('cmBy')}</FormField>
@@ -246,7 +246,7 @@ export default function ApplicationForPaymentPage() {
                                     <FormField label="State of:">{renderField('cmState')}</FormField>
                                     <FormField label="County of:">{renderField('cmCounty')}</FormField>
                                 </div>
-                                <p className="text-xs my-2">Subscribed and sworn to before me this {renderField('swornDay')} Day of: {renderField('swornMonth')} 20{renderField('swornYear')}</p>
+                                <div className="text-xs my-2">Subscribed and sworn to before me this {renderField('swornDay')} Day of: {renderField('swornMonth')} 20{renderField('swornYear')}</div>
                                 <FormField label="Notary Public:">{renderField('notaryPublic')}</FormField>
                                 <FormField label="My Commission expires:">{renderField('commissionExpires')}</FormField>
                             </div>
