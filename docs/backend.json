@@ -1,6 +1,33 @@
 
 {
   "entities": {
+    "ArchitectsSupplementalInstructions": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ArchitectsSupplementalInstructions",
+      "type": "object",
+      "description": "Represents an Architect's Supplemental Instructions form.",
+      "properties": {
+        "check_owner": { "type": "boolean" },
+        "check_architect": { "type": "boolean" },
+        "check_contractor": { "type": "boolean" },
+        "check_field": { "type": "boolean" },
+        "check_other": { "type": "boolean" },
+        "project_name_address": { "type": "string" },
+        "contract_for": { "type": "string" },
+        "owner": { "type": "string" },
+        "to_contractor": { "type": "string" },
+        "instruction_no": { "type": "string" },
+        "date_of_issuance": { "type": "string" },
+        "architects": { "type": "string" },
+        "architects_project_no": { "type": "string" },
+        "contract_date": { "type": "string" },
+        "description": { "type": "string" },
+        "attachments": { "type": "string" },
+        "issued_by": { "type": "string" },
+        "accepted_by": { "type": "string" },
+        "accepted_date": { "type": "string" }
+      }
+    },
     "PreliminaryProjectBudget": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "PreliminaryProjectBudget",
@@ -982,6 +1009,14 @@
           "entityName": "ConsentOfSuretyFinalPayment",
           "schema": { "$ref": "#/entities/ConsentOfSuretyFinalPayment" },
           "description": "Stores consent of surety for final payment forms for a specific user."
+        }
+      },
+      {
+        "path": "/users/{userId}/architectsSupplementalInstructions/{instructionId}",
+        "definition": {
+          "entityName": "ArchitectsSupplementalInstructions",
+          "schema": { "$ref": "#/entities/ArchitectsSupplementalInstructions" },
+          "description": "Stores architect's supplemental instruction forms for a specific user."
         }
       },
       {

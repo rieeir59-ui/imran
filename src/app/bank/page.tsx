@@ -563,7 +563,14 @@ Section30.displayName = 'Section30';
 const Section31 = React.memo(() => (<Card><CardHeader><CardTitle>Total Package of Project</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
 Section31.displayName = 'Section31';
 
-const Section32 = React.memo(() => (<Card><CardHeader><CardTitle>Architects Supplemental Instructions</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section32 = React.memo(() => (
+    <Card>
+        <CardHeader><CardTitle>Architects Supplemental Instructions</CardTitle></CardHeader>
+        <CardContent>
+            <p>This form can be filled out on the <Link href="/architects-supplemental-instructions" className="text-primary underline">Architects Supplemental Instructions page</Link>.</p>
+        </CardContent>
+    </Card>
+));
 Section32.displayName = 'Section32';
 
 const Section33 = React.memo(() => (<Card><CardHeader><CardTitle>Construction Change Director</CardTitle></CardHeader><CardContent>...</CardContent></Card>));

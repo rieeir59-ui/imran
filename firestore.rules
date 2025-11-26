@@ -285,6 +285,10 @@ service cloud.firestore {
     match /users/{userId}/consentOfSuretyFinal/{consentId} {
         allow read, write: if isOwner(userId);
     }
+
+    match /users/{userId}/architectsSupplementalInstructions/{instructionId} {
+        allow read, write: if isOwner(userId);
+    }
     
     /**
      * @description Enforces ownership for tasks.
