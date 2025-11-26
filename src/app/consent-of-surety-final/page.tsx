@@ -81,12 +81,12 @@ export default function ConsentOfSuretyFinalPage() {
 
     const handleDownload = () => {
         const doc = new jsPDF();
-        let y = 15;
+        let y = 20;
     
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
         doc.text("CONSENT OF SURETY COMPANY TO FINAL PAYMENT", 105, y, { align: 'center'});
-        y+=10;
+        y += 15;
         
         doc.setFontSize(9);
         const headerTableBody = [
@@ -99,39 +99,49 @@ export default function ConsentOfSuretyFinalPage() {
             startY: y,
             body: headerTableBody,
             theme: 'plain',
-            styles: { fontSize: 9 },
+            styles: { fontSize: 9, cellPadding: 1 },
             didDrawPage: (data) => {
                 const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
+                    doc.setFontSize(8);
                     doc.rect(x, yPos - 3.5, 3.5, 3.5);
                     if (isChecked) doc.text('X', x + 0.8, yPos);
                     doc.text(label, x + 5, yPos);
                 };
-                drawCheckbox(150, 15, 'Owner', formData.check_owner);
-                drawCheckbox(175, 15, 'Surety', formData.check_surety);
-                drawCheckbox(150, 20, 'Architect', formData.check_architect);
-                drawCheckbox(175, 20, 'Other', formData.check_other);
-                drawCheckbox(150, 25, 'Contractor', formData.check_contractor);
+                doc.text('Distribution to:', 150, 15);
+                drawCheckbox(150, 20, 'Owner', formData.check_owner);
+                drawCheckbox(175, 20, 'Surety', formData.check_surety);
+                drawCheckbox(150, 25, 'Architect', formData.check_architect);
+                drawCheckbox(175, 25, 'Other', formData.check_other);
+                drawCheckbox(150, 30, 'Contractor', formData.check_contractor);
             }
         });
 
         y = (doc as any).lastAutoTable.finalY + 10;
     
-        const p1 = `In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the (here insert named and address of Surety Company) ${formData.surety_company || ''}, SURETY COMPANY, on bond of (here insert named and address of Contractor) ${formData.contractor_name_address || ''}, CONTRACTOR, Hereby approves the final payment to the Contractor, and agrees that final payment to the Contractor shall not relieve the Surety Company of any of its obligations to (here insert named and address of Owner): ${formData.owner_name_address || ''}, OWNER, as set forth in the said Surety's bond.`
+        const p1 = `In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the (here insert named and address of Surety Company) ${formData.surety_company || ''}, SURETY COMPANY, on bond of (here insert named and address of Contractor) ${formData.contractor_name_address || ''}, CONTRACTOR, Hereby approves the final payment to the Contractor, and agrees that final payment to the Contractor shall not relieve the Surety Company of any of its obligations to (here insert named and address of Owner): ${formData.owner_name_address || ''}, OWNER, as set forth in the said Surety's bond.`;
         const splitText1 = doc.splitTextToSize(p1, 180);
+        doc.setFontSize(10);
         doc.text(splitText1, 14, y);
-        y += (splitText1.length * 5) + 14;
+        y += (doc.getTextDimensions(splitText1).h) + 14;
 
-        doc.text(`In Witness Whereof, The Surety has hereunto set its hand this ${formData.witness_day || '__'} day of ${formData.witness_month || '______'}, 20${formData.witness_year || '__'}`, 14, y);
-        y += 14;
+        doc.text(`In Witness Whereof, The Surety has hereunto set its hand this ${formData.witness_day || '__'} day of ${formData.witness_month || '______'}, 20${formData.witness_year || '__'}.`, 14, y);
+        y += 20;
 
-        doc.text(`Surety Company: ${formData.surety_company_name || ''}`, 14, y);
+        doc.text(`Surety Company:`, 14, y);
+        doc.text(formData.surety_company_name || '', 50, y);
+        doc.line(48, y+1, 120, y+1);
         y += 14;
         
-        doc.text('Signature of Authorized Representative: _________________________', 14, y + 7);
+        doc.text('By:', 14, y);
+        doc.line(20, y + 1, 120, y + 1);
+        doc.text('Signature of Authorized Representative', 22, y + 5);
+
         y += 14;
-        
-        doc.text(`Title: ${formData.surety_title || ''}`, 14, y);
+        doc.text(`Title:`, 14, y);
+        doc.text(formData.surety_title || '', 25, y);
+        doc.line(23, y+1, 120, y+1);
         y+=7;
+
         doc.text(`(Seal)`, 14, y);
         
         doc.save("consent-of-surety-final.pdf");
