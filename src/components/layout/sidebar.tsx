@@ -51,6 +51,7 @@ const projectFormsItems = [
   { href: '/rate-analysis', icon: DollarSign, label: 'Rate Analysis' },
   { href: '/change-order', icon: FileEdit, label: 'Change Order' },
   { href: '/application-for-payment', icon: FileSignature, label: 'Application for Payment' },
+  { href: '/continuation-sheet', icon: FileText, label: 'Continuation Sheet' },
 ];
 
 const timelineItems = [
