@@ -74,15 +74,19 @@ export function exportDataToPdf(title: string, data: any[], filename:string, ove
 
   const columnStyles: { [key: string]: any } = {};
   headers.forEach((header, index) => {
-    if (header.toLowerCase().includes('name')) {
-      columnStyles[index] = { cellWidth: 35 };
-    } else if (header.toLowerCase().includes('date')) {
-      columnStyles[index] = { cellWidth: 20 };
-    } else if (header.toLowerCase().includes('area')) {
-      columnStyles[index] = { cellWidth: 15 };
-    } else {
-      columnStyles[index] = { cellWidth: 'auto' };
-    }
+      let width = 20; // default width
+      if (header.toLowerCase().includes('name')) {
+          width = 35;
+      } else if (header.toLowerCase().includes('date')) {
+          width = 20;
+      } else if (header.toLowerCase().includes('area')) {
+          width = 18;
+      } else if (header.toLowerCase().includes('holder')) {
+          width = 25;
+      } else if (header.toLowerCase() === 'srno') {
+          width = 10;
+      }
+      columnStyles[index] = { cellWidth: width };
   });
 
 
@@ -92,14 +96,14 @@ export function exportDataToPdf(title: string, data: any[], filename:string, ove
     startY: 20,
     theme: 'grid',
     styles: {
-      fontSize: 6,
-      cellPadding: 1.5,
+      fontSize: 5,
+      cellPadding: 1,
       overflow: 'linebreak',
     },
     headStyles: {
         fillColor: [30, 41, 59],
         textColor: [255, 255, 255],
-        fontSize: 7,
+        fontSize: 6,
         fontStyle: 'bold',
     },
     columnStyles: columnStyles
