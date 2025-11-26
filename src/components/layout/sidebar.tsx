@@ -46,6 +46,7 @@ const projectFormsItems = [
   { href: '/minutes-of-meeting', icon: ClipboardCheck, label: 'Minutes of Meeting' },
   { href: '/file-manager', icon: Folder, label: 'File Manager' },
   { href: '/sub-consultant-list', icon: UserCheck, label: 'Sub-consultant List' },
+  { href: '/contractor-list', icon: Users, label: 'List of Contractors' },
 ];
 
 const timelineItems = [
