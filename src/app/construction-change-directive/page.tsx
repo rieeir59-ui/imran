@@ -128,9 +128,12 @@ export default function ConstructionChangeDirectivePage() {
         
         y = (doc as any).lastAutoTable.finalY + 5;
 
-        const mainText = `You are hereby directed to make the following change(s) in this Contract:`;
-        doc.text(mainText, 14, y);
-        y += 10;
+        doc.text(`You are hereby directed to make the following change(s) in this Contract:`, 14, y);
+        y+=5;
+        const changeDescText = doc.splitTextToSize(formData.change_description || '', 182);
+        doc.rect(14, y, 182, 30);
+        doc.text(changeDescText, 15, y+4);
+        y+=35;
         
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
@@ -145,20 +148,24 @@ export default function ConstructionChangeDirectivePage() {
         const p1 = `1. The proposed basis of adjustment to the Contract Sum or Guaranteed Maximum Price is:`;
         doc.text(p1, 14, y);
         y+=7;
-        drawCheckbox(18, y, formData.adjustment_lum_sum);
-        doc.text(`Lum Sum (increase) (decrease) of Rs. ${formData.adjustment_lum_sum_amount || ''}`, 23, y);
+        drawCheckbox(18, y, 'Lum Sum', formData.adjustment_lum_sum);
+        doc.text(`Lum Sum (increase) (decrease) of Rs. ${formData.adjustment_lum_sum_amount || '_________'}`, 23, y);
         y+=7;
-        drawCheckbox(18, y, formData.adjustment_unit_price);
-        doc.text(`Unit Price of Rs. ${formData.adjustment_unit_price_amount || ''} per ${formData.adjustment_unit_price_per || ''}`, 23, y);
+        drawCheckbox(18, y, 'Unit Price', formData.adjustment_unit_price);
+        doc.text(`Unit Price of Rs. ${formData.adjustment_unit_price_amount || '_________'} per ${formData.adjustment_unit_price_per || '_________'}`, 23, y);
         y+=7;
-        drawCheckbox(18, y, formData.adjustment_as_follows);
-        doc.text(`as follows: ${formData.adjustment_as_follows_text || ''}`, 23, y);
-        y += 10;
+        drawCheckbox(18, y, 'as follows', formData.adjustment_as_follows);
+        doc.text(`as follows:`, 23, y);
+        const asFollowsText = doc.splitTextToSize(formData.adjustment_as_follows_text || '', 160);
+        doc.text(asFollowsText, 23, y + 5);
+        y += (asFollowsText.length * 4) + 8;
 
-        const p2 = `2. The Contract Time is proposed to (be adjusted) (remain unchanged). The proposed adjustment, if any, is (an increase of ${formData.time_increase_days || '__'} days) (a decrease of ${formData.time_decrease_days || '__'} days).`;
-        const splitP2 = doc.splitTextToSize(p2, 182);
-        doc.text(splitP2, 14, y);
-        y += (splitP2.length * 5) + 10;
+        let timeText = '2. The Contract Time is proposed to ';
+        if (formData.time_adjusted) timeText += '(be adjusted). '; else if (formData.time_unchanged) timeText += '(remain unchanged). '; else timeText += '(be adjusted) (remain unchanged). ';
+        timeText += `The proposed adjustment, if any, is (an increase of ${formData.time_increase_days || '___'} days) (a decrease of ${formData.time_decrease_days || '___'} days).`;
+        const splitTimeText = doc.splitTextToSize(timeText, 182);
+        doc.text(splitTimeText, 14, y);
+        y += (splitTimeText.length * 5) + 10;
         
         const p3 = "When signed by the Owner and Architect and received by the Contractor, this document becomes effective IMMEDIATELY as a Construction Change Directive (CCD), and the Contractor shall proceed with the change(s) described above.";
         const splitP3 = doc.splitTextToSize(p3, 90);
@@ -179,12 +186,12 @@ export default function ConstructionChangeDirectivePage() {
         doc.setFont('helvetica', 'normal');
         
         const addSignatureBlock = (x: number, prefix: string) => {
-            doc.text(`Address: ${formData[`${prefix}_address`] || ''}`, x, y);
-            y += 15;
-            doc.text(`By: ${formData[`${prefix}_by`] || ''}`, x, y);
-            y += 10;
-            doc.text(`Date: ${formData[`${prefix}_date`] || ''}`, x, y);
-            y -= 25;
+            let startY = y;
+            doc.text(`Address: ${formData[`${prefix}_address`] || ''}`, x, startY);
+            startY += 15;
+            doc.text(`By: ${formData[`${prefix}_by`] || ''}`, x, startY);
+            startY += 10;
+            doc.text(`Date: ${formData[`${prefix}_date`] || ''}`, x, startY);
         }
         
         addSignatureBlock(14, 'architect');
@@ -263,7 +270,8 @@ export default function ConstructionChangeDirectivePage() {
                             <div className="pl-4 space-y-2">
                                 <div className="flex items-center gap-2">{renderCheckbox('adjustment_lum_sum', '')} <p>Lum Sum (increase) (decrease) of Rs.</p> {renderField('adjustment_lum_sum_amount')}</div>
                                 <div className="flex items-center gap-2">{renderCheckbox('adjustment_unit_price', '')} <p>Unit Price of Rs.</p> {renderField('adjustment_unit_price_amount')} <p>per</p> {renderField('adjustment_unit_price_per')}</div>
-                                <div className="flex items-center gap-2">{renderCheckbox('adjustment_as_follows', '')} <p>as follows:</p> {renderField('adjustment_as_follows_text')}</div>
+                                <div className="flex items-center gap-2">{renderCheckbox('adjustment_as_follows', '')} <p>as follows:</p></div>
+                                {isEditing ? <Textarea name="adjustment_as_follows_text" value={formData.adjustment_as_follows_text || ''} onChange={handleInputChange} className="ml-8" /> : <div className="ml-8 p-2 border-b min-h-[36px]">{formData.adjustment_as_follows_text}</div>}
                             </div>
                             <p>2. The Contract Time is proposed to {isEditing ? <div className='inline-flex gap-2'>{renderCheckbox('time_adjusted', '(be adjusted)')} {renderCheckbox('time_unchanged', '(remain unchanged)')}</div> : <span>{formData.time_adjusted ? '(be adjusted)' : (formData.time_unchanged ? '(remain unchanged)' : '_____')}</span>}. The proposed adjustment, if any, is (an increase of {renderField('time_increase_days')} days) (a decrease of {renderField('time_decrease_days')} days).</p>
                         </div>
@@ -301,5 +309,3 @@ export default function ConstructionChangeDirectivePage() {
         </main>
     )
 }
-
-    
