@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -18,6 +19,7 @@ import {
   Loader2,
   Save,
   Image,
+  Trash2,
 } from 'lucide-react';
 import {
   Dialog,
@@ -27,6 +29,16 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -111,6 +123,23 @@ export default function DrawingsPage() {
     setNewCategoryTitle('');
     toast({ title: 'Success', description: 'New drawing category added.' });
   };
+  
+  const handleDeleteCategory = async (hrefToDelete: string) => {
+    const updatedCategories = categories.filter(category => category.href !== hrefToDelete);
+
+    setIsSaving(true);
+    if (docRef) {
+        await setDoc(docRef, { categories: updatedCategories }, { merge: true });
+    }
+
+    setCategories(updatedCategories);
+    setIsSaving(false);
+    toast({
+      title: 'Category Deleted',
+      description: 'The drawing category has been removed.',
+      variant: 'destructive',
+    });
+  }
 
   if (isLoading) {
     return (
@@ -140,14 +169,36 @@ export default function DrawingsPage() {
           {categories.map((category) => {
             const Icon = icons[category.icon] || Image;
             return (
-              <Link href={category.href} key={category.href}>
-                <div className="p-6 rounded-lg border hover:bg-accent transition-colors flex items-center gap-4 h-full">
-                  <Icon className="h-8 w-8 text-primary" />
-                  <div>
-                    <h3 className="text-lg font-semibold">{category.title}</h3>
-                  </div>
-                </div>
-              </Link>
+              <div key={category.href} className="relative group rounded-lg border transition-colors">
+                <Link href={category.href} className="block p-6 h-full hover:bg-accent">
+                    <div className="flex items-center gap-4">
+                        <Icon className="h-8 w-8 text-primary" />
+                        <div>
+                            <h3 className="text-lg font-semibold">{category.title}</h3>
+                        </div>
+                    </div>
+                </Link>
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the
+                             "{category.title}" category.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDeleteCategory(category.href)}>Continue</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+              </div>
             );
           })}
         </CardContent>
