@@ -80,69 +80,74 @@ export default function ConsentOfSuretyFinalPage() {
     };
 
     const handleDownload = () => {
-        const doc = new jsPDF();
-        let y = 20;
+        const doc = new jsPDF('p', 'pt', 'a4');
+        let y = 30;
     
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text("CONSENT OF SURETY COMPANY TO FINAL PAYMENT", 105, y, { align: 'center'});
-        y += 15;
-        
-        doc.setFontSize(9);
-        const headerTableBody = [
-             [`Project: (Name, Address)\n${formData.project_name_address || ''}`, `Architects Project No: ${formData.architect_project_no || ''}`],
-             [`To: (Owner)\n${formData.to_owner || ''}`, `Contract For: ${formData.contract_for || ''}`],
-             ['', `Contract Date: ${formData.contract_date || ''}`],
-        ];
+        doc.text("CONSENT OF SURETY COMPANY TO FINAL PAYMENT", doc.internal.pageSize.width / 2, y, { align: 'center'});
+        y += 20;
 
+        const leftMargin = 40;
+        const rightMargin = doc.internal.pageSize.width - 40;
+        const contentWidth = rightMargin - leftMargin;
+        const halfContentWidth = contentWidth / 2;
+        
         autoTable(doc, {
             startY: y,
-            body: headerTableBody,
+            body: [
+                [
+                    { content: `Project: (Name, Address)\n${formData.project_name_address || ''}\n\nTo: (Owner)\n${formData.to_owner || ''}`, styles: { cellWidth: halfContentWidth - 10 } },
+                    { content: `Architects Project No: ${formData.architect_project_no || ''}\nContract For: ${formData.contract_for || ''}\nContract Date: ${formData.contract_date || ''}`, styles: { cellWidth: halfContentWidth - 10 } }
+                ]
+            ],
             theme: 'plain',
-            styles: { fontSize: 9, cellPadding: 1 },
+            styles: { fontSize: 10, cellPadding: 2, halign: 'left' },
+            margin: { left: leftMargin },
             didDrawPage: (data) => {
                 const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
                     doc.setFontSize(8);
-                    doc.rect(x, yPos - 3.5, 3.5, 3.5);
-                    if (isChecked) doc.text('X', x + 0.8, yPos);
-                    doc.text(label, x + 5, yPos);
+                    doc.rect(x, yPos - 3.5, 5, 5);
+                    if (isChecked) doc.text('X', x + 1, yPos);
+                    doc.text(label, x + 7, yPos);
                 };
-                doc.text('Distribution to:', 150, 15);
-                drawCheckbox(150, 20, 'Owner', formData.check_owner);
-                drawCheckbox(175, 20, 'Surety', formData.check_surety);
-                drawCheckbox(150, 25, 'Architect', formData.check_architect);
-                drawCheckbox(175, 25, 'Other', formData.check_other);
-                drawCheckbox(150, 30, 'Contractor', formData.check_contractor);
+                doc.setFontSize(9);
+                doc.text('Distribution to:', rightMargin - 60, 30);
+                drawCheckbox(rightMargin - 60, 40, 'Owner', formData.check_owner);
+                drawCheckbox(rightMargin - 25, 40, 'Surety', formData.check_surety);
+                drawCheckbox(rightMargin - 60, 48, 'Architect', formData.check_architect);
+                drawCheckbox(rightMargin - 25, 48, 'Other', formData.check_other);
+                drawCheckbox(rightMargin - 60, 56, 'Contractor', formData.check_contractor);
             }
         });
-
-        y = (doc as any).lastAutoTable.finalY + 10;
+    
+        y = (doc as any).lastAutoTable.finalY + 15;
     
         const p1 = `In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the (here insert named and address of Surety Company) ${formData.surety_company || ''}, SURETY COMPANY, on bond of (here insert named and address of Contractor) ${formData.contractor_name_address || ''}, CONTRACTOR, Hereby approves the final payment to the Contractor, and agrees that final payment to the Contractor shall not relieve the Surety Company of any of its obligations to (here insert named and address of Owner): ${formData.owner_name_address || ''}, OWNER, as set forth in the said Surety's bond.`;
-        const splitText1 = doc.splitTextToSize(p1, 180);
+        const splitText1 = doc.splitTextToSize(p1, contentWidth);
         doc.setFontSize(10);
-        doc.text(splitText1, 14, y);
-        y += (doc.getTextDimensions(splitText1).h) + 14;
+        doc.text(splitText1, leftMargin, y);
+        y += (doc.getTextDimensions(splitText1).h) + 15;
 
-        doc.text(`In Witness Whereof, The Surety has hereunto set its hand this ${formData.witness_day || '__'} day of ${formData.witness_month || '______'}, 20${formData.witness_year || '__'}.`, 14, y);
+        const p2 = `In Witness Whereof, The Surety has hereunto set its hand this ${formData.witness_day || '__'} day of ${formData.witness_month || '______'}, 20${formData.witness_year || '__'}.`;
+        const splitText2 = doc.splitTextToSize(p2, contentWidth);
+        doc.text(splitText2, leftMargin, y);
+        y += (doc.getTextDimensions(splitText2).h) + 25;
+
+        doc.text(`Surety Company: ${formData.surety_company_name || '___________________________'}`, leftMargin, y);
         y += 20;
 
-        doc.text(`Surety Company:`, 14, y);
-        doc.text(formData.surety_company_name || '', 50, y);
-        doc.line(48, y+1, 120, y+1);
-        y += 14;
+        doc.text('Attest: (Seal)', leftMargin, y);
         
-        doc.text('By:', 14, y);
-        doc.line(20, y + 1, 120, y + 1);
-        doc.text('Signature of Authorized Representative', 22, y + 5);
+        const signatureX = rightMargin - 150;
+        doc.line(signatureX, y, rightMargin, y);
+        doc.text('By:', signatureX - 15, y);
+        doc.text('Signature of Authorized Representative', signatureX, y + 10);
+        
+        y += 25;
 
-        y += 14;
-        doc.text(`Title:`, 14, y);
-        doc.text(formData.surety_title || '', 25, y);
-        doc.line(23, y+1, 120, y+1);
-        y+=7;
-
-        doc.text(`(Seal)`, 14, y);
+        doc.line(signatureX, y, rightMargin, y);
+        doc.text('Title:', signatureX - 25, y);
         
         doc.save("consent-of-surety-final.pdf");
     };
@@ -213,10 +218,8 @@ export default function ConsentOfSuretyFinalPage() {
                     <div>
                         <div className="text-sm">In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the (here insert named and address of Surety Company) {renderField('surety_company')}, SURETY COMPANY, on bond of (here insert named and address of Contractor) {renderField('contractor_name_address')}, CONTRACTOR, Hereby approves the final payment to the Contractor, and agrees that final payment to the Contractor shall not relieve the Surety Company of any of its obligations to (here insert named and address of Owner): {renderField('owner_name_address')}, OWNER, as set forth in the said Surety's bond.</div>
                     </div>
-                    <div className="flex justify-between items-center pt-8">
-                        <div>
-                            <p>In Witness Whereof, The Surety has hereunto set its hand this {isEditing ? <Input name="witness_day" value={formData.witness_day || ''} onChange={handleInputChange} className="inline w-12"/> : <span>{formData.witness_day || '__'}</span>} day of {isEditing ? <Input name="witness_month" value={formData.witness_month || ''} onChange={handleInputChange} className="inline w-24"/> : <span>{formData.witness_month || '______'}</span>}, 20{isEditing ? <Input name="witness_year" value={formData.witness_year || ''} onChange={handleInputChange} className="inline w-12"/> : <span>{formData.witness_year || '__'}</span>}</p>
-                        </div>
+                    <div className="pt-8">
+                        <p>In Witness Whereof, The Surety has hereunto set its hand this {isEditing ? <Input name="witness_day" value={formData.witness_day || ''} onChange={handleInputChange} className="inline w-12"/> : <span className="border-b inline-block w-12">{formData.witness_day || ''}</span>} day of {isEditing ? <Input name="witness_month" value={formData.witness_month || ''} onChange={handleInputChange} className="inline w-24"/> : <span className="border-b inline-block w-24">{formData.witness_month || ''}</span>}, 20{isEditing ? <Input name="witness_year" value={formData.witness_year || ''} onChange={handleInputChange} className="inline w-12"/> : <span className="border-b inline-block w-12">{formData.witness_year || ''}</span>}</p>
                     </div>
                      <div className="grid grid-cols-2 gap-x-8 gap-y-2 pt-8">
                         <div>
@@ -225,9 +228,10 @@ export default function ConsentOfSuretyFinalPage() {
                         <div>
                             <Label>Surety Company:</Label>
                             {renderField('surety_company_name')}
-                            <Label>Signature of Authorized Representative:</Label>
+                            <Label>By:</Label>
                             {renderField('surety_signature')}
-                             <Label>Title:</Label>
+                            <p className="text-sm text-muted-foreground">Signature of Authorized Representative</p>
+                             <Label className="mt-4">Title:</Label>
                             {renderField('surety_title')}
                         </div>
                     </div>
