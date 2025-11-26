@@ -115,8 +115,12 @@ export default function ApplicationForPaymentPage() {
         doc.setFont('helvetica', 'bold');
         doc.text("APPLICATION AND CERTIFICATE FOR PAYMENT", 105, 15, { align: 'center'});
         
+        let y = 25;
+        doc.setFontSize(9);
+
+        // Header Table
         autoTable(doc, {
-            startY: 25,
+            startY: y,
             body: [
                 [
                     { content: `To (Owner): ${formData.owner || ''}\nFrom (Contractor): ${formData.from_contractor || ''}\nContract For: ${formData.contract_for || ''}`, styles: { cellWidth: 90 } },
@@ -126,6 +130,123 @@ export default function ApplicationForPaymentPage() {
             theme: 'plain',
             styles: { fontSize: 9, cellPadding: 1 },
         });
+        y = (doc as any).lastAutoTable.finalY + 5;
+
+        // Contractor's Application for Payment Section
+        const contractorAppBody = [
+            [{ content: "Change Order Summary", colSpan: 3, styles: { halign: 'center', fontStyle: 'bold' } }],
+            ['Change Orders approved in previous monthly by Owner', formData.changeOrdersPrevious?.additions || '', formData.changeOrdersPrevious?.deduction || ''],
+            [{ content: 'TOTAL', styles: { fontStyle: 'bold' } }, { content: formData.changeOrdersPrevious?.total || '', colSpan: 2 }],
+            ['Approved this Month', { content: 'Number', styles: { fontStyle: 'bold' } }, { content: 'Date Approved', styles: { fontStyle: 'bold' } }],
+            ...(formData.changeOrdersThisMonth || []).map((item: any) => ['', item.number, item.dateApproved]),
+            [{ content: 'TOTALS', styles: { fontStyle: 'bold' } }, { content: formData.change_order_totals || '', colSpan: 2 }],
+            ['Net change by Change Orders', { content: formData.net_change_by_change_orders || '', colSpan: 2 }],
+        ];
+
+        autoTable(doc, {
+            body: [
+                [
+                    { content: "Contractor's Application for Payment:", styles: { fontStyle: 'bold' } },
+                    { content: "Application is made for Payment, as shown below, in connection with the Contract. Continuation Sheet, is attached.", styles: { fontSize: 8 } }
+                ]
+            ],
+            startY: y,
+            theme: 'plain'
+        });
+
+        y = (doc as any).lastAutoTable.finalY;
+
+        const rightColumnY = y;
+        
+        autoTable(doc, {
+            body: contractorAppBody,
+            startY: y,
+            theme: 'grid',
+            columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 20 }, 2: { cellWidth: 20 } },
+        });
+
+        let leftY = (doc as any).lastAutoTable.finalY + 2;
+
+        const certificationText = "The undersigned Contractor certifies that the best of the Contractor's knowledge, information and belief the Work covered by this Application for Payment has been completed in accordance with the Contract Documents, that all amounts have been paid by the Contractor for Work for which previous Project Certificates for Payments were issued and payments received from the Owner, and that Current Payment shown herein is now due.";
+        const splitText = doc.splitTextToSize(certificationText, 90);
+        doc.setFontSize(8);
+        doc.text(splitText, 14, leftY);
+        leftY += (splitText.length * 3) + 5;
+        doc.setFontSize(9);
+        doc.text(`Contractor: ${formData.cmName || ''}`, 14, leftY);
+        leftY += 7;
+        doc.text(`By: ${formData.cmBy || ''}`, 14, leftY);
+        doc.text(`Date: ${formData.cmDate || ''}`, 50, leftY);
+        leftY += 7;
+        doc.text(`State of: ${formData.cmState || ''}`, 14, leftY);
+        doc.text(`County of: ${formData.cmCounty || ''}`, 50, leftY);
+        leftY += 7;
+        doc.text(`Subscribed and sworn to before me this ${formData.swornDay || ''} Day of: ${formData.swornMonth || ''} 20${formData.swornYear || ''}`, 14, leftY, {maxWidth: 90});
+        leftY += 7;
+        doc.text(`Notary Public: ${formData.notaryPublic || ''}`, 14, leftY);
+        leftY += 7;
+        doc.text(`My Commission expires: ${formData.commissionExpires || ''}`, 14, leftY);
+
+        // Payment Summary on the right
+        const paymentSummaryBody = [
+            ['1. Original Contract Sum', formData.originalContractSum || ''],
+            ['2. Total Net Changes by Change Order', formData.netChanges || ''],
+            ['3. Total Contract Sum to Date (Line 1 ± 2)', formData.contractSumToDate || ''],
+            ['4. Total Completed & Stored to Date', formData.totalCompletedStored || ''],
+            ['   (Column G of Continuation Sheet)', ''],
+            ['5. Retainage:', ''],
+            ['   a. ___% of Completed Works', formData.retainage_completed || ''],
+            ['      (Column D+E of Continuation Sheet)', ''],
+            ['   b. ___% of Stored Material', formData.retainage_stored || ''],
+            ['      (Column F of Continuation Sheet)', ''],
+            ['   Total Retainage (Line 5a+5b)', formData.retainage_total || ''],
+            ['6. Total Earned Less Retainage (Line 4 Less 5 Total)', formData.totalEarnedLessRetainage || ''],
+            ['7. Less Previous Certificates for Payments (Line 6)', formData.lessPreviousCerts || ''],
+            ['8. Current Payment Due', formData.currentPaymentDue || ''],
+            ['9. Balance to Finish, Plus Retainage (Line 3 Less 6)', formData.balanceToFinish || ''],
+        ];
+
+        autoTable(doc, {
+            body: paymentSummaryBody,
+            startY: rightColumnY,
+            theme: 'grid',
+            tableWidth: 90,
+            columnStyles: { 1: { halign: 'right' } },
+            margin: { left: 108 },
+        });
+
+        y = Math.max(leftY, (doc as any).lastAutoTable.finalY) + 10;
+        
+        doc.setLineWidth(0.5);
+        doc.line(14, y, 200, y);
+        y+=5;
+        
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Architect's Project Certificate for Payment:", 14, y);
+        y+=5;
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        const architectCertText = "In accordance with the Contract Documents, based on on-site observations and the data comprising the above Application, the Architect certifies to the Owner that Work has progressed as indicated; that to the best of the Architect's knowledge, information and belief the quality of the Work is in accordance with the Contract Documents; the quality of the Contractors are entitled to payment of the AMOUNTS CERTIFIED.";
+        const splitArchitectText = doc.splitTextToSize(architectCertText, 90);
+        doc.text(splitArchitectText, 14, y);
+
+        const rightCertY = y;
+        doc.setFontSize(9);
+        doc.text(`Amounts Certified: ${formData.totalCertified || ''}`, 108, rightCertY);
+        doc.setFontSize(8);
+        doc.text('(Attach explanation if amount certified differs from the amount applies for.)', 108, rightCertY + 5);
+        y += (splitArchitectText.length * 3) + 10;
+
+        doc.text(`Architect: ${formData.architectName || ''}`, 14, y);
+        y+=7;
+        doc.text(`By: ${formData.architectBy || ''}`, 14, y);
+        doc.text(`Date: ${formData.architectDate || ''}`, 50, y);
+
+        const finalNoteText = "This Certificate is not negotiable. The AMOUNTS CERTIFIED are payable only to the Contractors named herein. Issuance, payment and acceptance of payment are without prejudice to any rights of the Owner of the Contractor under this Contract.";
+        const splitFinalNote = doc.splitTextToSize(finalNoteText, 90);
+        doc.text(splitFinalNote, 108, y);
+
 
         doc.save("application-for-payment.pdf");
     };
@@ -262,7 +383,7 @@ export default function ApplicationForPaymentPage() {
                                     <div className="flex justify-between items-center"><Label>2. Total Net Changes by Change Order</Label>{renderField('netChanges')}</div>
                                     <div className="flex justify-between items-center"><Label>3. Total Contract Sum to Date (Line 1 ± 2)</Label>{renderField('contractSumToDate')}</div>
                                     <div className="flex justify-between items-center"><Label>4. Total Completed & Stored to Date</Label>{renderField('totalCompletedStored')}</div>
-                                    <p className="text-xs">(Column G of Continuation Sheet)</p>
+                                    <div className="text-xs">(Column G of Continuation Sheet)</div>
                                     <div className="pl-4">
                                         <Label>5. Retainage:</Label>
                                         <div className="flex items-center gap-2"><Label className="w-1/2">a. ___% of Completed Works</Label>{renderField('retainage_completed')}</div>
