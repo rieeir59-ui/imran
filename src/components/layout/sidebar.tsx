@@ -52,6 +52,7 @@ const projectFormsItems = [
   { href: '/change-order', icon: FileEdit, label: 'Change Order' },
   { href: '/application-for-payment', icon: FileSignature, label: 'Application for Payment' },
   { href: '/continuation-sheet', icon: FileText, label: 'Continuation Sheet' },
+  { href: '/construction-activity-schedule', icon: GanttChart, label: 'Construction Activity Schedule' },
 ];
 
 const timelineItems = [

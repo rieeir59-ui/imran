@@ -170,6 +170,16 @@ service cloud.firestore {
     }
     
     /**
+     * @description Enforces ownership for construction schedules.
+     * @path /users/{userId}/constructionSchedules/{scheduleId}
+     * @allow (create, get, update, delete) - Authenticated user can manage their own construction schedule.
+     * @deny - All other access is denied.
+     */
+    match /users/{userId}/constructionSchedules/{scheduleId} {
+        allow read, write: if isOwner(userId);
+    }
+    
+    /**
      * @description Enforces ownership for project agreements.
      * @path /users/{userId}/projectAgreements/{agreementId}
      * @allow (create, get, update, delete) - Authenticated user can manage their own project agreement.

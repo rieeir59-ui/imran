@@ -495,6 +495,42 @@
         }
       }
     },
+    "ConstructionActivitySchedule": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ConstructionActivitySchedule",
+      "type": "object",
+      "description": "Represents a construction activity schedule.",
+      "properties": {
+        "client": { "type": "string" },
+        "project": { "type": "string" },
+        "coveredArea": { "type": "string" },
+        "location": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string" },
+        "projectNumber": { "type": "string" },
+        "date": { "type": "string" },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "number" },
+              "code": { "type": "string" },
+              "task": { "type": "string" },
+              "duration": { "type": "string" },
+              "planStart": { "type": "string" },
+              "planFinish": { "type": "string" },
+              "actualStart": { "type": "string" },
+              "actualFinish": { "type": "string" },
+              "progress": { "type": "string" },
+              "variancePlan": { "type": "string" },
+              "varianceActual": { "type": "string" },
+              "remarks": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
     "RateAnalysis": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "RateAnalysis",
@@ -772,6 +808,16 @@
             "$ref": "#/entities/ContinuationSheet"
           },
           "description": "Stores continuation sheet data for a specific user."
+        }
+      },
+      {
+        "path": "/users/{userId}/constructionSchedules/{scheduleId}",
+        "definition": {
+          "entityName": "ConstructionActivitySchedule",
+          "schema": {
+            "$ref": "#/entities/ConstructionActivitySchedule"
+          },
+          "description": "Stores construction activity schedule data for a specific user."
         }
       },
       {
