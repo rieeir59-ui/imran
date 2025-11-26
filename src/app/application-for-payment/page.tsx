@@ -15,6 +15,15 @@ import { Download, Edit, Save, Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+
 
 const PAYMENT_APP_DOC_ID = 'application-for-payment';
 
@@ -29,7 +38,10 @@ export default function ApplicationForPaymentPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [formData, setFormData] = useState<any>({});
+    const [formData, setFormData] = useState<any>({
+        changeOrdersPrevious: { additions: '', deduction: '', total: '' },
+        changeOrdersThisMonth: Array(2).fill({ number: '', dateApproved: '' }),
+    });
 
     const { toast } = useToast();
     const { user, isUserLoading } = useUser();
@@ -44,7 +56,14 @@ export default function ApplicationForPaymentPage() {
         if (!docRef) return;
         setIsLoading(true);
         getDoc(docRef).then(docSnap => {
-            if (docSnap.exists()) setFormData(docSnap.data());
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                setFormData({
+                    ...data,
+                    changeOrdersPrevious: data.changeOrdersPrevious || { additions: '', deduction: '', total: '' },
+                    changeOrdersThisMonth: data.changeOrdersThisMonth && data.changeOrdersThisMonth.length > 0 ? data.changeOrdersThisMonth : Array(2).fill({ number: '', dateApproved: '' }),
+                });
+            }
         }).catch(serverError => {
             const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'get' });
             errorEmitter.emit('permission-error', permissionError);
@@ -62,6 +81,22 @@ export default function ApplicationForPaymentPage() {
         }
     };
     
+    const handleTableChange = (section: string, index: number, field: string, value: string) => {
+        const newSectionData = [...(formData[section] || [])];
+        newSectionData[index] = { ...newSectionData[index], [field]: value };
+        setFormData(prev => ({ ...prev, [section]: newSectionData }));
+    }
+
+    const handleNestedChange = (section: string, field: string, value: string) => {
+        setFormData((prev: any) => ({
+            ...prev,
+            [section]: {
+                ...(prev[section] || {}),
+                [field]: value
+            }
+        }));
+    }
+    
     const handleSave = () => {
         if (!docRef) return;
         setIsSaving(true);
@@ -78,7 +113,7 @@ export default function ApplicationForPaymentPage() {
         const doc = new jsPDF();
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text("PROJECT APPLICATION AND PROJECT CERTIFICATE FOR PAYMENT", 105, 15, { align: 'center'});
+        doc.text("APPLICATION AND CERTIFICATE FOR PAYMENT", 105, 15, { align: 'center'});
         
         autoTable(doc, {
             startY: 25,
@@ -94,6 +129,17 @@ export default function ApplicationForPaymentPage() {
         const value = formData[name] || '';
         return isEditing ? <Input name={name} value={value} onChange={handleInputChange} /> : <div className="p-1 border-b min-h-[24px]">{value}</div>;
     }
+
+    const renderNestedField = (section: string, field: string) => {
+         const value = formData[section]?.[field] || '';
+        return isEditing ? <Input name={`${section}.${field}`} value={value} onChange={e => handleNestedChange(section, field, e.target.value)} /> : <div className="p-1 border-b min-h-[24px]">{value}</div>;
+    }
+
+    const renderTableCell = (section: string, index: number, field: string) => {
+        const value = formData[section]?.[index]?.[field] || '';
+        return isEditing ? <Input name={`${section}.${index}.${field}`} value={value} onChange={e => handleTableChange(section, index, field, e.target.value)} /> : <div className="p-1 min-h-[24px]">{value}</div>;
+    }
+
     const renderCheckbox = (name: string, label: string) => (
          <div className="flex items-center space-x-2">
             <Checkbox id={name} name={name} checked={formData[name] || false} onCheckedChange={(checked) => handleCheckboxChange(name, checked)} disabled={!isEditing}/>
@@ -120,59 +166,110 @@ export default function ApplicationForPaymentPage() {
                 </CardHeader>
                 <CardContent>
                     <div id="payment-application-table">
-                        <div className="grid grid-cols-3 gap-4 border-b pb-4">
-                            <div className="col-span-2 space-y-2">
+                        <div className="grid grid-cols-2 gap-4 border-b pb-4">
+                            <div className="space-y-2">
                                 <FormField label="To (Owner):">{renderField('owner')}</FormField>
-                                <FormField label="Attention:">{renderField('attention')}</FormField>
+                                <FormField label="From (Contractor):">{renderField('from_contractor')}</FormField>
+                                <FormField label="Contract For:">{renderField('contract_for')}</FormField>
                             </div>
                             <div className="space-y-2">
                                 <FormField label="Project:">{renderField('project')}</FormField>
-                                <FormField label="Construction Manager:">{renderField('constructionManager')}</FormField>
-                            </div>
-                             <div className="col-span-2"></div>
-                             <div className="space-y-2">
-                                <FormField label="Application Number:">{renderField('applicationNumber')}</FormField>
-                                <FormField label="Period From:">{renderField('periodFrom')}</FormField>
-                                <FormField label="To:">{renderField('periodTo')}</FormField>
-                                <FormField label="Architect's Project No:">{renderField('architectsProjectNo')}</FormField>
-                                <div>
-                                    <Label>Distributed to:</Label>
-                                    {renderCheckbox('dist_owner', 'Owner')}
-                                    {renderCheckbox('dist_architect', 'Architect')}
-                                    {renderCheckbox('dist_contractor', 'Contractor Manager')}
-                                    {renderCheckbox('dist_others', 'Others')}
-                                </div>
+                                <FormField label="VIA (Architect):">{renderField('via_architect')}</FormField>
+                                 <div className="pt-6 grid grid-cols-2 gap-4">
+                                     <div>
+                                        <FormField label="Application Number:">{renderField('applicationNumber')}</FormField>
+                                        <FormField label="Period To:">{renderField('periodTo')}</FormField>
+                                        <FormField label="Architect's Project No:">{renderField('architectsProjectNo')}</FormField>
+                                        <FormField label="Contract Date:">{renderField('contractDate')}</FormField>
+                                     </div>
+                                     <div>
+                                        <Label>Distributed to:</Label>
+                                        {renderCheckbox('dist_owner', 'Owner')}
+                                        {renderCheckbox('dist_architect', 'Architect')}
+                                        {renderCheckbox('dist_contractor', 'Contractor')}
+                                        {renderCheckbox('dist_others', 'Others')}
+                                    </div>
+                                 </div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-8 mt-4">
+                         <div className="grid grid-cols-2 gap-8 mt-4">
                             <div>
-                                <h4 className="font-bold">Project Application for Payment:</h4>
-                                <p className="text-xs my-2">The undersigned Construction Manager certifies that the best of the Construction Manager's knowledge, information and belief Work covered by this Project Application for Payment has been completed in accordance with the Contract Documents, that all amounts have been paid by the Contractors for Work for which previous Project Certificates for Payments were issued and payments received from the Owner, and that Current Payment shown herein is now due.</p>
-                                <FormField label="Construction Manager:">{renderField('cmName')}</FormField>
+                                <h4 className="font-bold text-center border-b pb-2">Contractor's Application for Payment:</h4>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow><TableHead colSpan={3} className="text-center font-bold">Change Order Summary</TableHead></TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell>Change Orders approved in previous monthly by Owner</TableCell>
+                                            <TableCell>{renderNestedField('changeOrdersPrevious', 'additions')}</TableCell>
+                                            <TableCell>{renderNestedField('changeOrdersPrevious', 'deduction')}</TableCell>
+                                        </TableRow>
+                                        <TableRow className="font-bold bg-muted/50">
+                                            <TableCell>TOTAL</TableCell>
+                                            <TableCell colSpan={2}>{renderNestedField('changeOrdersPrevious', 'total')}</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell colSpan={3}>
+                                                <p className="font-bold">Approved this Month</p>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <div>Number</div>
+                                                    <div>Date Approved</div>
+                                                     {formData.changeOrdersThisMonth?.map((item: any, index: number) => (
+                                                        <React.Fragment key={index}>
+                                                            <div>{renderTableCell('changeOrdersThisMonth', index, 'number')}</div>
+                                                            <div>{renderTableCell('changeOrdersThisMonth', index, 'dateApproved')}</div>
+                                                        </React.Fragment>
+                                                    ))}
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                         <TableRow className="font-bold bg-muted/50">
+                                            <TableCell>TOTALS</TableCell>
+                                            <TableCell colSpan={2}>{renderField('change_order_totals')}</TableCell>
+                                        </TableRow>
+                                         <TableRow>
+                                            <TableCell>Net change by Change Orders</TableCell>
+                                            <TableCell colSpan={2}>{renderField('net_change_by_change_orders')}</TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+
+                                <p className="text-xs my-2">The undersigned Contractor certifies that the best of the Contractor's knowledge, information and belief the Work covered by this Application for Payment has been completed in accordance with the Contract Documents, that all amounts have been paid by the Contractor for Work for which previous Project Certificates for Payments were issued and payments received from the Owner, and that Current Payment shown herein is now due.</p>
+                                <FormField label="Contractor:">{renderField('cmName')}</FormField>
                                 <div className="flex gap-4 mt-4">
                                     <FormField label="By:">{renderField('cmBy')}</FormField>
                                     <FormField label="Date:">{renderField('cmDate')}</FormField>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 mt-4">
-                                    <FormField label="Status of:">{renderField('cmStatus')}</FormField>
+                                    <FormField label="State of:">{renderField('cmState')}</FormField>
                                     <FormField label="County of:">{renderField('cmCounty')}</FormField>
                                 </div>
-                                <p className="text-xs my-2">Subscribed and sworn to before me this <span className="p-1 border-b">{formData.swornDay || '__'}</span> Day of: <span className="p-1 border-b">{formData.swornMonth || '______'}</span></p>
+                                <p className="text-xs my-2">Subscribed and sworn to before me this {renderField('swornDay')} Day of: {renderField('swornMonth')} 20{renderField('swornYear')}</p>
                                 <FormField label="Notary Public:">{renderField('notaryPublic')}</FormField>
                                 <FormField label="My Commission expires:">{renderField('commissionExpires')}</FormField>
                             </div>
-                            <div>
-                                <p className="text-xs">Application is made for Payment, as shown below, in connection with the Project. Project Application Summary, is attached.</p>
-                                <p className="text-xs mt-2">The present status for the account for all Contractors is for this Project is as follows:</p>
+                            <div className="pt-12">
+                                <p className="text-xs">Application is made for Payment, as shown below, in connection with the Contract. Continuation Sheet, is attached.</p>
                                 <div className="space-y-2 mt-4">
-                                    <FormField label="Total Contract Sum (Item A Totals):">{renderField('totalContractSum')}</FormField>
-                                    <FormField label="Total Net Changes by Change Order (Item B Totals):">{renderField('netChanges')}</FormField>
-                                    <FormField label="Total Contract Sum to Date (Item C Totals):">{renderField('contractSumToDate')}</FormField>
-                                    <FormField label="Total Completed & Stored to Date (Item F Totals):">{renderField('totalCompleted')}</FormField>
-                                    <FormField label="Retainage (Item H Totals):">{renderField('retainage')}</FormField>
-                                    <FormField label="Less Previous Totals Payments (Item I Total):">{renderField('lessPrevious')}</FormField>
-                                    <FormField label="Current Payment Due (Item J Totals):">{renderField('currentDue')}</FormField>
+                                    <div className="flex justify-between items-center"><Label>1. Original Contract Sum</Label>{renderField('originalContractSum')}</div>
+                                    <div className="flex justify-between items-center"><Label>2. Total Net Changes by Change Order</Label>{renderField('netChanges')}</div>
+                                    <div className="flex justify-between items-center"><Label>3. Total Contract Sum to Date (Line 1 ± 2)</Label>{renderField('contractSumToDate')}</div>
+                                    <div className="flex justify-between items-center"><Label>4. Total Completed & Stored to Date</Label>{renderField('totalCompletedStored')}</div>
+                                    <p className="text-xs">(Column G of Continuation Sheet)</p>
+                                    <div className="pl-4">
+                                        <Label>5. Retainage:</Label>
+                                        <div className="flex items-center gap-2"><Label className="w-1/2">a. ___% of Completed Works</Label>{renderField('retainage_completed')}</div>
+                                        <p className="text-xs">(Column D+E of Continuation Sheet)</p>
+                                        <div className="flex items-center gap-2"><Label className="w-1/2">b. ___% of Stored Material</Label>{renderField('retainage_stored')}</div>
+                                        <p className="text-xs">(Column F of Continuation Sheet)</p>
+                                        <div className="flex justify-between items-center"><Label>Total Retainage (Line 5a+5b) or Total in Column I of Continuation Sheet</Label>{renderField('retainage_total')}</div>
+                                    </div>
+                                    <div className="flex justify-between items-center"><Label>6. Total Earned Less Retainage (Line 4 Less 5 Total)</Label>{renderField('totalEarnedLessRetainage')}</div>
+                                    <div className="flex justify-between items-center"><Label>7. Less Previous Certificates for Payments (Line 6)</Label>{renderField('lessPreviousCerts')}</div>
+                                    <div className="flex justify-between items-center"><Label>8. Current Payment Due</Label>{renderField('currentPaymentDue')}</div>
+                                    <div className="flex justify-between items-center"><Label>9. Balance to Finish, Plus Retainage (Line 3 Less 6)</Label>{renderField('balanceToFinish')}</div>
                                 </div>
                             </div>
                         </div>
@@ -182,7 +279,7 @@ export default function ApplicationForPaymentPage() {
                             <div className="grid grid-cols-2 gap-8">
                                 <p className="text-xs my-2">In accordance with the Contract Documents, based on on-site observations and the data comprising the above Application, the Architect certifies to the Owner that Work has progressed as indicated; that to the best of the Architect's knowledge, information and belief the quality of the Work is in accordance with the Contract Documents; the quality of the Contractors are entitled to payment of the AMOUNTS CERTIFIED.</p>
                                 <div>
-                                    <FormField label="Total of Amounts Certified:">{renderField('totalCertified')}</FormField>
+                                    <FormField label="Amounts Certified:">{renderField('totalCertified')}</FormField>
                                     <p className="text-xs">(Attach explanation if amount certified differs from the amount applies for.)</p>
                                 </div>
                             </div>
@@ -194,7 +291,7 @@ export default function ApplicationForPaymentPage() {
                                         <FormField label="Date:">{renderField('architectDate')}</FormField>
                                     </div>
                                 </div>
-                                <p className="text-xs mt-2">This Certificate is not negotiable. The AMOUNTS CERTIFIED are payable on to the Contractors named in Contract Document attached. Issuance, payment and acceptance of payment are without prejudice to any rights of the Owner of the Contractor under this Contract.</p>
+                                <p className="text-xs mt-2">This Certificate is not negotiable. The AMOUNTS CERTIFIED are payable on to the Contractors named herein. Issuance, payment and acceptance of payment are without prejudice to any rights of the Owner of the Contractor under this Contract.</p>
                             </div>
                         </div>
                     </div>
