@@ -12,7 +12,7 @@ import {
   SidebarGroupLabel,
   SidebarInput,
 } from "@/components/ui/sidebar";
-import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList, MessageSquare, BookUser, LocateFixed, Folder, UserCheck, DollarSign, FileEdit, FileSignature, ShieldCheck, FileQuestion } from 'lucide-react';
+import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList, MessageSquare, BookUser, LocateFixed, Folder, UserCheck, DollarSign, FileEdit, FileSignature, ShieldCheck, FileQuestion, FileSliders } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 
@@ -58,6 +58,7 @@ const projectFormsItems = [
   { href: '/consent-of-surety', icon: ShieldCheck, label: 'Consent of Surety' },
   { href: '/consent-of-surety-final', icon: ShieldCheck, label: 'Consent of Surety (Final)' },
   { href: '/architects-supplemental-instructions', icon: FileQuestion, label: 'Architects Supplemental Instructions' },
+  { href: '/construction-change-directive', icon: FileSliders, label: 'Construction Change Directive' },
 ];
 
 const timelineItems = [

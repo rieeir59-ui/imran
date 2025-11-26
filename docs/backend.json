@@ -1,6 +1,47 @@
 
 {
   "entities": {
+    "ConstructionChangeDirective": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ConstructionChangeDirective",
+      "type": "object",
+      "description": "Represents a Construction Change Directive form.",
+      "properties": {
+        "project_name_address": { "type": "string" },
+        "to_contractor": { "type": "string" },
+        "change_description": { "type": "string" },
+        "directive_no": { "type": "string" },
+        "date": { "type": "string" },
+        "architects_project_no": { "type": "string" },
+        "contract_for": { "type": "string" },
+        "contract_date": { "type": "string" },
+        "check_owner": { "type": "boolean" },
+        "check_architect": { "type": "boolean" },
+        "check_contractor": { "type": "boolean" },
+        "check_field": { "type": "boolean" },
+        "check_other": { "type": "boolean" },
+        "adjustment_lum_sum": { "type": "boolean" },
+        "adjustment_lum_sum_amount": { "type": "string" },
+        "adjustment_unit_price": { "type": "boolean" },
+        "adjustment_unit_price_amount": { "type": "string" },
+        "adjustment_unit_price_per": { "type": "string" },
+        "adjustment_as_follows": { "type": "boolean" },
+        "adjustment_as_follows_text": { "type": "string" },
+        "time_adjusted": { "type": "boolean" },
+        "time_unchanged": { "type": "boolean" },
+        "time_increase_days": { "type": "string" },
+        "time_decrease_days": { "type": "string" },
+        "architect_address": { "type": "string" },
+        "architect_by": { "type": "string" },
+        "architect_date": { "type": "string" },
+        "contractor_address": { "type": "string" },
+        "contractor_by": { "type": "string" },
+        "contractor_date": { "type": "string" },
+        "owner_address": { "type": "string" },
+        "owner_by": { "type": "string" },
+        "owner_date": { "type": "string" }
+      }
+    },
     "ArchitectsSupplementalInstructions": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "ArchitectsSupplementalInstructions",
@@ -1017,6 +1058,14 @@
           "entityName": "ArchitectsSupplementalInstructions",
           "schema": { "$ref": "#/entities/ArchitectsSupplementalInstructions" },
           "description": "Stores architect's supplemental instruction forms for a specific user."
+        }
+      },
+      {
+        "path": "/users/{userId}/constructionChangeDirectives/{directiveId}",
+        "definition": {
+          "entityName": "ConstructionChangeDirective",
+          "schema": { "$ref": "#/entities/ConstructionChangeDirective" },
+          "description": "Stores construction change directive forms for a specific user."
         }
       },
       {

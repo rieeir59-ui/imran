@@ -290,6 +290,10 @@ service cloud.firestore {
         allow read, write: if isOwner(userId);
     }
     
+    match /users/{userId}/constructionChangeDirectives/{directiveId} {
+        allow read, write: if isOwner(userId);
+    }
+    
     /**
      * @description Enforces ownership for tasks.
      * Allows any authenticated user to create tasks, but only the owner can manage them.
