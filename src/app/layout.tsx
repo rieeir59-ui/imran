@@ -1,7 +1,6 @@
 
 "use client";
 
-import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { DataProvider } from '@/lib/data-context';
@@ -20,10 +19,15 @@ export default function RootLayout({
   useEffect(() => {
     const savedTheme = localStorage.getItem('dashboard-theme');
     if (savedTheme) {
-      const { primary, background, accent } = JSON.parse(savedTheme);
-      if (primary) document.documentElement.style.setProperty('--primary', `hsl(${primary})`);
-      if (background) document.documentElement.style.setProperty('--background', `hsl(${background})`);
-      if (accent) document.documentElement.style.setProperty('--accent', `hsl(${accent})`);
+      try {
+        const { primary, background, accent } = JSON.parse(savedTheme);
+        const root = document.documentElement;
+        if (primary) root.style.setProperty('--primary', `hsl(${primary})`);
+        if (background) root.style.setProperty('--background', `hsl(${background})`);
+        if (accent) root.style.setProperty('--accent', `hsl(${accent})`);
+      } catch (error) {
+        console.error("Failed to parse or apply theme from localStorage", error);
+      }
     }
   }, []);
   
