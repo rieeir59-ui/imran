@@ -80,6 +80,7 @@ export function AppSidebar() {
   const { state, isMobile } = useSidebar();
   const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     setIsClient(true);
@@ -96,27 +97,37 @@ export function AppSidebar() {
     ));
   };
   
-  const SidebarContentHolder = () => (
-    <>
-      <SidebarMenu>
-        {renderMenuItems(mainMenuItems)}
-      </SidebarMenu>
-  
-      <SidebarGroup>
-        <SidebarGroupLabel>Project Forms</SidebarGroupLabel>
+  const SidebarContentHolder = ({ searchTerm }: { searchTerm: string }) => {
+    const lowercasedFilter = searchTerm.toLowerCase();
+    const filteredProjectForms = projectFormsItems.filter(item =>
+      item.label.toLowerCase().includes(lowercasedFilter)
+    );
+    const filteredTimelines = timelineItems.filter(item =>
+      item.label.toLowerCase().includes(lowercasedFilter)
+    );
+
+    return (
+      <>
         <SidebarMenu>
-          {renderMenuItems(projectFormsItems)}
+          {renderMenuItems(mainMenuItems)}
         </SidebarMenu>
-      </SidebarGroup>
-      
-      <SidebarGroup>
-        <SidebarGroupLabel>Timelines</SidebarGroupLabel>
-        <SidebarMenu>
-          {renderMenuItems(timelineItems)}
-        </SidebarMenu>
-      </SidebarGroup>
-    </>
-  );
+    
+        <SidebarGroup>
+          <SidebarGroupLabel>Project Forms</SidebarGroupLabel>
+          <SidebarMenu>
+            {renderMenuItems(filteredProjectForms)}
+          </SidebarMenu>
+        </SidebarGroup>
+        
+        <SidebarGroup>
+          <SidebarGroupLabel>Timelines</SidebarGroupLabel>
+          <SidebarMenu>
+            {renderMenuItems(filteredTimelines)}
+          </SidebarMenu>
+        </SidebarGroup>
+      </>
+    );
+  };
 
   return (
     <Sidebar className="no-print">
@@ -125,13 +136,15 @@ export function AppSidebar() {
           <BriefcaseBusiness className="size-8 text-sidebar-primary" />
           {isClient && (state === 'expanded' || isMobile) && <h1 className="text-xl font-semibold gradient-text">Isbah Dashboard</h1>}
         </a>
-        <SidebarInput placeholder="Search..." />
+        <SidebarInput 
+          placeholder="Search..." 
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </SidebarHeader>
       <SidebarContent>
-        {isClient ? <SidebarContentHolder /> : null}
+        {isClient ? <SidebarContentHolder searchTerm={searchTerm} /> : null}
       </SidebarContent>
     </Sidebar>
   );
 }
-
-    
