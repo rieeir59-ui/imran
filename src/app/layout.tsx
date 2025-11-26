@@ -10,12 +10,23 @@ import { AppSidebar } from '@/components/layout/sidebar';
 import { SidebarInset } from '@/components/ui/sidebar';
 import { AppHeader } from '@/components/layout/header';
 import { FirebaseClientProvider } from '@/firebase';
+import { useEffect } from 'react';
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('dashboard-theme');
+    if (savedTheme) {
+      const { primary, background, accent } = JSON.parse(savedTheme);
+      if (primary) document.documentElement.style.setProperty('--primary', `hsl(${primary})`);
+      if (background) document.documentElement.style.setProperty('--background', `hsl(${background})`);
+      if (accent) document.documentElement.style.setProperty('--accent', `hsl(${accent})`);
+    }
+  }, []);
+  
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>

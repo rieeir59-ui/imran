@@ -11,6 +11,7 @@ import { Cog } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 function hslStringToHex(hsl: string): string {
+  if (!hsl) return '#000000';
   const parts = hsl.trim().match(/(\d+)\s+([\d.]+)%\s+([\d.]+)%/);
   if (!parts) return '#000000';
 
@@ -88,6 +89,14 @@ export default function SettingsPage() {
 
   const getInitialColor = (variable: string) => {
     if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('dashboard-theme');
+      if (savedTheme) {
+        const theme = JSON.parse(savedTheme);
+        const colorName = variable.replace('--','');
+        if (theme[colorName]) {
+          return theme[colorName];
+        }
+      }
       const style = getComputedStyle(document.documentElement);
       const value = style.getPropertyValue(variable).trim();
       const hslMatch = value.match(/([\d.]+)[, ]\s*([\d.]+%)[, ]\s*([\d.]+%)/);
@@ -110,13 +119,21 @@ export default function SettingsPage() {
   }, []);
 
   const handleSaveTheme = () => {
+    const theme = {
+      primary: primaryColor,
+      background: backgroundColor,
+      accent: accentColor,
+    };
+
+    localStorage.setItem('dashboard-theme', JSON.stringify(theme));
+
     document.documentElement.style.setProperty('--primary', `hsl(${primaryColor})`);
     document.documentElement.style.setProperty('--background', `hsl(${backgroundColor})`);
     document.documentElement.style.setProperty('--accent', `hsl(${accentColor})`);
     
     toast({
       title: "Theme Updated!",
-      description: "Your new theme colors have been applied.",
+      description: "Your new theme colors have been applied and saved.",
     });
   };
 
