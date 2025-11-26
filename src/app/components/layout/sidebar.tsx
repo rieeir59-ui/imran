@@ -12,7 +12,7 @@ import {
   SidebarGroupLabel,
   SidebarInput,
 } from "@/components/ui/sidebar";
-import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList, MessageSquare, BookUser, LocateFixed, Folder } from 'lucide-react';
+import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList, MessageSquare, BookUser, LocateFixed, Folder, UserCheck } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 
@@ -45,6 +45,9 @@ const projectFormsItems = [
   { href: '/transmittal-letter', icon: MessageSquare, label: 'Transmittal Letter' },
   { href: '/minutes-of-meeting', icon: ClipboardCheck, label: 'Minutes of Meeting' },
   { href: '/file-manager', icon: Folder, label: 'File Manager' },
+  { href: '/sub-consultant-list', icon: UserCheck, label: 'Sub-consultant List' },
+  { href: '/contractor-list', icon: Users, label: 'List of Contractors' },
+  { href: '/project-application-summary', icon: FileText, label: 'Project Application Summary' },
 ];
 
 const timelineItems = [
@@ -119,3 +122,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
