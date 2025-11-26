@@ -61,8 +61,15 @@ export function exportDataToPdf(title: string, data: any[], filename:string, ove
   doc.text(title, doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
   doc.setTextColor(0, 0, 0);
 
-  const headers = Object.keys(data[0]);
+  let headers: string[];
+  if (filename === 'project-timeline') {
+    headers = ['id', 'name', 'duration', 'start', 'finish', 'predecessor'];
+  } else {
+    headers = Object.keys(data[0]);
+  }
+  
   const tableHeaders = headers.map(key => {
+    if (key === 'name') return 'Task Name';
     const result = key.replace(/([A-Z])/g, " $1");
     return result.charAt(0).toUpperCase() + result.slice(1);
   });
@@ -74,17 +81,28 @@ export function exportDataToPdf(title: string, data: any[], filename:string, ove
 
   const columnStyles: { [key: string]: any } = {};
   headers.forEach((header, index) => {
-      let width = 20; // default width
-      if (header.toLowerCase().includes('name')) {
-          width = 35;
-      } else if (header.toLowerCase().includes('date')) {
-          width = 20;
-      } else if (header.toLowerCase().includes('area')) {
-          width = 18;
-      } else if (header.toLowerCase().includes('holder')) {
-          width = 25;
-      } else if (header.toLowerCase() === 'srno') {
-          width = 10;
+      let width: number | 'auto' = 'auto'; // default width
+      if (filename === 'project-timeline') {
+        switch(header) {
+          case 'id': width = 15; break;
+          case 'name': width = 100; break;
+          case 'duration': width = 30; break;
+          case 'start': width = 35; break;
+          case 'finish': width = 35; break;
+          case 'predecessor': width = 35; break;
+        }
+      } else {
+        if (header.toLowerCase().includes('name')) {
+            width = 35;
+        } else if (header.toLowerCase().includes('date')) {
+            width = 20;
+        } else if (header.toLowerCase().includes('area')) {
+            width = 18;
+        } else if (header.toLowerCase().includes('holder')) {
+            width = 25;
+        } else if (header.toLowerCase() === 'srno') {
+            width = 10;
+        }
       }
       columnStyles[index] = { cellWidth: width };
   });
@@ -283,3 +301,4 @@ export function exportServicesToPdf(formData: any, serviceSections: any) {
 
     doc.save('list-of-services.pdf');
 }
+
