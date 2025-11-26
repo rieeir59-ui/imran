@@ -50,6 +50,7 @@ const projectFormsItems = [
   { href: '/contractor-list', icon: Users, label: 'List of Contractors' },
   { href: '/project-application-summary', icon: FileText, label: 'Project Application Summary' },
   { href: '/preliminary-project-budget', icon: DollarSign, label: 'Preliminary Project Budget' },
+  { href: '/rate-analysis', icon: DollarSign, label: 'Rate Analysis' },
 ];
 
 const timelineItems = [
@@ -124,5 +125,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
-  
