@@ -549,7 +549,7 @@ Section28.displayName = 'Section28';
 const Section29 = React.memo(() => (<Card><CardHeader><CardTitle>Other Provisions</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
 Section29.displayName = 'Section29';
 
-const Section30 = React.memo(() => (<Card><CardHeader><CardTitle>Consent of Surety</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section30 = React.memo(() => (<Card><CardHeader><CardTitle>Consent of Surety</CardTitle></CardHeader><CardContent><p>This form can be filled out on the <Link href="/consent-of-surety" className="text-primary underline">Consent of Surety page</Link>.</p></CardContent></Card>));
 Section30.displayName = 'Section30';
 
 const Section31 = React.memo(() => (<Card><CardHeader><CardTitle>Total Package of Project</CardTitle></CardHeader><CardContent>...</CardContent></Card>));

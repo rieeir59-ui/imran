@@ -613,6 +613,14 @@
         "properties": {},
         "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "boolean" }] }
     },
+    "ConsentOfSurety": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "ConsentOfSurety",
+        "type": "object",
+        "description": "Represents a consent of surety form.",
+        "properties": {},
+        "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "boolean" }] }
+    },
     "Task": {
       "title": "Task",
       "type": "object",
@@ -950,6 +958,14 @@
           "entityName": "ApplicationForPayment",
           "schema": { "$ref": "#/entities/ApplicationForPayment" },
           "description": "Stores application for payment forms for a specific user."
+        }
+      },
+      {
+        "path": "/users/{userId}/consentOfSurety/{consentId}",
+        "definition": {
+          "entityName": "ConsentOfSurety",
+          "schema": { "$ref": "#/entities/ConsentOfSurety" },
+          "description": "Stores consent of surety forms for a specific user."
         }
       },
       {

@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { 
@@ -11,7 +12,7 @@ import {
   SidebarGroupLabel,
   SidebarInput,
 } from "@/components/ui/sidebar";
-import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList, MessageSquare, BookUser, LocateFixed, Folder, UserCheck, DollarSign, FileEdit, FileSignature } from 'lucide-react';
+import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList, MessageSquare, BookUser, LocateFixed, Folder, UserCheck, DollarSign, FileEdit, FileSignature, ShieldCheck } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 
@@ -53,6 +54,8 @@ const projectFormsItems = [
   { href: '/application-for-payment', icon: FileSignature, label: 'Application for Payment' },
   { href: '/continuation-sheet', icon: FileText, label: 'Continuation Sheet' },
   { href: '/construction-activity-schedule', icon: GanttChart, label: 'Construction Activity Schedule' },
+  { href: '/instruction-sheet', icon: FileText, label: 'Instruction Sheet' },
+  { href: '/consent-of-surety', icon: ShieldCheck, label: 'Consent of Surety' },
 ];
 
 const timelineItems = [
