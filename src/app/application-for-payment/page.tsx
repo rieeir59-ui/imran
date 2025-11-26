@@ -117,7 +117,12 @@ export default function ApplicationForPaymentPage() {
         
         autoTable(doc, {
             startY: 25,
-            html: '#payment-application-table',
+            body: [
+                [
+                    { content: `To (Owner): ${formData.owner || ''}\nFrom (Contractor): ${formData.from_contractor || ''}\nContract For: ${formData.contract_for || ''}`, styles: { cellWidth: 90 } },
+                    { content: `Project: ${formData.project || ''}\nVIA (Architect): ${formData.via_architect || ''}\n\nApplication Number: ${formData.applicationNumber || ''}\nPeriod To: ${formData.periodTo || ''}\nArchitect's Project No: ${formData.architectsProjectNo || ''}\nContract Date: ${formData.contractDate || ''}`, styles: { cellWidth: 90 } }
+                ]
+            ],
             theme: 'plain',
             styles: { fontSize: 9, cellPadding: 1 },
         });
@@ -127,7 +132,7 @@ export default function ApplicationForPaymentPage() {
 
     const renderField = (name: string) => {
         const value = formData[name] || '';
-        return isEditing ? <Input name={name} value={value} onChange={handleInputChange} /> : <span className="p-1 border-b min-h-[24px] inline-block">{value}</span>;
+        return isEditing ? <Input name={name} value={value} onChange={handleInputChange} /> : <div className="p-1 border-b min-h-[24px]">{value}</div>;
     }
 
     const renderNestedField = (section: string, field: string) => {
@@ -246,12 +251,12 @@ export default function ApplicationForPaymentPage() {
                                     <FormField label="State of:">{renderField('cmState')}</FormField>
                                     <FormField label="County of:">{renderField('cmCounty')}</FormField>
                                 </div>
-                                <div className="text-xs my-2">Subscribed and sworn to before me this {renderField('swornDay')} Day of: {renderField('swornMonth')} 20{renderField('swornYear')}</div>
+                                <div className="text-xs my-2">Subscribed and sworn to before me this {isEditing ? <Input name="swornDay" value={formData.swornDay || ''} onChange={handleInputChange} className="inline w-16"/> : <span>{formData.swornDay || '___'}</span>} Day of: {isEditing ? <Input name="swornMonth" value={formData.swornMonth || ''} onChange={handleInputChange} className="inline w-24"/> : <span>{formData.swornMonth || '______'}</span>} 20{isEditing ? <Input name="swornYear" value={formData.swornYear || ''} onChange={handleInputChange} className="inline w-12"/> : <span>{formData.swornYear || '__'}</span>}</div>
                                 <FormField label="Notary Public:">{renderField('notaryPublic')}</FormField>
                                 <FormField label="My Commission expires:">{renderField('commissionExpires')}</FormField>
                             </div>
                             <div className="pt-12">
-                                <p className="text-xs">Application is made for Payment, as shown below, in connection with the Contract. Continuation Sheet, is attached.</p>
+                                <div className="text-xs">Application is made for Payment, as shown below, in connection with the Contract. Continuation Sheet, is attached.</div>
                                 <div className="space-y-2 mt-4">
                                     <div className="flex justify-between items-center"><Label>1. Original Contract Sum</Label>{renderField('originalContractSum')}</div>
                                     <div className="flex justify-between items-center"><Label>2. Total Net Changes by Change Order</Label>{renderField('netChanges')}</div>
@@ -261,9 +266,9 @@ export default function ApplicationForPaymentPage() {
                                     <div className="pl-4">
                                         <Label>5. Retainage:</Label>
                                         <div className="flex items-center gap-2"><Label className="w-1/2">a. ___% of Completed Works</Label>{renderField('retainage_completed')}</div>
-                                        <p className="text-xs">(Column D+E of Continuation Sheet)</p>
+                                        <div className="text-xs">(Column D+E of Continuation Sheet)</div>
                                         <div className="flex items-center gap-2"><Label className="w-1/2">b. ___% of Stored Material</Label>{renderField('retainage_stored')}</div>
-                                        <p className="text-xs">(Column F of Continuation Sheet)</p>
+                                        <div className="text-xs">(Column F of Continuation Sheet)</div>
                                         <div className="flex justify-between items-center"><Label>Total Retainage (Line 5a+5b) or Total in Column I of Continuation Sheet</Label>{renderField('retainage_total')}</div>
                                     </div>
                                     <div className="flex justify-between items-center"><Label>6. Total Earned Less Retainage (Line 4 Less 5 Total)</Label>{renderField('totalEarnedLessRetainage')}</div>
@@ -277,7 +282,7 @@ export default function ApplicationForPaymentPage() {
                          <div className="mt-4 pt-4 border-t">
                             <h4 className="font-bold">Architect's Project Certificate for Payment:</h4>
                             <div className="grid grid-cols-2 gap-8">
-                                <p className="text-xs my-2">In accordance with the Contract Documents, based on on-site observations and the data comprising the above Application, the Architect certifies to the Owner that Work has progressed as indicated; that to the best of the Architect's knowledge, information and belief the quality of the Work is in accordance with the Contract Documents; the quality of the Contractors are entitled to payment of the AMOUNTS CERTIFIED.</p>
+                                <div className="text-xs my-2">In accordance with the Contract Documents, based on on-site observations and the data comprising the above Application, the Architect certifies to the Owner that Work has progressed as indicated; that to the best of the Architect's knowledge, information and belief the quality of the Work is in accordance with the Contract Documents; the quality of the Contractors are entitled to payment of the AMOUNTS CERTIFIED.</div>
                                 <div>
                                     <FormField label="Amounts Certified:">{renderField('totalCertified')}</FormField>
                                     <p className="text-xs">(Attach explanation if amount certified differs from the amount applies for.)</p>
@@ -291,7 +296,7 @@ export default function ApplicationForPaymentPage() {
                                         <FormField label="Date:">{renderField('architectDate')}</FormField>
                                     </div>
                                 </div>
-                                <p className="text-xs mt-2">This Certificate is not negotiable. The AMOUNTS CERTIFIED are payable on to the Contractors named herein. Issuance, payment and acceptance of payment are without prejudice to any rights of the Owner of the Contractor under this Contract.</p>
+                                <div className="text-xs mt-2">This Certificate is not negotiable. The AMOUNTS CERTIFIED are payable on to the Contractors named herein. Issuance, payment and acceptance of payment are without prejudice to any rights of the Owner of the Contractor under this Contract.</div>
                             </div>
                         </div>
                     </div>
