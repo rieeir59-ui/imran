@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo, Fragment } from 'react';
@@ -539,7 +540,7 @@ const Section26 = React.memo(() => (
 </Card>));
 Section26.displayName = 'Section26';
 
-const Section27 = React.memo(() => (<Card><CardHeader><CardTitle>Instruction Sheet</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section27 = React.memo(() => (<Card><CardHeader><CardTitle>Instruction Sheet</CardTitle></CardHeader><CardContent><p>This form can be filled out on the <Link href="/instruction-sheet" className="text-primary underline">Instruction Sheet page</Link>.</p></CardContent></Card>));
 Section27.displayName = 'Section27';
 
 const Section28 = React.memo(() => (<Card><CardHeader><CardTitle>Certificate Substantial Summary</CardTitle></CardHeader><CardContent>...</CardContent></Card>));

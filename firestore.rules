@@ -221,6 +221,10 @@ service cloud.firestore {
     match /users/{userId}/changeOrders/{orderId} {
       allow read, write: if isOwner(userId);
     }
+
+    match /users/{userId}/instructionSheets/{sheetId} {
+        allow read, write: if isOwner(userId);
+    }
     
     match /users/{userId}/requirementPerformas/{performaId} {
         allow read, write: if isOwner(userId);

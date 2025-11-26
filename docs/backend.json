@@ -547,6 +547,40 @@
       "properties": {},
       "additionalProperties": { "type": "string" }
     },
+    "InstructionSheet": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "InstructionSheet",
+      "type": "object",
+      "description": "Represents an instruction sheet form.",
+      "properties": {
+        "project": { "type": "string" },
+        "contract": { "type": "string" },
+        "fieldReportNo": { "type": "string" },
+        "architectsProjectNo": { "type": "string" },
+        "to_owner": { "type": "boolean" },
+        "to_architect": { "type": "boolean" },
+        "to_contractor": { "type": "boolean" },
+        "to_field": { "type": "boolean" },
+        "to_other": { "type": "boolean" },
+        "by_owner": { "type": "boolean" },
+        "by_architect": { "type": "boolean" },
+        "by_contractor": { "type": "boolean" },
+        "by_field": { "type": "boolean" },
+        "by_other": { "type": "boolean" },
+        "steps": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "number" },
+                    "what": { "type": "string" },
+                    "how": { "type": "string" },
+                    "why": { "type": "string" }
+                }
+            }
+        }
+      }
+    },
     "RequirementPerforma": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "RequirementPerforma",
@@ -858,6 +892,16 @@
             "$ref": "#/entities/ChangeOrder"
           },
           "description": "Stores change order data for a specific user."
+        }
+      },
+      {
+        "path": "/users/{userId}/instructionSheets/{sheetId}",
+        "definition": {
+          "entityName": "InstructionSheet",
+          "schema": {
+            "$ref": "#/entities/InstructionSheet"
+          },
+          "description": "Stores instruction sheet data for a specific user."
         }
       },
       {
