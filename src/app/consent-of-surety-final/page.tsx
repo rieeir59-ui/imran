@@ -14,6 +14,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Download, Edit, Save, Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const CONSENT_OF_SURETY_FINAL_DOC_ID = 'consent-of-surety-final';
 
@@ -86,35 +87,35 @@ export default function ConsentOfSuretyFinalPage() {
         doc.setFont('helvetica', 'bold');
         doc.text("CONSENT OF SURETY COMPANY TO FINAL PAYMENT", 105, y, { align: 'center'});
         y+=10;
-
-        const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
-            doc.rect(x, yPos - 3.5, 3.5, 3.5);
-            if (isChecked) doc.text('X', x + 0.8, yPos);
-            doc.text(label, x + 5, yPos);
-        };
         
-        doc.setFontSize(10);
-        drawCheckbox(150, y, 'Owner', formData.check_owner);
-        drawCheckbox(175, y, 'Surety', formData.check_surety);
-        y += 5;
-        drawCheckbox(150, y, 'Architect', formData.check_architect);
-        drawCheckbox(175, y, 'Other', formData.check_other);
-        y += 5;
-        drawCheckbox(150, y, 'Contractor', formData.check_contractor);
-        y -= 10;
+        doc.setFontSize(9);
+        const headerTableBody = [
+             [`Project: (Name, Address)\n${formData.project_name_address || ''}`, `Architects Project No: ${formData.architect_project_no || ''}`],
+             [`To: (Owner)\n${formData.to_owner || ''}`, `Contract For: ${formData.contract_for || ''}`],
+             ['', `Contract Date: ${formData.contract_date || ''}`],
+        ];
 
-        doc.setFont('helvetica', 'normal');
-        doc.text(`Project: ${formData.project_name_address || ''}`, 14, y);
-        doc.text(`Architects Project No: ${formData.architect_project_no || ''}`, 130, y);
-        y+=7;
-        doc.text(`Contract For: ${formData.contract_for || ''}`, 130, y);
-        y+=7;
-        doc.text(`Contract Date: ${formData.contract_date || ''}`, 130, y);
-        y+=7;
+        autoTable(doc, {
+            startY: y,
+            body: headerTableBody,
+            theme: 'plain',
+            styles: { fontSize: 9 },
+            didDrawPage: (data) => {
+                const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
+                    doc.rect(x, yPos - 3.5, 3.5, 3.5);
+                    if (isChecked) doc.text('X', x + 0.8, yPos);
+                    doc.text(label, x + 5, yPos);
+                };
+                drawCheckbox(150, 15, 'Owner', formData.check_owner);
+                drawCheckbox(175, 15, 'Surety', formData.check_surety);
+                drawCheckbox(150, 20, 'Architect', formData.check_architect);
+                drawCheckbox(175, 20, 'Other', formData.check_other);
+                drawCheckbox(150, 25, 'Contractor', formData.check_contractor);
+            }
+        });
 
-        doc.text(`To: (Owner) ${formData.to_owner || ''}`, 14, y);
-        y += 20;
-
+        y = (doc as any).lastAutoTable.finalY + 10;
+    
         const p1 = `In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the (here insert named and address of Surety Company) ${formData.surety_company || ''}, SURETY COMPANY, on bond of (here insert named and address of Contractor) ${formData.contractor_name_address || ''}, CONTRACTOR, Hereby approves the final payment to the Contractor, and agrees that final payment to the Contractor shall not relieve the Surety Company of any of its obligations to (here insert named and address of Owner): ${formData.owner_name_address || ''}, OWNER, as set forth in the said Surety's bond.`
         const splitText1 = doc.splitTextToSize(p1, 180);
         doc.text(splitText1, 14, y);
@@ -126,13 +127,13 @@ export default function ConsentOfSuretyFinalPage() {
         doc.text(`Surety Company: ${formData.surety_company_name || ''}`, 14, y);
         y += 14;
         
-        doc.text('Signature of Authorized Representative:', 14, y + 7);
+        doc.text('Signature of Authorized Representative: _________________________', 14, y + 7);
         y += 14;
         
         doc.text(`Title: ${formData.surety_title || ''}`, 14, y);
-
-        doc.text(`Attest: (Seal)`, 14, y + 14);
-
+        y+=7;
+        doc.text(`(Seal)`, 14, y);
+        
         doc.save("consent-of-surety-final.pdf");
     };
 
@@ -199,7 +200,9 @@ export default function ConsentOfSuretyFinalPage() {
                             {renderField('contract_date')}
                         </div>
                     </div>
-                    <div className="text-sm">In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the (here insert named and address of Surety Company) {renderField('surety_company')}, SURETY COMPANY, on bond of (here insert named and address of Contractor) {renderField('contractor_name_address')}, CONTRACTOR, Hereby approves the final payment to the Contractor, and agrees that final payment to the Contractor shall not relieve the Surety Company of any of its obligations to (here insert named and address of Owner): {renderField('owner_name_address')}, OWNER, as set forth in the said Surety's bond.</div>
+                    <div>
+                        <p className="text-sm">In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the (here insert named and address of Surety Company) {renderField('surety_company')}, SURETY COMPANY, on bond of (here insert named and address of Contractor) {renderField('contractor_name_address')}, CONTRACTOR, Hereby approves the final payment to the Contractor, and agrees that final payment to the Contractor shall not relieve the Surety Company of any of its obligations to (here insert named and address of Owner): {renderField('owner_name_address')}, OWNER, as set forth in the said Surety's bond.</p>
+                    </div>
                     <div className="flex justify-between items-center pt-8">
                         <div>
                             <p>In Witness Whereof, The Surety has hereunto set its hand this {isEditing ? <Input name="witness_day" value={formData.witness_day || ''} onChange={handleInputChange} className="inline w-12"/> : <span>{formData.witness_day || '__'}</span>} day of {isEditing ? <Input name="witness_month" value={formData.witness_month || ''} onChange={handleInputChange} className="inline w-24"/> : <span>{formData.witness_month || '______'}</span>}, 20{isEditing ? <Input name="witness_year" value={formData.witness_year || ''} onChange={handleInputChange} className="inline w-12"/> : <span>{formData.witness_year || '__'}</span>}</p>
