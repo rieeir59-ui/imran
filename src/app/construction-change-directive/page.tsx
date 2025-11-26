@@ -266,14 +266,14 @@ export default function ConstructionChangeDirectivePage() {
                     <div className="pt-6">
                         <h3 className="font-bold text-center text-lg">Proposed Adjustments</h3>
                         <div className="border-t mt-2 pt-4 space-y-4">
-                            <p>1. The proposed basis of adjustment to the Contract Sum or Guaranteed Maximum Price is:</p>
+                            <div>1. The proposed basis of adjustment to the Contract Sum or Guaranteed Maximum Price is:</div>
                             <div className="pl-4 space-y-2">
-                                <div className="flex items-center gap-2">{renderCheckbox('adjustment_lum_sum', '')} <p>Lum Sum (increase) (decrease) of Rs.</p> {renderField('adjustment_lum_sum_amount')}</div>
-                                <div className="flex items-center gap-2">{renderCheckbox('adjustment_unit_price', '')} <p>Unit Price of Rs.</p> {renderField('adjustment_unit_price_amount')} <p>per</p> {renderField('adjustment_unit_price_per')}</div>
-                                <div className="flex items-center gap-2">{renderCheckbox('adjustment_as_follows', '')} <p>as follows:</p></div>
+                                <div className="flex items-center gap-2">{renderCheckbox('adjustment_lum_sum', '')} <div>Lum Sum (increase) (decrease) of Rs.</div> {renderField('adjustment_lum_sum_amount')}</div>
+                                <div className="flex items-center gap-2">{renderCheckbox('adjustment_unit_price', '')} <div>Unit Price of Rs.</div> {renderField('adjustment_unit_price_amount')} <div>per</div> {renderField('adjustment_unit_price_per')}</div>
+                                <div className="flex items-center gap-2">{renderCheckbox('adjustment_as_follows', '')} <div>as follows:</div></div>
                                 {isEditing ? <Textarea name="adjustment_as_follows_text" value={formData.adjustment_as_follows_text || ''} onChange={handleInputChange} className="ml-8" /> : <div className="ml-8 p-2 border-b min-h-[36px]">{formData.adjustment_as_follows_text}</div>}
                             </div>
-                            <p>2. The Contract Time is proposed to {isEditing ? <div className='inline-flex gap-2'>{renderCheckbox('time_adjusted', '(be adjusted)')} {renderCheckbox('time_unchanged', '(remain unchanged)')}</div> : <span>{formData.time_adjusted ? '(be adjusted)' : (formData.time_unchanged ? '(remain unchanged)' : '_____')}</span>}. The proposed adjustment, if any, is (an increase of {renderField('time_increase_days')} days) (a decrease of {renderField('time_decrease_days')} days).</p>
+                            <div>2. The Contract Time is proposed to {isEditing ? <div className='inline-flex gap-2'>{renderCheckbox('time_adjusted', '(be adjusted)')} {renderCheckbox('time_unchanged', '(remain unchanged)')}</div> : <span>{formData.time_adjusted ? '(be adjusted)' : (formData.time_unchanged ? '(remain unchanged)' : '_____')}</span>}. The proposed adjustment, if any, is (an increase of {renderField('time_increase_days')} days) (a decrease of {renderField('time_decrease_days')} days).</div>
                         </div>
                     </div>
 
@@ -308,4 +308,5 @@ export default function ConstructionChangeDirectivePage() {
             </Card>
         </main>
     )
-}
+
+    
