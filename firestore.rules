@@ -223,6 +223,10 @@ service cloud.firestore {
     match /users/{userId}/proposalRequests/{requestId} {
         allow read, write: if isOwner(userId);
     }
+    
+    match /users/{userId}/preliminaryProjectBudgets/{budgetId} {
+        allow read, write: if isOwner(userId);
+    }
 
     match /users/{userId}/drawingSchedules/{scheduleId} {
         allow read, write: if isOwner(userId);
@@ -266,3 +270,5 @@ service cloud.firestore {
     }
   }
 }
+
+  

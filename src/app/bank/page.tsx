@@ -813,7 +813,14 @@ const Section21 = React.memo(() => {
 });
 Section21.displayName = 'Section21';
 
-const Section22 = React.memo(() => (<Card><CardHeader><CardTitle>Preliminary Project Budget</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section22 = React.memo(() => (
+    <Card>
+        <CardHeader><CardTitle>Preliminary Project Budget</CardTitle></CardHeader>
+        <CardContent>
+            <p>This form can be filled out on the <Link href="/preliminary-project-budget" className="text-primary underline">Preliminary Project Budget page</Link>.</p>
+        </CardContent>
+    </Card>
+));
 Section22.displayName = 'Section22';
 
 const Section23 = React.memo(() => (
@@ -1231,3 +1238,5 @@ export default function BankPage() {
         </main>
     );
 }
+
+  
