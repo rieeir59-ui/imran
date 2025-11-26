@@ -114,17 +114,18 @@ export function exportDataToPdf(title: string, data: any[], filename:string, ove
     startY: 20,
     theme: 'grid',
     styles: {
-      fontSize: 5,
-      cellPadding: 1,
+      fontSize: 8,
+      cellPadding: 2,
       overflow: 'linebreak',
     },
     headStyles: {
         fillColor: [30, 41, 59],
         textColor: [255, 255, 255],
-        fontSize: 6,
+        fontSize: 8,
         fontStyle: 'bold',
     },
-    columnStyles: columnStyles
+    columnStyles: columnStyles,
+    tableWidth: 'auto',
   });
 
   let finalY = (doc as any).lastAutoTable.finalY || 20;
@@ -301,4 +302,5 @@ export function exportServicesToPdf(formData: any, serviceSections: any) {
 
     doc.save('list-of-services.pdf');
 }
+
 
