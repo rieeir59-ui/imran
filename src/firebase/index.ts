@@ -34,11 +34,16 @@ export function initializeFirebase() {
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {
+  const storage = getStorage(firebaseApp);
+  // Increase the maximum time to retry operations to 60 seconds to avoid timeouts.
+  storage.maxUploadRetryTime = 60000;
+  storage.maxOperationRetryTime = 60000;
+  
   return {
     firebaseApp,
     auth: getAuth(firebaseApp),
     firestore: getFirestore(firebaseApp),
-    storage: getStorage(firebaseApp),
+    storage: storage,
   };
 }
 
