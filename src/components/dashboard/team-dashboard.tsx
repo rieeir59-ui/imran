@@ -307,6 +307,8 @@ export default function TeamDashboard() {
           }
         });
         setEmployeesWithTasks(assignedEmployees);
+    }, (error) => {
+        console.error("Error fetching tasks:", error);
     });
     
     return () => unsubscribe();
