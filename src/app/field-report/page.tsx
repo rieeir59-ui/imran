@@ -88,6 +88,7 @@ export default function FieldReportPage() {
         doc.text("ISBAH HASSAN & ASSOCIATES", 105, y, { align: 'center'});
         y += 6;
         doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
         doc.text("ARCHITECTS - ENGINEERS - CONSTRUCTIONS", 105, y, { align: 'center'});
         y += 8;
     
@@ -104,8 +105,8 @@ export default function FieldReportPage() {
             if (isChecked) {
                 doc.setFont('ZapfDingbats');
                 doc.text('✓', x + 0.5, yPos);
+                doc.setFont('helvetica', 'normal');
             }
-            doc.setFont('helvetica', 'normal');
             doc.setFontSize(8);
             doc.text(label, x + boxSize + 1.5, yPos);
         };

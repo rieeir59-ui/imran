@@ -106,8 +106,8 @@ export default function ConstructionChangeDirectivePage() {
             if (isChecked) {
                 doc.setFont('ZapfDingbats');
                 doc.text('✓', x + 0.5, yPos);
+                doc.setFont('helvetica', 'normal');
             }
-            doc.setFont('helvetica', 'normal');
             doc.text(label, x + boxSize + 1.5, yPos);
         };
         
@@ -314,4 +314,5 @@ export default function ConstructionChangeDirectivePage() {
     )
 
     
+
 
