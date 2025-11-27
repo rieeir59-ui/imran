@@ -125,174 +125,115 @@ export default function ProjectsPage() {
   const handleDownloadPdf = () => {
     const doc = new jsPDF();
     let y = 15;
-    const x = 14;
-    const pageHeight = doc.internal.pageSize.height;
-    const bottomMargin = 20;
 
-    const checkPageBreak = (neededHeight: number) => {
-        if (y + neededHeight > pageHeight - bottomMargin) {
-            doc.addPage();
-            y = 15;
-        }
-    };
-
-    const addTitle = (title: string) => {
-        checkPageBreak(14);
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text(title, x, y);
-        y += 7;
-        doc.setLineWidth(0.5);
-        doc.line(x, y-2, 195, y-2);
-        y += 2;
-        doc.setFont('helvetica', 'normal');
-    };
-
-    const addField = (label: string, value: string | undefined, isTextarea = false) => {
-        const valueX = x + 60;
-        const fieldWidth = 195 - valueX;
-        let textHeight = 7; // Default height for a single line field
-
-        if (value) {
-            const splitText = doc.splitTextToSize(value, fieldWidth);
-            textHeight = doc.getTextDimensions(splitText).h + 2;
-        }
-        
-        checkPageBreak(textHeight);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`${label}:`, x, y + (isTextarea ? 0 : 4));
-        doc.setFont('helvetica', 'normal');
-        
-        if (value) {
-            const splitText = doc.splitTextToSize(value, fieldWidth);
-            doc.text(splitText, valueX, y + (isTextarea ? 0 : 4));
-        } else {
-            doc.line(valueX, y + 4, valueX + fieldWidth, y + 4); // Draw a line if no value
-        }
-
-        y += textHeight;
-    };
-    
-     const addCheckboxRow = (label: string, fields: {name: string, label: string}[]) => {
-        checkPageBreak(7);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`${label}:`, x, y);
-        doc.setFont('helvetica', 'normal');
-
-        let currentX = x + 60;
-        fields.forEach(field => {
-            const checkboxText = `${formData[field.name] ? '[X]' : '[ ]'} ${field.label}`;
-            const textWidth = doc.getTextWidth(checkboxText);
-            if (currentX + textWidth > 195) {
-                y += 7;
-                currentX = x + 60;
-                checkPageBreak(7);
-            }
-            doc.text(checkboxText, currentX, y);
-            currentX += textWidth + 5;
-        });
-        y += 7;
-    };
-    
     doc.setFontSize(16);
     doc.text("Project Information", 105, y, { align: 'center' });
     y += 10;
+
+    const addSection = (title: string, data: (string | string[])[][]) => {
+      autoTable(doc, {
+        startY: y,
+        head: [[{ content: title, colSpan: 2, styles: { fillColor: [30, 41, 59], textColor: [255, 255, 255] } }]],
+        body: data,
+        theme: 'grid',
+        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 60 }, 1: { cellWidth: 120 } },
+        didDrawPage: (data) => {
+          y = data.cursor?.y || 0;
+        },
+      });
+      y = (doc as any).lastAutoTable.finalY + 10;
+    };
     
-    addField("Project", formData.project_name);
-    addField("Address", formData.project_address);
-    addField("Project No", formData.project_no);
-    addField("Prepared By", formData.prepared_by);
-    addField("Prepared Date", formData.prepared_date);
-
-    addTitle("About Owner");
-    addField("Full Name", formData.owner_name);
-    addField("Address (Office)", formData.owner_office_address);
-    addField("Address (Res.)", formData.owner_res_address);
-    addField("Phone (Office)", formData.owner_office_phone);
-    addField("Phone (Res.)", formData.owner_res_phone);
-    addField("Owner's Project Representative Name", formData.owner_rep_name);
-    addField("Address (Office)", formData.owner_rep_office_address);
-    addField("Address (Res.)", formData.owner_rep_res_address);
-    addField("Phone (Office)", formData.owner_rep_office_phone);
-    addField("Phone (Res.)", formData.owner_rep_res_phone);
-
-    addTitle("About Project");
-    addField("Address", formData.project_about_address);
-    addCheckboxRow("Project Reqt.", [
-      { name: "req_architectural", label: "Architectural Designing" },
-      { name: "req_interior", label: "Interior Decoration" },
-      { name: "req_landscaping", label: "Landscaping" },
-      { name: "req_turnkey", label: "Turnkey" },
-      { name: "req_other", label: "Other" }
-    ]);
-    addCheckboxRow("Project Type", [
-        { name: "type_commercial", label: "Commercial" },
-        { name: "type_residential", label: "Residential" },
-    ]);
-    addCheckboxRow("Project Status", [
-        { name: "status_new", label: "New" },
-        { name: "status_addition", label: "Addition" },
-        { name: "status_rehab", label: "Rehabilitation/Renovation" },
-    ]);
-    addField("Project Area", formData.project_area);
-    addField("Special Requirements of Project", formData.project_special_reqs, true);
-    addCheckboxRow("Project's Cost", [
-        { name: "cost_architectural", label: "Architectural Designing" },
-        { name: "cost_interior", label: "Interior Decoration" },
-        { name: "cost_landscaping", label: "Landscaping" },
-        { name: "cost_construction", label: "Construction" },
-        { name: "cost_turnkey", label: "Turnkey" },
-        { name: "cost_other", label: "Other" }
-    ]);
-    addField("First Information about Project", formData.date_first_info);
-    addField("First Meeting", formData.date_first_meeting);
-    addField("First Working on Project", formData.date_first_working);
-    addField("First Proposal", `Start: ${formData.date_proposal1_start || ''}  Completion: ${formData.date_proposal1_completion || ''}`);
-    addField("Second Proposal", `Start: ${formData.date_proposal2_start || ''}  Completion: ${formData.date_proposal2_completion || ''}`);
-    addField("Working on Finalized Proposal", formData.date_final_proposal);
-    addField("Revised Presentation", formData.date_revised_presentation);
-    addField("Quotation", formData.date_quotation);
-    addField("Drawings", `Start: ${formData.date_drawings_start || ''}  Completion: ${formData.date_drawings_completion || ''}`);
-    addField("Other Major Projects Milestone Dates", formData.date_other_milestones, true);
-
-    addTitle("Provided by Owner");
-    y -= 5;
-    addCheckboxRow("", [{ name: "provided_program", label: "Program" }]);
-    addCheckboxRow("", [{ name: "provided_schedule", label: "Suggested Schedule" }]);
-    addCheckboxRow("", [{ name: "provided_legal", label: "Legal Site Description & Other Concerned Documents" }]);
-    addCheckboxRow("", [{ name: "provided_survey", label: "Land Survey Report" }]);
-    addCheckboxRow("", [{ name: "provided_geo", label: "Geo-Technical, Tests and Other Site Information" }]);
-    addCheckboxRow("", [{ name: "provided_drawings", label: "Existing Structure's Drawings" }]);
-    y += 5;
-
-    addTitle("Compensation");
-    addField("Initial Payment", formData.comp_initial_payment);
-    addField("Basic Services (% of Cost of Construction)", formData.comp_basic_services_pct);
+    const formatCheckbox = (value: boolean, label: string) => `[${value ? 'X' : ' '}] ${label}`;
     
-    checkPageBreak(7);
-    doc.setFont('helvetica', 'bold');
-    doc.text("Breakdown by Phase:", x + 5, y); y+=7;
-    doc.setFont('helvetica', 'normal');
-    addField("Schematic Design %", formData.comp_schematic_pct);
-    addField("Design Development %", formData.comp_dev_pct);
-    addField("Construction Doc's %", formData.comp_docs_pct);
-    addField("Bidding / Negotiation %", formData.comp_bidding_pct);
-    addField("Construction Contract Admin %", formData.comp_admin_pct);
+    addSection("Project Details", [
+        ["Project", formData.project_name || ''],
+        ["Address", formData.project_address || ''],
+        ["Project No", formData.project_no || ''],
+        ["Prepared By", formData.prepared_by || ''],
+        ["Prepared Date", formData.prepared_date || ''],
+    ]);
 
-    addField("Additional Services (Multiple of Times Direct Cost to Architect)", formData.comp_additional_services);
-    addField("Reimbursable Expenses", formData.comp_reimbursable);
-    addField("Other", formData.comp_other);
-    addField("Special Confidential Requirements", formData.comp_confidential, true);
+    addSection("About Owner", [
+        ["Full Name", formData.owner_name || ''],
+        ["Address (Office)", formData.owner_office_address || ''],
+        ["Address (Res.)", formData.owner_res_address || ''],
+        ["Phone (Office)", formData.owner_office_phone || ''],
+        ["Phone (Res.)", formData.owner_res_phone || ''],
+        ["Owner's Project Representative Name", formData.owner_rep_name || ''],
+        ["Address (Office)", formData.owner_rep_office_address || ''],
+        ["Address (Res.)", formData.owner_rep_res_address || ''],
+        ["Phone (Office)", formData.owner_rep_office_phone || ''],
+        ["Phone (Res.)", formData.owner_rep_res_phone || ''],
+    ]);
 
-    addTitle("Miscellaneous Notes");
-    addField("", formData.misc_notes, true);
+    addSection("About Project", [
+        ["Address", formData.project_about_address || ''],
+        ["Project Reqt.", [
+          formatCheckbox(formData.req_architectural, "Architectural Designing"),
+          formatCheckbox(formData.req_interior, "Interior Decoration"),
+          formatCheckbox(formData.req_landscaping, "Landscaping"),
+          formatCheckbox(formData.req_turnkey, "Turnkey"),
+          formatCheckbox(formData.req_other, "Other"),
+        ].join('\n')],
+        ["Project Type", [
+          formatCheckbox(formData.type_commercial, "Commercial"),
+          formatCheckbox(formData.type_residential, "Residential"),
+        ].join('  ')],
+        ["Project Status", [
+          formatCheckbox(formData.status_new, "New"),
+          formatCheckbox(formData.status_addition, "Addition"),
+          formatCheckbox(formData.status_rehab, "Rehabilitation/Renovation"),
+        ].join('\n')],
+        ["Project Area", formData.project_area || ''],
+        ["Special Requirements", formData.project_special_reqs || ''],
+        ["Project's Cost", [
+          formatCheckbox(formData.cost_architectural, "Architectural Designing"),
+          formatCheckbox(formData.cost_interior, "Interior Decoration"),
+          formatCheckbox(formData.cost_landscaping, "Landscaping"),
+          formatCheckbox(formData.cost_construction, "Construction"),
+          formatCheckbox(formData.cost_turnkey, "Turnkey"),
+          formatCheckbox(formData.cost_other, "Other"),
+        ].join('\n')],
+        ["First Information Date", formData.date_first_info || ''],
+        ["First Meeting Date", formData.date_first_meeting || ''],
+        ["First Working Date", formData.date_first_working || ''],
+        ["First Proposal", `Start: ${formData.date_proposal1_start || ''}  Completion: ${formData.date_proposal1_completion || ''}`],
+        ["Second Proposal", `Start: ${formData.date_proposal2_start || ''}  Completion: ${formData.date_proposal2_completion || ''}`],
+        ["Finalized Proposal Date", formData.date_final_proposal || ''],
+        ["Revised Presentation Date", formData.date_revised_presentation || ''],
+        ["Quotation Date", formData.date_quotation || ''],
+        ["Drawings", `Start: ${formData.date_drawings_start || ''}  Completion: ${formData.date_drawings_completion || ''}`],
+        ["Other Milestones", formData.date_other_milestones || ''],
+    ]);
 
-    checkPageBreak(10);
-    addTitle("Consultants");
+    addSection("Provided by Owner", [
+        [formatCheckbox(formData.provided_program, "Program"), ""],
+        [formatCheckbox(formData.provided_schedule, "Suggested Schedule"), ""],
+        [formatCheckbox(formData.provided_legal, "Legal Site Description & Other Concerned Documents"), ""],
+        [formatCheckbox(formData.provided_survey, "Land Survey Report"), ""],
+        [formatCheckbox(formData.provided_geo, "Geo-Technical, Tests and Other Site Information"), ""],
+        [formatCheckbox(formData.provided_drawings, "Existing Structure's Drawings"), ""],
+    ]);
+
+    addSection("Compensation", [
+        ["Initial Payment", formData.comp_initial_payment || ''],
+        ["Basic Services (% of Cost of Construction)", formData.comp_basic_services_pct || ''],
+        [{content: 'Breakdown by Phase:', colSpan: 2, styles: { fontStyle: 'bold', fillColor: '#f2f2f2', textColor: 0}}],
+        ["Schematic Design %", formData.comp_schematic_pct || ''],
+        ["Design Development %", formData.comp_dev_pct || ''],
+        ["Construction Doc's %", formData.comp_docs_pct || ''],
+        ["Bidding / Negotiation %", formData.comp_bidding_pct || ''],
+        ["Construction Contract Admin %", formData.comp_admin_pct || ''],
+        ["Additional Services (Multiple of Times Direct Cost to Architect)", formData.comp_additional_services || ''],
+        ["Reimbursable Expenses", formData.comp_reimbursable || ''],
+        ["Other", formData.comp_other || ''],
+        ["Special Confidential Requirements", formData.comp_confidential || ''],
+    ]);
+
+    addSection("Miscellaneous Notes", [[{ content: formData.misc_notes || '', colSpan: 2 }]]);
+    
     const consultantTypes = ["Structural", "HVAC", "Plumbing", "Electrical", "Civil", "Landscape", "Interior", "Graphics", "Lighting", "Acoustical", "Fire Protection", "Food Service", "Vertical transport", "Display/Exhibit", "Master planning", "Solar", "Construction Cost", "Other 1", "Other 2", "Other 3", "Land Surveying", "Geotechnical", "Asbestos", "Hazardous waste"];
-    const consultantHead = [['Type', 'Within Basic Fee', 'Additional Fee', 'Architect', 'Owner']];
     const consultantBody = consultantTypes.map(type => {
         const slug = type.toLowerCase().replace(/ /g, '_').replace(/\//g, '_');
         return [
@@ -303,40 +244,42 @@ export default function ProjectsPage() {
             formData[`consultant_${slug}_owner`] || ''
         ]
     });
+
     autoTable(doc, {
         startY: y,
-        head: consultantHead,
+        head: [['Type', 'Within Basic Fee', 'Additional Fee', 'Architect', 'Owner']],
         body: consultantBody,
         theme: 'grid',
         styles: { fontSize: 8, cellPadding: 1 },
-        headStyles: { fillColor: [22, 163, 74], fontStyle: 'bold' }
+        headStyles: { fillColor: [30, 41, 59], fontStyle: 'bold' }
     });
     y = (doc as any).lastAutoTable.finalY + 10;
     
-    checkPageBreak(10);
-    addTitle("Requirements");
-    addField("Residence Nos", formData.req_residence_nos);
-    addField("Size of plot", formData.req_plot_size);
-    addField("Number of Bedrooms", formData.req_bedrooms);
-    addField("Specifications", formData.req_specifications);
-    addField("Number of Dressing Rooms", formData.req_dressing_rooms);
-    addField("Number of Bath Rooms", formData.req_bathrooms);
-    addField("Living Rooms", formData.req_living_rooms);
-    addField("Breakfast", formData.req_breakfast);
-    addField("Dinning", formData.req_dinning);
-    addField("Servant Kitchen", formData.req_servant_kitchen);
-    addField("Self Kitchenette", formData.req_kitchenette);
-    addField("Garage", formData.req_garage);
-    addField("Servant Quarters", formData.req_servant_quarters);
-    addField("Guard Room", formData.req_guard_room);
-    addField("Study Room", formData.req_study_room);
-    addField("Stores", formData.req_stores);
-    addField("Entertainment Area", formData.req_entertainment);
-    addField("Patio", formData.req_patio);
-    addField("Atrium", formData.req_atrium);
-    addField("Remarks", formData.req_remarks, true);
+    addSection("Requirements", [
+        ["Residence Nos", formData.req_residence_nos || ''],
+        ["Size of plot", formData.req_plot_size || ''],
+        ["Number of Bedrooms", formData.req_bedrooms || ''],
+        ["Specifications", formData.req_specifications || ''],
+        ["Number of Dressing Rooms", formData.req_dressing_rooms || ''],
+        ["Number of Bath Rooms", formData.req_bathrooms || ''],
+        ["Living Rooms", formData.req_living_rooms || ''],
+        ["Breakfast", formData.req_breakfast || ''],
+        ["Dinning", formData.req_dinning || ''],
+        ["Servant Kitchen", formData.req_servant_kitchen || ''],
+        ["Self Kitchenette", formData.req_kitchenette || ''],
+        ["Garage", formData.req_garage || ''],
+        ["Servant Quarters", formData.req_servant_quarters || ''],
+        ["Guard Room", formData.req_guard_room || ''],
+        ["Study Room", formData.req_study_room || ''],
+        ["Stores", formData.req_stores || ''],
+        ["Entertainment Area", formData.req_entertainment || ''],
+        ["Patio", formData.req_patio || ''],
+        ["Atrium", formData.req_atrium || ''],
+        ["Remarks", formData.req_remarks || ''],
+    ]);
 
     doc.save("project-information.pdf");
+    toast({title: "Download Started", description: "PDF is being generated."});
   }
 
 
@@ -595,5 +538,7 @@ export default function ProjectsPage() {
     </main>
   );
 }
+
+    
 
     
