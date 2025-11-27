@@ -182,40 +182,6 @@ const SiteVisitPage = () => {
       .finally(() => setIsSaving(false));
   };
   
-    const toDataURL = (url: string): Promise<string> => {
-        const proxyUrl = `https://cors-anywhere.herokuapp.com/${url}`;
-        return fetch(proxyUrl) 
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Network response was not ok: ${response.statusText}`);
-                }
-                return response.blob();
-            })
-            .then(blob => new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            }))
-            .catch(error => {
-                 console.error("CORS proxy fetch failed, trying direct fetch:", error);
-                 // Fallback to direct fetch if proxy fails
-                 return fetch(url)
-                    .then(response => {
-                         if (!response.ok) {
-                            throw new Error(`Direct network response was not ok: ${response.statusText}`);
-                        }
-                        return response.blob()
-                    })
-                    .then(blob => new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => resolve(reader.result as string);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(blob);
-                    }));
-            });
-    };
-
     const handleDownload = async () => {
         const doc = new jsPDF();
         let y = 15;
@@ -321,29 +287,13 @@ const SiteVisitPage = () => {
         y += 5;
 
         for(let i=1; i<=7; i++) {
-            const imageUrl = formData[`image${i}`];
             const comment = formData[`comment${i}`];
 
-            if (imageUrl) {
-                 if (y > 190) { doc.addPage(); y = 15; }
-                try {
-                    const dataUrl = await toDataURL(imageUrl);
-                    doc.addImage(dataUrl as string, 'JPEG', 14, y, 80, 60);
-                    y += 65;
-
-                    if (comment) {
-                        const splitComment = doc.splitTextToSize(`Comment: ${comment}`, 180);
-                        if (y + (splitComment.length * 5) > 280) { doc.addPage(); y = 15; }
-                        doc.text(splitComment, 14, y);
-                        y += (splitComment.length * 5) + 5;
-                    }
-
-                } catch (error) {
-                    console.error("Error adding image to PDF:", error);
-                     if (y > 280) { doc.addPage(); y = 15; }
-                    doc.text("Error loading image. Please check the URL.", 14, y);
-                    y += 10;
-                }
+            if (comment) {
+                const splitComment = doc.splitTextToSize(`Comment ${i}: ${comment}`, 180);
+                if (y + (splitComment.length * 5) > 280) { doc.addPage(); y = 15; }
+                doc.text(splitComment, 14, y);
+                y += (splitComment.length * 5) + 5;
             }
         }
 
@@ -528,3 +478,5 @@ const SiteVisitPage = () => {
 };
 
 export default SiteVisitPage;
+
+    
