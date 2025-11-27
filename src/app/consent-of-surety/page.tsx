@@ -81,59 +81,71 @@ export default function ConsentOfSuretyPage() {
 
     const handleDownload = () => {
         const doc = new jsPDF('p', 'pt', 'a4');
+        const pageHeight = doc.internal.pageSize.height;
+        const pageWidth = doc.internal.pageSize.width;
         let y = 40;
         const leftMargin = 40;
-        const rightMargin = doc.internal.pageSize.width - 40;
+        const rightMargin = pageWidth - 40;
         const contentWidth = rightMargin - leftMargin;
 
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text("CONSENT OF SURETY", doc.internal.pageSize.width / 2, y, { align: 'center'});
+        doc.text("CONSENT OF SURETY", pageWidth / 2, y, { align: 'center'});
         y += 14;
-        doc.text("TO REDUCTION IN OR PARTIAL RELEASE OF RETAINAGE", doc.internal.pageSize.width / 2, y, { align: 'center'});
-        y += 30;
+        doc.text("TO REDUCTION IN OR PARTIAL RELEASE OF RETAINAGE", pageWidth / 2, y, { align: 'center'});
+        y += 25;
 
-        autoTable(doc, {
-            startY: y,
-            theme: 'plain',
-            body: [
-                [
-                    { content: `Project: (Name, Address)\n${formData.project_name_address || ''}\n\nTo: (Owner)\n${formData.to_owner || ''}`, styles: { cellWidth: contentWidth / 2 - 10 } },
-                    { content: `Architects Project No: ${formData.architect_project_no || ''}\n\nContract For: ${formData.contract_for || ''}\n\nContract Date: ${formData.contract_date || ''}`, styles: { cellWidth: contentWidth / 2 - 10 } }
-                ]
-            ],
-            styles: { fontSize: 10, cellPadding: 2 },
-            margin: { left: leftMargin },
-            didDrawPage: (data) => {
-                doc.setFontSize(9);
-                doc.text('Distribution to:', rightMargin - 90, 40);
-                const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
-                    doc.setFontSize(8);
-                    doc.rect(x, yPos - 3.5, 5, 5);
-                    if (isChecked) doc.text('X', x + 1, yPos);
-                    doc.text(label, x + 7, yPos);
-                };
-                drawCheckbox(rightMargin - 90, 50, 'Owner', formData.check_owner);
-                drawCheckbox(rightMargin - 45, 50, 'Surety', formData.check_surety);
-                drawCheckbox(rightMargin - 90, 58, 'Architect', formData.check_architect);
-                drawCheckbox(rightMargin - 45, 58, 'Other', formData.check_other);
-                drawCheckbox(rightMargin - 90, 66, 'Contractor', formData.check_contractor);
-            }
-        });
-
-        y = (doc as any).lastAutoTable.finalY + 25;
-        doc.setFontSize(10);
+        // Distribution Checkboxes
+        doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
+        const distributionX = rightMargin - 90;
+        let checkboxY = y - 20;
+        doc.text('Distribution to:', distributionX, checkboxY);
+        checkboxY += 8;
+
+        const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
+            doc.setFontSize(8);
+            doc.rect(x, yPos - 3.5, 5, 5);
+            if (isChecked) doc.text('X', x + 1, yPos);
+            doc.text(label, x + 7, yPos);
+        };
+
+        drawCheckbox(distributionX, checkboxY, 'Owner', formData.check_owner);
+        drawCheckbox(distributionX + 45, checkboxY, 'Surety', formData.check_surety);
+        checkboxY += 8;
+        drawCheckbox(distributionX, checkboxY, 'Architect', formData.check_architect);
+        drawCheckbox(distributionX + 45, checkboxY, 'Other', formData.check_other);
+        checkboxY += 8;
+        drawCheckbox(distributionX, checkboxY, 'Contractor', formData.check_contractor);
+
+        // Project Details
+        doc.setFontSize(10);
         
-        const p1 = `In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the ${formData.surety_name_address || '____________________'}, SURETY, on bond of ${formData.contractor_name_address || '____________________'}, CONTRACTOR, Hereby approves the reduction in or partial release of retainage to the Contractor as follows:`;
+        // Left Column
+        doc.text(`Project: (Name, Address)\n${formData.project_name_address || ''}`, leftMargin, y);
+        y += 30;
+        doc.text(`To: (Owner)\n${formData.to_owner || ''}`, leftMargin, y);
+        
+        // Right Column
+        let rightColY = y - 30;
+        doc.text(`Architects Project No: ${formData.architect_project_no || ''}`, leftMargin + contentWidth / 2, rightColY);
+        rightColY += 15;
+        doc.text(`Contract For: ${formData.contract_for || ''}`, leftMargin + contentWidth / 2, rightColY);
+        rightColY += 15;
+        doc.text(`Contract Date: ${formData.contract_date || ''}`, leftMargin + contentWidth / 2, rightColY);
+
+        y += 40;
+
+        const p1 = `In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the (Surety Company Name and Address) ${formData.surety_name_address || ''}, SURETY, on bond of ${formData.contractor_name_address || ''}, CONTRACTOR, Hereby approves the reduction in or partial release of retainage to the Contractor as follows:`;
         const splitP1 = doc.splitTextToSize(p1, contentWidth);
         doc.text(splitP1, leftMargin, y);
         y += doc.getTextDimensions(splitP1).h + 10;
 
-        const reductionText = doc.splitTextToSize(formData.reduction_details || 'N/A', contentWidth);
-        doc.rect(leftMargin, y, contentWidth, doc.getTextDimensions(reductionText).h + 10);
-        doc.text(reductionText, leftMargin + 2, y + 5);
-        y += doc.getTextDimensions(reductionText).h + 20;
+        const reductionText = doc.splitTextToSize(formData.reduction_details || 'N/A', contentWidth - 4); // small padding
+        const reductionBoxHeight = Math.max(doc.getTextDimensions(reductionText).h + 8, 20);
+        doc.rect(leftMargin, y, contentWidth, reductionBoxHeight);
+        doc.text(reductionText, leftMargin + 2, y + 10);
+        y += reductionBoxHeight + 10;
 
         const agreementText = `The Surety agrees that such reduction in or partial release of retainage to the Contractor shall not relieve the Surety of any of its obligations to ${formData.owner_name_address || '____________________'}, OWNER, as set forth in the said Surety's bond.`;
         const splitAgreement = doc.splitTextToSize(agreementText, contentWidth);
@@ -145,7 +157,7 @@ export default function ConsentOfSuretyPage() {
 
         doc.text('Attest: (Seal)', leftMargin, y);
         
-        const signatureX = leftMargin + contentWidth / 2;
+        const signatureX = leftMargin + contentWidth / 2 + 20;
         doc.text(`Surety:`, signatureX, y);
         doc.line(signatureX + 40, y, rightMargin, y);
 
@@ -195,7 +207,7 @@ export default function ConsentOfSuretyPage() {
                     <div className="flex justify-between items-start">
                         <div className="w-2/3">
                             <Label>Project: (Name, Address)</Label>
-                            {renderField('project_name_address')}
+                            {renderField('project_name_address', 'textarea')}
                         </div>
                         <div className="flex gap-2">
                              {isEditing ? <Button onClick={handleSave} disabled={isSaving}>{isSaving ? <Loader2 className="animate-spin w-4 h-4 mr-2"/> : <Save className="w-4 h-4 mr-2"/>}Save</Button> : <Button onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2"/>Edit</Button>}
@@ -223,7 +235,7 @@ export default function ConsentOfSuretyPage() {
                             {renderField('contract_date')}
                         </div>
                     </div>
-                    <p className="text-sm">In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the</p>
+                    <p className="text-sm">In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the (Surety Company Name and Address)</p>
                     <div className="flex items-center gap-2">{renderField('surety_name_address')}<span>, SURETY,</span></div>
                     <div className="flex items-center gap-2"><span>On bond of </span>{renderField('contractor_name_address')}<span>, CONTRACTOR,</span></div>
                     <p className="text-sm">Hereby approves the reduction in or partial release of retainage to the Contractor as follows:</p>
