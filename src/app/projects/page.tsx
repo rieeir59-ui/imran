@@ -130,21 +130,47 @@ export default function ProjectsPage() {
     doc.text("Project Information", 105, y, { align: 'center' });
     y += 10;
 
-    const addSection = (title: string, data: (string | string[])[][]) => {
+    const addSection = (title: string, data: (string | [boolean, string])[][]) => {
+      if (y > 250) {
+          doc.addPage();
+          y = 15;
+      }
       autoTable(doc, {
-        startY: y,
-        head: [[{ content: title, colSpan: 2, styles: { fillColor: [30, 41, 59], textColor: [255, 255, 255] } }]],
-        body: data,
-        theme: 'grid',
-        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 60 }, 1: { cellWidth: 120 } },
-        didDrawPage: (data) => {
-          y = data.cursor?.y || 0;
-        },
+          startY: y,
+          head: [[{ content: title, colSpan: 2, styles: { fillColor: [30, 41, 59], textColor: [255, 255, 255] } }]],
+          body: data,
+          theme: 'grid',
+          columnStyles: { 0: { fontStyle: 'bold', cellWidth: 60 }, 1: { cellWidth: 120 } },
+          didDrawCell: (data) => {
+              if (data.section === 'body' && Array.isArray(data.cell.raw)) {
+                  const [isChecked, label] = data.cell.raw;
+                  if (typeof isChecked === 'boolean') {
+                      doc.setFontSize(10);
+                      const boxSize = 3.5;
+                      const textPos = data.cell.getTextPos();
+                      
+                      // Draw box
+                      doc.setLineWidth(0.2);
+                      doc.setDrawColor(0);
+                      doc.rect(textPos.x, textPos.y - boxSize, boxSize, boxSize, 'S');
+
+                      if (isChecked) {
+                          doc.setFont('ZapfDingbats');
+                          doc.text('✓', textPos.x + 0.5, textPos.y);
+                          doc.setFont('helvetica', 'normal');
+                      }
+                      
+                      doc.text(label, textPos.x + 5, textPos.y);
+                      data.cell.text = ''; // Clear the raw array content
+                  }
+              }
+          },
+          didDrawPage: (data) => {
+            y = data.cursor?.y || 0;
+          },
       });
       y = (doc as any).lastAutoTable.finalY + 10;
     };
-    
-    const formatCheckbox = (value: boolean, label: string) => `[${value ? '✓' : ' '}] ${label}`;
     
     addSection("Project Details", [
         ["Project", formData.project_name || ''],
@@ -169,32 +195,24 @@ export default function ProjectsPage() {
 
     addSection("About Project", [
         ["Address", formData.project_about_address || ''],
-        ["Project Reqt.", [
-          formatCheckbox(formData.req_architectural, "Architectural Designing"),
-          formatCheckbox(formData.req_interior, "Interior Decoration"),
-          formatCheckbox(formData.req_landscaping, "Landscaping"),
-          formatCheckbox(formData.req_turnkey, "Turnkey"),
-          formatCheckbox(formData.req_other, "Other"),
-        ].join('\n')],
-        ["Project Type", [
-          formatCheckbox(formData.type_commercial, "Commercial"),
-          formatCheckbox(formData.type_residential, "Residential"),
-        ].join('  ')],
-        ["Project Status", [
-          formatCheckbox(formData.status_new, "New"),
-          formatCheckbox(formData.status_addition, "Addition"),
-          formatCheckbox(formData.status_rehab, "Rehabilitation/Renovation"),
-        ].join('\n')],
+        ["Project Reqt.", [formData.req_architectural, "Architectural Designing"]],
+        ["", [formData.req_interior, "Interior Decoration"]],
+        ["", [formData.req_landscaping, "Landscaping"]],
+        ["", [formData.req_turnkey, "Turnkey"]],
+        ["", [formData.req_other, "Other"]],
+        ["Project Type", [formData.type_commercial, "Commercial"]],
+        ["", [formData.type_residential, "Residential"]],
+        ["Project Status", [formData.status_new, "New"]],
+        ["", [formData.status_addition, "Addition"]],
+        ["", [formData.status_rehab, "Rehabilitation/Renovation"]],
         ["Project Area", formData.project_area || ''],
         ["Special Requirements", formData.project_special_reqs || ''],
-        ["Project's Cost", [
-          formatCheckbox(formData.cost_architectural, "Architectural Designing"),
-          formatCheckbox(formData.cost_interior, "Interior Decoration"),
-          formatCheckbox(formData.cost_landscaping, "Landscaping"),
-          formatCheckbox(formData.cost_construction, "Construction"),
-          formatCheckbox(formData.cost_turnkey, "Turnkey"),
-          formatCheckbox(formData.cost_other, "Other"),
-        ].join('\n')],
+        ["Project's Cost", [formData.cost_architectural, "Architectural Designing"]],
+        ["", [formData.cost_interior, "Interior Decoration"]],
+        ["", [formData.cost_landscaping, "Landscaping"]],
+        ["", [formData.cost_construction, "Construction"]],
+        ["", [formData.cost_turnkey, "Turnkey"]],
+        ["", [formData.cost_other, "Other"]],
         ["First Information Date", formData.date_first_info || ''],
         ["First Meeting Date", formData.date_first_meeting || ''],
         ["First Working Date", formData.date_first_working || ''],
@@ -208,12 +226,12 @@ export default function ProjectsPage() {
     ]);
 
     addSection("Provided by Owner", [
-        [formatCheckbox(formData.provided_program, "Program"), ""],
-        [formatCheckbox(formData.provided_schedule, "Suggested Schedule"), ""],
-        [formatCheckbox(formData.provided_legal, "Legal Site Description & Other Concerned Documents"), ""],
-        [formatCheckbox(formData.provided_survey, "Land Survey Report"), ""],
-        [formatCheckbox(formData.provided_geo, "Geo-Technical, Tests and Other Site Information"), ""],
-        [formatCheckbox(formData.provided_drawings, "Existing Structure's Drawings"), ""],
+        [[formData.provided_program, "Program"]],
+        [[formData.provided_schedule, "Suggested Schedule"]],
+        [[formData.provided_legal, "Legal Site Description & Other Concerned Documents"]],
+        [[formData.provided_survey, "Land Survey Report"]],
+        [[formData.provided_geo, "Geo-Technical, Tests and Other Site Information"]],
+        [[formData.provided_drawings, "Existing Structure's Drawings"]],
     ]);
 
     addSection("Compensation", [
@@ -538,6 +556,8 @@ export default function ProjectsPage() {
     </main>
   );
 }
+
+    
 
     
 
