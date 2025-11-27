@@ -181,6 +181,36 @@ const addInitialBOQManager = async (firestore: any, user: any, employees: Employ
   await batch.commit();
 };
 
+const addInitialFinanceManager = async (firestore: any, user: any, employees: Employee[]) => {
+  const managersToAdd = [
+    { name: "Waqas Rasule", designation: "Finance Manager" },
+  ];
+
+  const existingManagers = new Set(
+    employees
+      .filter(emp => emp.designation === 'Finance Manager')
+      .map(emp => emp.name)
+  );
+
+  const newManagers = managersToAdd.filter(
+    mgr => !existingManagers.has(mgr.name)
+  );
+
+  if (newManagers.length === 0) {
+    return;
+  }
+
+  const batch = writeBatch(firestore);
+  const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
+
+  newManagers.forEach(manager => {
+    const newDocRef = doc(employeesCollectionRef);
+    batch.set(newDocRef, manager);
+  });
+
+  await batch.commit();
+};
+
 
 export default function TeamDashboard() {
   const [employeesByDesignation, setEmployeesByDesignation] = useState<Record<string, Employee[]>>({});
@@ -213,6 +243,7 @@ export default function TeamDashboard() {
           addInitialSoftwareEngineers(firestore, user, fetchedEmployees).catch(console.error);
           addInitial3DVisualizer(firestore, user, fetchedEmployees).catch(console.error);
           addInitialBOQManager(firestore, user, fetchedEmployees).catch(console.error);
+          addInitialFinanceManager(firestore, user, fetchedEmployees).catch(console.error);
         }
         
         const groupedByDesignation = fetchedEmployees.reduce((acc, employee) => {
