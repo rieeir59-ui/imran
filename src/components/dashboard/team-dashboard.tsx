@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -157,7 +158,7 @@ export default function TeamDashboard() {
                 <Trash2 className="h-3 w-3" />
             </Button>
           </AlertDialogTrigger>
-          <AlertDialogContent onClick={handleActionClick}>
+          <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
