@@ -143,7 +143,7 @@ const SiteVisitPage = () => {
         return;
     }
 
-    const storageRef = ref(storage, `users/${user.uid}/siteVisits/${SITE_VISIT_DOC_ID}/${file.name}`);
+    const storageRef = ref(storage, `users/${user.uid}/siteVisits/${file.name}`);
     
     try {
         await uploadBytes(storageRef, file);
