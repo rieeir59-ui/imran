@@ -191,12 +191,21 @@ export default function VendorListPage() {
                            const headers = defaultHeaders[category] || (Array.isArray(vendors) && vendors.length > 0 ? Object.keys(vendors[0]).filter(key => key !== 'id') : []);
                            return (
                             <AccordionItem value={category} key={category}>
-                                <AccordionTrigger>
-                                    <div className="flex justify-between items-center w-full pr-4">
-                                        <span>{category}</span>
-                                        {isEditing && <Button size="sm" variant="outline" onClick={(e) => {e.stopPropagation(); addVendor(category)}}><PlusCircle className="w-4 h-4 mr-2"/>Add</Button>}
-                                    </div>
-                                </AccordionTrigger>
+                                <div className="flex items-center w-full">
+                                    <AccordionTrigger className="flex-1 pr-2">
+                                        {category}
+                                    </AccordionTrigger>
+                                    {isEditing && 
+                                        <Button 
+                                            size="sm" 
+                                            variant="outline" 
+                                            onClick={(e) => {e.stopPropagation(); addVendor(category)}}
+                                            className="mr-2"
+                                        >
+                                            <PlusCircle className="w-4 h-4 mr-2"/>Add
+                                        </Button>
+                                    }
+                                </div>
                                 <AccordionContent>
                                     <Table>
                                         <TableHeader>
