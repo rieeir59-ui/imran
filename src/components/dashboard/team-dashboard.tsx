@@ -50,6 +50,7 @@ const draftspersons = [
 
 const architects = [
     { name: 'Sobia Razzak', href: '/weekly-schedule?employee=Sobia%20Razzak&designation=Architect' },
+    { name: 'Luqman Aslam', href: '/weekly-schedule?employee=Luqman%20Aslam&designation=Architect' },
     { name: 'M Asad', href: '/weekly-schedule?employee=M%20Asad&designation=Architect' },
     { name: 'M Haseeb', href: '/weekly-schedule?employee=M%20Haseeb&designation=Architect' },
     { name: 'M Waleed Zahid', href: '/weekly-schedule?employee=M%20Waleed%20Zahid&designation=Architect' },
