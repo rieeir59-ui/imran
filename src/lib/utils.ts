@@ -64,12 +64,28 @@ export function exportDataToPdf(title: string, data: any[], filename:string, ove
   let headers: string[];
   if (filename === 'project-timeline') {
     headers = ['id', 'name', 'duration', 'start', 'finish', 'predecessor'];
-  } else {
+  } else if (data.length > 0) {
     headers = Object.keys(data[0]);
+  } else {
+    console.error("No data available to determine headers.");
+    return;
   }
   
   const tableHeaders = headers.map(key => {
-    if (key === 'name') return 'Task Name';
+    // Custom header mapping for specific keys if needed
+    const customHeaders: { [key: string]: string } = {
+      srNo: 'Sr.No',
+      projectName: 'Project Name',
+      areaInSft: 'Area',
+      projectHolder: 'Project Holder',
+      allocationDate: 'Allocation Date',
+      siteSurveyStart: 'Survey Start',
+      siteSurveyEnd: 'Survey End',
+      headCount: 'Head Count'
+    };
+    if ((customHeaders as any)[key]) return (customHeaders as any)[key];
+    
+    // Generic formatting for other keys
     const result = key.replace(/([A-Z])/g, " $1");
     return result.charAt(0).toUpperCase() + result.slice(1);
   });
@@ -80,9 +96,9 @@ export function exportDataToPdf(title: string, data: any[], filename:string, ove
   }));
 
   const columnStyles: { [key: string]: any } = {};
-  headers.forEach((header, index) => {
-      let width: number | 'auto' = 'auto'; // default width
-      if (filename === 'project-timeline') {
+  if (filename === 'project-timeline') {
+    headers.forEach((header, index) => {
+        let width: number | 'auto' = 'auto'; // default width
         switch(header) {
           case 'id': width = 15; break;
           case 'name': width = 100; break;
@@ -91,21 +107,9 @@ export function exportDataToPdf(title: string, data: any[], filename:string, ove
           case 'finish': width = 35; break;
           case 'predecessor': width = 35; break;
         }
-      } else {
-        if (header.toLowerCase().includes('name')) {
-            width = 35;
-        } else if (header.toLowerCase().includes('date')) {
-            width = 20;
-        } else if (header.toLowerCase().includes('area')) {
-            width = 18;
-        } else if (header.toLowerCase().includes('holder')) {
-            width = 25;
-        } else if (header.toLowerCase() === 'srno') {
-            width = 10;
-        }
-      }
-      columnStyles[index] = { cellWidth: width };
-  });
+        columnStyles[index] = { cellWidth: width };
+    });
+  }
 
 
   autoTable(doc, {
@@ -114,18 +118,19 @@ export function exportDataToPdf(title: string, data: any[], filename:string, ove
     startY: 20,
     theme: 'grid',
     styles: {
-      fontSize: 8,
-      cellPadding: 2,
+      fontSize: 5,
+      cellPadding: 1,
       overflow: 'linebreak',
     },
     headStyles: {
         fillColor: [30, 41, 59],
         textColor: [255, 255, 255],
-        fontSize: 8,
+        fontSize: 6,
         fontStyle: 'bold',
     },
     columnStyles: columnStyles,
     tableWidth: 'auto',
+    margin: { left: 5, right: 5 }
   });
 
   let finalY = (doc as any).lastAutoTable.finalY || 20;
@@ -302,5 +307,6 @@ export function exportServicesToPdf(formData: any, serviceSections: any) {
 
     doc.save('list-of-services.pdf');
 }
+
 
 
