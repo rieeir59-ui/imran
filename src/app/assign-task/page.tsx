@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -66,6 +66,7 @@ interface Employee {
 
 export default function AssignTaskPage() {
     const [employeeName, setEmployeeName] = useState('');
+    const [employeeId, setEmployeeId] = useState<string | undefined>();
     const [projectName, setProjectName] = useState('');
     const [designation, setDesignation] = useState('');
     const [taskDescription, setTaskDescription] = useState('');
@@ -86,6 +87,7 @@ export default function AssignTaskPage() {
     }, [user, firestore]);
 
     const { data: employees, isLoading: isLoadingEmployees } = useCollection<Employee>(employeesCollectionRef);
+    const employeeList = useMemo(() => employees || [], [employees]);
 
     const tasksCollectionRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
@@ -119,6 +121,7 @@ export default function AssignTaskPage() {
           .then(() => {
             toast({ title: 'Task Assigned!', description: `Task for ${projectName} has been assigned to ${employeeName}.` });
             setEmployeeName('');
+            setEmployeeId(undefined);
             setProjectName('');
             setDesignation('');
             setTaskDescription('');
@@ -173,18 +176,21 @@ export default function AssignTaskPage() {
                                     value={employeeName}
                                      onValueChange={(search) => {
                                         setEmployeeName(search);
+                                        setEmployeeId(undefined);
                                     }}
                                   />
                                    <CommandList>
                                     {isLoadingEmployees && <div className="p-2 text-center text-sm">Loading employees...</div>}
                                     <CommandEmpty>No employee found. Type to create a new one.</CommandEmpty>
                                     <CommandGroup>
-                                      {employees?.map((employee) => (
+                                      {employeeList.map((employee) => (
                                         <CommandItem
                                           key={employee.id}
                                           value={employee.name}
                                           onSelect={(currentValue) => {
-                                            setEmployeeName(currentValue === employeeName ? "" : currentValue)
+                                            const selectedEmployee = employeeList.find(e => e.name.toLowerCase() === currentValue.toLowerCase());
+                                            setEmployeeName(selectedEmployee ? selectedEmployee.name : currentValue);
+                                            setEmployeeId(selectedEmployee ? selectedEmployee.id : undefined);
                                             setEmployeePopoverOpen(false)
                                           }}
                                         >
@@ -297,3 +303,4 @@ export default function AssignTaskPage() {
         </main>
     );
 }
+
