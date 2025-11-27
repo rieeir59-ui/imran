@@ -22,12 +22,12 @@ import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
 
 const teams = [
-  { name: 'Architects', icon: Paintbrush, href: '/schedules-by-designation#Architects', designation: 'Architect' },
-  { name: 'Software Engineers', icon: Code, href: '/schedules-by-designation#Software-Engineers', designation: 'Software Engineer' },
-  { name: '3D Visualizer', icon: Camera, href: '/schedules-by-designation#3D-Visualizer', designation: '3D Visualizer' },
-  { name: 'BOQ Management', icon: Calculator, href: '/schedules-by-designation#Quantity-Surveyor', designation: 'Quantity Surveyor' },
-  { name: 'Finance', icon: Banknote, href: '/schedules-by-designation#Finance-Manager', designation: 'Finance Manager' },
-  { name: 'Draftspersons', icon: DraftingCompass, href: '/schedules-by-designation#Draftspersons', designation: 'Draftsperson' },
+  { name: 'Architects', icon: Paintbrush, href: '/schedules-by-designation?name=Architect', designation: 'Architect' },
+  { name: 'Software Engineers', icon: Code, href: '/schedules-by-designation?name=Software+Engineer', designation: 'Software Engineer' },
+  { name: '3D Visualizer', icon: Camera, href: '/schedules-by-designation?name=3D+Visualizer', designation: '3D Visualizer' },
+  { name: 'BOQ Management', icon: Calculator, href: '/schedules-by-designation?name=Quantity+Surveyor', designation: 'Quantity Surveyor' },
+  { name: 'Finance', icon: Banknote, href: '/schedules-by-designation?name=Finance+Manager', designation: 'Finance Manager' },
+  { name: 'Draftspersons', icon: DraftingCompass, href: '/schedules-by-designation?name=Draftsperson', designation: 'Draftsperson' },
 ];
 
 interface Employee {
