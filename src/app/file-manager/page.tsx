@@ -10,7 +10,7 @@ import { UploadCloud, File as FileIcon, MoreVertical, Edit, Trash2, Save, Loader
 import { useDropzone } from 'react-dropzone';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useStorage, useAuth } from '@/firebase';
-import { ref, uploadBytes, getDownloadURL, listAll, getMetadata, deleteObject } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL, listAll, getMetadata, deleteObject, UploadTaskSnapshot } from 'firebase/storage';
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
 
 interface UploadedFile {
   name: string;
@@ -28,6 +29,11 @@ interface UploadedFile {
   url: string;
   fullPath: string; // Firebase storage full path
   content?: string;
+}
+
+interface UploadProgress {
+  fileName: string;
+  progress: number;
 }
 
 export default function FileManagerPage() {
@@ -39,6 +45,7 @@ export default function FileManagerPage() {
   const [activeFile, setActiveFile] = useState<UploadedFile | null>(null);
   const [editorContent, setEditorContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([]);
 
   const { user, isUserLoading } = useUser();
   const storage = useStorage();
@@ -94,11 +101,32 @@ export default function FileManagerPage() {
         return;
     }
 
-    toast({ title: 'Uploading files...', description: 'Please wait.' });
+    setUploadProgress(acceptedFiles.map(file => ({ fileName: file.name, progress: 0 })));
 
-    const uploadPromises = acceptedFiles.map(async file => {
+    const uploadPromises = acceptedFiles.map(file => {
       const fileRef = ref(storage, `users/${user.uid}/uploads/${file.name}`);
-      await uploadBytes(fileRef, file);
+      const uploadTask = uploadBytesResumable(fileRef, file);
+
+      return new Promise<void>((resolve, reject) => {
+        uploadTask.on('state_changed', 
+          (snapshot: UploadTaskSnapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(prev => prev.map(p => p.fileName === file.name ? { ...p, progress } : p));
+          },
+          (error) => {
+            console.error("Upload error:", error.code, error.message);
+            toast({
+                variant: "destructive",
+                title: "Upload Error",
+                description: `Could not upload ${file.name}. Reason: ${error.code}`
+            })
+            reject(error);
+          },
+          () => {
+            resolve();
+          }
+        )
+      });
     });
 
     try {
@@ -109,12 +137,11 @@ export default function FileManagerPage() {
         });
         await fetchFiles(); // Refresh the file list
     } catch (error) {
-        console.error("Upload error:", error);
-        toast({
-            variant: "destructive",
-            title: "Upload Error",
-            description: "There was a problem uploading your files."
-        })
+        // Individual file errors are already toasted inside the promise.
+        // We can log a summary error if needed.
+        console.error("One or more uploads failed.");
+    } finally {
+        setUploadProgress([]);
     }
   }, [user, storage, toast, fetchFiles]);
 
@@ -189,7 +216,8 @@ export default function FileManagerPage() {
     const newContentBlob = new Blob([editorContent], { type: 'text/plain' });
 
     try {
-        await uploadBytes(fileRef, newContentBlob);
+        const uploadTask = uploadBytesResumable(fileRef, newContentBlob);
+        await uploadTask;
         await fetchFiles(); // Re-fetch to update URL and metadata
         setActiveFile(null);
         toast({
@@ -213,7 +241,7 @@ export default function FileManagerPage() {
     const newContentBlob = new Blob([''], { type: 'text/plain' });
 
     try {
-        await uploadBytes(fileRef, newContentBlob);
+        await uploadBytesResumable(fileRef, newContentBlob);
         await fetchFiles(); // Refresh to get the new file from storage
         toast({ title: 'New Text File Created', description: `${fileName} has been saved.` });
     } catch (error) {
@@ -302,6 +330,21 @@ export default function FileManagerPage() {
             </div>
           </div>
           
+          {uploadProgress.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="font-medium">Uploads</h4>
+              {uploadProgress.map((item, index) => (
+                <div key={index} className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="truncate">{item.fileName}</span>
+                    <span>{Math.round(item.progress)}%</span>
+                  </div>
+                  <Progress value={item.progress} />
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="flex justify-end">
             <Button variant="outline" onClick={createNewTextFile}><PlusCircle className="mr-2"/> Create New Text File</Button>
           </div>
