@@ -286,12 +286,13 @@ const SiteVisitPage = () => {
         }
 
         addNotesSection("8. Observations", "observations");
-        addNotesSection("9. Issues Identified / Solutions", "issues");
-        addNotesSection("10. Actions & Recommendations", "actions");
+        addNotesSection("9. Issues Identified", "issues");
+        addNotesSection("10. Solutions", "solutions");
+        addNotesSection("11. Actions & Recommendations", "actions");
 
         y += 5;
         doc.setFont('helvetica', 'bold');
-        doc.text("11. Pictures with Comments", 14, y);
+        doc.text("12. Pictures with Comments", 14, y);
         y += 5;
 
         for(let i=1; i<=7; i++) {
@@ -480,13 +481,16 @@ const SiteVisitPage = () => {
             <SectionTitle>8. Observations</SectionTitle>
             {renderTextarea("observations")}
             
-            <SectionTitle>9. Issues Identified / Solutions</SectionTitle>
+            <SectionTitle>9. Issues Identified</SectionTitle>
             {renderTextarea("issues")}
 
-            <SectionTitle>10. Actions & Recommendations</SectionTitle>
+            <SectionTitle>10. Solutions</SectionTitle>
+            {renderTextarea("solutions")}
+
+            <SectionTitle>11. Actions & Recommendations</SectionTitle>
             {renderTextarea("actions")}
 
-            <SectionTitle>11. Pictures with Comments</SectionTitle>
+            <SectionTitle>12. Pictures with Comments</SectionTitle>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {Array.from({length: 7}).map((_, i) => renderPictureField(i + 1))}
             </div>
