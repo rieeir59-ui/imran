@@ -302,5 +302,14 @@ service cloud.firestore {
     match /users/{userId}/tasks/{taskId} {
       allow read, write: if isOwner(userId);
     }
+    
+     /**
+     * @description Enforces ownership for employees.
+     * Allows any authenticated user to create and read employees.
+     * @path /users/{userId}/employees/{employeeId}
+     */
+    match /users/{userId}/employees/{employeeId} {
+      allow read, write: if isOwner(userId);
+    }
   }
 }

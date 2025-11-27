@@ -1,6 +1,22 @@
 
 {
   "entities": {
+    "Employee": {
+      "title": "Employee",
+      "type": "object",
+      "description": "Represents an employee in a team.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The full name of the employee."
+        },
+        "designation": {
+          "type": "string",
+          "description": "The job title or designation of the employee (e.g., Architect, Draftsperson)."
+        }
+      },
+      "required": ["name", "designation"]
+    },
     "Vendor": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Vendor",
@@ -1090,6 +1106,16 @@
             "$ref": "#/entities/Task"
           },
           "description": "Stores tasks assigned to employees. This collection is public for reading so all users can see all tasks, but writing is restricted."
+        }
+      },
+      {
+        "path": "/users/{userId}/employees/{employeeId}",
+        "definition": {
+          "entityName": "Employee",
+          "schema": {
+            "$ref": "#/entities/Employee"
+          },
+          "description": "Stores employee information for dynamic team dashboards."
         }
       },
       {

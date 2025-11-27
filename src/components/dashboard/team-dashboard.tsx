@@ -16,66 +16,41 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { collection, getDocs } from 'firebase/firestore';
-import { useState, useEffect } from 'react';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '../ui/button';
+import { Skeleton } from '../ui/skeleton';
 
 const teams = [
-  { name: 'Architects', icon: Paintbrush, href: '/schedules-by-designation#Architects' },
-  { name: 'Software Engineers', icon: Code, href: '/schedules-by-designation#Software-Engineers' },
-  { name: '3D Visualizer', icon: Camera, href: '/schedules-by-designation#3D-Visualizer' },
-  { name: 'BOQ Management', icon: Calculator, href: '/schedules-by-designation#Quantity-Surveyor' },
-  { name: 'Finance', icon: Banknote, href: '/schedules-by-designation#Finance-Manager' },
-  { name: 'Draftspersons', icon: DraftingCompass, href: '/schedules-by-designation#Draftspersons' },
+  { name: 'Architects', icon: Paintbrush, href: '/schedules-by-designation#Architects', designation: 'Architect' },
+  { name: 'Software Engineers', icon: Code, href: '/schedules-by-designation#Software-Engineers', designation: 'Software Engineer' },
+  { name: '3D Visualizer', icon: Camera, href: '/schedules-by-designation#3D-Visualizer', designation: '3D Visualizer' },
+  { name: 'BOQ Management', icon: Calculator, href: '/schedules-by-designation#Quantity-Surveyor', designation: 'Quantity Surveyor' },
+  { name: 'Finance', icon: Banknote, href: '/schedules-by-designation#Finance-Manager', designation: 'Finance Manager' },
+  { name: 'Draftspersons', icon: DraftingCompass, href: '/schedules-by-designation#Draftspersons', designation: 'Draftsperson' },
 ];
 
-const allEmployees = [
-  'M Waqas',
-  'M Jabbar',
-  'Rana Mujahid',
-  'Architect Sobia',
-  'Architect Luqman Aslam',
-  'Architect Asad',
-  'Architect Haseeb',
-  'Architect Khizar',
-  'M Mohsin',
-  'M Nouman',
-];
-
-const draftspersons = [
-  { name: 'M Mujahid', href: '/weekly-schedule?employee=M%20Mujahid&designation=Draftsperson' },
-  { name: 'M Jabbar', href: '/weekly-schedule?employee=M%20Jabbar&designation=Draftsperson' },
-  { name: 'M Waqas', href: '/weekly-schedule?employee=M%20Waqas&designation=Draftsperson' },
-];
-
-const architects = [
-    { name: 'Sobia Razzak', href: '/weekly-schedule?employee=Sobia%20Razzak&designation=Architect' },
-    { name: 'Luqman Aslam', href: '/weekly-schedule?employee=Luqman%20Aslam&designation=Architect' },
-    { name: 'M Asad', href: '/weekly-schedule?employee=M%20Asad&designation=Architect' },
-    { name: 'M Haseeb', href: '/weekly-schedule?employee=M%20Haseeb&designation=Architect' },
-    { name: 'M Waleed Zahid', href: '/weekly-schedule?employee=M%20Waleed%20Zahid&designation=Architect' },
-    { name: 'M Khizar', href: '/weekly-schedule?employee=M%20Khizar&designation=Architect' },
-];
-
-const visualizers = [{ name: 'M Mohsin', href: '/weekly-schedule?employee=M%20Mohsin&designation=3D%20Visualizer' }];
-
-const boqManagers = [{ name: 'M Nouman', href: '/weekly-schedule?employee=M%20Nouman&designation=Quantity%20Surveyor' }];
-
-const financeManagers = [{ name: 'M Waqas', href: '/weekly-schedule?employee=M%20Waqas&designation=Finance%20Manager' }];
-
-const softwareEngineers = [
-    { name: 'Imran Abbas', href: '/weekly-schedule?employee=Imran%20Abbas&designation=Software%20Engineer' },
-    { name: 'Rabiya Eman', href: '/weekly-schedule?employee=Rabiya%20Eman&designation=Software%20Engineer' },
-];
+interface Employee {
+    id: string;
+    name: string;
+    designation: string;
+}
 
 interface Task {
   employeeName: string;
 }
 
 export default function TeamDashboard() {
+  const [employeesByDesignation, setEmployeesByDesignation] = useState<Record<string, Employee[]>>({});
   const [employeesWithTasks, setEmployeesWithTasks] = useState<Set<string>>(new Set());
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useUser();
   const firestore = useFirestore();
+
+  const employeesCollectionRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return collection(firestore, `users/${user.uid}/employees`);
+  }, [user, firestore]);
 
   const tasksCollectionRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -83,26 +58,47 @@ export default function TeamDashboard() {
   }, [user, firestore]);
 
   useEffect(() => {
+    if (!employeesCollectionRef) {
+        setIsLoading(false);
+        return;
+    }
+    const unsubscribe = onSnapshot(employeesCollectionRef, (snapshot) => {
+        const fetchedEmployees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
+        const groupedByDesignation = fetchedEmployees.reduce((acc, employee) => {
+            const { designation } = employee;
+            if (!acc[designation]) {
+                acc[designation] = [];
+            }
+            acc[designation].push(employee);
+            return acc;
+        }, {} as Record<string, Employee[]>);
+        setEmployeesByDesignation(groupedByDesignation);
+        setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [employeesCollectionRef]);
+
+  useEffect(() => {
     if (!tasksCollectionRef) return;
 
-    getDocs(tasksCollectionRef)
-      .then((snapshot) => {
+    const unsubscribe = onSnapshot(tasksCollectionRef, (snapshot) => {
         const assignedEmployees = new Set<string>();
         snapshot.forEach((doc) => {
           const task = doc.data() as Task;
           assignedEmployees.add(task.employeeName);
         });
         setEmployeesWithTasks(assignedEmployees);
-      })
-      .catch((error) => {
-        console.error('Error fetching tasks:', error);
-      });
+    });
+    
+    return () => unsubscribe();
   }, [tasksCollectionRef]);
 
-  const renderEmployeeCard = (employee: { name: string; href: string }) => {
+  const renderEmployeeCard = (employee: { name: string; designation: string }) => {
     const hasTask = employeesWithTasks.has(employee.name);
+    const href = `/weekly-schedule?employee=${encodeURIComponent(employee.name)}&designation=${encodeURIComponent(employee.designation)}`;
     return (
-      <Link href={employee.href} key={employee.name}>
+      <Link href={href} key={employee.name}>
         <div className="p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full relative">
           <User className="h-8 w-8 text-primary mb-2" />
           <span className="font-semibold text-center">{employee.name}</span>
@@ -116,14 +112,36 @@ export default function TeamDashboard() {
     );
   };
 
-  const AddEmployeeCard = ({href}: {href: string}) => (
-    <Link href={href} passHref>
-        <div className="p-4 rounded-lg border-dashed border-2 hover:bg-accent hover:border-solid transition-colors flex flex-col items-center justify-center h-full">
+  const AddEmployeeCard = ({designation}: {designation: string}) => (
+    <Link href={`/add-employee?designation=${encodeURIComponent(designation)}`} passHref>
+        <div className="p-4 rounded-lg border-dashed border-2 hover:bg-accent hover:border-solid transition-colors flex flex-col items-center justify-center h-full min-h-[124px]">
             <PlusCircle className="h-8 w-8 text-muted-foreground mb-2" />
             <span className="text-muted-foreground text-center">Add Employee</span>
         </div>
     </Link>
   );
+  
+  const renderTeamSection = (team: { name: string, designation: string }) => {
+    const teamEmployees = employeesByDesignation[team.designation] || [];
+    return (
+        <Card className="lg:col-span-3" key={team.name}>
+            <CardHeader>
+                <CardTitle>{team.name} Team</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {isLoading ? (
+                    <>
+                        <Skeleton className="h-[124px] w-full" />
+                        <Skeleton className="h-[124px] w-full" />
+                    </>
+                ) : (
+                    teamEmployees.map(renderEmployeeCard)
+                )}
+                <AddEmployeeCard designation={team.designation} />
+            </CardContent>
+        </Card>
+    );
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -142,60 +160,8 @@ export default function TeamDashboard() {
           ))}
         </CardContent>
       </Card>
-      <Card className="lg:col-span-3">
-        <CardHeader>
-          <CardTitle>Draftspersons Team</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {draftspersons.map(renderEmployeeCard)}
-          <AddEmployeeCard href="/weekly-schedule?designation=Draftsperson" />
-        </CardContent>
-      </Card>
-      <Card className="lg:col-span-3">
-        <CardHeader>
-          <CardTitle>Architects Team</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {architects.map(renderEmployeeCard)}
-          <AddEmployeeCard href="/weekly-schedule?designation=Architect" />
-        </CardContent>
-      </Card>
-      <Card className="lg:col-span-3">
-        <CardHeader>
-          <CardTitle>Software Engineering Team</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {softwareEngineers.map(renderEmployeeCard)}
-           <AddEmployeeCard href="/weekly-schedule?designation=Software%20Engineer" />
-        </CardContent>
-      </Card>
-       <Card className="lg:col-span-3">
-        <CardHeader>
-          <CardTitle>3D Visualizer Team</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {visualizers.map(renderEmployeeCard)}
-          <AddEmployeeCard href="/weekly-schedule?designation=3D%20Visualizer" />
-        </CardContent>
-      </Card>
-      <Card className="lg:col-span-3">
-        <CardHeader>
-          <CardTitle>BOQ Team</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {boqManagers.map(renderEmployeeCard)}
-           <AddEmployeeCard href="/weekly-schedule?designation=Quantity%20Surveyor" />
-        </CardContent>
-      </Card>
-      <Card className="lg:col-span-3">
-        <CardHeader>
-          <CardTitle>Finance Team</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {financeManagers.map(renderEmployeeCard)}
-          <AddEmployeeCard href="/weekly-schedule?designation=Finance%20Manager" />
-        </CardContent>
-      </Card>
+      
+      {teams.map(team => renderTeamSection(team))}
     </div>
   );
 }

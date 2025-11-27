@@ -12,7 +12,7 @@ import {
   SidebarGroupLabel,
   SidebarInput,
 } from "@/components/ui/sidebar";
-import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList, MessageSquare, BookUser, LocateFixed, Folder, UserCheck, DollarSign, FileEdit, FileSignature, ShieldCheck, FileQuestion, FileSliders } from 'lucide-react';
+import { BriefcaseBusiness, LayoutDashboard, FolderKanban, ClipboardCheck, GanttChart, Building, Home, Hotel, Landmark, ScrollText, Cog, CalendarClock, Users, Save, FilePlus, FileText, Database, Image, LayoutList, MessageSquare, BookUser, LocateFixed, Folder, UserCheck, DollarSign, FileEdit, FileSignature, ShieldCheck, FileQuestion, FileSliders, UserPlus } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { usePathname } from 'next/navigation';
 
@@ -39,6 +39,7 @@ const projectFormsItems = [
   { href: '/schedules-by-designation', icon: Users, label: 'Schedules by Designation' },
   { href: '/save-record', icon: Save, label: 'Saved Records' },
   { href: '/assign-task', icon: FilePlus, label: 'Assign Task' },
+  { href: '/add-employee', icon: UserPlus, label: 'Add Employee' },
   { href: '/bill-of-quantity', icon: FileText, label: 'Bill Of Quantity'},
   { href: '/requirement-performa', icon: FileText, label: 'Requirement Performa' },
   { href: '/field-report', icon: BookUser, label: 'Field Report' },
