@@ -47,6 +47,7 @@ const projectFormsItems = [
   { href: '/file-manager', icon: Folder, label: 'File Manager' },
   { href: '/sub-consultant-list', icon: UserCheck, label: 'Sub-consultant List' },
   { href: '/contractor-list', icon: Users, label: 'List of Contractors' },
+  { href: '/vendor-list', icon: Users, label: 'List of approve vendors' },
   { href: '/project-application-summary', icon: FileText, label: 'Project Application Summary' },
   { href: '/preliminary-project-budget', icon: DollarSign, label: 'Preliminary Project Budget' },
   { href: '/rate-analysis', icon: DollarSign, label: 'Rate Analysis' },
