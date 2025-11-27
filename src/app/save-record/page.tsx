@@ -3,12 +3,13 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, GanttChart, HardHat, ListChecks, CalendarDays, Folder, File as FileIcon } from 'lucide-react';
+import { FileText, GanttChart, HardHat, ListChecks, CalendarDays, Folder, File as FileIcon, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useUser, useStorage, useMemoFirebase } from '@/firebase';
 import { ref, listAll, getMetadata } from 'firebase/storage';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 const savedRecords = [
     {
@@ -83,6 +84,7 @@ interface UploadedFile {
 export default function SaveRecordPage() {
     const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
     const [isLoadingFiles, setIsLoadingFiles] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
     const { user } = useUser();
     const storage = useStorage();
 
@@ -130,25 +132,49 @@ export default function SaveRecordPage() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
+    const filteredRecords = savedRecords.filter(record => 
+        record.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const filteredFiles = uploadedFiles.filter(file =>
+        file.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+
     return (
         <main className="p-4 md:p-6 lg:p-8 space-y-8">
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input 
+                    type="search"
+                    placeholder="Search records and files..."
+                    className="w-full pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
             <Card>
                 <CardHeader>
                     <CardTitle>Saved Forms & Records</CardTitle>
                     <p className="text-muted-foreground">Access all your saved forms, reports, and records from here.</p>
                 </CardHeader>
                 <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {savedRecords.map((record) => (
-                        <Link href={record.href} key={record.title} className="block hover:bg-accent transition-colors p-4 rounded-lg border">
-                            <div className="flex items-start gap-4">
-                                <record.icon className="h-8 w-8 text-primary mt-1" />
-                                <div>
-                                    <h3 className="text-lg font-bold">{record.title}</h3>
-                                    <p className="text-sm text-muted-foreground">{record.description}</p>
+                    {filteredRecords.length > 0 ? (
+                        filteredRecords.map((record) => (
+                            <Link href={record.href} key={record.title} className="block hover:bg-accent transition-colors p-4 rounded-lg border">
+                                <div className="flex items-start gap-4">
+                                    <record.icon className="h-8 w-8 text-primary mt-1" />
+                                    <div>
+                                        <h3 className="text-lg font-bold">{record.title}</h3>
+                                        <p className="text-sm text-muted-foreground">{record.description}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </Link>
-                    ))}
+                            </Link>
+                        ))
+                    ) : (
+                        <p className="text-muted-foreground col-span-full">No matching forms or records found.</p>
+                    )}
                 </CardContent>
             </Card>
 
@@ -176,14 +202,14 @@ export default function SaveRecordPage() {
                                             <p>Loading files...</p>
                                         </TableCell>
                                     </TableRow>
-                                ) : uploadedFiles.length === 0 ? (
+                                ) : filteredFiles.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
-                                            No files uploaded yet.
+                                            No matching files found.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    uploadedFiles.map((file) => (
+                                    filteredFiles.map((file) => (
                                         <TableRow key={file.fullPath}>
                                             <TableCell><FileIcon className="h-5 w-5 text-muted-foreground" /></TableCell>
                                             <TableCell className="font-medium">
