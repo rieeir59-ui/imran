@@ -13,13 +13,27 @@ import {
   XCircle,
   Code,
   PlusCircle,
+  Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from '@/hooks/use-toast';
+
 
 const teams = [
   { name: 'Architects', icon: Paintbrush, href: '/schedules-by-designation?name=Architect', designation: 'Architect' },
@@ -41,20 +55,12 @@ interface Task {
 }
 
 export default function TeamDashboard() {
-  const [employeesByDesignation, setEmployeesByDesignation] = useState<Record<string, Employee[]>>({
-    'Architect': [
-      { id: '1', name: 'Sobia', designation: 'Architect' },
-      { id: '2', name: 'Luqman Aslam', designation: 'Architect' },
-      { id: '3', name: 'M. Asad', designation: 'Architect' },
-      { id: '4', name: 'M. Haseeb', designation: 'Architect' },
-      { id: '5', name: 'M. Waleed Zahid', designation: 'Architect' },
-      { id: '6', name: 'M. Khizar', designation: 'Architect' },
-    ]
-  });
+  const [employeesByDesignation, setEmployeesByDesignation] = useState<Record<string, Employee[]>>({});
   const [employeesWithTasks, setEmployeesWithTasks] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
 
   const employeesCollectionRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -82,13 +88,24 @@ export default function TeamDashboard() {
             return acc;
         }, {} as Record<string, Employee[]>);
         
-        // Merge with initial architects
-        groupedByDesignation['Architect'] = [
-            ...(employeesByDesignation['Architect'] || []),
+        // Merge with initial architects if they don't exist yet
+        const initialArchitects = [
+            { id: '1', name: 'Sobia', designation: 'Architect' },
+            { id: '2', name: 'Luqman Aslam', designation: 'Architect' },
+            { id: '3', name: 'M. Asad', designation: 'Architect' },
+            { id: '4', name: 'M. Haseeb', designation: 'Architect' },
+            { id: '5', name: 'M. Waleed Zahid', designation: 'Architect' },
+            { id: '6', name: 'M. Khizar', designation: 'Architect' },
+        ];
+
+        const existingArchitectNames = new Set((groupedByDesignation['Architect'] || []).map(e => e.name));
+        const architectsToDisplay = [
+            ...initialArchitects.filter(e => !existingArchitectNames.has(e.name)),
             ...(groupedByDesignation['Architect'] || [])
-        ].filter((employee, index, self) => 
-            index === self.findIndex((e) => e.name === employee.name)
-        );
+        ];
+
+        groupedByDesignation['Architect'] = architectsToDisplay;
+
 
         setEmployeesByDesignation(groupedByDesignation);
         setIsLoading(false);
@@ -112,21 +129,68 @@ export default function TeamDashboard() {
     return () => unsubscribe();
   }, [tasksCollectionRef]);
 
-  const renderEmployeeCard = (employee: { name: string; designation: string }) => {
+  const handleDeleteEmployee = async (employeeId: string) => {
+    if (!user || !firestore) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Authentication error.' });
+      return;
+    }
+    const docRef = doc(firestore, `users/${user.uid}/employees`, employeeId);
+    try {
+      await deleteDoc(docRef);
+      toast({ title: 'Employee Deleted', description: 'The employee has been removed successfully.' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Deletion Failed', description: 'Could not delete the employee.' });
+    }
+  };
+
+  const renderEmployeeCard = (employee: { id: string, name: string; designation: string }) => {
     const hasTask = employeesWithTasks.has(employee.name);
     const href = `/weekly-schedule?employee=${encodeURIComponent(employee.name)}&designation=${encodeURIComponent(employee.designation)}`;
+    
+    // Prevent navigating when clicking the delete button
+    const handleActionClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+    };
+
     return (
-      <Link href={href} key={employee.name}>
-        <div className="p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full relative">
-          <User className="h-8 w-8 text-primary mb-2" />
-          <span className="font-semibold text-center">{employee.name}</span>
-          {hasTask ? (
-            <CheckCircle className="h-5 w-5 text-green-500 absolute top-2 right-2" />
-          ) : (
-            <XCircle className="h-5 w-5 text-red-500 absolute top-2 right-2" />
-          )}
-        </div>
-      </Link>
+      <div key={employee.id} className="relative group">
+        <Link href={href}>
+          <div className="p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full min-h-[124px]">
+            <User className="h-8 w-8 text-primary mb-2" />
+            <span className="font-semibold text-center">{employee.name}</span>
+            {hasTask ? (
+              <CheckCircle className="h-5 w-5 text-green-500 absolute top-2 right-2" />
+            ) : (
+              <XCircle className="h-5 w-5 text-red-500 absolute top-2 right-2" />
+            )}
+          </div>
+        </Link>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+                variant="destructive"
+                size="icon"
+                className="absolute bottom-1 left-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={handleActionClick}
+            >
+                <Trash2 className="h-3 w-3" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent onClick={handleActionClick}>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete {employee.name}.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => handleDeleteEmployee(employee.id)}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     );
   };
 
@@ -147,7 +211,7 @@ export default function TeamDashboard() {
                 <CardTitle>{team.name} Team</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {isLoading && team.designation !== 'Architect' ? (
+                {isLoading && !employeesByDesignation[team.designation] ? (
                     <>
                         <Skeleton className="h-[124px] w-full" />
                         <Skeleton className="h-[124px] w-full" />
