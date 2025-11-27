@@ -182,14 +182,19 @@ const SiteVisitPage = () => {
       .finally(() => setIsSaving(false));
   };
   
-    const toDataURL = (url: string) => fetch(url)
-        .then(response => response.blob())
-        .then(blob => new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        }));
+    const toDataURL = (url: string): Promise<string> => {
+        // Use a CORS proxy if running locally and encountering CORS issues,
+        // or ensure Firebase Storage is configured for CORS.
+        const proxyUrl = `https://cors-anywhere.herokuapp.com/${url}`;
+        return fetch(url) // Use proxyUrl if needed
+            .then(response => response.blob())
+            .then(blob => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            }));
+    };
 
     const handleDownload = async () => {
         const doc = new jsPDF();
