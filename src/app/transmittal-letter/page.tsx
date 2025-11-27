@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -137,15 +138,10 @@ export default function TransmittalLetterPage() {
         const drawCheckbox = (x: number, yPos: number, isChecked: boolean) => {
             const boxSize = 3.5;
             doc.setDrawColor(0);
+            doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S'); // Always draw the box
             if (isChecked) {
-                doc.setFillColor(0, 0, 139); // Dark blue fill
-                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
                 doc.setFont('ZapfDingbats');
-                doc.setTextColor(255, 255, 255);
-                doc.text('✓', x + 0.5, yPos - 0.5);
-            } else {
-                 doc.setFillColor(255, 255, 255);
-                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
+                doc.text('✓', x + 0.5, yPos);
             }
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(0,0,0);
@@ -157,7 +153,7 @@ export default function TransmittalLetterPage() {
             doc.setLineWidth(0.5);
             doc.circle(x, yPos - radioSize, radioSize, 'S');
             if (isChecked) {
-                doc.setFillColor(0, 0, 139);
+                doc.setFillColor(0, 0, 0);
                 doc.circle(x, yPos - radioSize, radioSize, 'F');
             }
         };

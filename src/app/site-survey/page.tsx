@@ -163,13 +163,12 @@ export default function SiteSurveyPage() {
         
         const drawCheckbox = (x: number, yPos: number, isChecked: boolean) => {
             const boxSize = 3.5;
+            doc.setLineWidth(0.2);
             doc.setDrawColor(0);
+            doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S'); // Always draw the box
             if (isChecked) {
-                doc.setFillColor(0,0,0);
-                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
-            } else {
-                 doc.setFillColor(255, 255, 255);
-                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
+                doc.setFont('ZapfDingbats');
+                doc.text('✓', x + 0.5, yPos); // Draw tick inside
             }
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(0,0,0);
