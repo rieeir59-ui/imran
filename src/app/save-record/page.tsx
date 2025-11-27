@@ -3,15 +3,27 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, GanttChart, HardHat, ListChecks, CalendarDays, Folder, File as FileIcon, Search, Briefcase, CheckCircle, XCircle, CircleDotDashed, PlusCircle } from 'lucide-react';
+import { FileText, GanttChart, HardHat, ListChecks, CalendarDays, Folder, File as FileIcon, Search, Briefcase, CheckCircle, XCircle, CircleDotDashed, PlusCircle, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useUser, useStorage, useFirestore, useMemoFirebase } from '@/firebase';
-import { ref, listAll, getMetadata } from 'firebase/storage';
-import { collection, getDocs } from "firebase/firestore";
+import { ref, listAll, getMetadata, deleteObject } from 'firebase/storage';
+import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { useToast } from '@/hooks/use-toast';
 
 const savedRecords = [
     {
@@ -98,6 +110,7 @@ export default function SaveRecordPage() {
     const { user } = useUser();
     const storage = useStorage();
     const firestore = useFirestore();
+    const { toast } = useToast();
 
     const filesRef = useMemoFirebase(() => {
         if (!user || !storage) return null;
@@ -175,6 +188,37 @@ export default function SaveRecordPage() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
+    const handleDeleteSchedule = async (scheduleId: string, employeeName: string) => {
+        if (!user || !firestore) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Authentication error.'});
+            return;
+        }
+        const docRef = doc(firestore, `users/${user.uid}/weeklySchedules`, scheduleId);
+        try {
+            await deleteDoc(docRef);
+            setSchedules(prev => prev.filter(s => s.id !== scheduleId));
+            toast({ title: 'Schedule Deleted', description: `${employeeName}'s schedule has been removed.` });
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Deletion Failed', description: 'Could not delete the schedule.' });
+        }
+    };
+
+    const handleDeleteFile = async (file: UploadedFile) => {
+        if (!user || !storage) {
+             toast({ variant: 'destructive', title: 'Error', description: 'Authentication error.'});
+            return;
+        }
+        const fileRef = ref(storage, file.fullPath);
+        try {
+            await deleteObject(fileRef);
+            setUploadedFiles(prev => prev.filter(f => f.fullPath !== file.fullPath));
+            toast({ title: 'File Deleted', description: `${file.name} has been removed.` });
+        } catch (error) {
+             toast({ variant: 'destructive', title: 'Deletion Failed', description: 'Could not delete the file.' });
+        }
+    }
+
+
     const filteredRecords = savedRecords.filter(record => 
         record.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         record.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -243,7 +287,8 @@ export default function SaveRecordPage() {
                             const incompleteCount = schedule.schedules.filter(p => p.status === 'Incomplete').length;
 
                             return (
-                                <Link href={`/weekly-schedule?id=${schedule.id}`} key={schedule.id} className="block hover:bg-accent transition-colors p-4 rounded-lg border">
+                                <div key={schedule.id} className="relative group">
+                                <Link href={`/weekly-schedule?id=${schedule.id}`} className="block hover:bg-accent transition-colors p-4 rounded-lg border h-full">
                                     <div className="flex justify-between items-center">
                                         <h3 className="text-xl font-bold">{schedule.employeeName.toUpperCase()}</h3>
                                         <div className="flex items-center gap-2 text-muted-foreground">
@@ -266,6 +311,24 @@ export default function SaveRecordPage() {
                                         </div>
                                     </div>
                                 </Link>
+                                 <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                       <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Trash2 className="h-4 w-4"/>
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>This will permanently delete the schedule for {schedule.employeeName}. This action cannot be undone.</AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDeleteSchedule(schedule.id, schedule.employeeName)}>Delete</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                                </div>
                             )
                         })
                     ) : (
@@ -294,19 +357,20 @@ export default function SaveRecordPage() {
                                     <TableHead>Name</TableHead>
                                     <TableHead>Type</TableHead>
                                     <TableHead className="text-right">Size</TableHead>
+                                    <TableHead className="w-12"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {isLoadingFiles ? (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
+                                        <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
                                             <Loader2 className="mx-auto animate-spin" />
                                             <p>Loading files...</p>
                                         </TableCell>
                                     </TableRow>
                                 ) : filteredFiles.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
+                                        <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
                                             No matching files found.
                                         </TableCell>
                                     </TableRow>
@@ -321,6 +385,23 @@ export default function SaveRecordPage() {
                                             </TableCell>
                                             <TableCell className="text-muted-foreground">{file.type}</TableCell>
                                             <TableCell className="text-right text-muted-foreground">{formatFileSize(file.size)}</TableCell>
+                                            <TableCell>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription>This will permanently delete the file "{file.name}". This action cannot be undone.</AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => handleDeleteFile(file)}>Delete</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </TableCell>
                                         </TableRow>
                                     ))
                                 )}
