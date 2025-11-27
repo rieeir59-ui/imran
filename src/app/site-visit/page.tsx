@@ -286,7 +286,7 @@ const SiteVisitPage = () => {
         }
 
         addNotesSection("8. Observations", "observations");
-        addNotesSection("9. Issues Identified", "issues");
+        addNotesSection("9. Issues Identified / Solutions", "issues");
         addNotesSection("10. Actions & Recommendations", "actions");
 
         y += 5;
@@ -480,7 +480,7 @@ const SiteVisitPage = () => {
             <SectionTitle>8. Observations</SectionTitle>
             {renderTextarea("observations")}
             
-            <SectionTitle>9. Issues Identified</SectionTitle>
+            <SectionTitle>9. Issues Identified / Solutions</SectionTitle>
             {renderTextarea("issues")}
 
             <SectionTitle>10. Actions & Recommendations</SectionTitle>
@@ -499,5 +499,3 @@ const SiteVisitPage = () => {
 };
 
 export default SiteVisitPage;
-
-    
