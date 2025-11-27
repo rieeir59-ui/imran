@@ -90,16 +90,18 @@ export default function ConsentOfSuretyPage() {
 
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text("CONSENT OF SURETY", pageWidth / 2, y, { align: 'center'});
+        doc.text("CONSENT OF SURETY", leftMargin, y);
         y += 14;
-        doc.text("TO REDUCTION IN OR PARTIAL RELEASE OF RETAINAGE", pageWidth / 2, y, { align: 'center'});
+        doc.text("TO REDUCTION IN OR PARTIAL RELEASE OF RETAINAGE", leftMargin, y);
         y += 25;
-
+        
+        let rightColY = y;
+        
         // Distribution Checkboxes
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
         const distributionX = rightMargin - 90;
-        let checkboxY = y - 20;
+        let checkboxY = y - 5;
         doc.text('Distribution to:', distributionX, checkboxY);
         checkboxY += 8;
 
@@ -121,19 +123,18 @@ export default function ConsentOfSuretyPage() {
         // Project Details
         doc.setFontSize(10);
         
-        // Left Column
-        doc.text(`Project: (Name, Address)\n${formData.project_name_address || ''}`, leftMargin, y);
-        y += 30;
-        doc.text(`To: (Owner)\n${formData.to_owner || ''}`, leftMargin, y);
-        
-        // Right Column
-        let rightColY = y - 30;
         doc.text(`Architects Project No: ${formData.architect_project_no || ''}`, leftMargin + contentWidth / 2, rightColY);
         rightColY += 15;
         doc.text(`Contract For: ${formData.contract_for || ''}`, leftMargin + contentWidth / 2, rightColY);
         rightColY += 15;
         doc.text(`Contract Date: ${formData.contract_date || ''}`, leftMargin + contentWidth / 2, rightColY);
-
+        
+        // Left Column
+        doc.text(`Project: (Name, Address)\n${formData.project_name_address || ''}`, leftMargin, y);
+        y += 30;
+        doc.text(`To: (Owner)\n${formData.to_owner || ''}`, leftMargin, y);
+        
+        y = Math.max(y, rightColY) + 10;
         y += 40;
 
         const p1 = `In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the (Surety Company Name and Address) ${formData.surety_name_address || ''}, SURETY, on bond of ${formData.contractor_name_address || ''}, CONTRACTOR, Hereby approves the reduction in or partial release of retainage to the Contractor as follows:`;
