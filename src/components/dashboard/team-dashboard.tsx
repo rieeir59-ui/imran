@@ -41,7 +41,16 @@ interface Task {
 }
 
 export default function TeamDashboard() {
-  const [employeesByDesignation, setEmployeesByDesignation] = useState<Record<string, Employee[]>>({});
+  const [employeesByDesignation, setEmployeesByDesignation] = useState<Record<string, Employee[]>>({
+    'Architect': [
+      { id: '1', name: 'Sobia', designation: 'Architect' },
+      { id: '2', name: 'Luqman Aslam', designation: 'Architect' },
+      { id: '3', name: 'M. Asad', designation: 'Architect' },
+      { id: '4', name: 'M. Haseeb', designation: 'Architect' },
+      { id: '5', name: 'M. Waleed Zahid', designation: 'Architect' },
+      { id: '6', name: 'M. Khizar', designation: 'Architect' },
+    ]
+  });
   const [employeesWithTasks, setEmployeesWithTasks] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useUser();
@@ -72,6 +81,15 @@ export default function TeamDashboard() {
             acc[designation].push(employee);
             return acc;
         }, {} as Record<string, Employee[]>);
+        
+        // Merge with initial architects
+        groupedByDesignation['Architect'] = [
+            ...(employeesByDesignation['Architect'] || []),
+            ...(groupedByDesignation['Architect'] || [])
+        ].filter((employee, index, self) => 
+            index === self.findIndex((e) => e.name === employee.name)
+        );
+
         setEmployeesByDesignation(groupedByDesignation);
         setIsLoading(false);
     });
@@ -129,7 +147,7 @@ export default function TeamDashboard() {
                 <CardTitle>{team.name} Team</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {isLoading ? (
+                {isLoading && team.designation !== 'Architect' ? (
                     <>
                         <Skeleton className="h-[124px] w-full" />
                         <Skeleton className="h-[124px] w-full" />
