@@ -130,46 +130,43 @@ export default function ProjectsPage() {
     doc.text("Project Information", 105, y, { align: 'center' });
     y += 10;
 
-    const addSection = (title: string, data: (string | [boolean, string])[][]) => {
-      if (y > 250) {
-          doc.addPage();
-          y = 15;
-      }
-      autoTable(doc, {
-          startY: y,
-          head: [[{ content: title, colSpan: 2, styles: { fillColor: [30, 41, 59], textColor: [255, 255, 255] } }]],
-          body: data,
-          theme: 'grid',
-          columnStyles: { 0: { fontStyle: 'bold', cellWidth: 60 }, 1: { cellWidth: 120 } },
-          didDrawCell: (data) => {
-              if (data.section === 'body' && Array.isArray(data.cell.raw)) {
-                  const [isChecked, label] = data.cell.raw;
-                  if (typeof isChecked === 'boolean') {
-                      doc.setFontSize(10);
-                      const boxSize = 3.5;
-                      const textPos = data.cell.getTextPos();
-                      
-                      // Draw box
-                      doc.setLineWidth(0.2);
-                      doc.setDrawColor(0);
-                      doc.rect(textPos.x, textPos.y - boxSize, boxSize, boxSize, 'S');
+    const addSection = (title: string, data: (string | {checked: boolean, label: string}[])[][]) => {
+        if (y > 250) {
+            doc.addPage();
+            y = 15;
+        }
+        autoTable(doc, {
+            startY: y,
+            head: [[{ content: title, colSpan: 2, styles: { fillColor: [30, 41, 59], textColor: [255, 255, 255] } }]],
+            body: data,
+            theme: 'grid',
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 60 }, 1: { cellWidth: 120 } },
+            didDrawCell: (data) => {
+                if (data.section === 'body' && Array.isArray(data.cell.raw)) {
+                    const items = data.cell.raw as {checked: boolean, label: string}[];
+                    let itemY = data.cell.y + 4;
+                    items.forEach(item => {
+                        const boxSize = 3.5;
+                        doc.setLineWidth(0.2);
+                        doc.setDrawColor(0);
+                        doc.rect(data.cell.x + 2, itemY - boxSize, boxSize, boxSize, 'S');
 
-                      if (isChecked) {
-                          doc.setFont('ZapfDingbats');
-                          doc.text('✓', textPos.x + 0.5, textPos.y);
-                          doc.setFont('helvetica', 'normal');
-                      }
-                      
-                      doc.text(label, textPos.x + 5, textPos.y);
-                      data.cell.text = ''; // Clear the raw array content
-                  }
-              }
-          },
-          didDrawPage: (data) => {
-            y = data.cursor?.y || 0;
-          },
-      });
-      y = (doc as any).lastAutoTable.finalY + 10;
+                        if (item.checked) {
+                            doc.setFont('ZapfDingbats');
+                            doc.text('✓', data.cell.x + 2.5, itemY);
+                            doc.setFont('helvetica', 'normal');
+                        }
+                        doc.text(item.label, data.cell.x + 7, itemY);
+                        itemY += 6;
+                    });
+                    data.cell.text = ''; // Clear the raw content to prevent it from being drawn
+                }
+            },
+            didDrawPage: (data) => {
+                y = data.cursor?.y || 0;
+            },
+        });
+        y = (doc as any).lastAutoTable.finalY + 10;
     };
     
     addSection("Project Details", [
@@ -195,24 +192,32 @@ export default function ProjectsPage() {
 
     addSection("About Project", [
         ["Address", formData.project_about_address || ''],
-        ["Project Reqt.", [formData.req_architectural, "Architectural Designing"]],
-        ["", [formData.req_interior, "Interior Decoration"]],
-        ["", [formData.req_landscaping, "Landscaping"]],
-        ["", [formData.req_turnkey, "Turnkey"]],
-        ["", [formData.req_other, "Other"]],
-        ["Project Type", [formData.type_commercial, "Commercial"]],
-        ["", [formData.type_residential, "Residential"]],
-        ["Project Status", [formData.status_new, "New"]],
-        ["", [formData.status_addition, "Addition"]],
-        ["", [formData.status_rehab, "Rehabilitation/Renovation"]],
+        ["Project Reqt.", [
+            {checked: formData.req_architectural, label: "Architectural Designing"},
+            {checked: formData.req_interior, label: "Interior Decoration"},
+            {checked: formData.req_landscaping, label: "Landscaping"},
+            {checked: formData.req_turnkey, label: "Turnkey"},
+            {checked: formData.req_other, label: "Other"}
+        ]],
+        ["Project Type", [
+            {checked: formData.type_commercial, label: "Commercial"},
+            {checked: formData.type_residential, label: "Residential"},
+        ]],
+        ["Project Status", [
+            {checked: formData.status_new, label: "New"},
+            {checked: formData.status_addition, label: "Addition"},
+            {checked: formData.status_rehab, label: "Rehabilitation/Renovation"},
+        ]],
         ["Project Area", formData.project_area || ''],
         ["Special Requirements", formData.project_special_reqs || ''],
-        ["Project's Cost", [formData.cost_architectural, "Architectural Designing"]],
-        ["", [formData.cost_interior, "Interior Decoration"]],
-        ["", [formData.cost_landscaping, "Landscaping"]],
-        ["", [formData.cost_construction, "Construction"]],
-        ["", [formData.cost_turnkey, "Turnkey"]],
-        ["", [formData.cost_other, "Other"]],
+        ["Project's Cost", [
+            {checked: formData.cost_architectural, label: "Architectural Designing"},
+            {checked: formData.cost_interior, label: "Interior Decoration"},
+            {checked: formData.cost_landscaping, label: "Landscaping"},
+            {checked: formData.cost_construction, label: "Construction"},
+            {checked: formData.cost_turnkey, label: "Turnkey"},
+            {checked: formData.cost_other, label: "Other"},
+        ]],
         ["First Information Date", formData.date_first_info || ''],
         ["First Meeting Date", formData.date_first_meeting || ''],
         ["First Working Date", formData.date_first_working || ''],
@@ -226,12 +231,12 @@ export default function ProjectsPage() {
     ]);
 
     addSection("Provided by Owner", [
-        [[formData.provided_program, "Program"]],
-        [[formData.provided_schedule, "Suggested Schedule"]],
-        [[formData.provided_legal, "Legal Site Description & Other Concerned Documents"]],
-        [[formData.provided_survey, "Land Survey Report"]],
-        [[formData.provided_geo, "Geo-Technical, Tests and Other Site Information"]],
-        [[formData.provided_drawings, "Existing Structure's Drawings"]],
+        [[{checked: formData.provided_program, label: "Program"}]],
+        [[{checked: formData.provided_schedule, label: "Suggested Schedule"}]],
+        [[{checked: formData.provided_legal, label: "Legal Site Description & Other Concerned Documents"}]],
+        [[{checked: formData.provided_survey, label: "Land Survey Report"}]],
+        [[{checked: formData.provided_geo, label: "Geo-Technical, Tests and Other Site Information"}]],
+        [[{checked: formData.provided_drawings, label: "Existing Structure's Drawings"}]],
     ]);
 
     addSection("Compensation", [
@@ -556,9 +561,3 @@ export default function ProjectsPage() {
     </main>
   );
 }
-
-    
-
-    
-
-    
