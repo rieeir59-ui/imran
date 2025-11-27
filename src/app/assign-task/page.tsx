@@ -58,6 +58,12 @@ const designations = [
     "Software Engineer",
 ];
 
+interface Employee {
+    id: string;
+    name: string;
+    designation: string;
+}
+
 export default function AssignTaskPage() {
     const [employeeName, setEmployeeName] = useState('');
     const [projectName, setProjectName] = useState('');
@@ -79,11 +85,7 @@ export default function AssignTaskPage() {
         return collection(firestore, `users/${user.uid}/employees`);
     }, [user, firestore]);
 
-    const { data: employees, isLoading: isLoadingEmployees } = useCollection<{name: string}>(employeesCollectionRef);
-
-    const employeeList = React.useMemo(() => {
-        return employees ? employees.map(emp => emp.name) : [];
-    }, [employees]);
+    const { data: employees, isLoading: isLoadingEmployees } = useCollection<Employee>(employeesCollectionRef);
 
     const tasksCollectionRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
@@ -177,10 +179,10 @@ export default function AssignTaskPage() {
                                     {isLoadingEmployees && <div className="p-2 text-center text-sm">Loading employees...</div>}
                                     <CommandEmpty>No employee found. Type to create a new one.</CommandEmpty>
                                     <CommandGroup>
-                                      {employeeList.map((employee) => (
+                                      {employees?.map((employee) => (
                                         <CommandItem
-                                          key={employee}
-                                          value={employee}
+                                          key={employee.id}
+                                          value={employee.name}
                                           onSelect={(currentValue) => {
                                             setEmployeeName(currentValue === employeeName ? "" : currentValue)
                                             setEmployeePopoverOpen(false)
@@ -189,10 +191,10 @@ export default function AssignTaskPage() {
                                           <Check
                                             className={cn(
                                               "mr-2 h-4 w-4",
-                                              employeeName === employee ? "opacity-100" : "opacity-0"
+                                              employeeName === employee.name ? "opacity-100" : "opacity-0"
                                             )}
                                           />
-                                          {employee}
+                                          {employee.name} ({employee.designation})
                                         </CommandItem>
                                       ))}
                                     </CommandGroup>
