@@ -302,7 +302,9 @@ export default function TeamDashboard() {
         const assignedEmployees = new Set<string>();
         snapshot.forEach((doc) => {
           const task = doc.data() as Task;
-          assignedEmployees.add(task.employeeName);
+          if (task.employeeName) {
+            assignedEmployees.add(task.employeeName);
+          }
         });
         setEmployeesWithTasks(assignedEmployees);
     });
