@@ -16,7 +16,7 @@ import jsPDF from 'jspdf';
 const PROJECT_AGREEMENT_DOC_ID = "project-agreement";
 
 const Subtitle = ({ children }: { children: React.ReactNode }) => (
-    <h3 className="text-xl font-semibold mt-6 mb-3">{children}</h3>
+    <h3 className="text-xl font-bold mt-6 mb-3">{children}</h3>
 );
 
 export default function ProjectAgreementPage() {
@@ -371,7 +371,7 @@ export default function ProjectAgreementPage() {
                     </div>
                     
                     <Subtitle>Project Management:</Subtitle>
-                    <h4 className="font-semibold">Top Supervision:</h4>
+                    <h4 className="font-bold">Top Supervision:</h4>
                     <ul className="list-disc pl-5 space-y-2">
                         <li>Please find attached the site visit schedule for the project please intimate the office one week in advance before the required visit for timely surveillance. Any Unscheduled visits would be charged as under.</li>
                         <li>For out of station visits, the travelling by air and lodging in a five-star hotel will be paid by the client.
@@ -388,10 +388,10 @@ export default function ProjectAgreementPage() {
                         </li>
                     </ul>
     
-                    <h4 className="font-semibold mt-4">Detailed Supervision:</h4>
+                    <h4 className="font-bold mt-4">Detailed Supervision:</h4>
                     <p>The fee for detailed supervision will be Rs. 300,000 /- per month, which will ensure daily progress at the site.</p>
                     
-                    <h4 className="font-semibold mt-4">Please Note:</h4>
+                    <h4 className="font-bold mt-4">Please Note:</h4>
                     <ul className="list-disc pl-5 space-y-2">
                         <li>The above quoted rates do not include any kind of tax.</li>
                         <li>The contract value is lumpsum for the area between 90,000 to 120,000 Sft, if however, the area increases the above amount only the sub-consultants fee @ Rs. 70/Sft will be charged.</li>
@@ -468,7 +468,7 @@ export default function ProjectAgreementPage() {
                         </div>
                         <div>
                             <Subtitle>Interior Design Services:</Subtitle>
-                            <h4 className="font-semibold">Design Details:</h4>
+                            <h4 className="font-bold">Design Details:</h4>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>Flooring</li>
                                 <li>Wood Work</li>
@@ -506,7 +506,7 @@ export default function ProjectAgreementPage() {
                         <li>The Architect will provide only two options/revisions of 3Ds for the Facade after which any option/revision wil be charged based on normal market rates. For Interior renderings Rs. 500,000/- will be charged.</li>
                     </ol>
     
-                    <h4 className="font-semibold mt-4">The Architect will not be responsible for the following things:</h4>
+                    <h4 className="font-bold mt-4">The Architect will not be responsible for the following things:</h4>
                     <ol className="list-decimal pl-5 space-y-2">
                         <li>Continuous site supervision.</li>
                         <li>Technical sequences and procedures of the contractors.</li>
