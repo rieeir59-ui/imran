@@ -121,6 +121,36 @@ const addInitialSoftwareEngineers = async (firestore: any, user: any, employees:
   await batch.commit();
 };
 
+const addInitial3DVisualizer = async (firestore: any, user: any, employees: Employee[]) => {
+  const visualizersToAdd = [
+    { name: "Mohsin", designation: "3D Visualizer" },
+  ];
+
+  const existingVisualizers = new Set(
+    employees
+      .filter(emp => emp.designation === '3D Visualizer')
+      .map(emp => emp.name)
+  );
+
+  const newVisualizers = visualizersToAdd.filter(
+    viz => !existingVisualizers.has(viz.name)
+  );
+
+  if (newVisualizers.length === 0) {
+    return;
+  }
+
+  const batch = writeBatch(firestore);
+  const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
+
+  newVisualizers.forEach(visualizer => {
+    const newDocRef = doc(employeesCollectionRef);
+    batch.set(newDocRef, visualizer);
+  });
+
+  await batch.commit();
+};
+
 
 export default function TeamDashboard() {
   const [employeesByDesignation, setEmployeesByDesignation] = useState<Record<string, Employee[]>>({});
@@ -151,6 +181,7 @@ export default function TeamDashboard() {
         if (user && firestore) {
           addInitialArchitects(firestore, user, fetchedEmployees).catch(console.error);
           addInitialSoftwareEngineers(firestore, user, fetchedEmployees).catch(console.error);
+          addInitial3DVisualizer(firestore, user, fetchedEmployees).catch(console.error);
         }
         
         const groupedByDesignation = fetchedEmployees.reduce((acc, employee) => {
