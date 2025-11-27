@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -90,54 +89,64 @@ export default function ProjectAgreementPage() {
 
     const handleDownloadPdf = () => {
         const doc = new jsPDF();
+        const pageHeight = doc.internal.pageSize.height;
+        const margin = 20;
         let y = 15;
 
+        const checkPageBreak = (requiredHeight: number) => {
+            if (y + requiredHeight > pageHeight - margin) {
+                doc.addPage();
+                y = margin;
+            }
+        };
+
         const addTitle = (title: string, size = 12, align: 'left' | 'center' | 'right' = 'left') => {
-             if (y > 270) { doc.addPage(); y = 15; }
-             doc.setFontSize(size);
-             doc.setFont('helvetica', 'bold');
-             if (size === 14) { // Main Title
+            checkPageBreak(10);
+            doc.setFontSize(size);
+            doc.setFont('helvetica', 'bold');
+            
+            if (size === 14) { 
                 doc.setTextColor(40, 58, 83);
-                doc.text(title, 105, y, { align: 'center'});
+                doc.text(title, 105, y, { align: 'center' });
                 doc.setTextColor(0, 0, 0);
-             } else {
-                 doc.setFillColor(30, 41, 59);
-                 doc.rect(14, y - 5, 182, 7, 'F');
-                 doc.setTextColor(255, 255, 255);
-                 doc.text(title, 16, y);
-                 doc.setTextColor(0, 0, 0);
-             }
-             y += 7;
-        }
+            } else {
+                doc.setFillColor(230, 230, 230);
+                doc.rect(14, y - 5, 182, 7, 'F');
+                doc.text(title, 16, y);
+            }
+            y += 8;
+        };
 
         const addText = (text: string) => {
-             if (y > 280) { doc.addPage(); y = 15; }
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
-            const splitText = doc.splitTextToSize(text, 180);
+            const splitText = doc.splitTextToSize(text, 182);
+            const textHeight = doc.getTextDimensions(splitText).h;
+            checkPageBreak(textHeight);
             doc.text(splitText, 14, y);
-            y += doc.getTextDimensions(splitText).h + 2;
-        }
+            y += textHeight + 2;
+        };
 
         const addListItem = (text: string, level = 1, bullet = '•') => {
             const indent = 14 + (level * 5);
-             if (y > 280) { doc.addPage(); y = 15; }
             doc.setFontSize(10);
-            doc.text(`${bullet}`, indent, y);
-            const splitText = doc.splitTextToSize(text, 180 - indent - 4);
+            const splitText = doc.splitTextToSize(text, 182 - indent);
+            const textHeight = doc.getTextDimensions(splitText).h;
+            checkPageBreak(textHeight);
+            doc.text(bullet, indent, y);
             doc.text(splitText, indent + 4, y);
-            y += doc.getTextDimensions(splitText).h + 2;
-        }
+            y += textHeight + 2;
+        };
 
         const addFieldRow = (label: string, value: string) => {
-            if (y > 280) { doc.addPage(); y = 15; }
+            checkPageBreak(7);
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
             doc.text(label, 14, y);
             doc.text(`: ${value || '________________'}`, 80, y);
             y += 7;
-        }
-        
+        };
+
         addTitle("COMMERCIAL AGREEMENT", 14, 'center');
         y += 5;
 
@@ -164,7 +173,7 @@ export default function ProjectAgreementPage() {
         y += 5;
         
         addTitle("Project Management:");
-        addTitle("Top Supervision:", 11);
+        addText("Top Supervision:");
         addListItem("Please find attached the site visit schedule for the project please intimate the office one week in advance before the required visit for timely surveillance. Any Unscheduled visits would be charged as under.");
         addListItem("For out of station visits, the travelling by air and lodging in a five-star hotel will be paid by the client.");
         addListItem("Rs. 50,000 for Principal Architect's site visit per day.", 2, '-');
@@ -172,15 +181,89 @@ export default function ProjectAgreementPage() {
         addListItem("For International visits, the travelling by air and lodging in a five-star hotel will be paid by the client.");
         addListItem("Rs. 150,000 for Principal Architect' s fee per day.", 2, '-');
         addListItem("Rs. 30,000 for Associate Architect' s fee per day.", 2, '-');
-        y += 3;
-        addTitle("Detailed Supervision:", 11);
-        addText("The fee for detailed supervision will be Rs. 300,000 /- per month, which will ensure daily progress at the site.");
-        y += 3;
-        addTitle("Please Note:", 11);
+        addText("Detailed Supervision:");
+        addListItem("The fee for detailed supervision will be Rs. 300,000 /- per month, which will ensure daily progress at the site.");
+        addText("Please Note:");
         addListItem("The above quoted rates do not include any kind of tax.");
         addListItem("The contract value is lumpsum for the area between 90,000 to 120,000 Sft, if however, the area increases the above amount only the sub-consultants fee @ Rs. 70/Sft will be charged.");
         addListItem("The above consultancy charges quoted are valid for only two months.");
         y += 5;
+
+        addTitle("Architectural Design Services:");
+        [
+            "Space Planning", "Design Concept", "Design Development & 3Ds (Facade)", "Budgeting Bil of Quantity’s.",
+            "Work Drawings (Site Plan, Floor Plans, Elevations, Sections, Details, Schedules)",
+            "Structure Drawing (Foundation, Framing, Sections, Details, Schedules, Specs)",
+            "Electrification Drawings (Power, Lighting, Sections, Communication)",
+            "Plumbing Drawings (Water, Soil, Ventilation, Fire Protection)",
+            "Miscelaneous Services (Roof AC, HVAC, Material Specs)",
+            "Extra Services (Landscaping, Acoustical, Surveys, Graphic Design)"
+        ].forEach(item => addListItem(item));
+        y += 5;
+        
+        addTitle("Interior Design Services:");
+        addText("Design Details:");
+        [
+            "Flooring", "Wood Work", "Doors", "Windows", "False Ceiling", "Lighting", "Bath Details",
+            "Kitchen Details", "Wall Textures.", "Stairways", "Built-in Features Fire Places", "Patios",
+            "Water bodies", "Trellis", "Skylights", "Furniture", "Partitioning"
+        ].forEach(item => addListItem(item));
+        addText("Note: The item number 9& 10 is under the head of extra services if the client requests these services, the extra charges wil be as mentioned above.");
+        y += 5;
+
+        addTitle("Architect's Responsibilities.");
+        [
+            "The architect will produce a maximum of two proposals are revisions for the client for the said amount of consultancy every proposal or revision after this will be charged @ Rs. 500,000 /- per Proposal.",
+            "The architect will require a minimum period of one month for the design development. 2 months will be required for work drawings.",
+            "The architect will represent the owner and will advise and consult with the owner regarding construction.",
+            "The architect will be responsible for checking the contractor's progress and giving the approval for payments due to the contractor.",
+            "The architect is to prepare a maximum of 2 design proposals for the proposal stage for the client. If one proposal is developed, it can be revised two times, free of cost to the client. If, however, 2 design proposals are made, the second proposal can be revised three times, free of cost to the client. If the client wishes for another revision of the proposal, the architect will be paid Rs. 300,000 in advance for each drawing. If the client wishes to develop a third proposal, the architect will be paid Rs. 500,000 as advance payment for the task and Rs. 300,000 per revision of the third proposal.",
+            "No revision will be made after the Issuance of Construction Drawings. If client wants the revision, he will have to pay for the amount ascertained in the contract.",
+            "No revision will be made for working drawings. If client wants the revision, he will be required to pay the amount.",
+            "Project supervision will include visits as mentioned in Construction Activity Schedule.",
+            "The Architect will provide 3 Sets of working drawings to the client. For additional sets of working drawings Rs. 50,000 per set will be charged.",
+            "The Architect will provide only two options/revisions of 3Ds for the Facade after which any option/revision wil be charged based on normal market rates. For Interior renderings Rs. 500,000/- will be charged."
+        ].forEach((item, i) => addListItem(item, 1, `${i+1}.`));
+        y += 5;
+
+        addText("The Architect will not be responsible for the following things:");
+        [
+            "Continuous site supervision.",
+            "Technical sequences and procedures of the contractors.",
+            "Change of acts and omissions of the contractor. These are the contractor's responsibilities.",
+            "Changes and omissions made on the owner's directions."
+        ].forEach((item, i) => addListItem(item, 1, `${i+1}.`));
+        y += 5;
+
+        addTitle("ARTICLE-1: Termination of the Agreement");
+        [
+            "The agreement may be terminated by any of the parties on 7 days written notice. The other party will substantially perform in accordance with its items though no fault of the party initiating the termination.",
+            "The owner at least on 7 days’ notice to the designer may terminate the agreement in the event that the project is permanently abandoned.",
+            "In the event of termination not the fault of the design builder, the design builder will be compensated for services performed till termination date.",
+            "No reimbursable then due and termination expenses. The termination expenses are the expenses directly attributable to the termination including a reasonable amount of overhead and profit for which the design/builder is not otherwise compensated under this agreement."
+        ].forEach((item, i) => addListItem(item, 1, `${i+1}.`));
+        y += 5;
+
+        addTitle("ARTICLE-2: Bases of Compensation");
+        addText("The owner will compensate the design/builder in accordance with this agreement, payments, and the other provisions of this agreement as described below.");
+        [
+            "Compensation for basic services",
+            "Basic services will be as mentioned",
+            "Subsequent payments will be as mentioned",
+            "Compensation for additional services",
+            "For additional services compensation will be as mentioned",
+            "Travel expenses of Architect, Engineer, Sub-Engineer and Sub Consultant will be separately billed",
+            "Computer Animation will be charged at the normal market rates",
+            "The rate of interest past due payments will be 15 % per month"
+        ].forEach(item => addListItem(item));
+
+        checkPageBreak(25);
+        y += 15;
+        doc.text("______________", 14, y);
+        doc.text("_______________", 140, y);
+        y += 5;
+        doc.text("Architect", 14, y);
+        doc.text("Client", 140, y);
         
         doc.save("project-agreement.pdf");
         toast({ title: 'Download Started', description: 'Project Agreement PDF is being generated.' });
@@ -190,7 +273,7 @@ export default function ProjectAgreementPage() {
         if (isEditing) {
             return <Input name={name} value={formData[name] || ''} onChange={handleInputChange} className="inline-block w-48 h-6" />;
         }
-        return <span className="border-b border-gray-400 inline-block min-w-[100px]">{formData[name] || ''}</span>;
+        return <span className="border-b border-gray-400 inline-block min-w-[100px] px-1">{formData[name] || ''}</span>;
     };
     
     if (isLoading || isUserLoading) {
