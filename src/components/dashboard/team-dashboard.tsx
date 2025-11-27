@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -88,25 +87,6 @@ export default function TeamDashboard() {
             return acc;
         }, {} as Record<string, Employee[]>);
         
-        // Merge with initial architects if they don't exist yet
-        const initialArchitects = [
-            { id: '1', name: 'Sobia', designation: 'Architect' },
-            { id: '2', name: 'Luqman Aslam', designation: 'Architect' },
-            { id: '3', name: 'M. Asad', designation: 'Architect' },
-            { id: '4', name: 'M. Haseeb', designation: 'Architect' },
-            { id: '5', name: 'M. Waleed Zahid', designation: 'Architect' },
-            { id: '6', name: 'M. Khizar', designation: 'Architect' },
-        ];
-
-        const existingArchitectNames = new Set((groupedByDesignation['Architect'] || []).map(e => e.name));
-        const architectsToDisplay = [
-            ...initialArchitects.filter(e => !existingArchitectNames.has(e.name)),
-            ...(groupedByDesignation['Architect'] || [])
-        ];
-
-        groupedByDesignation['Architect'] = architectsToDisplay;
-
-
         setEmployeesByDesignation(groupedByDesignation);
         setIsLoading(false);
     });
