@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
@@ -106,7 +107,7 @@ export default function FileManagerPage() {
             title: 'Files Uploaded',
             description: `${acceptedFiles.length} file(s) have been successfully saved.`,
         });
-        fetchFiles(); // Refresh the file list
+        await fetchFiles(); // Refresh the file list
     } catch (error) {
         console.error("Upload error:", error);
         toast({
@@ -189,7 +190,7 @@ export default function FileManagerPage() {
 
     try {
         await uploadBytes(fileRef, newContentBlob);
-        fetchFiles(); // Re-fetch to update URL and metadata
+        await fetchFiles(); // Re-fetch to update URL and metadata
         setActiveFile(null);
         toast({
             title: "Text File Saved",
@@ -213,7 +214,7 @@ export default function FileManagerPage() {
 
     try {
         await uploadBytes(fileRef, newContentBlob);
-        fetchFiles(); // Refresh to get the new file from storage
+        await fetchFiles(); // Refresh to get the new file from storage
         toast({ title: 'New Text File Created', description: `${fileName} has been saved.` });
     } catch (error) {
         console.error("Error creating new text file:", error);
