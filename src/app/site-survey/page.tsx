@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,8 +14,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import jsPDF from 'jspdf';
-import { Download, Edit, Save, Loader2, ArrowLeft } from 'lucide-react';
+import { Download, Edit, Save, Loader2, ArrowLeft, Globe, Mail, MapPin, Phone } from 'lucide-react';
 import Link from 'next/link';
+import { Separator } from '@/components/ui/separator';
 
 const SITE_SURVEY_DOC_ID = 'site-survey';
 
@@ -295,6 +297,13 @@ export default function SiteSurveyPage() {
         addField("Email", formData.surveyor_email);
         addField("Date", formData.survey_date);
 
+        const footerY = doc.internal.pageSize.height - 15;
+        doc.setLineWidth(0.2);
+        doc.line(14, footerY, 196, footerY);
+        doc.setFontSize(7);
+        const footerText = "Y-101 (Com), Phase-III, DHA Lahore Cantt | 0321-6995378, 042-35692522 | info@isbahhassan.com | www.isbahhassan.com";
+        doc.text(footerText, 105, footerY + 4, { align: 'center' });
+
         doc.save("site-survey.pdf");
         toast({ title: 'Download Started', description: 'PDF is being generated.' });
     };
@@ -518,6 +527,15 @@ export default function SiteSurveyPage() {
                          </div>
                     </div>
                 </CardContent>
+                 <CardFooter className="flex-col items-center justify-center pt-6 border-t">
+                    <Separator className="mb-4"/>
+                    <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1"><MapPin size={12}/> Y-101 (Com), Phase-III, DHA Lahore Cantt</div>
+                        <div className="flex items-center gap-1"><Phone size={12}/> 0321-6995378, 042-35692522</div>
+                        <div className="flex items-center gap-1"><Mail size={12}/> info@isbahhassan.com</div>
+                        <div className="flex items-center gap-1"><Globe size={12}/> www.isbahhassan.com</div>
+                    </div>
+                </CardFooter>
             </Card>
         </main>
     )
