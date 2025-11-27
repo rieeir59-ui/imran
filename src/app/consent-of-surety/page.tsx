@@ -93,49 +93,53 @@ export default function ConsentOfSuretyPage() {
         doc.text("CONSENT OF SURETY", leftMargin, y);
         y += 14;
         doc.text("TO REDUCTION IN OR PARTIAL RELEASE OF RETAINAGE", leftMargin, y);
-        y += 25;
+        y += 35;
         
         let rightColY = y;
         
         // Distribution Checkboxes
         doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        const distributionX = rightMargin - 90;
-        let checkboxY = y - 5;
-        doc.text('Distribution to:', distributionX, checkboxY);
-        checkboxY += 8;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Distribution to:', rightMargin - 90, rightColY);
+        rightColY += 8;
 
         const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
+            const boxSize = 5;
+            doc.setDrawColor(0);
+            if (isChecked) {
+                doc.setFillColor(0, 0, 0);
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
+            } else {
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
+            }
             doc.setFontSize(8);
-            doc.rect(x, yPos - 3.5, 5, 5);
-            if (isChecked) doc.text('X', x + 1, yPos);
-            doc.text(label, x + 7, yPos);
+            doc.text(label, x + boxSize + 2, yPos - 1);
         };
 
-        drawCheckbox(distributionX, checkboxY, 'Owner', formData.check_owner);
-        drawCheckbox(distributionX + 45, checkboxY, 'Surety', formData.check_surety);
-        checkboxY += 8;
-        drawCheckbox(distributionX, checkboxY, 'Architect', formData.check_architect);
-        drawCheckbox(distributionX + 45, checkboxY, 'Other', formData.check_other);
-        checkboxY += 8;
-        drawCheckbox(distributionX, checkboxY, 'Contractor', formData.check_contractor);
+        drawCheckbox(rightMargin - 90, rightColY, 'Owner', formData.check_owner);
+        drawCheckbox(rightMargin - 45, rightColY, 'Surety', formData.check_surety);
+        rightColY += 8;
+        drawCheckbox(rightMargin - 90, rightColY, 'Architect', formData.check_architect);
+        drawCheckbox(rightMargin - 45, rightColY, 'Other', formData.check_other);
+        rightColY += 8;
+        drawCheckbox(rightMargin - 90, rightColY, 'Contractor', formData.check_contractor);
 
         // Project Details
         doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
         
-        doc.text(`Architects Project No: ${formData.architect_project_no || ''}`, leftMargin + contentWidth / 2, rightColY);
-        rightColY += 15;
-        doc.text(`Contract For: ${formData.contract_for || ''}`, leftMargin + contentWidth / 2, rightColY);
-        rightColY += 15;
-        doc.text(`Contract Date: ${formData.contract_date || ''}`, leftMargin + contentWidth / 2, rightColY);
+        doc.text(`Architects Project No: ${formData.architect_project_no || ''}`, leftMargin + contentWidth / 2, y);
+        y += 15;
+        doc.text(`Contract For: ${formData.contract_for || ''}`, leftMargin + contentWidth / 2, y);
+        y += 15;
+        doc.text(`Contract Date: ${formData.contract_date || ''}`, leftMargin + contentWidth / 2, y);
         
         // Left Column
-        doc.text(`Project: (Name, Address)\n${formData.project_name_address || ''}`, leftMargin, y);
-        y += 30;
-        doc.text(`To: (Owner)\n${formData.to_owner || ''}`, leftMargin, y);
+        doc.text(`Project: (Name, Address)\n${formData.project_name_address || ''}`, leftMargin, projectDetailsYStart);
+        doc.text(`To: (Owner)\n${formData.to_owner || ''}`, leftMargin, projectDetailsYStart + 30);
         
-        y = Math.max(y, rightColY) + 10;
-        y += 40;
+        const projectDetailsYStart = y - 30; // Align with the start of the right column
+        y = Math.max(y, rightColY) + 40;
 
         const p1 = `In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the (Surety Company Name and Address) ${formData.surety_name_address || ''}, SURETY, on bond of ${formData.contractor_name_address || ''}, CONTRACTOR, Hereby approves the reduction in or partial release of retainage to the Contractor as follows:`;
         const splitP1 = doc.splitTextToSize(p1, contentWidth);
@@ -215,12 +219,17 @@ export default function ConsentOfSuretyPage() {
                              <Button onClick={handleDownload} variant="outline"><Download className="w-4 h-4 mr-2"/>PDF</Button>
                         </div>
                     </div>
-                    <div className="flex justify-end gap-4 text-sm">
-                        {renderCheckbox('check_owner', 'Owner')}
-                        {renderCheckbox('check_architect', 'Architect')}
-                        {renderCheckbox('check_contractor', 'Contractor')}
-                        {renderCheckbox('check_surety', 'Surety')}
-                        {renderCheckbox('check_other', 'Other')}
+                    <div className="flex justify-end gap-4 text-sm mt-8">
+                        <div>
+                            <Label>Distribution to:</Label>
+                            <div className="grid grid-cols-2 gap-x-4">
+                                {renderCheckbox('check_owner', 'Owner')}
+                                {renderCheckbox('check_surety', 'Surety')}
+                                {renderCheckbox('check_architect', 'Architect')}
+                                {renderCheckbox('check_other', 'Other')}
+                                {renderCheckbox('check_contractor', 'Contractor')}
+                            </div>
+                        </div>
                     </div>
                      <div className="grid grid-cols-2 gap-x-8 gap-y-2">
                         <div>

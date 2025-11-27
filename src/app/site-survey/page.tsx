@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -122,7 +123,7 @@ export default function SiteSurveyPage() {
             doc.setLineWidth(0.5);
             doc.circle(x, yPos - radioSize, radioSize, 'S');
             if (isChecked) {
-                doc.setFillColor(0, 0, 139);
+                doc.setFillColor(0, 0, 0);
                 doc.circle(x, yPos - radioSize, radioSize, 'F');
             }
         };
@@ -164,11 +165,8 @@ export default function SiteSurveyPage() {
             const boxSize = 3.5;
             doc.setDrawColor(0);
             if (isChecked) {
-                doc.setFillColor(0, 0, 139); // Dark blue fill
+                doc.setFillColor(0,0,0);
                 doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
-                doc.setFont('ZapfDingbats');
-                doc.setTextColor(255,255,255);
-                doc.text('✓', x + 0.5, yPos - 0.5);
             } else {
                  doc.setFillColor(255, 255, 255);
                 doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');

@@ -98,17 +98,23 @@ export default function ConsentOfSuretyFinalPage() {
         const projectDetailsYStart = y;
         
         const distributionX = rightMargin - 90;
-        let checkboxY = y - 5;
+        let checkboxY = y + 10;
         doc.setFontSize(9);
         doc.setFont('helvetica', 'bold');
         doc.text('Distribution to:', distributionX, checkboxY);
         checkboxY += 8;
 
         const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
+            const boxSize = 5;
+            doc.setDrawColor(0);
+            if (isChecked) {
+                doc.setFillColor(0, 0, 0);
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
+            } else {
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
+            }
             doc.setFontSize(8);
-            doc.rect(x, yPos - 3.5, 5, 5);
-            if (isChecked) doc.text('X', x + 1, yPos);
-            doc.text(label, x + 7, yPos);
+            doc.text(label, x + boxSize + 2, yPos - 1);
         };
 
         drawCheckbox(distributionX, checkboxY, 'Owner', formData.check_owner);
@@ -198,7 +204,7 @@ export default function ConsentOfSuretyFinalPage() {
                              <Button onClick={handleDownload} variant="outline"><Download className="w-4 h-4 mr-2"/>PDF</Button>
                         </div>
                     </div>
-                     <div className="flex justify-end gap-4 text-sm">
+                     <div className="flex justify-end gap-4 text-sm mt-8">
                         <div>
                             <Label>Distribution to:</Label>
                             <div className="grid grid-cols-2 gap-x-4">

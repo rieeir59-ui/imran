@@ -100,9 +100,15 @@ export default function ConstructionChangeDirectivePage() {
         doc.setFont('helvetica', 'normal');
 
         const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
-            doc.rect(x, yPos - 3.5, 3.5, 3.5);
-            if (isChecked) doc.text('X', x + 0.8, yPos);
-            doc.text(label, x + 5, yPos);
+            const boxSize = 3.5;
+            doc.setDrawColor(0);
+            if (isChecked) {
+                doc.setFillColor(0, 0, 0);
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
+            } else {
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
+            }
+            doc.text(label, x + boxSize + 1.5, yPos);
         };
         
         drawCheckbox(150, 15, 'Owner', formData.check_owner);
@@ -148,13 +154,13 @@ export default function ConstructionChangeDirectivePage() {
         const p1 = `1. The proposed basis of adjustment to the Contract Sum or Guaranteed Maximum Price is:`;
         doc.text(p1, 14, y);
         y+=7;
-        drawCheckbox(18, y, 'Lum Sum', formData.adjustment_lum_sum);
+        drawCheckbox(18, y, '', formData.adjustment_lum_sum);
         doc.text(`Lum Sum (increase) (decrease) of Rs. ${formData.adjustment_lum_sum_amount || '_________'}`, 23, y);
         y+=7;
-        drawCheckbox(18, y, 'Unit Price', formData.adjustment_unit_price);
+        drawCheckbox(18, y, '', formData.adjustment_unit_price);
         doc.text(`Unit Price of Rs. ${formData.adjustment_unit_price_amount || '_________'} per ${formData.adjustment_unit_price_per || '_________'}`, 23, y);
         y+=7;
-        drawCheckbox(18, y, 'as follows', formData.adjustment_as_follows);
+        drawCheckbox(18, y, '', formData.adjustment_as_follows);
         doc.text(`as follows:`, 23, y);
         const asFollowsText = doc.splitTextToSize(formData.adjustment_as_follows_text || '', 160);
         doc.text(asFollowsText, 23, y + 5);

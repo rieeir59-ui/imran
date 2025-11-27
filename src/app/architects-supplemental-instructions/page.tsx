@@ -101,9 +101,15 @@ export default function ArchitectsSupplementalInstructionsPage() {
         doc.setFont('helvetica', 'normal');
 
         const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
-            doc.rect(x, yPos - 3.5, 3.5, 3.5);
-            if (isChecked) doc.text('X', x + 0.8, yPos);
-            doc.text(label, x + 5, yPos);
+            const boxSize = 3.5;
+            doc.setDrawColor(0);
+            if (isChecked) {
+                doc.setFillColor(0, 0, 0);
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
+            } else {
+                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
+            }
+            doc.text(label, x + boxSize + 1.5, yPos);
         };
         
         drawCheckbox(140, 15, 'Owner', formData.check_owner);
