@@ -101,7 +101,7 @@ export default function ConsentOfSuretyPage() {
         doc.setFontSize(9);
         doc.setFont('helvetica', 'bold');
         doc.text('Distribution to:', rightMargin - 90, rightColY);
-        rightColY += 8;
+        rightColY += 12;
 
         const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
             const boxSize = 5;
@@ -118,10 +118,10 @@ export default function ConsentOfSuretyPage() {
 
         drawCheckbox(rightMargin - 90, rightColY, 'Owner', formData.check_owner);
         drawCheckbox(rightMargin - 45, rightColY, 'Surety', formData.check_surety);
-        rightColY += 8;
+        rightColY += 10;
         drawCheckbox(rightMargin - 90, rightColY, 'Architect', formData.check_architect);
         drawCheckbox(rightMargin - 45, rightColY, 'Other', formData.check_other);
-        rightColY += 8;
+        rightColY += 10;
         drawCheckbox(rightMargin - 90, rightColY, 'Contractor', formData.check_contractor);
 
         // Project Details
@@ -134,11 +134,12 @@ export default function ConsentOfSuretyPage() {
         y += 15;
         doc.text(`Contract Date: ${formData.contract_date || ''}`, leftMargin + contentWidth / 2, y);
         
+        const projectDetailsYStart = y - 30; // Align with the start of the right column
+
         // Left Column
         doc.text(`Project: (Name, Address)\n${formData.project_name_address || ''}`, leftMargin, projectDetailsYStart);
         doc.text(`To: (Owner)\n${formData.to_owner || ''}`, leftMargin, projectDetailsYStart + 30);
         
-        const projectDetailsYStart = y - 30; // Align with the start of the right column
         y = Math.max(y, rightColY) + 40;
 
         const p1 = `In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the (Surety Company Name and Address) ${formData.surety_name_address || ''}, SURETY, on bond of ${formData.contractor_name_address || ''}, CONTRACTOR, Hereby approves the reduction in or partial release of retainage to the Contractor as follows:`;
