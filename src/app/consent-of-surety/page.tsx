@@ -91,7 +91,7 @@ export default function ConsentOfSuretyPage() {
         doc.text("CONSENT OF SURETY", doc.internal.pageSize.width / 2, y, { align: 'center'});
         y += 14;
         doc.text("TO REDUCTION IN OR PARTIAL RELEASE OF RETAINAGE", doc.internal.pageSize.width / 2, y, { align: 'center'});
-        y += 20;
+        y += 30;
 
         autoTable(doc, {
             startY: y,
@@ -99,34 +99,36 @@ export default function ConsentOfSuretyPage() {
             body: [
                 [
                     { content: `Project: (Name, Address)\n${formData.project_name_address || ''}\n\nTo: (Owner)\n${formData.to_owner || ''}`, styles: { cellWidth: contentWidth / 2 - 10 } },
-                    { content: `Architects Project No: ${formData.architect_project_no || ''}\nContract For: ${formData.contract_for || ''}\nContract Date: ${formData.contract_date || ''}`, styles: { cellWidth: contentWidth / 2 - 10 } }
+                    { content: `Architects Project No: ${formData.architect_project_no || ''}\n\nContract For: ${formData.contract_for || ''}\n\nContract Date: ${formData.contract_date || ''}`, styles: { cellWidth: contentWidth / 2 - 10 } }
                 ]
             ],
+            styles: { fontSize: 10, cellPadding: 2 },
+            margin: { left: leftMargin },
             didDrawPage: (data) => {
                 doc.setFontSize(9);
-                doc.text('Distribution to:', rightMargin - 60, 40);
+                doc.text('Distribution to:', rightMargin - 90, 40);
                 const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
                     doc.setFontSize(8);
                     doc.rect(x, yPos - 3.5, 5, 5);
                     if (isChecked) doc.text('X', x + 1, yPos);
                     doc.text(label, x + 7, yPos);
                 };
-                drawCheckbox(rightMargin - 60, 50, 'Owner', formData.check_owner);
-                drawCheckbox(rightMargin - 25, 50, 'Surety', formData.check_surety);
-                drawCheckbox(rightMargin - 60, 58, 'Architect', formData.check_architect);
-                drawCheckbox(rightMargin - 25, 58, 'Other', formData.check_other);
-                drawCheckbox(rightMargin - 60, 66, 'Contractor', formData.check_contractor);
+                drawCheckbox(rightMargin - 90, 50, 'Owner', formData.check_owner);
+                drawCheckbox(rightMargin - 45, 50, 'Surety', formData.check_surety);
+                drawCheckbox(rightMargin - 90, 58, 'Architect', formData.check_architect);
+                drawCheckbox(rightMargin - 45, 58, 'Other', formData.check_other);
+                drawCheckbox(rightMargin - 90, 66, 'Contractor', formData.check_contractor);
             }
         });
 
-        y = (doc as any).lastAutoTable.finalY + 15;
+        y = (doc as any).lastAutoTable.finalY + 25;
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         
         const p1 = `In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the ${formData.surety_name_address || '____________________'}, SURETY, on bond of ${formData.contractor_name_address || '____________________'}, CONTRACTOR, Hereby approves the reduction in or partial release of retainage to the Contractor as follows:`;
         const splitP1 = doc.splitTextToSize(p1, contentWidth);
         doc.text(splitP1, leftMargin, y);
-        y += doc.getTextDimensions(splitP1).h + 5;
+        y += doc.getTextDimensions(splitP1).h + 10;
 
         const reductionText = doc.splitTextToSize(formData.reduction_details || 'N/A', contentWidth);
         doc.rect(leftMargin, y, contentWidth, doc.getTextDimensions(reductionText).h + 10);
@@ -136,20 +138,23 @@ export default function ConsentOfSuretyPage() {
         const agreementText = `The Surety agrees that such reduction in or partial release of retainage to the Contractor shall not relieve the Surety of any of its obligations to ${formData.owner_name_address || '____________________'}, OWNER, as set forth in the said Surety's bond.`;
         const splitAgreement = doc.splitTextToSize(agreementText, contentWidth);
         doc.text(splitAgreement, leftMargin, y);
-        y += doc.getTextDimensions(splitAgreement).h + 15;
+        y += doc.getTextDimensions(splitAgreement).h + 25;
 
         doc.text(`In Witness Whereof, The Surety has hereunto set its hand this ${formData.witness_day || '__'} day of ${formData.witness_month || '______'}, 20${formData.witness_year || '__'}.`, leftMargin, y);
-        y += 20;
+        y += 40;
 
         doc.text('Attest: (Seal)', leftMargin, y);
-        y += 30;
-
+        
         const signatureX = leftMargin + contentWidth / 2;
-        doc.text(`Surety: ${formData.surety_signature || '___________________________'}`, signatureX, y);
+        doc.text(`Surety:`, signatureX, y);
+        doc.line(signatureX + 40, y, rightMargin, y);
+
         y += 10;
         doc.text('(Signature of Authorized Representative)', signatureX, y);
-        y += 15;
-        doc.text(`Title: ${formData.surety_title || '___________________________'}`, signatureX, y);
+        
+        y += 25;
+        doc.text(`Title:`, signatureX, y);
+        doc.line(signatureX + 30, y, rightMargin, y);
         
         doc.save("consent-of-surety.pdf");
     };
