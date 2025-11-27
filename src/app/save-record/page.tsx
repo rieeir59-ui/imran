@@ -1,122 +1,94 @@
 
-"use client";
+'use client';
 
-import React, { useState, useEffect, Suspense } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Briefcase, CheckCircle, XCircle, CircleDotDashed, PlusCircle } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileText, GanttChart, HardHat, ListChecks, CalendarDays } from 'lucide-react';
 import Link from 'next/link';
-import { useFirestore, useUser, useMemoFirebase } from "@/firebase";
-import { collection, getDocs } from "firebase/firestore";
-import { Button } from "@/components/ui/button";
 
-interface Schedule {
-    id: string;
-    schedules: any[];
-    employeeName: string;
-}
-
-
-function SchedulesList() {
-    const [schedules, setSchedules] = useState<Schedule[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const { user } = useUser();
-    const firestore = useFirestore();
-
-    const schedulesCollectionRef = useMemoFirebase(() => {
-        if (!user || !firestore) return null;
-        return collection(firestore, `users/${user.uid}/weeklySchedules`);
-    }, [user, firestore]);
-
-    useEffect(() => {
-        if (!schedulesCollectionRef) {
-            setIsLoading(false);
-            return;
-        };
-
-        setIsLoading(true);
-        getDocs(schedulesCollectionRef)
-            .then((querySnapshot) => {
-                const schedulesData = querySnapshot.docs.map(doc => {
-                    const data = doc.data();
-                    const employeeName = data.schedules?.[0]?.employeeName || data.employeeName || 'Unnamed';
-                    return {
-                        id: doc.id,
-                        schedules: data.schedules || [],
-                        employeeName: employeeName,
-                    }
-                });
-                setSchedules(schedulesData);
-                setIsLoading(false);
-            })
-            .catch(() => {
-                setIsLoading(false);
-            });
-    }, [schedulesCollectionRef]);
-
-    if (isLoading) {
-        return (
-             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-               <div className="p-4 rounded-lg border animate-pulse bg-muted h-32"></div>
-               <div className="p-4 rounded-lg border animate-pulse bg-muted h-32"></div>
-             </div>
-        )
-    }
-
-    return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {schedules.map(schedule => {
-                const projectCount = schedule.schedules.length;
-                const completedCount = schedule.schedules.filter(p => p.status === 'Completed').length;
-                const inProgressCount = schedule.schedules.filter(p => p.status === 'In Progress').length;
-                const incompleteCount = schedule.schedules.filter(p => p.status === 'Incomplete').length;
-
-                return (
-                    <Link href={`/weekly-schedule?id=${schedule.id}`} key={schedule.id} className="block hover:bg-accent transition-colors p-4 rounded-lg border">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-xl font-bold">{schedule.employeeName.toUpperCase()}</h3>
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                                <Briefcase className="h-5 w-5" />
-                                <span>{projectCount} Projects</span>
-                            </div>
-                        </div>
-                        <div className="flex justify-start gap-6 mt-4 text-sm">
-                            <div className="flex items-center gap-2">
-                                <CheckCircle className="h-5 w-5 text-green-500" />
-                                <span>{completedCount}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <CircleDotDashed className="h-5 w-5 text-blue-500" />
-                                <span>{inProgressCount}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <XCircle className="h-5 w-5 text-red-500" />
-                                <span>{incompleteCount}</span>
-                            </div>
-                        </div>
-                    </Link>
-                )
-            })}
-             <Link href="/weekly-schedule" passHref>
-                <Button variant="outline" className="w-full h-full flex flex-col items-center justify-center p-4 border-dashed hover:bg-accent hover:border-solid">
-                    <PlusCircle className="h-8 w-8 text-muted-foreground mb-2" />
-                    <span className="text-muted-foreground">Add Employee Schedule</span>
-                </Button>
-            </Link>
-        </div>
-    );
-}
+const savedRecords = [
+    {
+        title: 'Project Checklist',
+        description: 'Review and manage your project setup checklist.',
+        href: '/project-checklist',
+        icon: ListChecks
+    },
+    {
+        title: 'Project Information',
+        description: 'Access and edit general project information.',
+        href: '/projects',
+        icon: HardHat
+    },
+    {
+        title: 'Project Data',
+        description: 'View and update detailed project data entries.',
+        href: '/project-data',
+        icon: FileText
+    },
+    {
+        title: 'Predesign Assessment',
+        description: 'Manage your predesign general assessments.',
+        href: '/predesign-assessment',
+        icon: FileText
+    },
+    {
+        title: 'Site Visit Form',
+        description: 'Review and edit site visit reports.',
+        href: '/site-visit',
+        icon: FileText
+    },
+    {
+        title: 'Project Timeline',
+        description: 'General project timeline and scheduling.',
+        href: '/project-timeline',
+        icon: GanttChart
+    },
+    {
+        title: 'Weekly Work Schedules',
+        description: 'Manage and review all employee weekly schedules.',
+        href: '/weekly-schedule',
+        icon: CalendarDays
+    },
+    {
+        title: 'Commercial Projects Timeline',
+        description: 'Track the progress of all commercial projects.',
+        href: '/commercial-timeline',
+        icon: GanttChart
+    },
+    {
+        title: 'Residential Projects Timeline',
+        description: 'Track the progress of all residential projects.',
+        href: '/residential-timeline',
+        icon: GanttChart
+    },
+    {
+        title: 'Bank Timelines',
+        description: 'Access timelines for all bank-related projects.',
+        href: '/bank',
+        icon: GanttChart
+    },
+];
 
 export default function SaveRecordPage() {
     return (
         <main className="p-4 md:p-6 lg:p-8">
             <Card>
                 <CardHeader>
-                    <CardTitle>Employee Work Schedules</CardTitle>
+                    <CardTitle>Saved Records</CardTitle>
+                    <p className="text-muted-foreground">Access all your saved forms, reports, and records from here.</p>
                 </CardHeader>
-                <CardContent>
-                   <Suspense fallback={<div className="p-4 rounded-lg border animate-pulse bg-muted h-32"></div>}>
-                        <SchedulesList />
-                   </Suspense>
+                <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {savedRecords.map((record) => (
+                        <Link href={record.href} key={record.title} className="block hover:bg-accent transition-colors p-4 rounded-lg border">
+                            <div className="flex items-start gap-4">
+                                <record.icon className="h-8 w-8 text-primary mt-1" />
+                                <div>
+                                    <h3 className="text-lg font-bold">{record.title}</h3>
+                                    <p className="text-sm text-muted-foreground">{record.description}</p>
+                                </div>
+                            </div>
+                        </Link>
+                    ))}
                 </CardContent>
             </Card>
         </main>
