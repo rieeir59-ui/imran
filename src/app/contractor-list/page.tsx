@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -79,15 +80,52 @@ export default function ContractorListPage() {
 
     const handleDownload = () => {
         const doc = new jsPDF();
+        let y = 15;
+    
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text("List of Contractors", 105, 15, {align: 'center'});
+        doc.text("List of Contractors", 105, y, { align: 'center' });
+        y += 10;
+    
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        
+        const headerInfo = [
+            `Project: ${formData.project || ''}`,
+            `Architect: ${formData.architect || ''}`,
+            `Architects Project No: ${formData.architectsProjectNo || ''}`,
+            `Date: ${formData.date || ''}`,
+            `To: (Contractor) ${formData.toContractor || ''}`,
+        ];
+
+        headerInfo.forEach(line => {
+            doc.text(line, 14, y);
+            y += 7;
+        });
+
+        y += 5;
+        const note = doc.splitTextToSize("List Subcontractors and others proposed to be employed on the above Project as required by the bidding documents. (To be filled out by the Contractor and returned to the Architect.)", 182);
+        doc.text(note, 14, y);
+        y += (note.length * 5) + 5;
+
+
+        const tableHeaders = ["Work", "Firm", "Address", "Phone", "Representative"];
+        const tableBody = formData.rows.map((row: any) => [
+            row.work || '',
+            row.firm || '',
+            row.address || '',
+            row.phone || '',
+            row.representative || ''
+        ]);
+
         autoTable(doc, {
-            startY: 25,
-            html: '#contractors-table-content',
+            startY: y,
+            head: [tableHeaders],
+            body: tableBody,
             theme: 'grid',
             headStyles: { fillColor: [30, 41, 59] }
         })
+
         doc.save("contractor-list.pdf");
         toast({ title: 'Download Started' });
     }
@@ -119,7 +157,7 @@ export default function ContractorListPage() {
                 </div>
             </CardHeader>
             <CardContent>
-              <div id="contractors-table-content">
+              <div id="contractors-table">
                 <FormField label="Project">{renderHeaderField('project')}</FormField>
                 <FormField label="Architect">{renderHeaderField('architect')}</FormField>
                 <FormField label="Architects Project No">{renderHeaderField('architectsProjectNo')}</FormField>
