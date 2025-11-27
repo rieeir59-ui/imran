@@ -80,75 +80,77 @@ export default function ConsentOfSuretyPage() {
     };
 
     const handleDownload = () => {
-        const doc = new jsPDF();
-        let y = 15;
-    
+        const doc = new jsPDF('p', 'pt', 'a4');
+        let y = 40;
+        const leftMargin = 40;
+        const rightMargin = doc.internal.pageSize.width - 40;
+        const contentWidth = rightMargin - leftMargin;
+
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text("CONSENT OF SURETY", 105, y, { align: 'center'});
-        y+=5;
-        doc.text("TO REDUCTION IN OR PARTIAL RELEASE OF RETAINAGE", 105, y, { align: 'center'});
-        y+=10;
-
-        const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
-            doc.rect(x, yPos - 3.5, 3.5, 3.5);
-            if (isChecked) doc.text('X', x + 0.8, yPos);
-            doc.text(label, x + 5, yPos);
-        };
-        
-        doc.setFontSize(10);
-        drawCheckbox(140, y, 'Owner', formData.check_owner);
-        drawCheckbox(160, y, 'Architect', formData.check_architect);
-        drawCheckbox(180, y, 'Contractor', formData.check_contractor);
-        y += 7;
-        drawCheckbox(160, y, 'Surety', formData.check_surety);
-        drawCheckbox(180, y, 'Other', formData.check_other);
-        y -= 7;
-
-        doc.setFont('helvetica', 'normal');
-        doc.text(`Project: ${formData.project_name_address || ''}`, 14, y);
-        doc.text(`Architects Project No: ${formData.architect_project_no || ''}`, 130, y);
-        y+=7;
-        doc.text(`Contract For: ${formData.contract_for || ''}`, 130, y);
-        y+=7;
-        doc.text(`Contract Date: ${formData.contract_date || ''}`, 130, y);
-        y+=7;
-
-        doc.text(`To: (Owner) ${formData.to_owner || ''}`, 14, y);
+        doc.text("CONSENT OF SURETY", doc.internal.pageSize.width / 2, y, { align: 'center'});
+        y += 14;
+        doc.text("TO REDUCTION IN OR PARTIAL RELEASE OF RETAINAGE", doc.internal.pageSize.width / 2, y, { align: 'center'});
         y += 20;
 
-        doc.text(`In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the`, 14, y);
-        y += 7;
-        doc.text(`${formData.surety_name_address || ''}, SURETY,`, 14, y);
-        y += 14;
-        doc.text(`On bond of ${formData.contractor_name_address || ''}, CONTRACTOR,`, 14, y);
-        y += 14;
-        doc.text(`Hereby approves the reduction in or partial release of retainage to the Contractor as follows:`, 14, y);
-        y += 7;
-        const reductionText = doc.splitTextToSize(formData.reduction_details || '', 180);
-        doc.text(reductionText, 14, y);
-        y += (reductionText.length * 5) + 7;
+        autoTable(doc, {
+            startY: y,
+            theme: 'plain',
+            body: [
+                [
+                    { content: `Project: (Name, Address)\n${formData.project_name_address || ''}\n\nTo: (Owner)\n${formData.to_owner || ''}`, styles: { cellWidth: contentWidth / 2 - 10 } },
+                    { content: `Architects Project No: ${formData.architect_project_no || ''}\nContract For: ${formData.contract_for || ''}\nContract Date: ${formData.contract_date || ''}`, styles: { cellWidth: contentWidth / 2 - 10 } }
+                ]
+            ],
+            didDrawPage: (data) => {
+                doc.setFontSize(9);
+                doc.text('Distribution to:', rightMargin - 60, 40);
+                const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
+                    doc.setFontSize(8);
+                    doc.rect(x, yPos - 3.5, 5, 5);
+                    if (isChecked) doc.text('X', x + 1, yPos);
+                    doc.text(label, x + 7, yPos);
+                };
+                drawCheckbox(rightMargin - 60, 50, 'Owner', formData.check_owner);
+                drawCheckbox(rightMargin - 25, 50, 'Surety', formData.check_surety);
+                drawCheckbox(rightMargin - 60, 58, 'Architect', formData.check_architect);
+                drawCheckbox(rightMargin - 25, 58, 'Other', formData.check_other);
+                drawCheckbox(rightMargin - 60, 66, 'Contractor', formData.check_contractor);
+            }
+        });
 
-        const agreementText = doc.splitTextToSize(`The Surety agrees that such reduction in or partial release of retainage to the Contractor shall not relieve the Surety of any of its obligations to ${formData.owner_name_address || ''}, OWNER, as set forth in the said Surety's bond.`, 180);
-        doc.text(agreementText, 14, y);
-        y += (agreementText.length * 5) + 14;
+        y = (doc as any).lastAutoTable.finalY + 15;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        
+        const p1 = `In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the ${formData.surety_name_address || '____________________'}, SURETY, on bond of ${formData.contractor_name_address || '____________________'}, CONTRACTOR, Hereby approves the reduction in or partial release of retainage to the Contractor as follows:`;
+        const splitP1 = doc.splitTextToSize(p1, contentWidth);
+        doc.text(splitP1, leftMargin, y);
+        y += doc.getTextDimensions(splitP1).h + 5;
 
-        doc.text(`In Witness Whereof, The Surety has hereunto set its hand this ${formData.witness_day || '__'} day of ${formData.witness_month || '______'}, 20${formData.witness_year || '__'}`, 14, y);
-        y += 14;
+        const reductionText = doc.splitTextToSize(formData.reduction_details || 'N/A', contentWidth);
+        doc.rect(leftMargin, y, contentWidth, doc.getTextDimensions(reductionText).h + 10);
+        doc.text(reductionText, leftMargin + 2, y + 5);
+        y += doc.getTextDimensions(reductionText).h + 20;
 
-        doc.text('Surety:', 14, y);
-        doc.line(30, y, 120, y);
-        y += 7;
-        doc.text(formData.surety_signature || '', 30, y);
-        doc.text('Signature of Authorized Representative:', 14, y + 7);
-        y += 14;
-        doc.text('Title:', 14, y);
-        doc.line(25, y, 120, y);
-        y += 7;
-        doc.text(formData.surety_title || '', 25, y);
+        const agreementText = `The Surety agrees that such reduction in or partial release of retainage to the Contractor shall not relieve the Surety of any of its obligations to ${formData.owner_name_address || '____________________'}, OWNER, as set forth in the said Surety's bond.`;
+        const splitAgreement = doc.splitTextToSize(agreementText, contentWidth);
+        doc.text(splitAgreement, leftMargin, y);
+        y += doc.getTextDimensions(splitAgreement).h + 15;
 
-        doc.text(`Attest: (Seal)`, 14, y - 20);
+        doc.text(`In Witness Whereof, The Surety has hereunto set its hand this ${formData.witness_day || '__'} day of ${formData.witness_month || '______'}, 20${formData.witness_year || '__'}.`, leftMargin, y);
+        y += 20;
 
+        doc.text('Attest: (Seal)', leftMargin, y);
+        y += 30;
+
+        const signatureX = leftMargin + contentWidth / 2;
+        doc.text(`Surety: ${formData.surety_signature || '___________________________'}`, signatureX, y);
+        y += 10;
+        doc.text('(Signature of Authorized Representative)', signatureX, y);
+        y += 15;
+        doc.text(`Title: ${formData.surety_title || '___________________________'}`, signatureX, y);
+        
         doc.save("consent-of-surety.pdf");
     };
 
@@ -205,7 +207,7 @@ export default function ConsentOfSuretyPage() {
                      <div className="grid grid-cols-2 gap-x-8 gap-y-2">
                         <div>
                             <Label>To: (Owner)</Label>
-                            {renderField('to_owner')}
+                            {renderField('to_owner', 'textarea')}
                         </div>
                         <div>
                             <Label>Architects Project No:</Label>
@@ -225,17 +227,21 @@ export default function ConsentOfSuretyPage() {
                     <div className="flex justify-between items-center pt-8">
                         <div>
                             <p>In Witness Whereof,</p>
-                            <p>The Surety has hereunto set its hand this {isEditing ? <Input name="witness_day" value={formData.witness_day || ''} onChange={handleInputChange} className="inline w-12"/> : <span>{formData.witness_day || '__'}</span>} day of {isEditing ? <Input name="witness_month" value={formData.witness_month || ''} onChange={handleInputChange} className="inline w-24"/> : <span>{formData.witness_month || '______'}</span>}, 20{isEditing ? <Input name="witness_year" value={formData.witness_year || ''} onChange={handleInputChange} className="inline w-12"/> : <span>{formData.witness_year || '__'}</span>}</p>
+                            <p>The Surety has hereunto set its hand this {isEditing ? <Input name="witness_day" value={formData.witness_day || ''} onChange={handleInputChange} className="inline w-12"/> : <span className="border-b inline-block w-12 text-center">{formData.witness_day || ''}</span>} day of {isEditing ? <Input name="witness_month" value={formData.witness_month || ''} onChange={handleInputChange} className="inline w-24"/> : <span className="border-b inline-block w-24 text-center">{formData.witness_month || ''}</span>}, 20{isEditing ? <Input name="witness_year" value={formData.witness_year || ''} onChange={handleInputChange} className="inline w-12"/> : <span className="border-b inline-block w-12 text-center">{formData.witness_year || ''}</span>}</p>
                         </div>
                         <div>
-                            <Label>Surety:</Label>
+                            <p>Attest: (Seal)</p>
+                        </div>
+                    </div>
+                    <div className="pt-8 flex justify-end">
+                         <div className="w-1/2 space-y-2">
+                             <Label>Surety:</Label>
                             {renderField('surety_signature')}
-                            <Label>Signature of Authorized Representative:</Label>
-                             <Label>Title:</Label>
+                            <p className="text-xs text-muted-foreground -mt-2">Signature of Authorized Representative</p>
+                             <Label className="mt-4">Title:</Label>
                             {renderField('surety_title')}
                         </div>
                     </div>
-                    <div className="pt-8"><p>Attest: (Seal)</p></div>
                 </CardContent>
             </Card>
         </main>
