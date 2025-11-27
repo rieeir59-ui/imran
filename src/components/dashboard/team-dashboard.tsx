@@ -127,17 +127,10 @@ export default function TeamDashboard() {
   const renderEmployeeCard = (employee: { id: string, name: string; designation: string }) => {
     const hasTask = employeesWithTasks.has(employee.name);
     const href = `/weekly-schedule?employee=${encodeURIComponent(employee.name)}&designation=${encodeURIComponent(employee.designation)}`;
-    
-    // Prevent navigating when clicking the delete button
-    const handleActionClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        e.preventDefault();
-    };
 
     return (
       <div key={employee.id} className="relative group">
-        <Link href={href}>
-          <div className="p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full min-h-[124px]">
+        <Link href={href} className="block p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full min-h-[124px]">
             <User className="h-8 w-8 text-primary mb-2" />
             <span className="font-semibold text-center">{employee.name}</span>
             {hasTask ? (
@@ -145,7 +138,6 @@ export default function TeamDashboard() {
             ) : (
               <XCircle className="h-5 w-5 text-red-500 absolute top-2 right-2" />
             )}
-          </div>
         </Link>
         <AlertDialog>
           <AlertDialogTrigger asChild>
@@ -153,7 +145,6 @@ export default function TeamDashboard() {
                 variant="destructive"
                 size="icon"
                 className="absolute bottom-1 left-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={handleActionClick}
             >
                 <Trash2 className="h-3 w-3" />
             </Button>
