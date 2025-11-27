@@ -151,6 +151,7 @@ export default function SaveRecordPage() {
             .then((querySnapshot) => {
                 const schedulesData = querySnapshot.docs.map(doc => {
                     const data = doc.data();
+                    // Handle both cases: employeeName inside schedules array or at the top level
                     const employeeName = data.schedules?.[0]?.employeeName || data.employeeName || 'Unnamed Schedule';
                     return {
                         id: doc.id,
