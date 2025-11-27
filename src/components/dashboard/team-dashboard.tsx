@@ -92,8 +92,8 @@ const addInitialArchitects = async (firestore: any, user: any, employees: Employ
 
 const addInitialSoftwareEngineers = async (firestore: any, user: any, employees: Employee[]) => {
   const engineersToAdd = [
-    { name: "John Carmack", designation: "Software Engineer" },
-    { name: "Ada Lovelace", designation: "Software Engineer" },
+    { name: "Imran Abbas", designation: "Software Engineer" },
+    { name: "Rabiya Eman", designation: "Software Engineer" },
   ];
 
   const existingEngineers = new Set(
