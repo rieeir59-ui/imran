@@ -138,7 +138,7 @@ export default function TransmittalLetterPage() {
         const drawCheckbox = (x: number, yPos: number, isChecked: boolean) => {
             const boxSize = 3.5;
             doc.setDrawColor(0);
-            doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S'); // Always draw the box
+            doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
             if (isChecked) {
                 doc.setFont('ZapfDingbats');
                 doc.text('✓', x + 0.5, yPos);

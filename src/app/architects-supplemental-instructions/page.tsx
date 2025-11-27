@@ -103,12 +103,12 @@ export default function ArchitectsSupplementalInstructionsPage() {
         const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
             const boxSize = 3.5;
             doc.setDrawColor(0);
+            doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
             if (isChecked) {
-                doc.setFillColor(0, 0, 0);
-                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
-            } else {
-                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
+                doc.setFont('ZapfDingbats');
+                doc.text('✓', x + 0.5, yPos);
             }
+            doc.setFont('helvetica', 'normal');
             doc.text(label, x + boxSize + 1.5, yPos);
         };
         

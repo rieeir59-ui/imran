@@ -168,7 +168,7 @@ export default function SiteSurveyPage() {
             doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S'); // Always draw the box
             if (isChecked) {
                 doc.setFont('ZapfDingbats');
-                doc.text('✓', x + 0.5, yPos); // Draw tick inside
+                doc.text('✓', x + 0.5, yPos);
             }
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(0,0,0);

@@ -102,12 +102,12 @@ export default function ConstructionChangeDirectivePage() {
         const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
             const boxSize = 3.5;
             doc.setDrawColor(0);
+            doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
             if (isChecked) {
-                doc.setFillColor(0, 0, 0);
-                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
-            } else {
-                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
+                doc.setFont('ZapfDingbats');
+                doc.text('✓', x + 0.5, yPos);
             }
+            doc.setFont('helvetica', 'normal');
             doc.text(label, x + boxSize + 1.5, yPos);
         };
         
@@ -154,14 +154,12 @@ export default function ConstructionChangeDirectivePage() {
         const p1 = `1. The proposed basis of adjustment to the Contract Sum or Guaranteed Maximum Price is:`;
         doc.text(p1, 14, y);
         y+=7;
-        drawCheckbox(18, y, '', formData.adjustment_lum_sum);
-        doc.text(`Lum Sum (increase) (decrease) of Rs. ${formData.adjustment_lum_sum_amount || '_________'}`, 23, y);
+        drawCheckbox(18, y, `Lum Sum (increase) (decrease) of Rs. ${formData.adjustment_lum_sum_amount || '_________'}`, formData.adjustment_lum_sum);
         y+=7;
-        drawCheckbox(18, y, '', formData.adjustment_unit_price);
-        doc.text(`Unit Price of Rs. ${formData.adjustment_unit_price_amount || '_________'} per ${formData.adjustment_unit_price_per || '_________'}`, 23, y);
+        drawCheckbox(18, y, `Unit Price of Rs. ${formData.adjustment_unit_price_amount || '_________'} per ${formData.adjustment_unit_price_per || '_________'}`, formData.adjustment_unit_price);
         y+=7;
-        drawCheckbox(18, y, '', formData.adjustment_as_follows);
-        doc.text(`as follows:`, 23, y);
+        drawCheckbox(18, y, 'as follows:', formData.adjustment_as_follows);
+
         const asFollowsText = doc.splitTextToSize(formData.adjustment_as_follows_text || '', 160);
         doc.text(asFollowsText, 23, y + 5);
         y += (asFollowsText.length * 4) + 8;
@@ -316,3 +314,4 @@ export default function ConstructionChangeDirectivePage() {
     )
 
     
+

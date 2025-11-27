@@ -106,7 +106,7 @@ export default function ConsentOfSuretyPage() {
         const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
             const boxSize = 5;
             doc.setDrawColor(0);
-            doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S'); // Always draw the box
+            doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
             if (isChecked) {
                 doc.setFont('ZapfDingbats');
                 doc.text('✓', x + 1, yPos);
