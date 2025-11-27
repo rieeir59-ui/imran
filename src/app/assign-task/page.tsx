@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter, useCollection } from "@/firebase";
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Loader2, ArrowLeft, Check, ChevronsUpDown } from 'lucide-react';
 import Link from 'next/link';
@@ -18,12 +18,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 
-
-const employeeList = [
-    "M Waqas", "M Jabbar", "Rana Mujahid",
-    "Architect Sobia", "Architect Luqman Aslam", "Architect Asad", "Architect Haseeb", "Architect Khizar",
-    "M Mohsin", "M Nouman"
-];
 
 const projectList = [
     "1. HBL PRESTIGE JOHER TOWN",
@@ -79,6 +73,17 @@ export default function AssignTaskPage() {
     const { toast } = useToast();
     const { user } = useUser();
     const firestore = useFirestore();
+
+    const employeesCollectionRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return collection(firestore, `users/${user.uid}/employees`);
+    }, [user, firestore]);
+
+    const { data: employees, isLoading: isLoadingEmployees } = useCollection<{name: string}>(employeesCollectionRef);
+
+    const employeeList = React.useMemo(() => {
+        return employees ? employees.map(emp => emp.name) : [];
+    }, [employees]);
 
     const tasksCollectionRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
@@ -169,6 +174,7 @@ export default function AssignTaskPage() {
                                     }}
                                   />
                                    <CommandList>
+                                    {isLoadingEmployees && <div className="p-2 text-center text-sm">Loading employees...</div>}
                                     <CommandEmpty>No employee found. Type to create a new one.</CommandEmpty>
                                     <CommandGroup>
                                       {employeeList.map((employee) => (
