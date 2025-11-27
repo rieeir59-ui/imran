@@ -130,7 +130,7 @@ export default function ProjectsPage() {
     doc.text("Project Information", 105, y, { align: 'center' });
     y += 10;
 
-    const addSection = (title: string, data: (string | {checked: boolean, label: string}[])[][]) => {
+    const addSection = (title: string, data: any[][]) => {
         if (y > 250) {
             doc.addPage();
             y = 15;
@@ -149,17 +149,21 @@ export default function ProjectsPage() {
                         const boxSize = 3.5;
                         doc.setLineWidth(0.2);
                         doc.setDrawColor(0);
+                        // Always draw the box
                         doc.rect(data.cell.x + 2, itemY - boxSize, boxSize, boxSize, 'S');
 
+                        // Draw the checkmark if checked
                         if (item.checked) {
                             doc.setFont('ZapfDingbats');
                             doc.text('✓', data.cell.x + 2.5, itemY);
-                            doc.setFont('helvetica', 'normal');
                         }
+                        
+                        doc.setFont('helvetica', 'normal');
+                        doc.setTextColor(0, 0, 0);
                         doc.text(item.label, data.cell.x + 7, itemY);
                         itemY += 6;
                     });
-                    data.cell.text = ''; // Clear the raw content to prevent it from being drawn
+                    data.cell.text = ''; // Clear the raw content to prevent autoTable from drawing it
                 }
             },
             didDrawPage: (data) => {
@@ -193,30 +197,30 @@ export default function ProjectsPage() {
     addSection("About Project", [
         ["Address", formData.project_about_address || ''],
         ["Project Reqt.", [
-            {checked: formData.req_architectural, label: "Architectural Designing"},
-            {checked: formData.req_interior, label: "Interior Decoration"},
-            {checked: formData.req_landscaping, label: "Landscaping"},
-            {checked: formData.req_turnkey, label: "Turnkey"},
-            {checked: formData.req_other, label: "Other"}
+            {checked: !!formData.req_architectural, label: "Architectural Designing"},
+            {checked: !!formData.req_interior, label: "Interior Decoration"},
+            {checked: !!formData.req_landscaping, label: "Landscaping"},
+            {checked: !!formData.req_turnkey, label: "Turnkey"},
+            {checked: !!formData.req_other, label: "Other"}
         ]],
         ["Project Type", [
-            {checked: formData.type_commercial, label: "Commercial"},
-            {checked: formData.type_residential, label: "Residential"},
+            {checked: !!formData.type_commercial, label: "Commercial"},
+            {checked: !!formData.type_residential, label: "Residential"},
         ]],
         ["Project Status", [
-            {checked: formData.status_new, label: "New"},
-            {checked: formData.status_addition, label: "Addition"},
-            {checked: formData.status_rehab, label: "Rehabilitation/Renovation"},
+            {checked: !!formData.status_new, label: "New"},
+            {checked: !!formData.status_addition, label: "Addition"},
+            {checked: !!formData.status_rehab, label: "Rehabilitation/Renovation"},
         ]],
         ["Project Area", formData.project_area || ''],
         ["Special Requirements", formData.project_special_reqs || ''],
         ["Project's Cost", [
-            {checked: formData.cost_architectural, label: "Architectural Designing"},
-            {checked: formData.cost_interior, label: "Interior Decoration"},
-            {checked: formData.cost_landscaping, label: "Landscaping"},
-            {checked: formData.cost_construction, label: "Construction"},
-            {checked: formData.cost_turnkey, label: "Turnkey"},
-            {checked: formData.cost_other, label: "Other"},
+            {checked: !!formData.cost_architectural, label: "Architectural Designing"},
+            {checked: !!formData.cost_interior, label: "Interior Decoration"},
+            {checked: !!formData.cost_landscaping, label: "Landscaping"},
+            {checked: !!formData.cost_construction, label: "Construction"},
+            {checked: !!formData.cost_turnkey, label: "Turnkey"},
+            {checked: !!formData.cost_other, label: "Other"},
         ]],
         ["First Information Date", formData.date_first_info || ''],
         ["First Meeting Date", formData.date_first_meeting || ''],
@@ -231,12 +235,12 @@ export default function ProjectsPage() {
     ]);
 
     addSection("Provided by Owner", [
-        [[{checked: formData.provided_program, label: "Program"}]],
-        [[{checked: formData.provided_schedule, label: "Suggested Schedule"}]],
-        [[{checked: formData.provided_legal, label: "Legal Site Description & Other Concerned Documents"}]],
-        [[{checked: formData.provided_survey, label: "Land Survey Report"}]],
-        [[{checked: formData.provided_geo, label: "Geo-Technical, Tests and Other Site Information"}]],
-        [[{checked: formData.provided_drawings, label: "Existing Structure's Drawings"}]],
+        [[{checked: !!formData.provided_program, label: "Program"}]],
+        [[{checked: !!formData.provided_schedule, label: "Suggested Schedule"}]],
+        [[{checked: !!formData.provided_legal, label: "Legal Site Description & Other Concerned Documents"}]],
+        [[{checked: !!formData.provided_survey, label: "Land Survey Report"}]],
+        [[{checked: !!formData.provided_geo, label: "Geo-Technical, Tests and Other Site Information"}]],
+        [[{checked: !!formData.provided_drawings, label: "Existing Structure's Drawings"}]],
     ]);
 
     addSection("Compensation", [
@@ -380,7 +384,7 @@ export default function ProjectsPage() {
   const renderConsultantRow = (type: string) => {
     const slug = type.toLowerCase().replace(/ /g, '_').replace(/\//g, '_');
     return (
-        <div key={slug} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-center">
+        <div key={`${slug}`} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-center">
             <p>{type}</p>
             <div className="flex items-center justify-center">{renderInput(`consultant_${slug}_basic`)}</div>
             <div className="flex items-center justify-center">{renderInput(`consultant_${slug}_additional`)}</div>
