@@ -60,6 +60,7 @@ const projectFormsItems = [
   { href: '/consent-of-surety-final', icon: ShieldCheck, label: 'Consent of Surety (Final)' },
   { href: '/architects-supplemental-instructions', icon: FileQuestion, label: 'Architects Supplemental Instructions' },
   { href: '/construction-change-directive', icon: FileSliders, label: 'Construction Change Directive' },
+  { href: '/file-manager', icon: Folder, label: 'File Manager' },
 ];
 
 const timelineItems = [
