@@ -130,7 +130,7 @@ export default function TeamDashboard() {
 
     return (
       <div key={employee.id} className="relative group">
-        <Link href={href} className="block p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full min-h-[124px]">
+         <Link href={href} className="block p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full min-h-[124px]">
             <User className="h-8 w-8 text-primary mb-2" />
             <span className="font-semibold text-center">{employee.name}</span>
             {hasTask ? (
