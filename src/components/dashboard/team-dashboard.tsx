@@ -57,7 +57,7 @@ interface Task {
 // One-time function to add initial architects
 const addInitialArchitects = async (firestore: any, user: any, employees: Employee[]) => {
   const architectsToAdd = [
-    { name: "Sobia", designation: "Architect" },
+    { name: "Sobia Razzak", designation: "Architect" },
     { name: "Luqman Aslam", designation: "Architect" },
     { name: "M. Asad", designation: "Architect" },
     { name: "M. Haseeb", designation: "Architect" },
