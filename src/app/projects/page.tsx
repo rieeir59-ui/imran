@@ -144,7 +144,7 @@ export default function ProjectsPage() {
       y = (doc as any).lastAutoTable.finalY + 10;
     };
     
-    const formatCheckbox = (value: boolean, label: string) => `[${value ? 'X' : ' '}] ${label}`;
+    const formatCheckbox = (value: boolean, label: string) => `[${value ? '✓' : ' '}] ${label}`;
     
     addSection("Project Details", [
         ["Project", formData.project_name || ''],

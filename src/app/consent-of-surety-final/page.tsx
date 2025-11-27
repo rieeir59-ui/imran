@@ -108,11 +108,12 @@ export default function ConsentOfSuretyFinalPage() {
             const boxSize = 5;
             doc.setDrawColor(0);
             if (isChecked) {
-                doc.setFillColor(0, 0, 0);
-                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
+                doc.setFont('ZapfDingbats');
+                doc.text('✓', x, yPos);
             } else {
                 doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
             }
+            doc.setFont('helvetica', 'normal');
             doc.setFontSize(8);
             doc.text(label, x + boxSize + 2, yPos - 1);
         };

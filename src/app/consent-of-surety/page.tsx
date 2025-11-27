@@ -107,11 +107,12 @@ export default function ConsentOfSuretyPage() {
             const boxSize = 5;
             doc.setDrawColor(0);
             if (isChecked) {
-                doc.setFillColor(0, 0, 0);
-                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
+                doc.setFont('ZapfDingbats');
+                doc.text('✓', x, yPos);
             } else {
                 doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
             }
+            doc.setFont('helvetica', 'normal');
             doc.setFontSize(8);
             doc.text(label, x + boxSize + 2, yPos - 1);
         };
@@ -129,18 +130,16 @@ export default function ConsentOfSuretyPage() {
         doc.setFont('helvetica', 'normal');
         
         doc.text(`Architects Project No: ${formData.architect_project_no || ''}`, leftMargin + contentWidth / 2, y);
-        y += 15;
-        doc.text(`Contract For: ${formData.contract_for || ''}`, leftMargin + contentWidth / 2, y);
-        y += 15;
-        doc.text(`Contract Date: ${formData.contract_date || ''}`, leftMargin + contentWidth / 2, y);
+        doc.text(`Contract For: ${formData.contract_for || ''}`, leftMargin + contentWidth / 2, y + 15);
+        doc.text(`Contract Date: ${formData.contract_date || ''}`, leftMargin + contentWidth / 2, y + 30);
         
-        const projectDetailsYStart = y - 30; // Align with the start of the right column
+        const projectDetailsYStart = y; 
 
         // Left Column
         doc.text(`Project: (Name, Address)\n${formData.project_name_address || ''}`, leftMargin, projectDetailsYStart);
         doc.text(`To: (Owner)\n${formData.to_owner || ''}`, leftMargin, projectDetailsYStart + 30);
         
-        y = Math.max(y, rightColY) + 40;
+        y = Math.max(y + 45, rightColY) + 20;
 
         const p1 = `In accordance with the provisions of the Contract between the Owner and the Contractor as indicated above, the (Surety Company Name and Address) ${formData.surety_name_address || ''}, SURETY, on bond of ${formData.contractor_name_address || ''}, CONTRACTOR, Hereby approves the reduction in or partial release of retainage to the Contractor as follows:`;
         const splitP1 = doc.splitTextToSize(p1, contentWidth);

@@ -33,7 +33,7 @@ import {
   useStorage,
 } from '@/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import Image from 'next/image';
@@ -145,15 +145,22 @@ const SiteVisitPage = () => {
 
     const storageRef = ref(storage, `users/${user.uid}/siteVisits/${file.name}`);
     
-    try {
-        await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
-        setFormData((prev: any) => ({ ...prev, [fieldName]: url }));
-        toast({ title: 'Image Uploaded', description: 'Image has been saved.'});
-    } catch (error) {
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on('state_changed', 
+      (snapshot) => {
+        // Optional: handle progress updates
+      },
+      (error) => {
         console.error('Error uploading image: ', error);
         toast({ variant: 'destructive', title: 'Upload Error', description: 'Could not upload the image.' });
-    }
+      },
+      async () => {
+        const url = await getDownloadURL(uploadTask.snapshot.ref);
+        setFormData((prev: any) => ({ ...prev, [fieldName]: url }));
+        toast({ title: 'Image Uploaded', description: 'Image has been saved.'});
+      }
+    );
   };
 
   const handleSave = () => {
@@ -195,11 +202,12 @@ const SiteVisitPage = () => {
             doc.setLineWidth(0.2);
             doc.setDrawColor(0);
             if (isChecked) {
-                doc.setFillColor(60, 110, 180);
-                doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
+                doc.setFont('ZapfDingbats');
+                doc.text('✓', x, yPos);
             } else {
                 doc.rect(x, yPos - boxSize, boxSize, boxSize, 'S');
             }
+             doc.setFont('helvetica', 'normal');
         };
 
         const addSection = (title: string, fields: (string | {label: string, name: string, type: 'checkbox' | 'text'})[]) => {
@@ -478,5 +486,3 @@ const SiteVisitPage = () => {
 };
 
 export default SiteVisitPage;
-
-    
