@@ -1,22 +1,20 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Briefcase, CheckCircle, XCircle, CircleDotDashed, PlusCircle } from "lucide-react";
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase } from "@/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
-import { useSearchParams } from 'next/navigation';
-import { Suspense } from "react";
-
 
 interface Schedule {
     id: string;
     schedules: any[];
     employeeName: string;
 }
+
 
 function SchedulesList() {
     const [schedules, setSchedules] = useState<Schedule[]>([]);

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Briefcase, CheckCircle, XCircle, CircleDotDashed, PlusCircle } from "lucide-react";
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase } from "@/firebase";
