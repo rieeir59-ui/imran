@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -25,8 +26,8 @@ export default function StatsCards() {
   const bankValue = allData.bank.reduce((acc, p) => acc + p.value, 0);
 
   const stats = [
-    { title: 'Commercial', icon: Building2, count: commercialCount, value: commercialValue, href: '/commercial' },
-    { title: 'Residential', icon: Home, count: residentialCount, value: residentialValue, href: '/residential' },
+    { title: 'Commercial', icon: Building2, count: commercialCount, value: commercialValue, href: '/commercial-timeline' },
+    { title: 'Residential', icon: Home, count: residentialCount, value: residentialValue, href: '/residential-timeline' },
     { title: 'Hotel', icon: Hotel, count: hotelCount, value: hotelValue, href: '/hotel' },
     { title: 'Bank Branch', icon: Landmark, count: bankCount, value: bankValue, href: '/bank' },
   ];
