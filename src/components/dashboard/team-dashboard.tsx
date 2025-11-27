@@ -153,7 +153,7 @@ const addInitial3DVisualizer = async (firestore: any, user: any, employees: Empl
 
 const addInitialBOQManager = async (firestore: any, user: any, employees: Employee[]) => {
   const boqManagersToAdd = [
-    { name: "Numan", designation: "Quantity Surveyor" },
+    { name: "M Nouman", designation: "Quantity Surveyor" },
   ];
 
   const existingManagers = new Set(
