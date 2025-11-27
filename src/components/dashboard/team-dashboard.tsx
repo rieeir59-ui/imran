@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
@@ -54,6 +54,43 @@ interface Task {
   employeeName: string;
 }
 
+// One-time function to add initial architects
+const addInitialArchitects = async (firestore: any, user: any, employees: Employee[]) => {
+  const architectsToAdd = [
+    { name: "Sobia", designation: "Architect" },
+    { name: "Luqman Aslam", designation: "Architect" },
+    { name: "M. Asad", designation: "Architect" },
+    { name: "M. Haseeb", designation: "Architect" },
+    { name: "M. Waleed Zahid", designation: "Architect" },
+    { name: "M. Khizar", designation: "Architect" },
+  ];
+
+  const existingArchitectNames = new Set(
+    employees
+      .filter(emp => emp.designation === 'Architect')
+      .map(emp => emp.name)
+  );
+
+  const newArchitects = architectsToAdd.filter(
+    arch => !existingArchitectNames.has(arch.name)
+  );
+
+  if (newArchitects.length === 0) {
+    return; // All architects already exist
+  }
+
+  const batch = writeBatch(firestore);
+  const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
+
+  newArchitects.forEach(architect => {
+    const newDocRef = doc(employeesCollectionRef);
+    batch.set(newDocRef, architect);
+  });
+
+  await batch.commit();
+};
+
+
 export default function TeamDashboard() {
   const [employeesByDesignation, setEmployeesByDesignation] = useState<Record<string, Employee[]>>({});
   const [employeesWithTasks, setEmployeesWithTasks] = useState<Set<string>>(new Set());
@@ -79,6 +116,12 @@ export default function TeamDashboard() {
     }
     const unsubscribe = onSnapshot(employeesCollectionRef, (snapshot) => {
         const fetchedEmployees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
+        
+        // One-time population of architects
+        if (user && firestore) {
+          addInitialArchitects(firestore, user, fetchedEmployees).catch(console.error);
+        }
+        
         const groupedByDesignation = fetchedEmployees.reduce((acc, employee) => {
             const { designation } = employee;
             if (!acc[designation]) {
@@ -93,7 +136,7 @@ export default function TeamDashboard() {
     });
 
     return () => unsubscribe();
-  }, [employeesCollectionRef]);
+  }, [employeesCollectionRef, firestore, user]);
 
   useEffect(() => {
     if (!tasksCollectionRef) return;
