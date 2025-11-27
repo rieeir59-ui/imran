@@ -81,6 +81,16 @@ export default function ContractorListPage() {
     const handleDownload = () => {
         const doc = new jsPDF();
         let y = 15;
+
+        // Ensure rows data is an array before proceeding
+        if (!Array.isArray(formData.rows) || formData.rows.length === 0) {
+            toast({
+                variant: 'destructive',
+                title: 'No Data',
+                description: 'There is no contractor data to download.',
+            });
+            return;
+        }
     
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
