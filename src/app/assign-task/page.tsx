@@ -62,7 +62,9 @@ export default function AssignTaskPage() {
     const [startDate, setStartDate] = useState<Date | undefined>();
     const [endDate, setEndDate] = useState<Date | undefined>();
     const [isSaving, setIsSaving] = useState(false);
-    const [popoverOpen, setPopoverOpen] = useState(false);
+    const [employeePopoverOpen, setEmployeePopoverOpen] = useState(false);
+    const [projectPopoverOpen, setProjectPopoverOpen] = useState(false);
+
 
     const { toast } = useToast();
     const { user } = useUser();
@@ -133,25 +135,63 @@ export default function AssignTaskPage() {
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
                             <Label htmlFor="employee-name">Employee</Label>
-                            <Select onValueChange={setEmployeeName} value={employeeName}>
-                                <SelectTrigger id="employee-name">
-                                    <SelectValue placeholder="Select an employee" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {employeeList.map(name => (
-                                        <SelectItem key={name} value={name}>{name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="project-name">Project Name</Label>
-                            <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                             <Popover open={employeePopoverOpen} onOpenChange={setEmployeePopoverOpen}>
                               <PopoverTrigger asChild>
                                 <Button
                                   variant="outline"
                                   role="combobox"
-                                  aria-expanded={popoverOpen}
+                                  aria-expanded={employeePopoverOpen}
+                                  className="w-full justify-between"
+                                >
+                                  {employeeName || "Select or type an employee..."}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-full p-0">
+                                <Command>
+                                  <CommandInput 
+                                    placeholder="Search employee or type to add..."
+                                     onValueChange={(search) => {
+                                        if (!employeeList.some(p => p.toLowerCase() === search.toLowerCase())) {
+                                            setEmployeeName(search);
+                                        }
+                                    }}
+                                  />
+                                   <CommandList>
+                                    <CommandEmpty>No employee found. Type to create a new one.</CommandEmpty>
+                                    <CommandGroup>
+                                      {employeeList.map((employee) => (
+                                        <CommandItem
+                                          key={employee}
+                                          value={employee}
+                                          onSelect={(currentValue) => {
+                                            setEmployeeName(currentValue === employeeName ? "" : currentValue)
+                                            setEmployeePopoverOpen(false)
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              employeeName === employee ? "opacity-100" : "opacity-0"
+                                            )}
+                                          />
+                                          {employee}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="project-name">Project Name</Label>
+                            <Popover open={projectPopoverOpen} onOpenChange={setProjectPopoverOpen}>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  aria-expanded={projectPopoverOpen}
                                   className="w-full justify-between"
                                 >
                                   {projectName || "Select or type a project..."}
@@ -177,7 +217,7 @@ export default function AssignTaskPage() {
                                           value={project}
                                           onSelect={(currentValue) => {
                                             setProjectName(currentValue === projectName ? "" : currentValue)
-                                            setPopoverOpen(false)
+                                            setProjectPopoverOpen(false)
                                           }}
                                         >
                                           <Check
