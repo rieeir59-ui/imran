@@ -89,36 +89,36 @@ export default function ConsentOfSuretyFinalPage() {
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
         doc.text("CONSENT OF SURETY COMPANY TO FINAL PAYMENT", doc.internal.pageSize.width / 2, y, { align: 'center'});
-        y += 20;
+        y += 25;
 
+        // Project Details
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        
+        const projectDetailsYStart = y;
+        
+        const distributionX = rightMargin - 90;
+        let checkboxY = y - 5;
         doc.setFontSize(9);
         doc.setFont('helvetica', 'bold');
-        doc.text('Distribution to:', rightMargin - 90, y);
-        y += 10;
-    
+        doc.text('Distribution to:', distributionX, checkboxY);
+        checkboxY += 8;
+
         const drawCheckbox = (x: number, yPos: number, label: string, isChecked: boolean) => {
             doc.setFontSize(8);
             doc.rect(x, yPos - 3.5, 5, 5);
             if (isChecked) doc.text('X', x + 1, yPos);
             doc.text(label, x + 7, yPos);
         };
-    
-        drawCheckbox(rightMargin - 90, y, 'Owner', formData.check_owner);
-        drawCheckbox(rightMargin - 45, y, 'Surety', formData.check_surety);
-        y += 8;
-        drawCheckbox(rightMargin - 90, y, 'Architect', formData.check_architect);
-        drawCheckbox(rightMargin - 45, y, 'Other', formData.check_other);
-        y += 8;
-        drawCheckbox(rightMargin - 90, y, 'Contractor', formData.check_contractor);
 
-        // Reset Y to be below the main header area, aligned with the start of the project info
-        y = 30 + 20; // Y position after main title
+        drawCheckbox(distributionX, checkboxY, 'Owner', formData.check_owner);
+        drawCheckbox(distributionX + 45, checkboxY, 'Surety', formData.check_surety);
+        checkboxY += 8;
+        drawCheckbox(distributionX, checkboxY, 'Architect', formData.check_architect);
+        drawCheckbox(distributionX + 45, checkboxY, 'Other', formData.check_other);
+        checkboxY += 8;
+        drawCheckbox(distributionX, checkboxY, 'Contractor', formData.check_contractor);
 
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-
-        const projectDetailsYStart = y;
-        
         doc.text(`Project: (Name, Address)\n${formData.project_name_address || '____________________'}`, leftMargin, projectDetailsYStart);
         doc.text(`To: (Owner)\n${formData.to_owner || '____________________'}`, leftMargin, projectDetailsYStart + 30);
 
