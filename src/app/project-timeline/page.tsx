@@ -23,6 +23,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DatePicker } from '@/components/ui/date-picker';
 import { addDays, format, parseISO, isValid, differenceInDays, subDays } from 'date-fns';
 import { exportDataToPdf } from '@/lib/utils';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const DEFAULT_TIMELINE_ID = "main-project-timeline";
 
@@ -246,8 +248,60 @@ export default function ProjectTimelinePage() {
     };
 
     const handleDownloadPdf = () => {
-        const tasksToExport = timelineTasks.filter(task => !(task as any).isHeader);
-        exportDataToPdf('Project Timeline', tasksToExport, 'project-timeline');
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Project Timeline", doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+
+        const headers = [['ID', 'Task Name', 'Duration', 'Start', 'Finish', 'Predecessor']];
+        const body = timelineTasks
+            .filter(task => !(task as any).isHeader)
+            .map(task => [
+                String(task.id),
+                task.name,
+                task.duration || '',
+                task.start ? format(parseISO(task.start), 'dd-MM-yy') : '',
+                task.finish ? format(parseISO(task.finish), 'dd-MM-yy') : '',
+                task.predecessor || ''
+            ]);
+
+        autoTable(doc, {
+            head: headers,
+            body: body,
+            startY: 25,
+            theme: 'grid',
+            styles: {
+                fontSize: 8,
+                cellPadding: 1.5,
+                overflow: 'linebreak',
+            },
+            headStyles: {
+                fillColor: [30, 41, 59],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+            },
+            columnStyles: {
+                0: { cellWidth: 10 },  // ID
+                1: { cellWidth: 75 }, // Task Name
+                2: { cellWidth: 20 }, // Duration
+                3: { cellWidth: 20 }, // Start
+                4: { cellWidth: 20 }, // Finish
+                5: { cellWidth: 25 }, // Predecessor
+            },
+            didDrawPage: (data) => {
+                // You can add headers/footers to each page if needed
+            }
+        });
+        
+        doc.save('project-timeline.pdf');
+        toast({ title: "Download Started", description: "Your PDF is being generated." });
     }
 
     if (isUserLoading || isLoading) {
