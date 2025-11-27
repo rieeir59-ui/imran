@@ -90,6 +90,37 @@ const addInitialArchitects = async (firestore: any, user: any, employees: Employ
   await batch.commit();
 };
 
+const addInitialSoftwareEngineers = async (firestore: any, user: any, employees: Employee[]) => {
+  const engineersToAdd = [
+    { name: "John Carmack", designation: "Software Engineer" },
+    { name: "Ada Lovelace", designation: "Software Engineer" },
+  ];
+
+  const existingEngineers = new Set(
+    employees
+      .filter(emp => emp.designation === 'Software Engineer')
+      .map(emp => emp.name)
+  );
+
+  const newEngineers = engineersToAdd.filter(
+    eng => !existingEngineers.has(eng.name)
+  );
+
+  if (newEngineers.length === 0) {
+    return;
+  }
+
+  const batch = writeBatch(firestore);
+  const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
+
+  newEngineers.forEach(engineer => {
+    const newDocRef = doc(employeesCollectionRef);
+    batch.set(newDocRef, engineer);
+  });
+
+  await batch.commit();
+};
+
 
 export default function TeamDashboard() {
   const [employeesByDesignation, setEmployeesByDesignation] = useState<Record<string, Employee[]>>({});
@@ -117,9 +148,9 @@ export default function TeamDashboard() {
     const unsubscribe = onSnapshot(employeesCollectionRef, (snapshot) => {
         const fetchedEmployees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
         
-        // One-time population of architects
         if (user && firestore) {
           addInitialArchitects(firestore, user, fetchedEmployees).catch(console.error);
+          addInitialSoftwareEngineers(firestore, user, fetchedEmployees).catch(console.error);
         }
         
         const groupedByDesignation = fetchedEmployees.reduce((acc, employee) => {
