@@ -55,9 +55,19 @@ const projectList = [
     "27. FBL RHQ (Basment)",
 ];
 
+const designations = [
+    "Architect",
+    "Draftsperson",
+    "3D Visualizer",
+    "Quantity Surveyor",
+    "Finance Manager",
+    "Software Engineer",
+];
+
 export default function AssignTaskPage() {
     const [employeeName, setEmployeeName] = useState('');
     const [projectName, setProjectName] = useState('');
+    const [designation, setDesignation] = useState('');
     const [taskDescription, setTaskDescription] = useState('');
     const [startDate, setStartDate] = useState<Date | undefined>();
     const [endDate, setEndDate] = useState<Date | undefined>();
@@ -80,7 +90,7 @@ export default function AssignTaskPage() {
             toast({ variant: 'destructive', title: 'Error', description: 'Cannot assign task. User not authenticated.' });
             return;
         }
-        if (!employeeName || !projectName || !taskDescription || !startDate || !endDate) {
+        if (!employeeName || !projectName || !taskDescription || !startDate || !endDate || !designation) {
             toast({ variant: 'destructive', title: 'Missing Information', description: 'Please fill out all fields.' });
             return;
         }
@@ -89,6 +99,7 @@ export default function AssignTaskPage() {
         const taskData = {
             employeeName,
             projectName,
+            designation,
             taskDescription,
             startDate: startDate.toISOString().split('T')[0],
             endDate: endDate.toISOString().split('T')[0],
@@ -102,6 +113,7 @@ export default function AssignTaskPage() {
             toast({ title: 'Task Assigned!', description: `Task for ${projectName} has been assigned to ${employeeName}.` });
             setEmployeeName('');
             setProjectName('');
+            setDesignation('');
             setTaskDescription('');
             setStartDate(undefined);
             setEndDate(undefined);
@@ -183,6 +195,21 @@ export default function AssignTaskPage() {
                               </PopoverContent>
                             </Popover>
                         </div>
+
+                         <div className="space-y-2">
+                            <Label htmlFor="designation">Designation</Label>
+                            <Select onValueChange={setDesignation} value={designation}>
+                                <SelectTrigger id="designation">
+                                    <SelectValue placeholder="Select a designation" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {designations.map(d => (
+                                        <SelectItem key={d} value={d}>{d}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
                         <div className="space-y-2">
                             <Label htmlFor="project-name">Project Name</Label>
                             <Popover open={projectPopoverOpen} onOpenChange={setProjectPopoverOpen}>

@@ -767,9 +767,13 @@
           "type": "string",
           "format": "date-time",
           "description": "The timestamp when the task was created."
+        },
+        "designation": {
+            "type": "string",
+            "description": "The designation or department of the employee assigned the task."
         }
       },
-      "required": ["employeeName", "projectName", "taskDescription", "startDate", "endDate", "status", "assignedBy", "createdAt"]
+      "required": ["employeeName", "projectName", "taskDescription", "startDate", "endDate", "status", "assignedBy", "createdAt", "designation"]
     }
   },
   "auth": {
