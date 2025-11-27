@@ -148,13 +148,12 @@ export default function AssignTaskPage() {
                                 </Button>
                               </PopoverTrigger>
                               <PopoverContent className="w-full p-0">
-                                <Command>
+                                <Command onValueChange={(value) => setEmployeeName(value)}>
                                   <CommandInput 
                                     placeholder="Search employee or type to add..."
+                                    value={employeeName}
                                      onValueChange={(search) => {
-                                        if (!employeeList.some(p => p.toLowerCase() === search.toLowerCase())) {
-                                            setEmployeeName(search);
-                                        }
+                                        setEmployeeName(search);
                                     }}
                                   />
                                    <CommandList>
@@ -199,13 +198,12 @@ export default function AssignTaskPage() {
                                 </Button>
                               </PopoverTrigger>
                               <PopoverContent className="w-full p-0">
-                                <Command>
+                                <Command onValueChange={(value) => setProjectName(value)}>
                                   <CommandInput 
                                     placeholder="Search project or type to add..."
+                                    value={projectName}
                                     onValueChange={(search) => {
-                                        if (!projectList.some(p => p.toLowerCase() === search.toLowerCase())) {
-                                            setProjectName(search);
-                                        }
+                                        setProjectName(search);
                                     }}
                                   />
                                    <CommandList>
