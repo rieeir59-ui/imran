@@ -42,47 +42,31 @@ function SchedulesByDesignation() {
   const { user } = useUser();
   const firestore = useFirestore();
 
-  const schedulesQuery = useMemoFirebase(() => {
-    if (!user || !firestore || !designation) return null;
-    return query(
-      collection(firestore, `users/${user.uid}/weeklySchedules`),
-      where("designation", "==", designation)
-    );
-  }, [user, firestore, designation]);
-
-  const employeesQuery = useMemoFirebase(() => {
-    if (!user || !firestore || !designation) return null;
-    return query(
-      collection(firestore, `users/${user.uid}/employees`),
-      where("designation", "==", designation)
-    );
-  }, [user, firestore, designation]);
-
-
   useEffect(() => {
-    if (!schedulesQuery || !employeesQuery) {
-      setIsLoading(false);
-      return;
+    if (!user || !firestore || !designation) {
+        setIsLoading(false);
+        return;
     }
 
-    const unsubSchedules = onSnapshot(schedulesQuery, (schedulesSnapshot) => {
-        const schedulesData = schedulesSnapshot.docs.map(doc => {
-            const data = doc.data();
-            const employeeName = data.schedules?.[0]?.employeeName || data.employeeName || 'Unnamed';
-            return {
-                id: doc.id,
-                schedules: data.schedules || [],
-                employeeName: employeeName,
-            }
-        });
+    const employeesQuery = query(collection(firestore, `users/${user.uid}/employees`), where("designation", "==", designation));
+    const schedulesQuery = query(collection(firestore, `users/${user.uid}/weeklySchedules`), where("designation", "==", designation));
 
-        // Now listen to employees to merge them
-        const unsubEmployees = onSnapshot(employeesQuery, (employeesSnapshot) => {
-            const employeesData = employeesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
+    const unsubEmployees = onSnapshot(employeesQuery, (employeesSnapshot) => {
+        const employeesData = employeesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
+        
+        const unsubSchedules = onSnapshot(schedulesQuery, (schedulesSnapshot) => {
+            const schedulesData = schedulesSnapshot.docs.map(doc => {
+                const data = doc.data();
+                const employeeName = data.schedules?.[0]?.employeeName || data.employeeName || 'Unnamed';
+                return {
+                    id: doc.id,
+                    schedules: data.schedules || [],
+                    employeeName: employeeName,
+                }
+            });
 
             const mergedItems: Record<string, DisplayItem> = {};
 
-            // Process employees first
             employeesData.forEach(emp => {
                 mergedItems[emp.name] = {
                     id: emp.id,
@@ -94,8 +78,7 @@ function SchedulesByDesignation() {
                     hasSchedule: false
                 };
             });
-
-            // Process schedules and update/add to the map
+            
             schedulesData.forEach(schedule => {
                 const projectCount = schedule.schedules.length;
                 const completedCount = schedule.schedules.filter(p => p.status === 'Completed').length;
@@ -115,21 +98,19 @@ function SchedulesByDesignation() {
 
             setDisplayItems(Object.values(mergedItems));
             setIsLoading(false);
-
         }, (error) => {
-            console.error("Error fetching employees: ", error);
+            console.error("Error fetching schedules: ", error);
             setIsLoading(false);
         });
-        
-        return () => unsubEmployees();
 
+        return () => unsubSchedules();
     }, (error) => {
-        console.error("Error fetching schedules by designation: ", error);
+        console.error("Error fetching employees: ", error);
         setIsLoading(false);
     });
 
-    return () => unsubSchedules();
-  }, [schedulesQuery, employeesQuery]);
+    return () => unsubEmployees();
+  }, [user, firestore, designation]);
 
 
   return (
