@@ -183,7 +183,7 @@ const addInitialBOQManager = async (firestore: any, user: any, employees: Employ
 
 const addInitialFinanceManager = async (firestore: any, user: any, employees: Employee[]) => {
   const managersToAdd = [
-    { name: "Waqas Rasule", designation: "Finance Manager" },
+    { name: "m waqas rasoole", designation: "Finance Manager" },
   ];
 
   const existingManagers = new Set(
