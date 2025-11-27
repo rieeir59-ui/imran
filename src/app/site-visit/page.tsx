@@ -183,17 +183,37 @@ const SiteVisitPage = () => {
   };
   
     const toDataURL = (url: string): Promise<string> => {
-        // Use a CORS proxy if running locally and encountering CORS issues,
-        // or ensure Firebase Storage is configured for CORS.
         const proxyUrl = `https://cors-anywhere.herokuapp.com/${url}`;
-        return fetch(url) // Use proxyUrl if needed
-            .then(response => response.blob())
+        return fetch(proxyUrl) 
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok: ${response.statusText}`);
+                }
+                return response.blob();
+            })
             .then(blob => new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onloadend = () => resolve(reader.result as string);
                 reader.onerror = reject;
                 reader.readAsDataURL(blob);
-            }));
+            }))
+            .catch(error => {
+                 console.error("CORS proxy fetch failed, trying direct fetch:", error);
+                 // Fallback to direct fetch if proxy fails
+                 return fetch(url)
+                    .then(response => {
+                         if (!response.ok) {
+                            throw new Error(`Direct network response was not ok: ${response.statusText}`);
+                        }
+                        return response.blob()
+                    })
+                    .then(blob => new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result as string);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(blob);
+                    }));
+            });
     };
 
     const handleDownload = async () => {
