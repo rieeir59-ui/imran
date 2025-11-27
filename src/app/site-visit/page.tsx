@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -355,6 +356,7 @@ const SiteVisitPage = () => {
                 {isEditing && (
                     <Input 
                         type="file" 
+                        accept="image/png, image/jpeg"
                         className="text-sm"
                         onChange={(e) => {
                             const file = e.target.files?.[0];
@@ -497,3 +499,5 @@ const SiteVisitPage = () => {
 };
 
 export default SiteVisitPage;
+
+    
