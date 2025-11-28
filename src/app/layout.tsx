@@ -1,5 +1,5 @@
 
-"use client";
+'use client';
 
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -11,11 +11,8 @@ import { AppHeader } from '@/components/layout/header';
 import { FirebaseClientProvider } from '@/firebase';
 import { useEffect } from 'react';
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+// This new component will handle the side effect of loading the theme.
+const ThemeLoader = () => {
   useEffect(() => {
     const savedTheme = localStorage.getItem('dashboard-theme');
     if (savedTheme) {
@@ -30,7 +27,15 @@ export default function RootLayout({
       }
     }
   }, []);
-  
+
+  return null; // This component doesn't render anything visible.
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
@@ -39,6 +44,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
+        <ThemeLoader />
         <FirebaseClientProvider>
           <DataProvider>
             <SidebarProvider>
