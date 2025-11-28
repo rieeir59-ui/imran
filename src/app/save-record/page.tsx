@@ -3,11 +3,11 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, GanttChart, HardHat, ListChecks, CalendarDays, Folder, File as FileIcon, Search, Briefcase, CheckCircle, XCircle, CircleDotDashed, PlusCircle, Trash2, Check, Image, LayoutList } from 'lucide-react';
+import { FileText, GanttChart, HardHat, ListChecks, CalendarDays, Folder, File as FileIcon, Search, Briefcase, CheckCircle, XCircle, CircleDotDashed, PlusCircle, Trash2, Check, Image, LayoutList, MessageSquare, BookUser, LocateFixed, UserCheck, DollarSign, FileEdit, FileSignature, ShieldCheck, FileQuestion, FileSliders, UserPlus, ListTodo } from 'lucide-react';
 import Link from 'next/link';
 import { useUser, useStorage, useFirestore, useMemoFirebase } from '@/firebase';
-import { ref, listAll, getMetadata, deleteObject, onSnapshot, StorageReference } from 'firebase/storage';
-import { collection, getDocs, doc, deleteDoc, getDoc } from "firebase/firestore";
+import { ref, listAll, getMetadata, deleteObject, StorageReference } from 'firebase/storage';
+import { collection, getDocs, doc, deleteDoc, getDoc, onSnapshot } from "firebase/firestore";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -408,3 +408,5 @@ export default function SaveRecordPage() {
         </main>
     )
 }
+
+    
