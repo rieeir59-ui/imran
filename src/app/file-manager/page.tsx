@@ -10,7 +10,7 @@ import { UploadCloud, File as FileIcon, MoreVertical, Edit, Trash2, Save, Loader
 import { useDropzone } from 'react-dropzone';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useStorage, useAuth } from '@/firebase';
-import { ref, uploadBytesResumable, getDownloadURL, listAll, getMetadata, deleteObject, UploadTaskSnapshot } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL, listAll, getMetadata, deleteObject, UploadTaskSnapshot, FirebaseStorageError } from 'firebase/storage';
 import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -95,7 +95,7 @@ export default function FileManagerPage() {
   }, [user, storage, fetchFiles]);
 
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+  const onDrop = useCallback((acceptedFiles: File[]) => {
     if (!user || !storage) {
         toast({ variant: "destructive", title: "Upload failed", description: "You must be logged in to upload files."});
         return;
@@ -103,46 +103,39 @@ export default function FileManagerPage() {
 
     setUploadProgress(acceptedFiles.map(file => ({ fileName: file.name, progress: 0 })));
 
-    const uploadPromises = acceptedFiles.map(file => {
+    acceptedFiles.forEach(file => {
       const fileRef = ref(storage, `users/${user.uid}/uploads/${file.name}`);
       const uploadTask = uploadBytesResumable(fileRef, file);
 
-      return new Promise<void>((resolve, reject) => {
-        uploadTask.on('state_changed', 
-          (snapshot: UploadTaskSnapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setUploadProgress(prev => prev.map(p => p.fileName === file.name ? { ...p, progress } : p));
-          },
-          (error) => {
-            console.error("Upload error:", error.code, error.message);
-            toast({
-                variant: "destructive",
-                title: "Upload Error",
-                description: `Could not upload ${file.name}. Reason: ${error.code}`
-            })
-            reject(error);
-          },
-          () => {
-            resolve();
+      uploadTask.on('state_changed', 
+        (snapshot: UploadTaskSnapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(prev => prev.map(p => p.fileName === file.name ? { ...p, progress } : p));
+        },
+        (error: FirebaseStorageError) => {
+          console.error("Upload error:", error.code, error.message);
+          let description = `Could not upload ${file.name}. Reason: ${error.code}`;
+          if (error.code === 'storage/retry-limit-exceeded') {
+            description = "Network connection is unstable or the file is too large. Please check your connection and try again.";
           }
-        )
-      });
+          toast({
+              variant: "destructive",
+              title: "Upload Error",
+              description: description,
+          });
+          // Remove the failed upload from progress
+          setUploadProgress(prev => prev.filter(p => p.fileName !== file.name));
+        },
+        async () => {
+           await fetchFiles(); // Refresh file list after each successful upload
+           setUploadProgress(prev => prev.filter(p => p.fileName !== file.name));
+           toast({
+                title: 'File Uploaded',
+                description: `${file.name} has been successfully saved.`,
+            });
+        }
+      )
     });
-
-    try {
-        await Promise.all(uploadPromises);
-        toast({
-            title: 'Files Uploaded',
-            description: `${acceptedFiles.length} file(s) have been successfully saved.`,
-        });
-        await fetchFiles(); // Refresh the file list
-    } catch (error) {
-        // Individual file errors are already toasted inside the promise.
-        // We can log a summary error if needed.
-        console.error("One or more uploads failed.");
-    } finally {
-        setUploadProgress([]);
-    }
   }, [user, storage, toast, fetchFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
