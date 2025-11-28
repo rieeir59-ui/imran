@@ -118,6 +118,9 @@ export default function FileManagerPage() {
           if (error.code === 'storage/retry-limit-exceeded') {
             description = "Network connection is unstable or the file is too large. Please check your connection and try again.";
           }
+          if (error.code === 'storage/unauthorized') {
+            description = "You do not have permission to upload files. Please check storage rules."
+          }
           toast({
               variant: "destructive",
               title: "Upload Error",
@@ -432,5 +435,3 @@ export default function FileManagerPage() {
     </main>
   );
 }
-
-    
