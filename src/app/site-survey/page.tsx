@@ -64,32 +64,32 @@ const FormRow = ({
 );
 
 const ChecklistItem = ({
-  name,
-  label,
-  formData,
-  handleCheckboxChange,
-  isEditing,
-}: {
-  name: string;
-  label: string;
-  formData: any;
-  handleCheckboxChange: (name: string, checked: boolean) => void;
-  isEditing: boolean;
-}) => (
-  <div className="flex items-center gap-2">
-    <Checkbox
-      id={name}
-      checked={formData[name] || false}
-      onCheckedChange={(checked) =>
-        handleCheckboxChange(name, checked as boolean)
-      }
-      disabled={!isEditing}
-    />
-    <Label htmlFor={name} className="font-normal">
-      {label}
-    </Label>
-  </div>
-);
+    name,
+    label,
+    formData,
+    handleCheckboxChange,
+    isEditing,
+  }: {
+    name: string;
+    label: string;
+    formData: any;
+    handleCheckboxChange: (name: string, checked: boolean) => void;
+    isEditing: boolean;
+  }) => (
+    <div className="flex items-center gap-2">
+      <Checkbox
+        id={name}
+        checked={formData[name] || false}
+        onCheckedChange={(checked) =>
+          handleCheckboxChange(name, checked as boolean)
+        }
+        disabled={!isEditing}
+      />
+      <Label htmlFor={name} className="font-normal">
+        {label}
+      </Label>
+    </div>
+  );
 
 
 const SiteSurveyPage = () => {
@@ -174,6 +174,16 @@ const SiteSurveyPage = () => {
     const handleDownload = async () => {
         const doc = new jsPDF();
         let y = 15;
+        const leftMargin = 14;
+        const rightMargin = 200;
+        const contentWidth = rightMargin - leftMargin;
+
+        const checkPageBreak = (requiredHeight: number = 10) => {
+            if (y + requiredHeight > 280) {
+                doc.addPage();
+                y = 15;
+            }
+        };
 
         // --- PDF Header ---
         doc.setFontSize(14);
@@ -187,137 +197,179 @@ const SiteSurveyPage = () => {
         doc.text("PREMISES REVIEW FOR PROPOSED BRANCH/OFFICE", 105, y, { align: 'center' });
         y += 8;
 
-        const addSection = (title: string, data: (string | [string, string])[][]) => {
-            if (y > 250) {
-                doc.addPage();
-                y = 15;
+        const addSectionTitle = (title: string) => {
+            checkPageBreak(15);
+            y += 8;
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(title, leftMargin, y);
+            y += 2;
+            doc.setLineWidth(0.5);
+            doc.line(leftMargin, y, rightMargin - 4, y);
+            y += 6;
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+        };
+
+        const addField = (label: string, value: string | undefined, options: {isTextarea?: boolean} = {}) => {
+            checkPageBreak();
+            const labelWidth = doc.getTextWidth(label) + 2;
+            const valueX = leftMargin + 80;
+            
+            doc.setFont('helvetica', 'bold');
+            doc.text(label, leftMargin, y + 4);
+            doc.setFont('helvetica', 'normal');
+            
+            const text = value || '';
+            const splitText = doc.splitTextToSize(text, contentWidth - 80);
+            const textHeight = doc.getTextDimensions(splitText).h;
+            
+            checkPageBreak(textHeight + 2);
+            doc.text(splitText, valueX, y + 4);
+            y += textHeight + 4;
+        };
+
+        const addCheckbox = (label: string, name: string) => {
+            checkPageBreak();
+            const boxSize = 3.5;
+            doc.rect(leftMargin, y, boxSize, boxSize);
+            if (formData[name]) {
+                doc.setFont('ZapfDingbats');
+                doc.text('✓', leftMargin + 0.5, y + 3);
+                doc.setFont('helvetica', 'normal');
             }
-            autoTable(doc, {
-                startY: y,
-                head: [[{ content: title, styles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' } }]],
-                body: data,
-                theme: 'grid',
-                columnStyles: { 0: { fontStyle: 'bold' } },
-                didDrawPage: (data) => { y = data.cursor?.y || 0; }
+            doc.text(label, leftMargin + 5, y + 3);
+            y += 7;
+        };
+        
+         const addRadioGroup = (label: string, name: string, options: string[], note?: string) => {
+            checkPageBreak();
+            doc.setFont('helvetica', 'bold');
+            doc.text(label, leftMargin, y + 4);
+            doc.setFont('helvetica', 'normal');
+            let currentX = leftMargin + 80;
+            options.forEach(opt => {
+                const isChecked = (formData[name] && formData[name].toLowerCase() === opt.toLowerCase());
+                const radioSize = 1.5;
+                doc.circle(currentX, y + 2.5, radioSize);
+                if (isChecked) {
+                    doc.circle(currentX, y + 2.5, radioSize, 'F');
+                }
+                doc.text(opt, currentX + 3, y + 4);
+                currentX += doc.getTextWidth(opt) + 15;
             });
-            y = (doc as any).lastAutoTable.finalY + 5;
+            if(note) {
+                 doc.setFontSize(8);
+                 doc.setTextColor(150);
+                 doc.text(note, currentX, y+4);
+                 doc.setFontSize(10);
+                 doc.setTextColor(0);
+            }
+            y += 10;
+        };
+
+        addSectionTitle("Location");
+        addField("Purpose (Branch/ATM/etc.):", formData.purpose);
+        addField("City:", formData.city);
+        addField("Region:", formData.region);
+        addField("Address:", formData.address, { isTextarea: true });
+
+        addSectionTitle("Legal File");
+        addField("Name of Owner(s) of the Premises:", formData.owner_name);
+        addRadioGroup("Completion Certificate:", "completion_cert", ["Yes", "No"]);
+        addRadioGroup("Is Leased:", "is_leased", ["Yes", "No"], '(As informed by Owner Representative)');
+
+        addSectionTitle("Area (Attach as-built plan(s))");
+        addField("Maximum Frontage (ft):", formData.frontage);
+        addField("Maximum Depth (ft):", formData.depth);
+        addField("Total Area (Sqft):", formData.total_area);
+        addField("Minimum Clear Height (ft):", formData.clear_height);
+        addField("Building Plot Size:", formData.plot_size);
+        addField("Covered Area (Basement):", formData.covered_basement);
+        addField("Covered Area (Ground Floor):", formData.covered_ground);
+        addField("No. of Stories/Floors:", formData.stories);
+
+        addSectionTitle("Building Overview");
+        addField("Independent Premises:", formData.independent_premises);
+        addRadioGroup("Status:", "status", ["Shell", "Semi Finished", "Finished"]);
+        addRadioGroup("Type of Premises:", "premises_type", ["Single Story", "Multi Story"]);
+        addField("Age of Premises:", formData.premises_age);
+        addRadioGroup("Interior of Premises:", "premises_interior", ["Furnished", "Un-Furnished"]);
+        addField("Type of Construction:", formData.construction_type);
+        addRadioGroup("Is Independent Entrance Provided:", "independent_entrance", ["Yes", "No"]);
+        addRadioGroup("Is Staircase for Staff movement available:", "staff_staircase", ["Yes", "No"]);
+        addRadioGroup("Emergency Exit:", "emergency_exit", ["Yes", "No"]);
+        addRadioGroup("Ramp Available for disabled persons:", "ramp_available", ["Yes", "No"]);
+        addRadioGroup("Seepage in Building:", "seepage", ["Yes", "No"]);
+        if (formData.seepage === 'yes') {
+            addField("Area of Seepage:", formData.seepage_area);
+            addField("Possible cause of Seepage:", formData.seepage_cause);
         }
-        
-        const getYesNo = (fieldName: string) => formData[fieldName] ? 'Yes' : 'No';
-
-        // --- Location ---
-        addSection("Location", [
-            ["Purpose", formData.purpose || ''],
-            ["City", formData.city || ''],
-            ["Region", formData.region || ''],
-            ["Address", formData.address || ''],
-        ]);
-
-        // --- Legal File ---
-        addSection("Legal File", [
-            ["Name of Owner", formData.owner_name || ''],
-            ["Completion Certificate", getYesNo('completion_cert')],
-            ["Is Leased", `${getYesNo('is_leased')} (As informed by Owner Representative)`],
-        ]);
-
-        // --- Area ---
-        addSection("Area (Attach as-built plan(s))", [
-            ["Maximum Frontage (ft)", formData.frontage || ''],
-            ["Maximum Depth (ft)", formData.depth || ''],
-            ["Total Area (Sqft)", formData.total_area || ''],
-            ["Minimum Clear Height (ft)", formData.clear_height || ''],
-            ["Building Plot Size", formData.plot_size || ''],
-            ["Covered Area (Basement)", formData.covered_basement || ''],
-            ["Covered Area (Ground Floor)", formData.covered_ground || ''],
-            ["No. of Stories/Floors", formData.stories || ''],
-        ]);
-        
-        // --- Building Overview ---
-        const buildingOverviewData = [
-            ["Independent Premises", formData.independent_premises || ''],
-            ["Status", formData.status || ''],
-            ["Type of Premises", formData.premises_type || ''],
-            ["Age of Premises", formData.premises_age || ''],
-            ["Interior of Premises", formData.premises_interior || ''],
-            ["Type of Construction", formData.construction_type || ''],
-            ["Independent Entrance", getYesNo('independent_entrance')],
-            ["Staff Staircase", getYesNo('staff_staircase')],
-            ["Emergency Exit", `${getYesNo('emergency_exit')} (Can provide if not available: ${getYesNo('can_provide_exit')})`],
-            ["Ramp Available", `${getYesNo('ramp_available')} (Can provide if not available: ${getYesNo('can_provide_ramp')})`],
-            ["Seepage", `${getYesNo('seepage')} (Area: ${formData.seepage_area || 'N/A'}, Cause: ${formData.seepage_cause || 'N/A'})`],
-            ["Generator Space", getYesNo('generator_space')],
-            ["Property Utilization", [
+        addRadioGroup("Space available for Generator:", "generator_space", ["Yes", "No"]);
+        addField("Property Utilization:", [
                 formData.pu_res && "Fully residential",
                 formData.pu_com && "Fully Commercial",
                 formData.pu_dual && "Dual use",
                 formData.pu_ind && "Industrial"
-            ].filter(Boolean).join(', ')],
-            ["Building plinth level from road", formData.plinth_level || ''],
-            ["Flooding Risk", getYesNo('flooding_risk')],
-            ["Disable Access", getYesNo('disable_access')],
-            ["Condition of roof waterproofing", formData.roof_waterproofing || ''],
-            ["Parking Available", `${getYesNo('parking_available')} (On Main Road)`],
-            ["Road Approachable", getYesNo('road_approachable')],
-            ["Hazard in Vicinity (300m)", getYesNo('hazard_vicinity')],
-            ["Wall Masonry Material", formData.wall_masonry_material || ''],
-            ["Signage Space", getYesNo('signage_space')],
-            ["Major Retainable Elements", [
+            ].filter(Boolean).join(', '));
+        addField("Building plinth level from road:", formData.plinth_level);
+        addRadioGroup("Is the area prone to flooding:", "flooding_risk", ["Yes", "No"]);
+        addRadioGroup("Is disable access as per SBP/local by laws:", "disable_access", ["Yes", "No"]);
+        addField("Condition of roof waterproofing:", formData.roof_waterproofing);
+        addRadioGroup("Parking Available:", "parking_available", ["Yes", "No"], '(On Main Road)');
+        addRadioGroup("Road Approachable for Fire Tender & Bowser:", "road_approachable", ["Yes", "No"]);
+        addRadioGroup("Any hazard in the vicinity (radius of 300m):", "hazard_vicinity", ["Yes", "No"]);
+        addField("Material of Wall Masonry:", formData.wall_masonry_material);
+        addRadioGroup("Adequate Space for Signage:", "signage_space", ["Yes", "No"]);
+        addField("Major Retainable Building Elements:", [
                 formData.mrb_wt && "Water Tank",
                 formData.mrb_v && "Vault",
                 formData.mrb_sf && "Subflooring",
                 formData.mrb_sc && "Staircase",
                 formData.mrb_o && "Others"
-            ].filter(Boolean).join(', ')],
-            ["In case of Plot, existing level from road", formData.plot_levels || ''],
-        ];
-        addSection("Building Overview", buildingOverviewData);
+            ].filter(Boolean).join(', '));
+        addField("In case of Plot, existing level from road:", formData.plot_levels);
 
 
-        // --- Utilities ---
-        addSection("Utilities", [
-            ["Sanctioned Electrical Load", formData.electrical_load || ''],
-            ["Type of electrical load", [
+        addSectionTitle("Utilities");
+        addField("Sanctioned Electrical Load:", formData.electrical_load);
+        addField("Type of electrical load:", [
                 formData.el_com && "Commercial",
                 formData.el_ind && "Industrial",
                 formData.el_res && "Residential"
-            ].filter(Boolean).join(', ')],
-            ["Electrical Meter", formData.electrical_meter || ''],
-            ["Piped Water", getYesNo('piped_water')],
-            ["Underground Tank", getYesNo('underground_tank')],
-            ["Overhead Tank", `${getYesNo('overhead_tank')} (Type: ${formData.overhead_tank_type || 'N/A'})`],
-            ["Type of Water", formData.water_type || ''],
-            ["Gas Connection", getYesNo('gas_connection')],
-            ["Sewerage Line", getYesNo('sewerage_line')],
-        ]);
-        
-        // --- Bounded As ---
-        addSection("Bounded As", [
-            ["Front", formData.bound_front || ''],
-            ["Back", formData.bound_back || ''],
-            ["Right", formData.bound_right || ''],
-            ["Left", formData.bound_left || ''],
-        ]);
-        
-        // --- Rental Detail ---
-        addSection("Rental Detail", [
-            ["Acquisition", formData.acquisition || ''],
-            ["Expected Rental/month", formData.expected_rental || ''],
-            ["Expected Advance (# of months)", formData.expected_advance || ''],
-            ["Expected period of lease", formData.lease_period || ''],
-            ["Annual increase in rental", formData.rental_increase || ''],
-        ]);
-        
-        // --- Survey Conducted By ---
-        addSection("Survey Conducted By", [
-            ["Name", formData.surveyor_name || ''],
-            ["Designation", formData.surveyor_designation || ''],
-            ["Contact", formData.surveyor_contact || ''],
-            ["Cell", formData.surveyor_cell || ''],
-            ["Landline", formData.surveyor_landline || ''],
-            ["Email", formData.surveyor_email || ''],
-            ["Date", formData.survey_date || ''],
-        ]);
+            ].filter(Boolean).join(', '));
+        addRadioGroup("Electrical Meter:", "electrical_meter", ["Single Phase", "3-Phase"]);
+        addRadioGroup("Piped Water available:", "piped_water", ["Yes", "No"]);
+        addRadioGroup("Underground Water Tank available:", "underground_tank", ["Yes", "No"]);
+        addRadioGroup("Overhead Water Tank available:", "overhead_tank", ["Yes", "No"]);
+        if (formData.overhead_tank === 'yes') {
+             addField("Type of Overhead Tank:", formData.overhead_tank_type);
+        }
+        addRadioGroup("Type of Water:", "water_type", ["Sweet", "Brackish"]);
+        addRadioGroup("Gas Connection available:", "gas_connection", ["Yes", "No"]);
+        addRadioGroup("Sewerage Line available:", "sewerage_line", ["Yes", "No"]);
 
+        addSectionTitle("Bounded As");
+        addField("Front:", formData.bound_front);
+        addField("Back:", formData.bound_back);
+        addField("Right:", formData.bound_right);
+        addField("Left:", formData.bound_left);
+
+        addSectionTitle("Rental Detail");
+        addRadioGroup("Acquisition:", "acquisition", ["Rental", "Purchase"]);
+        addField("Expected Rental/month (PKR):", formData.expected_rental);
+        addField("Expected Advance (# of months):", formData.expected_advance);
+        addField("Expected period of lease:", formData.lease_period);
+        addField("Annual increase in rental %:", formData.rental_increase);
+
+        addSectionTitle("Survey Conducted By");
+        addField("Name:", formData.surveyor_name);
+        addField("Designation:", formData.surveyor_designation);
+        addField("Contact:", formData.surveyor_contact);
+        addField("Cell:", formData.surveyor_cell);
+        addField("Landline:", formData.surveyor_landline);
+        addField("Email:", formData.surveyor_email);
+        addField("Date:", formData.survey_date);
 
         // --- Footer ---
         const footerY = doc.internal.pageSize.height - 15;
@@ -408,8 +460,7 @@ const SiteSurveyPage = () => {
             <FormRow label="Completion Certificate:">{renderRadioGroupWithNote('completion_cert', ['Yes', 'No'])}</FormRow>
             <FormRow label="Is Leased:">{renderRadioGroupWithNote('is_leased', ['Yes', 'No'], '(As informed by Owner Representative)')}</FormRow>
 
-            <SectionTitle>Area</SectionTitle>
-            <p className="text-sm text-muted-foreground -mt-2 mb-2">Attach as-built plan(s)</p>
+            <SectionTitle>Area (Attach as-built plan(s))</SectionTitle>
             <div className="grid grid-cols-2 gap-4">
                 <FormRow label="Maximum Frontage (ft):">{renderInput("frontage")}</FormRow>
                 <FormRow label="Maximum Depth (ft):">{renderInput("depth")}</FormRow>
@@ -523,5 +574,3 @@ const SiteSurveyPage = () => {
 };
 
 export default SiteSurveyPage;
-
-    
