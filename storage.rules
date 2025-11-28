@@ -1,10 +1,9 @@
-
 rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow authenticated users to read and write to their own folders.
-    // The path is structured as /users/{userId}/...
+    // Correctly match the path for user-specific uploads.
+    // This allows authenticated users to read and write files within their own designated folder.
     match /users/{userId}/{allPaths=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }

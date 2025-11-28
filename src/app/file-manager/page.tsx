@@ -43,7 +43,6 @@ export default function FileManagerPage() {
   const [newFileName, setNewFileName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [activeFile, setActiveFile] = useState<UploadedFile | null>(null);
-  const [editorContent, setEditorContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([]);
 
@@ -114,12 +113,11 @@ export default function FileManagerPage() {
         },
         (error: FirebaseStorageError) => {
           console.error("Upload error:", error.code, error.message);
-          let description = `Could not upload ${file.name}. Reason: ${error.code}`;
-          if (error.code === 'storage/retry-limit-exceeded') {
-            description = "Network connection is unstable or the file is too large. Please check your connection and try again.";
-          }
+          let description = `Could not upload ${file.name}. Reason: ${error.message}`;
           if (error.code === 'storage/unauthorized') {
-            description = "You do not have permission to upload files. Please check storage rules."
+            description = "You do not have permission to upload files. Please check your storage rules and ensure you are logged in."
+          } else if (error.code === 'storage/retry-limit-exceeded') {
+            description = "Network connection is unstable or the file is too large. Please check your connection and try again.";
           }
           toast({
               variant: "destructive",
