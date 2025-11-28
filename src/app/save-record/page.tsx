@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, GanttChart, HardHat, ListChecks, CalendarDays, Folder, File as FileIcon, Search, Briefcase, CheckCircle, XCircle, CircleDotDashed, PlusCircle, Trash2, Check } from 'lucide-react';
+import { FileText, GanttChart, HardHat, ListChecks, CalendarDays, Folder, File as FileIcon, Search, Briefcase, CheckCircle, XCircle, CircleDotDashed, PlusCircle, Trash2, Check, Image, LayoutList } from 'lucide-react';
 import Link from 'next/link';
 import { useUser, useStorage, useFirestore, useMemoFirebase } from '@/firebase';
 import { ref, listAll, getMetadata, deleteObject } from 'firebase/storage';
@@ -37,6 +37,12 @@ const savedRecords = [
     { title: 'Bank Forms', description: 'Access all bank-related project forms.', href: '/bank', icon: FileText },
     { title: 'Commercial Projects Timeline', description: 'Track the progress of all commercial projects.', href: '/commercial-timeline', icon: GanttChart, docPath: 'projectTimelines/commercial-timeline' },
     { title: 'Residential Projects Timeline', description: 'Track the progress of all residential projects.', href: '/residential-timeline', icon: GanttChart, docPath: 'projectTimelines/residential-timeline' },
+    { title: 'Architectural Drawings', description: 'Manage architectural drawing schedules.', href: '/architectural-drawings', icon: Image, docPath: 'drawingSchedules/architectural-drawing-schedule' },
+    { title: 'Sample List of Drawings', description: 'Manage sample drawing lists.', href: '/sample-list-of-drawings', icon: LayoutList, docPath: 'drawingSchedules/sample-list-of-drawings' },
+    { title: 'Structural Drawings', description: 'Manage structural drawing schedules.', href: '/structural-drawings', icon: HardHat, docPath: 'drawingSchedules/structural-drawing-schedule' },
+    { title: 'Plumbing Drawings', description: 'Manage plumbing drawing schedules.', href: '/plumbing-drawings', icon: FileText, docPath: 'drawingSchedules/plumbing-drawing-schedule' },
+    { title: 'Electrification Drawings', description: 'Manage electrification drawing schedules.', href: '/electrification-drawings', icon: FileText, docPath: 'drawingSchedules/electrification-drawing-schedule' },
+    { title: 'Lighting Drawings', description: 'Manage lighting drawing schedules.', href: '/lighting-drawings', icon: FileText, docPath: 'drawingSchedules/lighting-drawing-schedule' },
     { title: 'File Manager', description: 'Upload and manage all your project files.', href: '/file-manager', icon: Folder },
 ];
 
