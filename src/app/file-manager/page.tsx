@@ -43,6 +43,7 @@ export default function FileManagerPage() {
   const [newFileName, setNewFileName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [activeFile, setActiveFile] = useState<UploadedFile | null>(null);
+  const [editorContent, setEditorContent] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([]);
 
