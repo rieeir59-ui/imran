@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { collection, onSnapshot, doc, deleteDoc, writeBatch, getDocs, query, where } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, writeBatch, getDocs, query, setDoc, getDoc } from 'firebase/firestore';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
@@ -56,10 +56,6 @@ interface Task {
 
 const setupInitialTeam = async (firestore: any, user: any) => {
     const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
-    const q = query(employeesCollectionRef);
-    const querySnapshot = await getDocs(q);
-
-    const existingEmployees = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
     
     const correctArchitects = [
       { name: "Sobia Razzak", designation: "Architect" },
@@ -70,26 +66,11 @@ const setupInitialTeam = async (firestore: any, user: any) => {
       { name: "M Khizar", designation: "Architect" },
     ];
     
-    const correctArchitectNames = new Set(correctArchitects.map(e => e.name));
     const batch = writeBatch(firestore);
 
-    // Delete incorrect employees from all teams, not just architects
-    existingEmployees.forEach(emp => {
-      const isCorrectArchitect = emp.designation === 'Architect' && correctArchitectNames.has(emp.name);
-      const isOtherDefault = teams.some(t => t.designation === emp.designation && !isCorrectArchitect);
-      
-      if (!isCorrectArchitect && emp.designation === 'Architect') {
-         batch.delete(doc(employeesCollectionRef, emp.id));
-      }
-    });
-
-    // Add missing architects if they don't exist
-    const existingArchitectsInDB = new Set(existingEmployees.filter(e => e.designation === 'Architect').map(e => e.name));
     correctArchitects.forEach(architect => {
-      if (!existingArchitectsInDB.has(architect.name)) {
         const newDocRef = doc(employeesCollectionRef);
         batch.set(newDocRef, architect);
-      }
     });
   
     await batch.commit();
@@ -103,7 +84,6 @@ export default function TeamDashboard() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
-  const initialSetupDone = useRef(false);
 
   const employeesCollectionRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -121,35 +101,45 @@ export default function TeamDashboard() {
         return;
     }
 
-    const unsubscribe = onSnapshot(employeesCollectionRef, async (snapshot) => {
-        if (!initialSetupDone.current) {
-          initialSetupDone.current = true;
-          await setupInitialTeam(firestore, user).catch(console.error);
+    const checkAndRunInitialSetup = async () => {
+        const setupDocRef = doc(firestore, `users/${user.uid}/app-settings`, 'initialSetup');
+        const docSnap = await getDoc(setupDocRef);
+        if (!docSnap.exists() || !docSnap.data().teamSetupDone) {
+            await setupInitialTeam(firestore, user);
+            await setDoc(setupDocRef, { teamSetupDone: true });
         }
-        
-        const fetchedEmployees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
-        
-        const groupedByDesignation = fetchedEmployees.reduce((acc, employee) => {
-            const { designation } = employee;
-            if (!acc[designation]) {
-                acc[designation] = [];
-            }
-            acc[designation].push(employee);
-            return acc;
-        }, {} as Record<string, Employee[]>);
+    };
 
-        if (groupedByDesignation['Architect']) {
-            const architectOrder = ["Sobia Razzak", "Luqman Aslam", "Syed M Asad", "M Haseeb", "M Waleed Zahid", "M Khizar"];
-            groupedByDesignation['Architect'].sort((a, b) => {
-                return architectOrder.indexOf(a.name) - architectOrder.indexOf(b.name);
-            });
-        }
-        
-        setEmployeesByDesignation(groupedByDesignation);
+    checkAndRunInitialSetup().then(() => {
+        const unsubscribe = onSnapshot(employeesCollectionRef, (snapshot) => {
+            const fetchedEmployees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
+            
+            const groupedByDesignation = fetchedEmployees.reduce((acc, employee) => {
+                const { designation } = employee;
+                if (!acc[designation]) {
+                    acc[designation] = [];
+                }
+                acc[designation].push(employee);
+                return acc;
+            }, {} as Record<string, Employee[]>);
+
+            if (groupedByDesignation['Architect']) {
+                const architectOrder = ["Sobia Razzak", "Luqman Aslam", "Syed M Asad", "M Haseeb", "M Waleed Zahid", "M Khizar"];
+                groupedByDesignation['Architect'].sort((a, b) => {
+                    return architectOrder.indexOf(a.name) - architectOrder.indexOf(b.name);
+                });
+            }
+            
+            setEmployeesByDesignation(groupedByDesignation);
+            setIsLoading(false);
+        });
+
+        return () => unsubscribe();
+    }).catch(error => {
+        console.error("Error in initial setup or snapshot listener:", error);
         setIsLoading(false);
     });
 
-    return () => unsubscribe();
   }, [employeesCollectionRef, firestore, user]);
 
   useEffect(() => {
