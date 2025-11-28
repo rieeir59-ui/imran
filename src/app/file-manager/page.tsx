@@ -126,13 +126,15 @@ export default function FileManagerPage() {
           // Remove the failed upload from progress
           setUploadProgress(prev => prev.filter(p => p.fileName !== file.name));
         },
-        async () => {
-           await fetchFiles(); // Refresh file list after each successful upload
-           setUploadProgress(prev => prev.filter(p => p.fileName !== file.name));
-           toast({
-                title: 'File Uploaded',
-                description: `${file.name} has been successfully saved.`,
-            });
+        () => {
+           // On successful upload, re-fetch the list of files.
+           fetchFiles().then(() => {
+                setUploadProgress(prev => prev.filter(p => p.fileName !== file.name));
+                toast({
+                    title: 'File Uploaded',
+                    description: `${file.name} has been successfully saved.`,
+                });
+           });
         }
       )
     });
