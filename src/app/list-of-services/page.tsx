@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
+import { useFirestore, useUser, useAuth, useMemoFirebase, FirestorePermissionError, errorEmitter } from "@/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Download, Edit, Save, Loader2, ArrowLeft, Terminal } from 'lucide-react';
 import Link from 'next/link';
