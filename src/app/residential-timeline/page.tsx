@@ -23,6 +23,8 @@ import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from 'next/link';
 import { exportDataToCsv, exportDataToPdf } from '@/lib/utils';
+import { DatePicker } from '@/components/ui/date-picker';
+import { format, parseISO, isValid } from 'date-fns';
 
 const TIMELINE_DOC_ID = "residential-timeline";
 
@@ -39,7 +41,7 @@ const initialProjectData = [
     headCount: 'Done',
     proposalStart: 'Done',
     proposalEnd: 'Done',
-    '3dStart': '12-Oct-25',
+    '3dStart': '2025-10-12',
     '3dEnd': 'Done',
     archStart: 'Done',
     archEnd: 'Done',
@@ -88,16 +90,16 @@ const initialProjectData = [
     projectName: 'Mr. Shahpar Masood',
     areaInSft: '',
     projectHolder: 'Sobia/Waqas',
-    allocationDate: '23-Jul-25',
+    allocationDate: '2025-07-23',
     siteSurveyStart: 'n/a',
     siteSurveyEnd: 'n/a',
     contact: 'Done',
     headCount: '',
-    proposalStart: '1-Jul-25',
-    proposalEnd: '12-Aug-25',
-    '3dStart': '6-Aug-25',
-    '3dEnd': '23-Jul-25',
-    archStart: '14-Sep-25',
+    proposalStart: '2025-07-01',
+    proposalEnd: '2025-08-12',
+    '3dStart': '2025-08-06',
+    '3dEnd': '2025-07-23',
+    archStart: '2025-09-14',
     archEnd: '',
     mepStart: '',
     mepEnd: '',
@@ -198,9 +200,10 @@ const ResidentialTimelinePage = () => {
       });
   }, [timelineDocRef]);
 
-  const handleProjectDataChange = (index: number, field: string, value: string) => {
+  const handleProjectDataChange = (index: number, field: string, value: string | Date | undefined) => {
     const updatedData = [...projectData];
-    (updatedData[index] as any)[field] = value;
+    const updatedValue = value instanceof Date ? format(value, 'yyyy-MM-dd') : value;
+    (updatedData[index] as any)[field] = updatedValue;
     setProjectData(updatedData);
   };
   
@@ -210,8 +213,9 @@ const ResidentialTimelinePage = () => {
     setOverallStatus(updatedStatus);
   };
   
-  const handleRemarksChange = (field: 'text' | 'date', value: string) => {
-    setRemarks(prev => ({...prev, [field]: value}));
+  const handleRemarksChange = (field: 'text' | 'date', value: string | Date | undefined) => {
+    const updatedValue = value instanceof Date ? format(value, 'yyyy-MM-dd') : value;
+    setRemarks(prev => ({...prev, [field]: updatedValue}));
   }
 
   const handleSave = () => {
@@ -249,9 +253,17 @@ const ResidentialTimelinePage = () => {
     exportDataToPdf('Residential Projects Progress Chart', projectData, 'residential-timeline');
   }
 
-  const renderCell = (value: string, onChange: (val: string) => void) => {
-    return isEditing ? <Input value={value} onChange={(e) => onChange(e.target.value)} className="h-8" /> : value;
+  const renderCell = (value: string | undefined, onChange: (val: string) => void) => {
+    return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8" /> : value || '';
   }
+
+  const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
+    const date = value && isValid(parseISO(value)) ? parseISO(value) : undefined;
+    if (isEditing) {
+      return <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />;
+    }
+    return <span className="p-2 block min-h-[32px]">{date ? format(date, 'PP') : ''}</span>;
+  };
   
   if (isUserLoading || isLoading) {
     return (
@@ -355,16 +367,16 @@ const ResidentialTimelinePage = () => {
                     <TableCell className="border border-gray-400">{renderCell(project.projectName, (val) => handleProjectDataChange(index, 'projectName', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.areaInSft, (val) => handleProjectDataChange(index, 'areaInSft', val))}</TableCell>
                     <TableCell className="border border-gray-400">{renderCell(project.projectHolder, (val) => handleProjectDataChange(index, 'projectHolder', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.allocationDate, (val) => handleProjectDataChange(index, 'allocationDate', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.siteSurveyStart, (val) => handleProjectDataChange(index, 'siteSurveyStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.siteSurveyEnd, (val) => handleProjectDataChange(index, 'siteSurveyEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.allocationDate, (val) => handleProjectDataChange(index, 'allocationDate', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.siteSurveyStart, (val) => handleProjectDataChange(index, 'siteSurveyStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.siteSurveyEnd, (val) => handleProjectDataChange(index, 'siteSurveyEnd', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.contact, (val) => handleProjectDataChange(index, 'contact', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.headCount, (val) => handleProjectDataChange(index, 'headCount', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.proposalStart, (val) => handleProjectDataChange(index, 'proposalStart', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.proposalEnd, (val) => handleProjectDataChange(index, 'proposalEnd', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project['3dStart'], (val) => handleProjectDataChange(index, '3dStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.proposalStart, (val) => handleProjectDataChange(index, 'proposalStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.proposalEnd, (val) => handleProjectDataChange(index, 'proposalEnd', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project['3dStart'], (val) => handleProjectDataChange(index, '3dStart', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project['3dEnd'], (val) => handleProjectDataChange(index, '3dEnd', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.archStart, (val) => handleProjectDataChange(index, 'archStart', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.archStart, (val) => handleProjectDataChange(index, 'archStart', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.archEnd, (val) => handleProjectDataChange(index, 'archEnd', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.mepStart, (val) => handleProjectDataChange(index, 'mepStart', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.mepEnd, (val) => handleProjectDataChange(index, 'mepEnd', val))}</TableCell>
@@ -398,7 +410,7 @@ const ResidentialTimelinePage = () => {
             <div className="p-4 border border-gray-400 border-t-0">
               <div className="flex justify-between">
                 {isEditing ? <Textarea value={remarks.text} onChange={e => handleRemarksChange('text', e.target.value)} /> : <p>{remarks.text}</p>}
-                {isEditing ? <Input type="date" value={remarks.date} onChange={e => handleRemarksChange('date', e.target.value)} /> : <p>Date: {remarks.date}</p>}
+                 {isEditing ? <DatePicker date={remarks.date ? parseISO(remarks.date) : undefined} onDateChange={(date) => handleRemarksChange('date', date)} /> : <p>Date: {remarks.date ? format(parseISO(remarks.date), 'PP') : ''}</p>}
               </div>
             </div>
           </div>

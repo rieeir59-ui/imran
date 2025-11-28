@@ -12,6 +12,8 @@ import { Download, Edit, Save, Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { DatePicker } from '@/components/ui/date-picker';
+import { parseISO, format, isValid } from 'date-fns';
 
 const ARCHITECTURAL_DRAWING_SCHEDULE_DOC_ID = 'architectural-drawing-schedule';
 
@@ -57,10 +59,11 @@ export default function ArchitecturalDrawingsPage() {
         }).finally(() => setIsLoading(false));
     }, [docRef]);
     
-    const handleDrawingChange = (listName: string, index: number, field: string, value: string) => {
+    const handleDrawingChange = (listName: string, index: number, field: string, value: string | Date | undefined) => {
         setFormData((prev: any) => {
             const newList = [...prev[listName]];
-            newList[index] = { ...newList[index], [field]: value };
+            const updatedValue = value instanceof Date ? format(value, 'yyyy-MM-dd') : value;
+            newList[index] = { ...newList[index], [field]: updatedValue };
             return { ...prev, [listName]: newList };
         });
     };
@@ -116,15 +119,19 @@ export default function ArchitecturalDrawingsPage() {
     }
 
     const renderDrawingList = (listName: string, list: any[]) => (
-        list.map((item, index) => (
+        list.map((item, index) => {
+             const startDate = item.startDate && isValid(parseISO(item.startDate)) ? parseISO(item.startDate) : undefined;
+             const endDate = item.endDate && isValid(parseISO(item.endDate)) ? parseISO(item.endDate) : undefined;
+            return (
              <TableRow key={`${listName}-${index}`}>
                 <TableCell>{item.srNo}</TableCell>
                 <TableCell>{isEditing ? <Input value={item.description} onChange={(e) => handleDrawingChange(listName, index, 'description', e.target.value)} /> : item.description}</TableCell>
-                <TableCell>{isEditing ? <Input value={item.startDate} onChange={(e) => handleDrawingChange(listName, index, 'startDate', e.target.value)} /> : item.startDate}</TableCell>
-                <TableCell>{isEditing ? <Input value={item.endDate} onChange={(e) => handleDrawingChange(listName, index, 'endDate', e.target.value)} /> : item.endDate}</TableCell>
+                <TableCell>{isEditing ? <DatePicker date={startDate} onDateChange={(date) => handleDrawingChange(listName, index, 'startDate', date)} /> : item.startDate}</TableCell>
+                <TableCell>{isEditing ? <DatePicker date={endDate} onDateChange={(date) => handleDrawingChange(listName, index, 'endDate', date)} /> : item.endDate}</TableCell>
                 <TableCell>{isEditing ? <Input value={item.remarks} onChange={(e) => handleDrawingChange(listName, index, 'remarks', e.target.value)} /> : item.remarks}</TableCell>
             </TableRow>
-        ))
+            )
+        })
     );
     
     if (isLoading) return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>

@@ -10,6 +10,8 @@ import { useFirestore, useUser, useMemoFirebase } from "@/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Download, Edit, Save, Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { DatePicker } from '@/components/ui/date-picker';
+import { parseISO, format, isValid } from 'date-fns';
 
 const PLUMBING_DRAWING_SCHEDULE_DOC_ID = 'plumbing-drawing-schedule';
 
@@ -44,10 +46,11 @@ export default function PlumbingDrawingsPage() {
         }).finally(() => setIsLoading(false));
     }, [docRef]);
     
-    const handleDrawingChange = (listName: string, index: number, field: string, value: string) => {
+    const handleDrawingChange = (listName: string, index: number, field: string, value: string | Date | undefined) => {
         setFormData((prev: any) => {
             const newList = [...prev[listName]];
-            newList[index] = { ...newList[index], [field]: value };
+            const updatedValue = value instanceof Date ? format(value, 'yyyy-MM-dd') : value;
+            newList[index] = { ...newList[index], [field]: updatedValue };
             return { ...prev, [listName]: newList };
         });
     };
@@ -88,22 +91,26 @@ export default function PlumbingDrawingsPage() {
                 <Table>
                     <TableHeader><TableRow><TableHead>Drawings Title</TableHead><TableHead>Starting Date</TableHead><TableHead>Completion Date</TableHead><TableHead>Remarks</TableHead></TableRow></TableHeader>
                     <TableBody>
-                        {formData.plumbingDrawings?.map((item: any, i: number) => (
+                        {formData.plumbingDrawings?.map((item: any, i: number) => {
+                            const startDate = item.startDate && isValid(parseISO(item.startDate)) ? parseISO(item.startDate) : undefined;
+                            const endDate = item.endDate && isValid(parseISO(item.endDate)) ? parseISO(item.endDate) : undefined;
+                            return (
                              <TableRow key={`plumbing-${i}`}>
                                 <TableCell>
                                     {isEditing ? <Input value={item.title} onChange={(e) => handleDrawingChange('plumbingDrawings', i, 'title', e.target.value)} /> : item.title}
                                 </TableCell>
                                 <TableCell>
-                                    {isEditing ? <Input value={item.startDate} onChange={(e) => handleDrawingChange('plumbingDrawings', i, 'startDate', e.target.value)} /> : item.startDate}
+                                    {isEditing ? <DatePicker date={startDate} onDateChange={(date) => handleDrawingChange('plumbingDrawings', i, 'startDate', date)} /> : item.startDate}
                                 </TableCell>
                                 <TableCell>
-                                    {isEditing ? <Input value={item.endDate} onChange={(e) => handleDrawingChange('plumbingDrawings', i, 'endDate', e.target.value)} /> : item.endDate}
+                                    {isEditing ? <DatePicker date={endDate} onDateChange={(date) => handleDrawingChange('plumbingDrawings', i, 'endDate', date)} /> : item.endDate}
                                 </TableCell>
                                 <TableCell>
                                     {isEditing ? <Input value={item.remarks} onChange={(e) => handleDrawingChange('plumbingDrawings', i, 'remarks', e.target.value)} /> : item.remarks}
                                 </TableCell>
                             </TableRow>
-                        ))}
+                            )
+                        })}
                     </TableBody>
                 </Table>
             </CardContent>

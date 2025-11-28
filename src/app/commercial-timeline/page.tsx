@@ -23,6 +23,8 @@ import { initiateAnonymousSignIn } from "@/firebase/non-blocking-login";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from 'next/link';
 import { exportDataToCsv } from '@/lib/utils';
+import { DatePicker } from '@/components/ui/date-picker';
+import { format, parseISO, isValid } from 'date-fns';
 
 const TIMELINE_DOC_ID = "commercial-timeline";
 
@@ -32,7 +34,7 @@ const initialProjectData = [
     projectName: 'Enertech Hydo-China Thar Sindh (Office Building)',
     area: '5,000.00',
     projectHolder: 'MOHSIN/NOMAN',
-    allocationDate: '3/28/2025',
+    allocationDate: '2025-03-28',
     status: 'Furniture BOQ & Lights BOQ in Progress.',
   },
   {
@@ -40,7 +42,7 @@ const initialProjectData = [
     projectName: 'Enertech Hydo-China Thar Sindh (Officer Bungalow)',
     area: '2,000.00',
     projectHolder: 'MOHSIN/NOMAN',
-    allocationDate: '3/28/2026',
+    allocationDate: '2026-03-28',
     status: 'Furniture BOQ & Lights BOQ in Progress.',
   },
   {
@@ -48,7 +50,7 @@ const initialProjectData = [
     projectName: 'Enertech Hydo-China Thar Sindh (Guest House)',
     area: '6,500.00',
     projectHolder: 'MOHSIN/NOMAN',
-    allocationDate: '3/28/2027',
+    allocationDate: '2027-03-28',
     status: 'Furniture BOQ & Lights BOQ in Progress.',
   },
   {
@@ -56,7 +58,7 @@ const initialProjectData = [
     projectName: 'Enertech Hydo-China Thar Sindh (Bachelor Accommodation)',
     area: '8,850.00',
     projectHolder: 'MOHSIN/NOMAN',
-    allocationDate: '3/28/2028',
+    allocationDate: '2028-03-28',
     status: 'Furniture BOQ & Lights BOQ in Progress.',
   },
   {
@@ -171,13 +173,13 @@ const initialProjectData = [
     projectName: 'BAMSOL',
     area: '22,332.00',
     projectHolder: 'Haseeb ASAD',
-    allocationDate: '18-Aug-25',
+    allocationDate: '2025-08-18',
     siteSurveyStart: 'AS BUILT RECEIVED',
     siteSurveyEnd: '',
     contact: 'Done',
     headCount: 'Done',
-    proposalStart: '28-Aug-25',
-    proposalEnd: '25-Sep-25',
+    proposalStart: '2025-08-28',
+    proposalEnd: '2025-09-25',
   },
   {
     srNo: 11,
@@ -253,9 +255,10 @@ const CommercialTimelinePage = () => {
       });
   }, [timelineDocRef]);
 
-  const handleProjectDataChange = (index: number, field: string, value: string) => {
+  const handleProjectDataChange = (index: number, field: string, value: string | Date | undefined) => {
     const updatedData = [...projectData];
-    (updatedData[index] as any)[field] = value;
+    const updatedValue = value instanceof Date ? format(value, 'yyyy-MM-dd') : value;
+    (updatedData[index] as any)[field] = updatedValue;
     setProjectData(updatedData);
   };
   
@@ -265,8 +268,9 @@ const CommercialTimelinePage = () => {
     setOverallStatus(updatedStatus);
   };
   
-  const handleRemarksChange = (field: 'text' | 'date', value: string) => {
-    setRemarks(prev => ({...prev, [field]: value}));
+  const handleRemarksChange = (field: 'text' | 'date', value: string | Date | undefined) => {
+    const updatedValue = value instanceof Date ? format(value, 'yyyy-MM-dd') : value;
+    setRemarks(prev => ({...prev, [field]: updatedValue}));
   }
 
   const handleSave = () => {
@@ -303,6 +307,15 @@ const CommercialTimelinePage = () => {
   const renderCell = (value: string | undefined, onChange: (val: string) => void) => {
     return isEditing ? <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-8" /> : (value || '');
   }
+
+  const renderDateCell = (value: string | undefined, onChange: (val: Date | undefined) => void) => {
+    const date = value && isValid(parseISO(value)) ? parseISO(value) : undefined;
+    if (isEditing) {
+      return <DatePicker date={date} onDateChange={onChange} disabled={!isEditing} />;
+    }
+    return <span className="p-2 block min-h-[32px]">{date ? format(date, 'PP') : ''}</span>;
+  };
+
 
   if (isUserLoading || isLoading) {
     return (
@@ -406,7 +419,7 @@ const CommercialTimelinePage = () => {
                     <TableCell className="border border-gray-400">{renderCell(project.projectName, (val) => handleProjectDataChange(index, 'projectName', val))}</TableCell>
                     <TableCell className="border border-gray-400 text-center">{renderCell(project.area, (val) => handleProjectDataChange(index, 'area', val))}</TableCell>
                     <TableCell className="border border-gray-400">{renderCell(project.projectHolder, (val) => handleProjectDataChange(index, 'projectHolder', val))}</TableCell>
-                    <TableCell className="border border-gray-400 text-center">{renderCell(project.allocationDate, (val) => handleProjectDataChange(index, 'allocationDate', val))}</TableCell>
+                    <TableCell className="border border-gray-400 text-center">{renderDateCell(project.allocationDate, (val) => handleProjectDataChange(index, 'allocationDate', val))}</TableCell>
                     
                     {(project as any).status ? (
                         <>
@@ -414,24 +427,24 @@ const CommercialTimelinePage = () => {
                         </>
                     ) : (
                         <>
-                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).siteSurveyStart, (val) => handleProjectDataChange(index, 'siteSurveyStart', val))}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).siteSurveyEnd, (val) => handleProjectDataChange(index, 'siteSurveyEnd', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderDateCell((project as any).siteSurveyStart, (val) => handleProjectDataChange(index, 'siteSurveyStart', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderDateCell((project as any).siteSurveyEnd, (val) => handleProjectDataChange(index, 'siteSurveyEnd', val))}</TableCell>
                             <TableCell className="border border-gray-400 text-center">{renderCell((project as any).contact, (val) => handleProjectDataChange(index, 'contact', val))}</TableCell>
                             <TableCell className="border border-gray-400 text-center">{renderCell((project as any).headCount, (val) => handleProjectDataChange(index, 'headCount', val))}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).proposalStart, (val) => handleProjectDataChange(index, 'proposalStart', val))}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).proposalEnd, (val) => handleProjectDataChange(index, 'proposalEnd', val))}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).exterior3dStart, (val) => handleProjectDataChange(index, 'exterior3dStart', val))}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).exterior3dEnd, (val) => handleProjectDataChange(index, 'exterior3dEnd', val))}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).archStart, (val) => handleProjectDataChange(index, 'archStart', val))}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).archEnd, (val) => handleProjectDataChange(index, 'archEnd', val))}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).mepStart, (val) => handleProjectDataChange(index, 'mepStart', val))}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).mepEnd, (val) => handleProjectDataChange(index, 'mepEnd', val))}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).boqStart, (val) => handleProjectDataChange(index, 'boqStart', val))}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).boqEnd, (val) => handleProjectDataChange(index, 'boqEnd', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderDateCell((project as any).proposalStart, (val) => handleProjectDataChange(index, 'proposalStart', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderDateCell((project as any).proposalEnd, (val) => handleProjectDataChange(index, 'proposalEnd', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderDateCell((project as any).exterior3dStart, (val) => handleProjectDataChange(index, 'exterior3dStart', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderDateCell((project as any).exterior3dEnd, (val) => handleProjectDataChange(index, 'exterior3dEnd', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderDateCell((project as any).archStart, (val) => handleProjectDataChange(index, 'archStart', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderDateCell((project as any).archEnd, (val) => handleProjectDataChange(index, 'archEnd', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderDateCell((project as any).mepStart, (val) => handleProjectDataChange(index, 'mepStart', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderDateCell((project as any).mepEnd, (val) => handleProjectDataChange(index, 'mepEnd', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderDateCell((project as any).boqStart, (val) => handleProjectDataChange(index, 'boqStart', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderDateCell((project as any).boqEnd, (val) => handleProjectDataChange(index, 'boqEnd', val))}</TableCell>
                             <TableCell className="border border-gray-400 text-center">{renderCell((project as any).tenderStatus, (val) => handleProjectDataChange(index, 'tenderStatus', val))}</TableCell>
                             <TableCell className="border border-gray-400 text-center">{renderCell((project as any).comparative, (val) => handleProjectDataChange(index, 'comparative', val))}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).workingDrawingsStart, (val) => handleProjectDataChange(index, 'workingDrawingsStart', val))}</TableCell>
-                            <TableCell className="border border-gray-400 text-center">{renderCell((project as any).workingDrawingsEnd, (val) => handleProjectDataChange(index, 'workingDrawingsEnd', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderDateCell((project as any).workingDrawingsStart, (val) => handleProjectDataChange(index, 'workingDrawingsStart', val))}</TableCell>
+                            <TableCell className="border border-gray-400 text-center">{renderDateCell((project as any).workingDrawingsEnd, (val) => handleProjectDataChange(index, 'workingDrawingsEnd', val))}</TableCell>
                             <TableCell className="border border-gray-400 text-center">{renderCell((project as any).siteVisit, (val) => handleProjectDataChange(index, 'siteVisit', val))}</TableCell>
                             <TableCell className="border border-gray-400 text-center">{renderCell((project as any).finalBill, (val) => handleProjectDataChange(index, 'finalBill', val))}</TableCell>
                             <TableCell className="border border-gray-400 text-center">{renderCell((project as any).projectClosure, (val) => handleProjectDataChange(index, 'projectClosure', val))}</TableCell>
@@ -458,7 +471,7 @@ const CommercialTimelinePage = () => {
             <div className="p-4 border border-gray-400 border-t-0">
               <div className="flex justify-between">
                  {isEditing ? <Textarea value={remarks.text} onChange={e => handleRemarksChange('text', e.target.value)} /> : <p>{remarks.text}</p>}
-                 {isEditing ? <Input type="date" value={remarks.date} onChange={e => handleRemarksChange('date', e.target.value)} /> : <p>Date: {remarks.date}</p>}
+                 {isEditing ? <DatePicker date={remarks.date ? parseISO(remarks.date) : undefined} onDateChange={(date) => handleRemarksChange('date', date)} /> : <p>Date: {remarks.date ? format(parseISO(remarks.date), 'PP') : ''}</p>}
               </div>
                {isEditing ? <Textarea value={queries} onChange={e => setQueries(e.target.value)} className="mt-4" /> : <p className="mt-4">{queries}</p>}
             </div>

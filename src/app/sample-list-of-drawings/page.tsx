@@ -10,6 +10,8 @@ import { useFirestore, useUser, useMemoFirebase } from "@/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Download, Edit, Save, Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { DatePicker } from '@/components/ui/date-picker';
+import { parseISO, format, isValid } from 'date-fns';
 
 const SAMPLE_LIST_DOC_ID = 'sample-list-of-drawings';
 
@@ -100,6 +102,11 @@ const DrawingList = ({ list, listName, handleDrawingChange, isEditing, title, co
         <TableRow><TableCell colSpan={colSpan} className="font-bold bg-muted">{title}</TableCell></TableRow>
         {list.map((item: any, i: number) => {
             const otherItem = otherList && otherList[i];
+            const startDate = item.startDate && isValid(parseISO(item.startDate)) ? parseISO(item.startDate) : undefined;
+            const endDate = item.endDate && isValid(parseISO(item.endDate)) ? parseISO(item.endDate) : undefined;
+            const otherStartDate = otherItem && otherItem.startDate && isValid(parseISO(otherItem.startDate)) ? parseISO(otherItem.startDate) : undefined;
+            const otherEndDate = otherItem && otherItem.endDate && isValid(parseISO(otherItem.endDate)) ? parseISO(otherItem.endDate) : undefined;
+
             return (
                 <TableRow key={`${listName}-${i}`}>
                     <TableCell>{item.srNo}</TableCell>
@@ -107,10 +114,10 @@ const DrawingList = ({ list, listName, handleDrawingChange, isEditing, title, co
                         {isEditing ? <Input value={item.description} onChange={(e) => handleDrawingChange(listName, i, 'description', e.target.value)} /> : item.description}
                     </TableCell>
                     <TableCell>
-                        {isEditing ? <Input value={item.startDate} onChange={(e) => handleDrawingChange(listName, i, 'startDate', e.target.value)} /> : item.startDate}
+                        {isEditing ? <DatePicker date={startDate} onDateChange={(date) => handleDrawingChange(listName, i, 'startDate', date)} /> : item.startDate}
                     </TableCell>
                     <TableCell>
-                        {isEditing ? <Input value={item.endDate} onChange={(e) => handleDrawingChange(listName, i, 'endDate', e.target.value)} /> : item.endDate}
+                        {isEditing ? <DatePicker date={endDate} onDateChange={(date) => handleDrawingChange(listName, i, 'endDate', date)} /> : item.endDate}
                     </TableCell>
                     <TableCell>
                         {isEditing ? <Input value={item.remarks} onChange={(e) => handleDrawingChange(listName, i, 'remarks', e.target.value)} /> : item.remarks}
@@ -122,10 +129,10 @@ const DrawingList = ({ list, listName, handleDrawingChange, isEditing, title, co
                                 {isEditing ? <Input value={otherItem.description} onChange={(e) => handleDrawingChange(otherListName, i, 'description', e.target.value)} /> : otherItem.description}
                             </TableCell>
                             <TableCell>
-                                {isEditing ? <Input value={otherItem.startDate} onChange={(e) => handleDrawingChange(otherListName, i, 'startDate', e.target.value)} /> : otherItem.startDate}
+                                {isEditing ? <DatePicker date={otherStartDate} onDateChange={(date) => handleDrawingChange(otherListName, i, 'startDate', date)} /> : otherItem.startDate}
                             </TableCell>
                             <TableCell>
-                                {isEditing ? <Input value={otherItem.endDate} onChange={(e) => handleDrawingChange(otherListName, i, 'endDate', e.target.value)} /> : otherItem.endDate}
+                                {isEditing ? <DatePicker date={otherEndDate} onDateChange={(date) => handleDrawingChange(otherListName, i, 'endDate', date)} /> : otherItem.endDate}
                             </TableCell>
                             <TableCell>
                                 {isEditing ? <Input value={otherItem.remarks} onChange={(e) => handleDrawingChange(otherListName, i, 'remarks', e.target.value)} /> : otherItem.remarks}
@@ -174,10 +181,11 @@ export default function SampleListOfDrawingsPage() {
         }).finally(() => setIsLoading(false));
     }, [docRef]);
     
-    const handleDrawingChange = (listName: string, index: number, field: string, value: string) => {
+    const handleDrawingChange = (listName: string, index: number, field: string, value: string | Date | undefined) => {
         setFormData((prev: any) => {
             const newList = [...prev[listName]];
-            newList[index] = { ...newList[index], [field]: value };
+            const updatedValue = value instanceof Date ? format(value, 'yyyy-MM-dd') : value;
+            newList[index] = { ...newList[index], [field]: updatedValue };
             return { ...prev, [listName]: newList };
         });
     };
@@ -191,7 +199,7 @@ export default function SampleListOfDrawingsPage() {
         }).finally(() => setIsSaving(false));
     };
     
-    if (isLoading) return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+    if (isLoading) return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>;
 
     const renderTableRows = (list1Name: keyof typeof initialDrawingData, list2Name: keyof typeof initialDrawingData, title1: string, title2: string) => {
         const list1 = formData[list1Name] || [];
@@ -202,20 +210,24 @@ export default function SampleListOfDrawingsPage() {
         for (let i = 0; i < maxLength; i++) {
             const item1 = list1[i];
             const item2 = list2[i];
+            const startDate1 = item1 && item1.startDate && isValid(parseISO(item1.startDate)) ? parseISO(item1.startDate) : undefined;
+            const endDate1 = item1 && item1.endDate && isValid(parseISO(item1.endDate)) ? parseISO(item1.endDate) : undefined;
+            const startDate2 = item2 && item2.startDate && isValid(parseISO(item2.startDate)) ? parseISO(item2.startDate) : undefined;
+            const endDate2 = item2 && item2.endDate && isValid(parseISO(item2.endDate)) ? parseISO(item2.endDate) : undefined;
             rows.push(
                  <TableRow key={`${list1Name as string}-${list2Name as string}-${i}`}>
                     {item1 ? <>
                         <TableCell>{item1.srNo}</TableCell>
                         <TableCell>{isEditing ? <Input value={item1.description} onChange={(e) => handleDrawingChange(list1Name as string, i, 'description', e.target.value)} /> : item1.description}</TableCell>
-                        <TableCell>{isEditing ? <Input value={item1.startDate} onChange={(e) => handleDrawingChange(list1Name as string, i, 'startDate', e.target.value)} /> : item1.startDate}</TableCell>
-                        <TableCell>{isEditing ? <Input value={item1.endDate} onChange={(e) => handleDrawingChange(list1Name as string, i, 'endDate', e.target.value)} /> : item1.endDate}</TableCell>
+                        <TableCell>{isEditing ? <DatePicker date={startDate1} onDateChange={(date) => handleDrawingChange(list1Name as string, i, 'startDate', date)} /> : item1.startDate}</TableCell>
+                        <TableCell>{isEditing ? <DatePicker date={endDate1} onDateChange={(date) => handleDrawingChange(list1Name as string, i, 'endDate', date)} /> : item1.endDate}</TableCell>
                         <TableCell>{isEditing ? <Input value={item1.remarks} onChange={(e) => handleDrawingChange(list1Name as string, i, 'remarks', e.target.value)} /> : item1.remarks}</TableCell>
                     </> : <><TableCell/><TableCell/><TableCell/><TableCell/><TableCell/></>}
                     {item2 ? <>
                         <TableCell>{item2.srNo}</TableCell>
                         <TableCell>{isEditing ? <Input value={item2.description} onChange={(e) => handleDrawingChange(list2Name as string, i, 'description', e.target.value)} /> : item2.description}</TableCell>
-                        <TableCell>{isEditing ? <Input value={item2.startDate} onChange={(e) => handleDrawingChange(list2Name as string, i, 'startDate', e.target.value)} /> : item2.startDate}</TableCell>
-                        <TableCell>{isEditing ? <Input value={item2.endDate} onChange={(e) => handleDrawingChange(list2Name as string, i, 'endDate', e.target.value)} /> : item2.endDate}</TableCell>
+                        <TableCell>{isEditing ? <DatePicker date={startDate2} onDateChange={(date) => handleDrawingChange(list2Name as string, i, 'startDate', date)} /> : item2.startDate}</TableCell>
+                        <TableCell>{isEditing ? <DatePicker date={endDate2} onDateChange={(date) => handleDrawingChange(list2Name as string, i, 'endDate', date)} /> : item2.endDate}</TableCell>
                         <TableCell>{isEditing ? <Input value={item2.remarks} onChange={(e) => handleDrawingChange(list2Name as string, i, 'remarks', e.target.value)} /> : item2.remarks}</TableCell>
                     </> : <><TableCell/><TableCell/><TableCell/><TableCell/><TableCell/></>}
                  </TableRow>
