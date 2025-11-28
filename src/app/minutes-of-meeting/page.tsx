@@ -42,7 +42,15 @@ export default function MinutesOfMeetingPage() {
         if (!docRef) return;
         setIsLoading(true);
         getDoc(docRef).then(docSnap => {
-            if (docSnap.exists()) setFormData(docSnap.data());
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                setFormData({
+                    ...data,
+                    items: data.items && data.items.length > 0 ? data.items : Array(5).fill({}).map((_, i) => ({ id: i + 1, no: '', description: '' }))
+                });
+            } else {
+                 setFormData({ items: Array(5).fill({}).map((_, i) => ({ id: i + 1, no: '', description: '' })) });
+            }
         }).catch(serverError => {
             const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'get' });
             errorEmitter.emit('permission-error', permissionError);
@@ -80,12 +88,32 @@ export default function MinutesOfMeetingPage() {
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
         doc.text("Minutes of the Meeting", 105, 15, { align: 'center'});
+        
+        const headerInfo = [
+            ['Project', formData.project || ''],
+            ["Architect's Project No.", formData.architectProjectNo || ''],
+            ['Date', formData.date || ''],
+            ['Time', formData.time || ''],
+            ['Meeting No.', formData.meetingNo || ''],
+            ['Present', formData.present || ''],
+        ];
+
         autoTable(doc, {
             startY: 25,
-            html: '#minutes-of-meeting-table',
+            body: headerInfo,
+            theme: 'plain',
+        });
+
+        const tableBody = formData.items?.map((item: any) => [item.no || '', item.description || '']) || [];
+        
+        autoTable(doc, {
+            startY: (doc as any).lastAutoTable.finalY + 5,
+            head: [['Item No.', 'Description']],
+            body: tableBody,
             theme: 'grid',
             headStyles: { fillColor: [30, 41, 59] }
         })
+
         doc.save("minutes-of-meeting.pdf");
         toast({ title: 'Download Started' });
     }
@@ -113,7 +141,7 @@ export default function MinutesOfMeetingPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div id="minutes-of-meeting-table">
+                    <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <FormField label="Project">{renderField('project')}</FormField>
                             <FormField label="Architects Project No.">{renderField('architectProjectNo')}</FormField>
@@ -125,7 +153,7 @@ export default function MinutesOfMeetingPage() {
                         <Table className="mt-4">
                             <TableHeader><TableRow><TableHead>Item No.</TableHead><TableHead>Description</TableHead></TableRow></TableHeader>
                             <TableBody>
-                                {formData.items.map((item: any, i: number) => <TableRow key={i}>
+                                {formData.items?.map((item: any, i: number) => <TableRow key={i}>
                                     <TableCell className="w-24">{renderField('no', '', i)}</TableCell>
                                     <TableCell>{renderField('description', '', i)}</TableCell>
                                 </TableRow>)}
