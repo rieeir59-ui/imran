@@ -18,7 +18,7 @@ import {
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { collection, onSnapshot, doc, deleteDoc, writeBatch } from 'firebase/firestore';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
 import {
@@ -54,192 +54,42 @@ interface Task {
   employeeName: string;
 }
 
-// One-time function to add initial architects
-const addInitialArchitects = async (firestore: any, user: any, employees: Employee[]) => {
-  const architectsToAdd = [
-    { name: "Sobia Razzak", designation: "Architect" },
-    { name: "Luqman Aslam", designation: "Architect" },
-    { name: "M. Asad", designation: "Architect" },
-    { name: "M. Haseeb", designation: "Architect" },
-    { name: "M. Waleed Zahid", designation: "Architect" },
-    { name: "M. Khizar", designation: "Architect" },
-  ];
-
-  const existingArchitectNames = new Set(
-    employees
-      .filter(emp => emp.designation === 'Architect')
-      .map(emp => emp.name)
-  );
-
-  const newArchitects = architectsToAdd.filter(
-    arch => !existingArchitectNames.has(arch.name)
-  );
-
-  if (newArchitects.length === 0) {
-    return; // All architects already exist
-  }
-
-  const batch = writeBatch(firestore);
-  const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
-
-  newArchitects.forEach(architect => {
-    const newDocRef = doc(employeesCollectionRef);
-    batch.set(newDocRef, architect);
-  });
-
-  await batch.commit();
-};
-
-const addInitialSoftwareEngineers = async (firestore: any, user: any, employees: Employee[]) => {
-  const engineersToAdd = [
-    { name: "Imran Abbas", designation: "Software Engineer" },
-    { name: "Rabiya Eman", designation: "Software Engineer" },
-  ];
-
-  const existingEngineers = new Set(
-    employees
-      .filter(emp => emp.designation === 'Software Engineer')
-      .map(emp => emp.name)
-  );
-
-  const newEngineers = engineersToAdd.filter(
-    eng => !existingEngineers.has(eng.name)
-  );
-
-  if (newEngineers.length === 0) {
-    return;
-  }
-
-  const batch = writeBatch(firestore);
-  const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
-
-  newEngineers.forEach(engineer => {
-    const newDocRef = doc(employeesCollectionRef);
-    batch.set(newDocRef, engineer);
-  });
-
-  await batch.commit();
-};
-
-const addInitial3DVisualizer = async (firestore: any, user: any, employees: Employee[]) => {
-  const visualizersToAdd = [
-    { name: "Mohsin", designation: "3D Visualizer" },
-  ];
-
-  const existingVisualizers = new Set(
-    employees
-      .filter(emp => emp.designation === '3D Visualizer')
-      .map(emp => emp.name)
-  );
-
-  const newVisualizers = visualizersToAdd.filter(
-    viz => !existingVisualizers.has(viz.name)
-  );
-
-  if (newVisualizers.length === 0) {
-    return;
-  }
-
-  const batch = writeBatch(firestore);
-  const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
-
-  newVisualizers.forEach(visualizer => {
-    const newDocRef = doc(employeesCollectionRef);
-    batch.set(newDocRef, visualizer);
-  });
-
-  await batch.commit();
-};
-
-const addInitialBOQManager = async (firestore: any, user: any, employees: Employee[]) => {
-  const boqManagersToAdd = [
-    { name: "M Nouman", designation: "Quantity Surveyor" },
-  ];
-
-  const existingManagers = new Set(
-    employees
-      .filter(emp => emp.designation === 'Quantity Surveyor')
-      .map(emp => emp.name)
-  );
-
-  const newManagers = boqManagersToAdd.filter(
-    mgr => !existingManagers.has(mgr.name)
-  );
-
-  if (newManagers.length === 0) {
-    return;
-  }
-
-  const batch = writeBatch(firestore);
-  const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
-
-  newManagers.forEach(manager => {
-    const newDocRef = doc(employeesCollectionRef);
-    batch.set(newDocRef, manager);
-  });
-
-  await batch.commit();
-};
-
-const addInitialFinanceManager = async (firestore: any, user: any, employees: Employee[]) => {
-  const managersToAdd = [
-    { name: "M Waqas", designation: "Finance Manager" },
-  ];
-
-  const existingManagers = new Set(
-    employees
-      .filter(emp => emp.designation === 'Finance Manager')
-      .map(emp => emp.name)
-  );
-
-  const newManagers = managersToAdd.filter(
-    mgr => !existingManagers.has(mgr.name)
-  );
-
-  if (newManagers.length === 0) {
-    return;
-  }
-
-  const batch = writeBatch(firestore);
-  const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
-
-  newManagers.forEach(manager => {
-    const newDocRef = doc(employeesCollectionRef);
-    batch.set(newDocRef, manager);
-  });
-
-  await batch.commit();
-};
-
-const addInitialDraftspersons = async (firestore: any, user: any, employees: Employee[]) => {
-  const draftspersonsToAdd = [
-    { name: "M Mujahid", designation: "Draftsperson" },
-    { name: "M Jabbar", designation: "Draftsperson" },
-  ];
-
-  const existingDraftspersons = new Set(
-    employees
-      .filter(emp => emp.designation === 'Draftsperson')
-      .map(emp => emp.name)
-  );
-
-  const newDraftspersons = draftspersonsToAdd.filter(
-    d => !existingDraftspersons.has(d.name)
-  );
-
-  if (newDraftspersons.length === 0) {
-    return;
-  }
-
-  const batch = writeBatch(firestore);
-  const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
-
-  newDraftspersons.forEach(draftsperson => {
-    const newDocRef = doc(employeesCollectionRef);
-    batch.set(newDocRef, draftsperson);
-  });
-
-  await batch.commit();
+const addInitialEmployees = async (firestore: any, user: any, existingEmployees: Employee[]) => {
+    const initialEmployees = [
+      { name: "Sobia Razzak", designation: "Architect" },
+      { name: "Luqman Aslam", designation: "Architect" },
+      { name: "M. Asad", designation: "Architect" },
+      { name: "M. Haseeb", designation: "Architect" },
+      { name: "M. Waleed Zahid", designation: "Architect" },
+      { name: "M. Khizar", designation: "Architect" },
+      { name: "Imran Abbas", designation: "Software Engineer" },
+      { name: "Rabiya Eman", designation: "Software Engineer" },
+      { name: "Mohsin", designation: "3D Visualizer" },
+      { name: "M Nouman", designation: "Quantity Surveyor" },
+      { name: "M Waqas", designation: "Finance Manager" },
+      { name: "M Mujahid", designation: "Draftsperson" },
+      { name: "M Jabbar", designation: "Draftsperson" },
+    ];
+  
+    const existingEmployeeNames = new Set(existingEmployees.map(emp => `${emp.name.toLowerCase()}-${emp.designation.toLowerCase()}`));
+  
+    const newEmployees = initialEmployees.filter(
+      emp => !existingEmployeeNames.has(`${emp.name.toLowerCase()}-${emp.designation.toLowerCase()}`)
+    );
+  
+    if (newEmployees.length === 0) {
+      return;
+    }
+  
+    const batch = writeBatch(firestore);
+    const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
+  
+    newEmployees.forEach(employee => {
+      const newDocRef = doc(employeesCollectionRef);
+      batch.set(newDocRef, employee);
+    });
+  
+    await batch.commit();
 };
 
 
@@ -250,6 +100,7 @@ export default function TeamDashboard() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const initialSetupDone = useRef(false);
 
   const employeesCollectionRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -266,16 +117,12 @@ export default function TeamDashboard() {
         setIsLoading(false);
         return;
     }
-    const unsubscribe = onSnapshot(employeesCollectionRef, (snapshot) => {
+    const unsubscribe = onSnapshot(employeesCollectionRef, async (snapshot) => {
         const fetchedEmployees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
         
-        if (user && firestore) {
-          addInitialArchitects(firestore, user, fetchedEmployees).catch(console.error);
-          addInitialSoftwareEngineers(firestore, user, fetchedEmployees).catch(console.error);
-          addInitial3DVisualizer(firestore, user, fetchedEmployees).catch(console.error);
-          addInitialBOQManager(firestore, user, fetchedEmployees).catch(console.error);
-          addInitialFinanceManager(firestore, user, fetchedEmployees).catch(console.error);
-          addInitialDraftspersons(firestore, user, fetchedEmployees).catch(console.error);
+        if (user && firestore && !initialSetupDone.current) {
+          initialSetupDone.current = true;
+          await addInitialEmployees(firestore, user, fetchedEmployees).catch(console.error);
         }
         
         const groupedByDesignation = fetchedEmployees.reduce((acc, employee) => {
