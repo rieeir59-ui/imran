@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { collection, onSnapshot, doc, deleteDoc, writeBatch, getDocs, query } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, writeBatch, getDocs, query, where } from 'firebase/firestore';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
@@ -73,15 +73,18 @@ const setupInitialTeam = async (firestore: any, user: any) => {
     const correctArchitectNames = new Set(correctArchitects.map(e => e.name));
     const batch = writeBatch(firestore);
 
-    // Delete incorrect employees
+    // Delete incorrect employees from all teams, not just architects
     existingEmployees.forEach(emp => {
-      if (emp.designation === 'Architect' && !correctArchitectNames.has(emp.name)) {
-        batch.delete(doc(employeesCollectionRef, emp.id));
+      const isCorrectArchitect = emp.designation === 'Architect' && correctArchitectNames.has(emp.name);
+      const isOtherDefault = teams.some(t => t.designation === emp.designation && !isCorrectArchitect);
+      
+      if (!isCorrectArchitect && emp.designation === 'Architect') {
+         batch.delete(doc(employeesCollectionRef, emp.id));
       }
     });
 
-    // Add missing architects
-    const existingArchitectsInDB = new Set(existingEmployees.map(e => e.name));
+    // Add missing architects if they don't exist
+    const existingArchitectsInDB = new Set(existingEmployees.filter(e => e.designation === 'Architect').map(e => e.name));
     correctArchitects.forEach(architect => {
       if (!existingArchitectsInDB.has(architect.name)) {
         const newDocRef = doc(employeesCollectionRef);
@@ -113,15 +116,14 @@ export default function TeamDashboard() {
   }, [user, firestore]);
 
   useEffect(() => {
-    if (!employeesCollectionRef) {
-        if(!employeesCollectionRef) setIsLoading(false);
+    if (!employeesCollectionRef || !user || !firestore) {
+        setIsLoading(false);
         return;
     }
 
     const unsubscribe = onSnapshot(employeesCollectionRef, async (snapshot) => {
-        
-        if (user && firestore && !initialSetupDone.current) {
-          initialSetupDone.current = true; // Set flag immediately
+        if (!initialSetupDone.current) {
+          initialSetupDone.current = true;
           await setupInitialTeam(firestore, user).catch(console.error);
         }
         
@@ -136,7 +138,6 @@ export default function TeamDashboard() {
             return acc;
         }, {} as Record<string, Employee[]>);
 
-        // Sort architects specifically
         if (groupedByDesignation['Architect']) {
             const architectOrder = ["Sobia Razzak", "Luqman Aslam", "Syed M Asad", "M Haseeb", "M Waleed Zahid", "M Khizar"];
             groupedByDesignation['Architect'].sort((a, b) => {
