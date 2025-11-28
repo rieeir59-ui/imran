@@ -311,5 +311,14 @@ service cloud.firestore {
     match /users/{userId}/employees/{employeeId} {
       allow read, write: if isOwner(userId);
     }
+
+    /**
+     * @description Allows a user to manage their own app settings.
+     * This is used to track if initial setup steps have been completed.
+     * @path /users/{userId}/app-settings/{settingId}
+     */
+    match /users/{userId}/app-settings/{settingId} {
+      allow read, write: if isOwner(userId);
+    }
   }
 }
