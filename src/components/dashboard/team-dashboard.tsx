@@ -17,8 +17,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
-import { collection, onSnapshot, doc, deleteDoc, writeBatch, getDocs, query, setDoc, getDoc } from 'firebase/firestore';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { collection, onSnapshot, doc, deleteDoc, writeBatch, getDoc, setDoc } from 'firebase/firestore';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
 import {
@@ -73,7 +73,16 @@ const setupInitialTeam = async (firestore: any, user: any) => {
         batch.set(newDocRef, architect);
     });
   
-    await batch.commit();
+    return batch.commit().catch(error => {
+        const permissionError = new FirestorePermissionError({
+          path: employeesCollectionRef.path,
+          operation: 'write',
+          requestResourceData: correctArchitects,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        // We still throw the original error if we want to handle it further up
+        throw error;
+    });
 };
 
 
@@ -84,7 +93,7 @@ export default function TeamDashboard() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
-  const setupDone = useRef(false);
+  const setupDoneRef = useRef(false);
 
   const employeesCollectionRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -102,15 +111,19 @@ export default function TeamDashboard() {
         return;
     }
     
-    if (setupDone.current) return;
-    setupDone.current = true;
-
     const checkAndRunInitialSetup = async () => {
-        const setupDocRef = doc(firestore, `users/${user.uid}/app-settings`, 'initialSetup');
-        const docSnap = await getDoc(setupDocRef);
-        if (!docSnap.exists() || !docSnap.data().teamSetupDone) {
-            await setupInitialTeam(firestore, user);
-            await setDoc(setupDocRef, { teamSetupDone: true });
+        if (setupDoneRef.current) return;
+        
+        const setupDocRef = doc(firestore, `users/${user.uid}/app-settings/initialSetup`);
+        try {
+            const docSnap = await getDoc(setupDocRef);
+            if (!docSnap.exists() || !docSnap.data().teamSetupDone) {
+                await setupInitialTeam(firestore, user);
+                await setDoc(setupDocRef, { teamSetupDone: true });
+            }
+            setupDoneRef.current = true;
+        } catch (error) {
+            console.error("Error during initial setup check:", error);
         }
     };
 
@@ -139,6 +152,13 @@ export default function TeamDashboard() {
             }
             
             setEmployeesByDesignation(groupedByDesignation);
+            setIsLoading(false);
+        }, (error) => {
+             const permissionError = new FirestorePermissionError({
+                path: employeesCollectionRef.path,
+                operation: 'list',
+            });
+            errorEmitter.emit('permission-error', permissionError);
             setIsLoading(false);
         });
 
@@ -284,4 +304,3 @@ export default function TeamDashboard() {
     </div>
   );
 }
-
