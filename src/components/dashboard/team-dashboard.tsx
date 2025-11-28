@@ -14,6 +14,7 @@ import {
   Code,
   PlusCircle,
   Trash2,
+  CircleDotDashed,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
@@ -52,6 +53,7 @@ interface Employee {
 
 interface Task {
   employeeName: string;
+  status: 'Assigned' | 'In Progress' | 'Completed';
 }
 
 const setupInitialTeam = async (firestore: any, user: any) => {
@@ -87,7 +89,7 @@ const setupInitialTeam = async (firestore: any, user: any) => {
 
 export default function TeamDashboard() {
   const [employeesByDesignation, setEmployeesByDesignation] = useState<Record<string, Employee[]>>({});
-  const [employeesWithTasks, setEmployeesWithTasks] = useState<Set<string>>(new Set());
+  const [employeeTaskStatus, setEmployeeTaskStatus] = useState<Record<string, 'completed' | 'assigned'>>({});
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useUser();
   const firestore = useFirestore();
@@ -121,7 +123,7 @@ export default function TeamDashboard() {
                     operation: 'get',
                 });
                 errorEmitter.emit('permission-error', permissionError);
-                throw serverError; // Re-throw to be caught by the outer try/catch
+                throw serverError;
             });
 
             if (!docSnap.exists() || !docSnap.data().teamSetupDone) {
@@ -130,7 +132,6 @@ export default function TeamDashboard() {
             }
             setupDoneRef.current = true;
         } catch (error) {
-            // Error is already emitted, just log for local debug if needed
             console.error("Error during initial setup check:", error);
         }
     };
@@ -172,7 +173,6 @@ export default function TeamDashboard() {
 
         return () => unsubscribe();
     }).catch(error => {
-        // This catch block handles failures from checkAndRunInitialSetup
         console.error("Error in initial setup or snapshot listener:", error);
         setIsLoading(false);
     });
@@ -183,14 +183,27 @@ export default function TeamDashboard() {
     if (!tasksCollectionRef) return;
 
     const unsubscribe = onSnapshot(tasksCollectionRef, (snapshot) => {
-        const assignedEmployees = new Set<string>();
+        const taskStatusMap: Record<string, 'completed' | 'assigned'> = {};
         snapshot.forEach((doc) => {
           const task = doc.data() as Task;
           if (task.employeeName) {
-            assignedEmployees.add(task.employeeName);
+            // If any task is completed, mark as completed. Otherwise, if any task exists, mark as assigned.
+            if (task.status === 'Completed') {
+                if (taskStatusMap[task.employeeName] !== 'completed') {
+                     // If there are other tasks that are not completed, it remains 'assigned'
+                     const allTasksForEmployee = snapshot.docs.map(d => d.data()).filter(d => d.employeeName === task.employeeName);
+                     if(allTasksForEmployee.every(t => t.status === 'Completed')) {
+                        taskStatusMap[task.employeeName] = 'completed';
+                     } else {
+                        taskStatusMap[task.employeeName] = 'assigned';
+                     }
+                }
+            } else if (!taskStatusMap[task.employeeName]) {
+                 taskStatusMap[task.employeeName] = 'assigned';
+            }
           }
         });
-        setEmployeesWithTasks(assignedEmployees);
+        setEmployeeTaskStatus(taskStatusMap);
     }, (error) => {
         console.error("Error fetching tasks:", error);
     });
@@ -219,7 +232,7 @@ export default function TeamDashboard() {
   };
 
   const renderEmployeeCard = (employee: { id: string, name: string; designation: string }) => {
-    const hasTask = employeesWithTasks.has(employee.name);
+    const taskStatus = employeeTaskStatus[employee.name];
     const href = `/weekly-schedule?employee=${encodeURIComponent(employee.name)}&designation=${encodeURIComponent(employee.designation)}`;
 
     return (
@@ -227,8 +240,10 @@ export default function TeamDashboard() {
          <Link href={href} className="block p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full min-h-[124px]">
             <User className="h-8 w-8 text-primary mb-2" />
             <span className="font-semibold text-center">{employee.name}</span>
-            {hasTask ? (
+            {taskStatus === 'completed' ? (
               <CheckCircle className="h-5 w-5 text-green-500 absolute top-2 right-2" />
+            ) : taskStatus === 'assigned' ? (
+              <CircleDotDashed className="h-5 w-5 text-blue-500 absolute top-2 right-2" />
             ) : (
               <XCircle className="h-5 w-5 text-red-500 absolute top-2 right-2" />
             )}
