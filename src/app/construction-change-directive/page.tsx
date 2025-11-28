@@ -311,8 +311,5 @@ export default function ConstructionChangeDirectivePage() {
                 </CardContent>
             </Card>
         </main>
-    )
-
-    
-
-
+    );
+}
