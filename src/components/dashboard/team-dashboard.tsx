@@ -215,7 +215,6 @@ const addInitialDraftspersons = async (firestore: any, user: any, employees: Emp
   const draftspersonsToAdd = [
     { name: "M Mujahid", designation: "Draftsperson" },
     { name: "M Jabbar", designation: "Draftsperson" },
-    { name: "M Waqas", designation: "Draftsperson" },
   ];
 
   const existingDraftspersons = new Set(
