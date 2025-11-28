@@ -55,13 +55,16 @@ interface Task {
 }
 
 const addInitialEmployees = async (firestore: any, user: any, existingEmployees: Employee[]) => {
-    const initialEmployees = [
+    const initialArchitects = [
       { name: "Sobia Razzak", designation: "Architect" },
       { name: "Luqman Aslam", designation: "Architect" },
-      { name: "M. Asad", designation: "Architect" },
-      { name: "M. Haseeb", designation: "Architect" },
-      { name: "M. Waleed Zahid", designation: "Architect" },
-      { name: "M. Khizar", designation: "Architect" },
+      { name: "Syed M Asad", designation: "Architect" },
+      { name: "M Haseeb", designation: "Architect" },
+      { name: "M Waleed Zahid", designation: "Architect" },
+      { name: "M Khizar", designation: "Architect" },
+    ];
+
+    const otherInitialEmployees = [
       { name: "Imran Abbas", designation: "Software Engineer" },
       { name: "Rabiya Eman", designation: "Software Engineer" },
       { name: "Mohsin", designation: "3D Visualizer" },
@@ -69,22 +72,26 @@ const addInitialEmployees = async (firestore: any, user: any, existingEmployees:
       { name: "M Waqas", designation: "Finance Manager" },
       { name: "M Mujahid", designation: "Draftsperson" },
       { name: "M Jabbar", designation: "Draftsperson" },
-    ];
+    ]
   
-    const existingEmployeeNames = new Set(existingEmployees.map(emp => `${emp.name.toLowerCase()}-${emp.designation.toLowerCase()}`));
-  
-    const newEmployees = initialEmployees.filter(
-      emp => !existingEmployeeNames.has(`${emp.name.toLowerCase()}-${emp.designation.toLowerCase()}`)
+    const existingArchitectNames = new Set(
+        existingEmployees
+            .filter(emp => emp.designation === 'Architect')
+            .map(emp => emp.name.toLowerCase())
     );
-  
-    if (newEmployees.length === 0) {
+
+    const newArchitects = initialArchitects.filter(
+        emp => !existingArchitectNames.has(emp.name.toLowerCase())
+    );
+
+    if (newArchitects.length === 0) {
       return;
     }
   
     const batch = writeBatch(firestore);
     const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
   
-    newEmployees.forEach(employee => {
+    newArchitects.forEach(employee => {
       const newDocRef = doc(employeesCollectionRef);
       batch.set(newDocRef, employee);
     });
@@ -113,13 +120,15 @@ export default function TeamDashboard() {
   }, [user, firestore]);
 
   useEffect(() => {
-    if (!employeesCollectionRef) {
-        setIsLoading(false);
+    if (!employeesCollectionRef || initialSetupDone.current) {
+        if(!employeesCollectionRef) setIsLoading(false);
         return;
     }
+
     const unsubscribe = onSnapshot(employeesCollectionRef, async (snapshot) => {
         const fetchedEmployees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
         
+        // This flag ensures the initial population only runs once per component lifecycle
         if (user && firestore && !initialSetupDone.current) {
           initialSetupDone.current = true;
           await addInitialEmployees(firestore, user, fetchedEmployees).catch(console.error);
@@ -133,6 +142,14 @@ export default function TeamDashboard() {
             acc[designation].push(employee);
             return acc;
         }, {} as Record<string, Employee[]>);
+
+        // Sort architects specifically
+        if (groupedByDesignation['Architect']) {
+            const architectOrder = ["Sobia Razzak", "Luqman Aslam", "Syed M Asad", "M Haseeb", "M Waleed Zahid", "M Khizar"];
+            groupedByDesignation['Architect'].sort((a, b) => {
+                return architectOrder.indexOf(a.name) - architectOrder.indexOf(b.name);
+            });
+        }
         
         setEmployeesByDesignation(groupedByDesignation);
         setIsLoading(false);
