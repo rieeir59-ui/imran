@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -188,7 +187,7 @@ export default function SiteSurveyPage() {
         doc.text("SITE SURVEY", 105, y, { align: 'center' });
         y += 5;
         doc.setFontSize(10);
-        doc.text("REAL ESTATE MANAGEMENT", 105, y, { align: 'center' });
+        doc.text("ARCHITECTURAL - ENGINEERING - CONSTRUCTIONS", 105, y, { align: 'center' });
         y += 5;
         doc.text("PREMISES REVIEW FOR PROPOSED BRANCH/OFFICE", 105, y, { align: 'center' });
         y += 10;
@@ -344,7 +343,7 @@ export default function SiteSurveyPage() {
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                         <CardTitle className="text-center">SITE SURVEY</CardTitle>
-                        <p className='text-center'>REAL ESTATE MANAGEMENT</p>
+                        <p className='text-center'>ARCHITECTURAL - ENGINEERING - CONSTRUCTIONS</p>
                         <p className='text-center'>PREMISES REVIEW FOR PROPOSED BRANCH/OFFICE</p>
                         <p className="text-sm text-center">This questionnaire form provides preliminary information for determining the suitability of premises or property to be acquired</p>
                     </div>
