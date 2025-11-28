@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { collection, onSnapshot, doc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, writeBatch, getDocs, query } from 'firebase/firestore';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
@@ -54,8 +54,14 @@ interface Task {
   employeeName: string;
 }
 
-const addInitialEmployees = async (firestore: any, user: any, existingEmployees: Employee[]) => {
-    const initialArchitects = [
+const setupInitialTeam = async (firestore: any, user: any) => {
+    const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
+    const q = query(employeesCollectionRef);
+    const querySnapshot = await getDocs(q);
+
+    const existingEmployees = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
+    
+    const correctArchitects = [
       { name: "Sobia Razzak", designation: "Architect" },
       { name: "Luqman Aslam", designation: "Architect" },
       { name: "Syed M Asad", designation: "Architect" },
@@ -63,37 +69,24 @@ const addInitialEmployees = async (firestore: any, user: any, existingEmployees:
       { name: "M Waleed Zahid", designation: "Architect" },
       { name: "M Khizar", designation: "Architect" },
     ];
-
-    const otherInitialEmployees = [
-      { name: "Imran Abbas", designation: "Software Engineer" },
-      { name: "Rabiya Eman", designation: "Software Engineer" },
-      { name: "Mohsin", designation: "3D Visualizer" },
-      { name: "M Nouman", designation: "Quantity Surveyor" },
-      { name: "M Waqas", designation: "Finance Manager" },
-      { name: "M Mujahid", designation: "Draftsperson" },
-      { name: "M Jabbar", designation: "Draftsperson" },
-    ]
-  
-    const existingArchitectNames = new Set(
-        existingEmployees
-            .filter(emp => emp.designation === 'Architect')
-            .map(emp => emp.name.toLowerCase())
-    );
-
-    const newArchitects = initialArchitects.filter(
-        emp => !existingArchitectNames.has(emp.name.toLowerCase())
-    );
-
-    if (newArchitects.length === 0) {
-      return;
-    }
-  
+    
+    const correctArchitectNames = new Set(correctArchitects.map(e => e.name));
     const batch = writeBatch(firestore);
-    const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
-  
-    newArchitects.forEach(employee => {
-      const newDocRef = doc(employeesCollectionRef);
-      batch.set(newDocRef, employee);
+
+    // Delete incorrect employees
+    existingEmployees.forEach(emp => {
+      if (emp.designation === 'Architect' && !correctArchitectNames.has(emp.name)) {
+        batch.delete(doc(employeesCollectionRef, emp.id));
+      }
+    });
+
+    // Add missing architects
+    const existingArchitectsInDB = new Set(existingEmployees.map(e => e.name));
+    correctArchitects.forEach(architect => {
+      if (!existingArchitectsInDB.has(architect.name)) {
+        const newDocRef = doc(employeesCollectionRef);
+        batch.set(newDocRef, architect);
+      }
     });
   
     await batch.commit();
@@ -120,19 +113,19 @@ export default function TeamDashboard() {
   }, [user, firestore]);
 
   useEffect(() => {
-    if (!employeesCollectionRef || initialSetupDone.current) {
+    if (!employeesCollectionRef) {
         if(!employeesCollectionRef) setIsLoading(false);
         return;
     }
 
     const unsubscribe = onSnapshot(employeesCollectionRef, async (snapshot) => {
-        const fetchedEmployees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
         
-        // This flag ensures the initial population only runs once per component lifecycle
         if (user && firestore && !initialSetupDone.current) {
-          initialSetupDone.current = true;
-          await addInitialEmployees(firestore, user, fetchedEmployees).catch(console.error);
+          initialSetupDone.current = true; // Set flag immediately
+          await setupInitialTeam(firestore, user).catch(console.error);
         }
+        
+        const fetchedEmployees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
         
         const groupedByDesignation = fetchedEmployees.reduce((acc, employee) => {
             const { designation } = employee;
