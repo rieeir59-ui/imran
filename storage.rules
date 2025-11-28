@@ -1,12 +1,14 @@
+
 rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow any authenticated user (including anonymous) to read and write files.
-    // This is a more permissive rule for this stage of development.
-    // We can tighten this later if needed.
-    match /{allPaths=**} {
-      allow read, write: if request.auth != null;
+    // Allow authenticated users to read and write to their own folders.
+    // The path is structured as /users/{userId}/...
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
+
+    
