@@ -123,22 +123,29 @@ export default function FileManagerPage() {
               title: "Upload Error",
               description: description,
           });
-          // Remove the failed upload from progress
           setUploadProgress(prev => prev.filter(p => p.fileName !== file.name));
         },
-        () => {
-           // On successful upload, re-fetch the list of files.
-           fetchFiles().then(() => {
-                setUploadProgress(prev => prev.filter(p => p.fileName !== file.name));
-                toast({
-                    title: 'File Uploaded',
-                    description: `${file.name} has been successfully saved.`,
-                });
+        async () => {
+           const url = await getDownloadURL(uploadTask.snapshot.ref);
+           const metadata = await getMetadata(uploadTask.snapshot.ref);
+           const newFile: UploadedFile = {
+             name: metadata.name,
+             size: metadata.size,
+             type: metadata.contentType || 'unknown',
+             url: url,
+             fullPath: uploadTask.snapshot.ref.fullPath,
+           };
+           
+           setFiles((prevFiles) => [...prevFiles, newFile]);
+           setUploadProgress(prev => prev.filter(p => p.fileName !== file.name));
+           toast({
+               title: 'File Uploaded',
+               description: `${file.name} has been successfully saved.`,
            });
         }
       )
     });
-  }, [user, storage, toast, fetchFiles]);
+  }, [user, storage, toast]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
@@ -177,9 +184,6 @@ export default function FileManagerPage() {
   }
 
   const handleSaveRename = (fileUrl: string) => {
-    // Renaming in Firebase Storage is complex (copy then delete).
-    // For simplicity, we'll just update the name in the UI for now.
-    // A full implementation would require a backend function.
     setFiles(files.map(f => f.fullPath === fileUrl ? { ...f, name: newFileName } : f));
     setEditingFile(null);
     toast({
@@ -211,8 +215,7 @@ export default function FileManagerPage() {
     const newContentBlob = new Blob([editorContent], { type: 'text/plain' });
 
     try {
-        const uploadTask = uploadBytesResumable(fileRef, newContentBlob);
-        await uploadTask;
+        await uploadBytesResumable(fileRef, newContentBlob);
         await fetchFiles(); // Re-fetch to update URL and metadata
         setActiveFile(null);
         toast({
@@ -236,8 +239,17 @@ export default function FileManagerPage() {
     const newContentBlob = new Blob([''], { type: 'text/plain' });
 
     try {
-        await uploadBytesResumable(fileRef, newContentBlob);
-        await fetchFiles(); // Refresh to get the new file from storage
+        const uploadTask = await uploadBytesResumable(fileRef, newContentBlob);
+        const url = await getDownloadURL(uploadTask.ref);
+        const metadata = await getMetadata(uploadTask.ref);
+        const newFile: UploadedFile = {
+          name: metadata.name,
+          size: metadata.size,
+          type: metadata.contentType || 'unknown',
+          url: url,
+          fullPath: uploadTask.ref.fullPath,
+        };
+        setFiles(prev => [...prev, newFile]);
         toast({ title: 'New Text File Created', description: `${fileName} has been saved.` });
     } catch (error) {
         console.error("Error creating new text file:", error);
