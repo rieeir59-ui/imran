@@ -12,6 +12,8 @@ import { Download, Edit, Save, Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { DatePicker } from '@/components/ui/date-picker';
 import { parseISO, format, isValid } from 'date-fns';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const LIGHTING_DRAWING_SCHEDULE_DOC_ID = 'lighting-drawing-schedule';
 
@@ -68,6 +70,26 @@ export default function LightingDrawingsPage() {
             setIsEditing(false);
         }).finally(() => setIsSaving(false));
     };
+
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Lighting Drawings Schedule", 105, 15, { align: 'center' });
+        
+        autoTable(doc, {
+            startY: 25,
+            head: [['Drawings Title', 'Starting Date', 'Completion Date', 'Remarks']],
+            body: formData.lightingDrawings.map((item: any) => [item.title, item.startDate, item.endDate, item.remarks]),
+            theme: 'grid',
+            headStyles: {
+                fillColor: [30, 41, 59]
+            },
+        });
+
+        doc.save('lighting-drawings.pdf');
+        toast({ title: 'Download Started', description: 'Your PDF is being generated.' });
+    };
     
     if (isLoading) return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
 
@@ -82,7 +104,7 @@ export default function LightingDrawingsPage() {
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Lighting Drawings</CardTitle>
                  <div className="flex gap-2">
-                    <Button variant="outline"><Download /> PDF</Button>
+                    <Button onClick={handleDownload} variant="outline"><Download /> PDF</Button>
                     {isEditing ? (
                         <Button onClick={handleSave} disabled={isSaving}>
                             {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
