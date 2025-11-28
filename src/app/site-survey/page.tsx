@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -22,7 +21,6 @@ import {
   Loader2,
   Download,
   ArrowLeft,
-  Camera,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
@@ -32,17 +30,14 @@ import {
   useMemoFirebase,
   FirestorePermissionError,
   errorEmitter,
-  useStorage,
 } from '@/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import Image from 'next/image';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Globe, Mail, MapPin, Phone } from 'lucide-react';
 
-const SITE_VISIT_DOC_ID = 'site-visit-proforma';
+const SITE_SURVEY_DOC_ID = 'site-survey';
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
   <>
@@ -64,35 +59,7 @@ const FormRow = ({
   </div>
 );
 
-const ChecklistItem = ({
-  name,
-  label,
-  formData,
-  handleCheckboxChange,
-  isEditing,
-}: {
-  name: string;
-  label: string;
-  formData: any;
-  handleCheckboxChange: (name: string, checked: boolean) => void;
-  isEditing: boolean;
-}) => (
-  <div className="flex items-center gap-2">
-    <Checkbox
-      id={name}
-      checked={formData[name] || false}
-      onCheckedChange={(checked) =>
-        handleCheckboxChange(name, checked as boolean)
-      }
-      disabled={!isEditing}
-    />
-    <Label htmlFor={name} className="font-normal">
-      {label}
-    </Label>
-  </div>
-);
-
-const SiteVisitPage = () => {
+const SiteSurveyPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -101,11 +68,10 @@ const SiteVisitPage = () => {
   const { toast } = useToast();
   const { user } = useUser();
   const firestore = useFirestore();
-  const storage = useStorage();
 
   const docRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return doc(firestore, `users/${user.uid}/siteVisits/${SITE_VISIT_DOC_ID}`);
+    return doc(firestore, `users/${user.uid}/siteSurveys/${SITE_SURVEY_DOC_ID}`);
   }, [user, firestore]);
 
   useEffect(() => {
@@ -145,32 +111,6 @@ const SiteVisitPage = () => {
         setFormData({...formData, [name]: value});
     }
 
-  const handleImageUpload = async (file: File, fieldName: string) => {
-    if (!user || !storage) {
-        toast({ variant: 'destructive', title: 'Upload failed', description: 'User not authenticated.' });
-        return;
-    }
-
-    const storageRef = ref(storage, `users/${user.uid}/siteVisits/${file.name}`);
-    
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on('state_changed', 
-      (snapshot) => {
-        // Optional: handle progress updates
-      },
-      (error) => {
-        console.error('Error uploading image: ', error);
-        toast({ variant: 'destructive', title: 'Upload Error', description: 'Could not upload the image.' });
-      },
-      async () => {
-        const url = await getDownloadURL(uploadTask.snapshot.ref);
-        setFormData((prev: any) => ({ ...prev, [fieldName]: url }));
-        toast({ title: 'Image Uploaded', description: 'Image has been saved.'});
-      }
-    );
-  };
-
   const handleSave = () => {
     if (!docRef) {
       toast({
@@ -183,7 +123,7 @@ const SiteVisitPage = () => {
     setIsSaving(true);
     setDoc(docRef, formData, { merge: true })
       .then(() => {
-        toast({ title: 'Success', description: 'Site visit data saved.' });
+        toast({ title: 'Success', description: 'Site survey data saved.' });
         setIsEditing(false);
       })
       .catch((serverError) => {
@@ -385,38 +325,6 @@ const SiteVisitPage = () => {
         </div>
     }
   
-  const renderPictureField = (index: number) => {
-      const commentName = `comment${index}`;
-      const imageName = `image${index}`;
-      const imageUrl = formData[imageName];
-
-      return (
-           <div key={`picture-field-${index}`} className="border p-4 rounded-md space-y-2">
-                <div className="bg-muted h-40 flex items-center justify-center rounded-md relative">
-                    {imageUrl ? (
-                        <Image src={imageUrl} alt={`Site visit image ${index}`} layout="fill" objectFit="contain" />
-                    ) : (
-                        <Camera className="w-10 h-10 text-muted-foreground" />
-                    )}
-                </div>
-                {isEditing && (
-                    <Input 
-                        type="file" 
-                        accept="image/png, image/jpeg"
-                        className="text-sm"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleImageUpload(file, imageName);
-                        }}
-                    />
-                )}
-                <FormRow label="Comment:">
-                    {renderTextarea(commentName)}
-                </FormRow>
-           </div>
-      )
-  }
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -435,110 +343,131 @@ const SiteVisitPage = () => {
         </Button>
       </div>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Detailed Site Visit Proforma – Architect Visit</CardTitle>
-           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleDownload}><Download className="mr-2"/>PDF</Button>
-            {isEditing ? (
-                <Button onClick={handleSave} disabled={isSaving}>
-                    {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />} Save
-                </Button>
-            ) : (
-                <Button onClick={() => setIsEditing(true)}><Edit className="mr-2" /> Edit</Button>
-            )}
-           </div>
+        <CardHeader className="flex flex-col items-center text-center">
+            <CardTitle className="text-2xl">SITE SURVEY</CardTitle>
+            <p className="text-sm text-muted-foreground">ARCHITECTURAL - ENGINEERING - CONSTRUCTIONS</p>
+            <p className="font-semibold">PREMISES REVIEW FOR PROPOSED BRANCH/OFFICE</p>
+            <div className="flex gap-2 pt-4">
+                <Button variant="outline" onClick={handleDownload}><Download className="mr-2"/>PDF</Button>
+                {isEditing ? (
+                    <Button onClick={handleSave} disabled={isSaving}>
+                        {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />} Save
+                    </Button>
+                ) : (
+                    <Button onClick={() => setIsEditing(true)}><Edit className="mr-2" /> Edit</Button>
+                )}
+            </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <SectionTitle>Basic Information</SectionTitle>
-            <FormRow label="Site / Branch Name:">{renderInput("siteName")}</FormRow>
+            <SectionTitle>Location</SectionTitle>
+            <FormRow label="Purpose (Branch/ATM/etc.):">{renderInput("purpose")}</FormRow>
             <FormRow label="City:">{renderInput("city")}</FormRow>
-            <FormRow label="Date:">{renderInput("date")}</FormRow>
-            <FormRow label="Visit Number (e.g., 1, 2, 3):">{renderInput("visitNumber")}</FormRow>
-            <FormRow label="Architect Name:">{renderInput("architectName")}</FormRow>
+            <FormRow label="Region:">{renderInput("region")}</FormRow>
+            <FormRow label="Address:">{renderTextarea("address")}</FormRow>
             
-            <SectionTitle>1. Exterior Works</SectionTitle>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pl-4">
-                <ChecklistItem name="exterior_facade" label="Facade condition" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing}/>
-                <ChecklistItem name="exterior_signage" label="External signage installed" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing}/>
-                <ChecklistItem name="exterior_lighting" label="Outdoor lighting functional" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing}/>
-                <ChecklistItem name="exterior_door" label="Entrance door alignment & quality" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing}/>
-                <ChecklistItem name="exterior_branding" label="Branding elements (panels/vinyls) installed" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing}/>
+            <SectionTitle>Legal File</SectionTitle>
+            <FormRow label="Name of Owner(s) of the Premises:">{renderInput("owner_name")}</FormRow>
+            <FormRow label="Completion Certificate:">{renderRadioGroupWithNote('completion_cert', ['Yes', 'No'])}</FormRow>
+            <FormRow label="Is Leased:">{renderRadioGroupWithNote('is_leased', ['Yes', 'No'], '(As informed by Owner Representative)')}</FormRow>
+
+            <SectionTitle>Area</SectionTitle>
+            <p className="text-sm text-muted-foreground -mt-2 mb-2">Attach as-built plan(s)</p>
+            <div className="grid grid-cols-2 gap-4">
+                <FormRow label="Maximum Frontage (ft):">{renderInput("frontage")}</FormRow>
+                <FormRow label="Maximum Depth (ft):">{renderInput("depth")}</FormRow>
+                <FormRow label="Total Area (Sqft):">{renderInput("total_area")}</FormRow>
+                <FormRow label="Minimum Clear Height (ft):">{renderInput("clear_height")}</FormRow>
+                <FormRow label="Building Plot Size:">{renderInput("plot_size")}</FormRow>
+                <FormRow label="Covered Area (Basement):">{renderInput("covered_basement")}</FormRow>
+                <FormRow label="Covered Area (Ground Floor):">{renderInput("covered_ground")}</FormRow>
+                <FormRow label="No. of Stories/Floors:">{renderInput("stories")}</FormRow>
             </div>
             
-            <SectionTitle>2. Flooring</SectionTitle>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pl-4">
-                <ChecklistItem name="flooring_tiles" label="Tiles installed as per approved design" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="flooring_alignment" label="Tile alignment and leveling" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="flooring_skirting" label="Skirting installation" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="flooring_grouting" label="Grouting quality" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="flooring_damage" label="Any cracks or damages observed" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-            </div>
+            <SectionTitle>Building Overview</SectionTitle>
+            <FormRow label="Independent Premises:">{renderInput("independent_premises")}</FormRow>
+            <FormRow label="Status:">{renderRadioGroup('status', ['Shell', 'Semi Finished', 'Finished'])}</FormRow>
+            <FormRow label="Type of Premises:">{renderRadioGroup('premises_type', ['Single Story', 'Multi Story'])}</FormRow>
+            <FormRow label="Age of Premises:">{renderInput("premises_age")}</FormRow>
+            <FormRow label="Interior of Premises:">{renderRadioGroup('premises_interior', ['Furnished', 'Un-Furnished'])}</FormRow>
+            <FormRow label="Type of Construction:">{renderInput("construction_type")}</FormRow>
+            <FormRow label="Is Independent Entrance Provided:">{renderRadioGroupWithNote('independent_entrance', ['Yes', 'No'])}</FormRow>
+            <FormRow label="Is Staircase for Staff movement available:">{renderRadioGroupWithNote('staff_staircase', ['Yes', 'No'])}</FormRow>
+            <FormRow label="Emergency Exit:">{renderRadioGroupWithNote('emergency_exit', ['Yes', 'No'], "Can provide if not available?")} {isEditing && <Checkbox id="can_provide_exit" checked={formData.can_provide_exit || false} onCheckedChange={(c) => handleCheckboxChange('can_provide_exit', c as boolean)} />}</FormRow>
+            <FormRow label="Ramp Available for disabled persons:">{renderRadioGroupWithNote('ramp_available', ['Yes', 'No'], "Can provide if not available?")} {isEditing && <Checkbox id="can_provide_ramp" checked={formData.can_provide_ramp || false} onCheckedChange={(c) => handleCheckboxChange('can_provide_ramp', c as boolean)} />}</FormRow>
+            <FormRow label="Seepage in Building:">{renderRadioGroupWithNote('seepage', ['Yes', 'No'])}</FormRow>
+            {formData.seepage && <>
+                <FormRow label="Area of Seepage:">{renderInput("seepage_area")}</FormRow>
+                <FormRow label="Possible cause of Seepage:">{renderInput("seepage_cause")}</FormRow>
+            </>}
+            <FormRow label="Space available for Generator:">{renderRadioGroupWithNote('generator_space', ['Yes', 'No'])}</FormRow>
+            <FormRow label="Property Utilization:">
+                <div className="flex gap-4 flex-wrap">
+                    <ChecklistItem name="pu_res" label="Fully residential" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
+                    <ChecklistItem name="pu_com" label="Fully Commercial" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
+                    <ChecklistItem name="pu_dual" label="Dual use" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
+                    <ChecklistItem name="pu_ind" label="Industrial" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
+                </div>
+            </FormRow>
+            <FormRow label="Building plinth level from road:">{renderInput("plinth_level")}</FormRow>
+            <FormRow label="Is the area prone to flooding:">{renderRadioGroupWithNote('flooding_risk', ['Yes', 'No'])}</FormRow>
+            <FormRow label="Is disable access as per SBP/local by laws:">{renderRadioGroupWithNote('disable_access', ['Yes', 'No'])}</FormRow>
+            <FormRow label="Condition of roof waterproofing:">{renderInput("roof_waterproofing")}</FormRow>
+            <FormRow label="Parking Available:">{renderRadioGroupWithNote('parking_available', ['Yes', 'No'], '(On Main Road)')}</FormRow>
+            <FormRow label="Road Approachable for Fire Tender & Bowser:">{renderRadioGroupWithNote('road_approachable', ['Yes', 'No'])}</FormRow>
+            <FormRow label="Any hazard in the vicinity (radius of 300m):">{renderRadioGroupWithNote('hazard_vicinity', ['Yes', 'No'])}</FormRow>
+            <FormRow label="Material of Wall Masonry:">{renderInput("wall_masonry_material")}</FormRow>
+            <FormRow label="Adequate Space for Signage:">{renderRadioGroupWithNote('signage_space', ['Yes', 'No'])}</FormRow>
+            <FormRow label="Major Retainable Building Elements:">
+                 <div className="flex gap-4 flex-wrap">
+                    <ChecklistItem name="mrb_wt" label="Water Tank" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
+                    <ChecklistItem name="mrb_v" label="Vault" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
+                    <ChecklistItem name="mrb_sf" label="Subflooring" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
+                    <ChecklistItem name="mrb_sc" label="Staircase" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
+                    <ChecklistItem name="mrb_o" label="Others" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
+                </div>
+            </FormRow>
+            <FormRow label="In case of Plot, existing level from road:">{renderInput("plot_levels")}</FormRow>
 
-            <SectionTitle>3. Ceiling</SectionTitle>
-             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pl-4">
-                <ChecklistItem name="ceiling_gypsum" label="Gypsum ceiling installed" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="ceiling_paint" label="Ceiling paint finish" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="ceiling_height" label="Ceiling height as per plan" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="ceiling_panels" label="Access panels installed" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="ceiling_moisture" label="No moisture / cracks visible" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-            </div>
-
-            <SectionTitle>4. Lighting</SectionTitle>
-             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pl-4">
-                <ChecklistItem name="lighting_all" label="All lights installed (LED panels, spotlights, etc.)" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="lighting_emergency" label="Emergency lights operational" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="lighting_atm" label="ATM room lighting" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="lighting_hall" label="Customer hall lighting uniformity" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="lighting_db" label="DB (Distribution Board) labeling" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-            </div>
-
-             <SectionTitle>5. Furniture & Fixtures</SectionTitle>
-             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pl-4">
-                <ChecklistItem name="furniture_counters" label="Teller counters installed" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="furniture_seating" label="Customer waiting area seating" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="furniture_bm" label="Branch Manager table and chair" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="furniture_cash" label="Cash cabin partitions" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="furniture_atm" label="ATM Lobby furniture" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="furniture_storage" label="Storage cabinetry & drawers" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="furniture_shelving" label="File shelving" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-            </div>
-
-             <SectionTitle>6. Washrooms</SectionTitle>
-             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pl-4">
-                <ChecklistItem name="washroom_tiles" label="Floor & wall tiles installed" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="washroom_wc" label="WC & washbasin installed" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="washroom_drainage" label="Water pressure & drainage" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="washroom_exhaust" label="Exhaust fan functional" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="washroom_accessories" label="Accessories (soap, tissue, mirrors)" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-            </div>
-
-            <SectionTitle>7. MEP (Mechanical, Electrical, Plumbing)</SectionTitle>
-             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pl-4">
-                <ChecklistItem name="mep_wiring" label="Electrical wiring completed" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="mep_ac" label="AC indoor/outdoor units installed & operational" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="mep_diffusers" label="Air diffusers installed" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="mep_fire" label="Fire alarm system installed and tested" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="mep_cctv" label="CCTV cameras installed & positioned properly" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-                <ChecklistItem name="mep_plumbing" label="Plumbing leak test" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
-            </div>
-
-            <SectionTitle>8. Observations</SectionTitle>
-            {renderTextarea("observations")}
+            <SectionTitle>Utilities</SectionTitle>
+            <FormRow label="Sanctioned Electrical Load:">{renderInput("electrical_load")}</FormRow>
+            <FormRow label="Type of electrical load:">
+                 <div className="flex gap-4 flex-wrap">
+                    <ChecklistItem name="el_com" label="Commercial" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
+                    <ChecklistItem name="el_ind" label="Industrial" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
+                    <ChecklistItem name="el_res" label="Residential" formData={formData} handleCheckboxChange={handleCheckboxChange} isEditing={isEditing} />
+                </div>
+            </FormRow>
+            <FormRow label="Electrical Meter:">{renderRadioGroup('electrical_meter', ['Single Phase', '3-Phase'])}</FormRow>
+            <FormRow label="Piped Water available:">{renderRadioGroupWithNote('piped_water', ['Yes', 'No'])}</FormRow>
+            <FormRow label="Underground Water Tank available:">{renderRadioGroupWithNote('underground_tank', ['Yes', 'No'])}</FormRow>
+            <FormRow label="Overhead Water Tank available:">{renderRadioGroupWithNote('overhead_tank', ['Yes', 'No'])}</FormRow>
+            {formData.overhead_tank && <FormRow label="Type of Overhead Tank:">{renderInput("overhead_tank_type")}</FormRow>}
+            <FormRow label="Type of Water:">{renderRadioGroup('water_type', ['Sweet', 'Brackish'])}</FormRow>
+            <FormRow label="Gas Connection available:">{renderRadioGroupWithNote('gas_connection', ['Yes', 'No'])}</FormRow>
+            <FormRow label="Sewerage Line available:">{renderRadioGroupWithNote('sewerage_line', ['Yes', 'No'])}</FormRow>
             
-            <SectionTitle>9. Issues Identified</SectionTitle>
-            {renderTextarea("issues")}
-
-            <SectionTitle>10. Solutions</SectionTitle>
-            {renderTextarea("solutions")}
-
-            <SectionTitle>11. Actions & Recommendations</SectionTitle>
-            {renderTextarea("actions")}
-
-            <SectionTitle>12. Pictures with Comments</SectionTitle>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Array.from({length: 7}).map((_, i) => renderPictureField(i + 1))}
-            </div>
+            <SectionTitle>Bounded As</SectionTitle>
+            <FormRow label="Front:">{renderInput("bound_front")}</FormRow>
+            <FormRow label="Back:">{renderInput("bound_back")}</FormRow>
+            <FormRow label="Right:">{renderInput("bound_right")}</FormRow>
+            <FormRow label="Left:">{renderInput("bound_left")}</FormRow>
+            
+            <SectionTitle>Rental Detail</SectionTitle>
+            <FormRow label="Acquisition:">{renderRadioGroup('acquisition', ['Rental', 'Purchase'])}</FormRow>
+            <FormRow label="Expected Rental/month (PKR):">{renderInput("expected_rental")}</FormRow>
+            <FormRow label="Expected Advance (# of months):">{renderInput("expected_advance")}</FormRow>
+            <FormRow label="Expected period of lease:">{renderInput("lease_period")}</FormRow>
+            <FormRow label="Annual increase in rental %:">{renderInput("rental_increase")}</FormRow>
+            
+            <SectionTitle>Survey Conducted By</SectionTitle>
+            <FormRow label="Name:">{renderInput("surveyor_name")}</FormRow>
+            <FormRow label="Designation:">{renderInput("surveyor_designation")}</FormRow>
+            <FormRow label="Contact:">{renderInput("surveyor_contact")}</FormRow>
+            <FormRow label="Cell:">{renderInput("surveyor_cell")}</FormRow>
+            <FormRow label="Landline:">{renderInput("surveyor_landline")}</FormRow>
+            <FormRow label="Email:">{renderInput("surveyor_email")}</FormRow>
+            <FormRow label="Date:">{renderInput("survey_date")}</FormRow>
 
           </div>
         </CardContent>
@@ -556,4 +485,6 @@ const SiteVisitPage = () => {
   );
 };
 
-export default SiteVisitPage;
+export default SiteSurveyPage;
+
+    
