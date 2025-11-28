@@ -114,9 +114,10 @@ export default function SaveRecordPage() {
             return;
         }
 
-        const fetchFiles = async (storageRef: StorageReference) => {
+        const fetchFiles = async () => {
+             setIsLoadingFiles(true);
              try {
-                const res = await listAll(storageRef);
+                const res = await listAll(filesRef);
                 const filePromises = res.items.map(async (itemRef) => {
                     const metadata = await getMetadata(itemRef);
                     return {
@@ -135,16 +136,7 @@ export default function SaveRecordPage() {
             }
         }
         
-        // Initial fetch
-        setIsLoadingFiles(true);
-        fetchFiles(filesRef);
-
-        // For real-time updates, we re-fetch when storage changes.
-        // This is a simplified approach. A more complex system might use functions or a dedicated listener.
-        const interval = setInterval(() => fetchFiles(filesRef), 30000); // Re-check every 30 seconds
-
-        return () => clearInterval(interval);
-
+        fetchFiles();
     }, [filesRef]);
     
     useEffect(() => {
@@ -188,7 +180,6 @@ export default function SaveRecordPage() {
         const docRef = doc(firestore, `users/${user.uid}/weeklySchedules`, scheduleId);
         try {
             await deleteDoc(docRef);
-            setSchedules(prev => prev.filter(s => s.id !== scheduleId));
             toast({ title: 'Schedule Deleted', description: `${employeeName}'s schedule has been removed.` });
         } catch (error) {
             toast({ variant: 'destructive', title: 'Deletion Failed', description: 'Could not delete the schedule.' });
@@ -407,6 +398,5 @@ export default function SaveRecordPage() {
             </Card>
         </main>
     )
-}
 
     
