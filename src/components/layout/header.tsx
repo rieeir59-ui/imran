@@ -22,7 +22,7 @@ export function AppHeader() {
         </Link>
       </div>
       <div className="ml-auto">
-        {isClient ? <DataEntryDialog /> : null}
+        {isClient && <DataEntryDialog />}
       </div>
     </header>
   );
