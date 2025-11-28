@@ -21,11 +21,9 @@ export function AppHeader() {
           Dashboard
         </Link>
       </div>
-      {isClient && (
-        <div className="ml-auto">
-          <DataEntryDialog />
-        </div>
-      )}
+      <div className="ml-auto">
+        {isClient ? <DataEntryDialog /> : null}
+      </div>
     </header>
   );
 }
