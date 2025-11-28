@@ -59,6 +59,34 @@ const FormRow = ({
   </div>
 );
 
+const ChecklistItem = ({
+  name,
+  label,
+  formData,
+  handleCheckboxChange,
+  isEditing,
+}: {
+  name: string;
+  label: string;
+  formData: any;
+  handleCheckboxChange: (name: string, checked: boolean) => void;
+  isEditing: boolean;
+}) => (
+  <div className="flex items-center gap-2">
+    <Checkbox
+      id={name}
+      checked={formData[name] || false}
+      onCheckedChange={(checked) =>
+        handleCheckboxChange(name, checked as boolean)
+      }
+      disabled={!isEditing}
+    />
+    <Label htmlFor={name} className="font-normal">
+      {label}
+    </Label>
+  </div>
+);
+
 const SiteSurveyPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -486,5 +514,3 @@ const SiteSurveyPage = () => {
 };
 
 export default SiteSurveyPage;
-
-    
