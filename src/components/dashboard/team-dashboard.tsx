@@ -75,12 +75,11 @@ const setupInitialTeam = async (firestore: any, user: any) => {
   
     return batch.commit().catch(error => {
         const permissionError = new FirestorePermissionError({
-          path: employeesCollectionRef.path,
+          path: `users/${user.uid}/employees`,
           operation: 'write',
-          requestResourceData: correctArchitects,
+          requestResourceData: 'Initial Team Setup', // Simplified for context
         });
         errorEmitter.emit('permission-error', permissionError);
-        // We still throw the original error if we want to handle it further up
         throw error;
     });
 };
@@ -116,13 +115,22 @@ export default function TeamDashboard() {
         
         const setupDocRef = doc(firestore, `users/${user.uid}/app-settings/initialSetup`);
         try {
-            const docSnap = await getDoc(setupDocRef);
+            const docSnap = await getDoc(setupDocRef).catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                    path: setupDocRef.path,
+                    operation: 'get',
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                throw serverError; // Re-throw to be caught by the outer try/catch
+            });
+
             if (!docSnap.exists() || !docSnap.data().teamSetupDone) {
                 await setupInitialTeam(firestore, user);
                 await setDoc(setupDocRef, { teamSetupDone: true });
             }
             setupDoneRef.current = true;
         } catch (error) {
+            // Error is already emitted, just log for local debug if needed
             console.error("Error during initial setup check:", error);
         }
     };
@@ -164,6 +172,7 @@ export default function TeamDashboard() {
 
         return () => unsubscribe();
     }).catch(error => {
+        // This catch block handles failures from checkAndRunInitialSetup
         console.error("Error in initial setup or snapshot listener:", error);
         setIsLoading(false);
     });
