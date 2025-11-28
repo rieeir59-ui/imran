@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -124,7 +125,7 @@ export default function ProjectDataPage() {
     const handleDownload = () => {
         const doc = new jsPDF();
         let y = 15;
-    
+
         const addField = (label: string, value: string | undefined, options: { isTextarea?: boolean, xOffset?: number } = {}) => {
             if (y > 270) {
                 doc.addPage();
@@ -161,11 +162,25 @@ export default function ProjectDataPage() {
             y += 10;
         }
         
+        const addTitle = (title: string) => {
+            if (y > 260) { doc.addPage(); y = 15; }
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.setFillColor(30, 41, 59);
+            doc.rect(14, y - 5, 182, 7, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.text(title, 16, y);
+            y += 8;
+            doc.setTextColor(0, 0, 0);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+        };
+        
         const drawCheckbox = (x: number, yPos: number, isChecked: boolean) => {
             const boxSize = 3.5;
             doc.setDrawColor(0);
             if (isChecked) {
-                doc.setFillColor(0, 0, 139); // Dark blue fill
+                doc.setFillColor(0, 0, 139);
                 doc.rect(x, yPos - boxSize, boxSize, boxSize, 'F');
                 doc.setFont('ZapfDingbats');
                 doc.setTextColor(255, 255, 255);
@@ -202,13 +217,13 @@ export default function ProjectDataPage() {
             }
         };
 
-        const addRadioGroup = (label: string, value: string, options: string[]) => {
+        const addRadioGroup = (label: string, name: string, options: string[]) => {
             if (y > 280) { doc.addPage(); y = 15; }
             doc.setFontSize(10);
             doc.text(`${label}: `, 14, y);
             let currentX = 14 + doc.getTextWidth(`${label}: `) + 2;
             options.forEach(opt => {
-                const isChecked = (formData[value] && formData[value].toLowerCase() === opt.toLowerCase());
+                const isChecked = (formData[name] && formData[name].toLowerCase() === opt.toLowerCase());
                 drawRadio(currentX, y, isChecked);
                 doc.text(opt, currentX + 4, y);
                 currentX += doc.getTextWidth(opt) + 15;
@@ -324,164 +339,186 @@ export default function ProjectDataPage() {
         toast({ title: "Download started", description: "Your PDF is being generated." });
     }
 
-    const renderInput = (name: string, label: string) => (
-        <FormField label={label} name={name} value={formData[name]} onChange={handleInputChange} isEditing={isEditing} />
-    );
-
-    const renderTextarea = (name: string, label: string) => (
-        <FormField label={label} as="textarea" name={name} value={formData[name]} onChange={handleInputChange} isEditing={isEditing} />
-    );
-    
-    const renderCheckbox = (name: string, label: string) => (
-         <div className="flex items-center space-x-2">
-            <Checkbox id={name} name={name} checked={formData[name] || false} onCheckedChange={(checked) => handleCheckboxChange(name, checked)} disabled={!isEditing}/>
-            <Label htmlFor={name}>{label}</Label>
-        </div>
-    );
-    
-    const renderRadioGroup = (name: string, labels: string[]) => (
-        <RadioGroup
-            name={name}
-            value={formData[name]}
-            onValueChange={(value) => handleRadioChange(name, value)}
-            className="flex gap-4"
-            disabled={!isEditing}
-        >
-            {labels.map(label => (
-                 <div key={label} className="flex items-center space-x-2">
-                    <RadioGroupItem value={label.toLowerCase()} id={`${name}-${label.toLowerCase()}`} />
-                    <Label htmlFor={`${name}-${label.toLowerCase()}`}>{label}</Label>
-                </div>
-            ))}
-        </RadioGroup>
-    );
-
-    if (isLoading || isUserLoading) {
-        return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+    const renderInput = (name: string, placeholder = "") => {
+        const value = formData[name] || '';
+        if (isEditing) {
+            return <Input name={name} value={value} onChange={handleInputChange} placeholder={placeholder} />;
+        }
+        return <div className="form-value min-h-[2.5rem] p-2 border-b" data-value={value}>{value}</div>;
+    };
+  
+  const renderTextarea = (name: string, placeholder = "") => {
+    const value = formData[name] || '';
+    if (isEditing) {
+      return (
+        <Textarea
+          name={name}
+          value={value}
+          onChange={handleInputChange}
+          placeholder={placeholder}
+        />
+      );
     }
+    return <div className="form-value min-h-[80px] p-2 border-b whitespace-pre-wrap" data-value={value}>{value}</div>;
+  };
 
-    return (
-        <main className="p-4 md:p-6 lg:p-8">
-             <div className="mb-4">
-                <Button variant="outline" asChild>
-                    <Link href="/bank"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Bank Forms</Link>
-                </Button>
-            </div>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Project Data</CardTitle>
-                    <div className="flex gap-2">
-                        <Button onClick={handleDownload} variant="outline"><Download /> Download PDF</Button>
-                        {isEditing ? (
-                            <Button onClick={handleSave} disabled={isSaving}>
-                                {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
-                            </Button>
-                        ) : (
-                            <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
-                        )}
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        {renderInput("project", "Project")}
-                        {renderInput("address", "Address")}
-                        {renderInput("owner", "Owner")}
-                        {renderInput("architectsProjectNo", "Architect's Project No.")}
-                        {renderInput("date", "Date")}
-                        {renderInput("tel", "Tel")}
-                        {renderInput("businessAddress", "Business Address")}
-                        {renderInput("homeAddress", "Home Address")}
-                        {renderTextarea("proposedImprovements", "Proposed Improvements")}
-                        {renderInput("buildingDeptClassification", "Building Dept. Classification")}
-                        {renderInput("setBacks", "Set Backs")}
-                        {renderInput("cost", "Cost")}
-                        {renderInput("stories", "Stories")}
-                        {renderInput("fireZone", "Fire Zone")}
-                        {renderTextarea("otherAgencyStandards", "Other Agency Standards or Approvals Required")}
-                        {renderTextarea("siteLegalDescription", "Site Legal Description")}
-                        {renderInput("deedRecorded", "Deed recorded in")}
-                        {renderTextarea("restrictions", "Restrictions")}
-                        {renderTextarea("easements", "Easements")}
-                        {renderTextarea("liensLeases", "Liens, Leases")}
-                        {renderInput("lotDimensions", "Lot Dimensions")}
-                        {renderTextarea("adjacentPropertyUse", "Adjacent property use")}
-                        {renderInput("ownerName", "Owners: Name")}
-                        {renderInput("designatedRep", "Designated Representative")}
-                        {renderInput("repAddress", "Address")}
-                        {renderInput("repTel", "Tel")}
-                        {renderInput("attorney", "Attorney at Law")}
-                        {renderInput("insuranceAdvisor", "Insurance Advisor")}
-                        {renderInput("consultantOn", "Consultant on")}
-                        
-                        <Subtitle>Site Information Sources:</Subtitle>
-                        {renderInput("propertySurveyBy", "Property Survey by")}
-                        {renderInput("topographicSurveyBy", "Topographic Survey by")}
-                        {renderInput("soilsTestsBy", "Soils Tests by")}
-                        {renderInput("aerialPhotosBy", "Aerial Photos by")}
-                        {renderInput("maps", "Maps")}
-                        
-                        <Subtitle>Public Services:</Subtitle>
-                        <Table>
-                            <TableHeader><TableRow><TableHead>Company</TableHead><TableHead>Name and Address</TableHead><TableHead>Representative</TableHead><TableHead>Tel</TableHead></TableRow></TableHeader>
-                            <TableBody>
-                                <TableRow>
-                                    <TableCell>Gas Company</TableCell>
-                                    <TableCell>{isEditing ? <Input name="gas_address" value={formData.gas_address || ''} onChange={handleInputChange} /> : formData.gas_address}</TableCell>
-                                    <TableCell>{isEditing ? <Input name="gas_rep" value={formData.gas_rep || ''} onChange={handleInputChange} /> : formData.gas_rep}</TableCell>
-                                    <TableCell>{isEditing ? <Input name="gas_tel" value={formData.gas_tel || ''} onChange={handleInputChange} /> : formData.gas_tel}</TableCell>
-                                </TableRow>
-                                 <TableRow>
-                                    <TableCell>Electric Co</TableCell>
-                                    <TableCell>{isEditing ? <Input name="electric_address" value={formData.electric_address || ''} onChange={handleInputChange} /> : formData.electric_address}</TableCell>
-                                    <TableCell>{isEditing ? <Input name="electric_rep" value={formData.electric_rep || ''} onChange={handleInputChange} /> : formData.electric_rep}</TableCell>
-                                    <TableCell>{isEditing ? <Input name="electric_tel" value={formData.electric_tel || ''} onChange={handleInputChange} /> : formData.electric_tel}</TableCell>
-                                </TableRow>
-                                 <TableRow>
-                                    <TableCell>Telephone Co</TableCell>
-                                    <TableCell>{isEditing ? <Input name="telco_address" value={formData.telco_address || ''} onChange={handleInputChange} /> : formData.telco_address}</TableCell>
-                                    <TableCell>{isEditing ? <Input name="telco_rep" value={formData.telco_rep || ''} onChange={handleInputChange} /> : formData.telco_rep}</TableCell>
-                                    <TableCell>{isEditing ? <Input name="telco_tel" value={formData.telco_tel || ''} onChange={handleInputChange} /> : formData.telco_tel}</TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
-                        {renderInput("sewers", "Sewers")}
-                        {renderInput("water", "Water")}
-                        
-                        <Subtitle>Financial Data:</Subtitle>
-                        {renderInput("loanAmount", "Loan Amount")}
-                        {renderInput("loanBy", "Loan by")}
-                        {renderInput("bondsOrLiens", "Bonds or Liens")}
-                        {renderInput("grantAmount", "Grant Amount")}
-                        {renderInput("grantFrom", "Grant from")}
-                        
-                        <Subtitle>Method of Handling:</Subtitle>
-                        <div className="flex gap-4 items-center">
-                            <Label>Contract Type:</Label>
-                            {renderCheckbox("method_single", "Single Contract")}
-                            {renderCheckbox("method_separate", "Separate Contracts")}
-                        </div>
-                         <div className="flex gap-4 items-center">
-                            <Label>Bidding:</Label>
-                            {renderRadioGroup("negotiatedBid", ["Negotiated", "Bid"])}
-                        </div>
-                         <div className="flex gap-4 items-center">
-                            <Label>Contract:</Label>
-                            {renderCheckbox("stipulatedSum", "Stipulated Sum")}
-                            {renderCheckbox("costPlusFee", "Cost Plus Fee")}
-                        </div>
-                         <div className="flex gap-4 items-center">
-                            <Label>Scope:</Label>
-                            {renderCheckbox("equipment", "Equipment")}
-                            {renderCheckbox("landscaping", "Landscaping")}
-                        </div>
-                        
-                        <Subtitle>Sketch of Property:</Subtitle>
-                        <p>Notations on existing improvements, disposal thereof, utilities, tree, etc.; indicated North; notations on other Project provision:</p>
-                        <div className="border h-48 mt-2"></div>
-                    </div>
-                </CardContent>
-            </Card>
-        </main>
-    );
+  const renderCheckbox = (name: string, label?: string) => (
+      <div className="flex items-center gap-2">
+          <Checkbox 
+              id={name} 
+              name={name}
+              checked={formData[name] || false} 
+              onCheckedChange={(checked) => handleCheckboxChange(name, checked)}
+              disabled={!isEditing}
+          />
+          {label && <label htmlFor={name} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              {label}
+          </label>}
+      </div>
+  );
+  
+  const renderRadioGroup = (name: string, labels: string[]) => (
+      <RadioGroup
+          name={name}
+          value={formData[name]}
+          onValueChange={(value) => handleRadioChange(name, value)}
+          className="flex gap-4"
+          disabled={!isEditing}
+      >
+          {labels.map(label => (
+               <div key={label} className="flex items-center space-x-2">
+                  <RadioGroupItem value={label.toLowerCase()} id={`${name}-${label.toLowerCase()}`} />
+                  <Label htmlFor={`${name}-${label.toLowerCase()}`}>{label}</Label>
+              </div>
+          ))}
+      </RadioGroup>
+  );
+
+  if (isLoading || isUserLoading) {
+      return <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin" /> Loading...</div>
+  }
+
+  return (
+      <main className="p-4 md:p-6 lg:p-8">
+           <div className="mb-4">
+              <Button variant="outline" asChild>
+                  <Link href="/bank"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Bank Forms</Link>
+              </Button>
+          </div>
+          <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Project Data</CardTitle>
+                  <div className="flex gap-2">
+                      <Button onClick={handleDownload} variant="outline"><Download /> Download PDF</Button>
+                      {isEditing ? (
+                          <Button onClick={handleSave} disabled={isSaving}>
+                              {isSaving ? <Loader2 className="animate-spin" /> : <Save />} Save
+                          </Button>
+                      ) : (
+                          <Button onClick={() => setIsEditing(true)}><Edit /> Edit</Button>
+                      )}
+                  </div>
+              </CardHeader>
+              <CardContent>
+                  <div className="space-y-4">
+                      {renderInput("project", "Project")}
+                      {renderInput("address", "Address")}
+                      {renderInput("owner", "Owner")}
+                      {renderInput("architectsProjectNo", "Architect's Project No.")}
+                      {renderInput("date", "Date")}
+                      {renderInput("tel", "Tel")}
+                      {renderInput("businessAddress", "Business Address")}
+                      {renderInput("homeAddress", "Home Address")}
+                      {renderTextarea("proposedImprovements", "Proposed Improvements")}
+                      {renderInput("buildingDeptClassification", "Building Dept. Classification")}
+                      {renderInput("setBacks", "Set Backs")}
+                      {renderInput("cost", "Cost")}
+                      {renderInput("stories", "Stories")}
+                      {renderInput("fireZone", "Fire Zone")}
+                      {renderTextarea("otherAgencyStandards", "Other Agency Standards or Approvals Required")}
+                      {renderTextarea("siteLegalDescription", "Site Legal Description")}
+                      {renderInput("deedRecorded", "Deed recorded in")}
+                      {renderTextarea("restrictions", "Restrictions")}
+                      {renderTextarea("easements", "Easements")}
+                      {renderTextarea("liensLeases", "Liens, Leases")}
+                      {renderInput("lotDimensions", "Lot Dimensions")}
+                      {renderTextarea("adjacentPropertyUse", "Adjacent property use")}
+                      {renderInput("ownerName", "Owners: Name")}
+                      {renderInput("designatedRep", "Designated Representative")}
+                      {renderInput("repAddress", "Address")}
+                      {renderInput("repTel", "Tel")}
+                      {renderInput("attorney", "Attorney at Law")}
+                      {renderInput("insuranceAdvisor", "Insurance Advisor")}
+                      {renderInput("consultantOn", "Consultant on")}
+                      
+                      <Subtitle>Site Information Sources:</Subtitle>
+                      {renderInput("propertySurveyBy", "Property Survey by")}
+                      {renderInput("topographicSurveyBy", "Topographic Survey by")}
+                      {renderInput("soilsTestsBy", "Soils Tests by")}
+                      {renderInput("aerialPhotosBy", "Aerial Photos by")}
+                      {renderInput("maps", "Maps")}
+                      
+                      <Subtitle>Public Services:</Subtitle>
+                      <Table>
+                          <TableHeader><TableRow><TableHead>Company</TableHead><TableHead>Name and Address</TableHead><TableHead>Representative</TableHead><TableHead>Tel</TableHead></TableRow></TableHeader>
+                          <TableBody>
+                              <TableRow>
+                                  <TableCell>Gas Company</TableCell>
+                                  <TableCell>{isEditing ? <Input name="gas_address" value={formData.gas_address || ''} onChange={handleInputChange} /> : formData.gas_address}</TableCell>
+                                  <TableCell>{isEditing ? <Input name="gas_rep" value={formData.gas_rep || ''} onChange={handleInputChange} /> : formData.gas_rep}</TableCell>
+                                  <TableCell>{isEditing ? <Input name="gas_tel" value={formData.gas_tel || ''} onChange={handleInputChange} /> : formData.gas_tel}</TableCell>
+                              </TableRow>
+                               <TableRow>
+                                  <TableCell>Electric Co</TableCell>
+                                  <TableCell>{isEditing ? <Input name="electric_address" value={formData.electric_address || ''} onChange={handleInputChange} /> : formData.electric_address}</TableCell>
+                                  <TableCell>{isEditing ? <Input name="electric_rep" value={formData.electric_rep || ''} onChange={handleInputChange} /> : formData.electric_rep}</TableCell>
+                                  <TableCell>{isEditing ? <Input name="electric_tel" value={formData.electric_tel || ''} onChange={handleInputChange} /> : formData.electric_tel}</TableCell>
+                              </TableRow>
+                               <TableRow>
+                                  <TableCell>Telephone Co</TableCell>
+                                  <TableCell>{isEditing ? <Input name="telco_address" value={formData.telco_address || ''} onChange={handleInputChange} /> : formData.telco_address}</TableCell>
+                                  <TableCell>{isEditing ? <Input name="telco_rep" value={formData.telco_rep || ''} onChange={handleInputChange} /> : formData.telco_rep}</TableCell>
+                                  <TableCell>{isEditing ? <Input name="telco_tel" value={formData.telco_tel || ''} onChange={handleInputChange} /> : formData.telco_tel}</TableCell>
+                              </TableRow>
+                          </TableBody>
+                      </Table>
+                      {renderInput("sewers", "Sewers")}
+                      {renderInput("water", "Water")}
+                      
+                      <Subtitle>Financial Data:</Subtitle>
+                      {renderInput("loanAmount", "Loan Amount")}
+                      {renderInput("loanBy", "Loan by")}
+                      {renderInput("bondsOrLiens", "Bonds or Liens")}
+                      {renderInput("grantAmount", "Grant Amount")}
+                      {renderInput("grantFrom", "Grant from")}
+                      
+                      <Subtitle>Method of Handling:</Subtitle>
+                      <div className="flex gap-4 items-center">
+                          <Label>Contract Type:</Label>
+                          {renderCheckbox("method_single", "Single Contract")}
+                          {renderCheckbox("method_separate", "Separate Contracts")}
+                      </div>
+                       <div className="flex gap-4 items-center">
+                          <Label>Bidding:</Label>
+                          {renderRadioGroup("negotiatedBid", ["Negotiated", "Bid"])}
+                      </div>
+                       <div className="flex gap-4 items-center">
+                          <Label>Contract:</Label>
+                          {renderCheckbox("stipulatedSum", "Stipulated Sum")}
+                          {renderCheckbox("costPlusFee", "Cost Plus Fee")}
+                      </div>
+                       <div className="flex gap-4 items-center">
+                          <Label>Scope:</Label>
+                          {renderCheckbox("equipment", "Equipment")}
+                          {renderCheckbox("landscaping", "Landscaping")}
+                      </div>
+                      
+                      <Subtitle>Sketch of Property:</Subtitle>
+                      <p>Notations on existing improvements, disposal thereof, utilities, tree, etc.; indicated North; notations on other Project provision:</p>
+                      <div className="border h-48 mt-2"></div>
+                  </div>
+              </CardContent>
+          </Card>
+      </main>
+  );
 }
-
