@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, GanttChart, HardHat, ListChecks, CalendarDays, Folder, File as FileIcon, Search, Briefcase, CheckCircle, XCircle, CircleDotDashed, PlusCircle, Trash2, Check, Image, LayoutList } from 'lucide-react';
 import Link from 'next/link';
 import { useUser, useStorage, useFirestore, useMemoFirebase } from '@/firebase';
-import { ref, listAll, getMetadata, deleteObject } from 'firebase/storage';
-import { collection, getDocs, doc, deleteDoc, getDoc, onSnapshot } from "firebase/firestore";
+import { ref, listAll, getMetadata, deleteObject, onSnapshot, StorageReference } from 'firebase/storage';
+import { collection, getDocs, doc, deleteDoc, getDoc } from "firebase/firestore";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -114,10 +114,9 @@ export default function SaveRecordPage() {
             return;
         }
 
-        const fetchFiles = async () => {
-            setIsLoadingFiles(true);
-            try {
-                const res = await listAll(filesRef);
+        const fetchFiles = async (storageRef: StorageReference) => {
+             try {
+                const res = await listAll(storageRef);
                 const filePromises = res.items.map(async (itemRef) => {
                     const metadata = await getMetadata(itemRef);
                     return {
@@ -130,13 +129,22 @@ export default function SaveRecordPage() {
                 const files = await Promise.all(filePromises);
                 setUploadedFiles(files);
             } catch (error) {
-                console.error("Error fetching files for saved records:", error);
+                console.error("Error fetching files:", error);
             } finally {
                 setIsLoadingFiles(false);
             }
-        };
+        }
+        
+        // Initial fetch
+        setIsLoadingFiles(true);
+        fetchFiles(filesRef);
 
-        fetchFiles();
+        // For real-time updates, we re-fetch when storage changes.
+        // This is a simplified approach. A more complex system might use functions or a dedicated listener.
+        const interval = setInterval(() => fetchFiles(filesRef), 30000); // Re-check every 30 seconds
+
+        return () => clearInterval(interval);
+
     }, [filesRef]);
     
     useEffect(() => {
