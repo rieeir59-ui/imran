@@ -16,7 +16,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
 import { collection, onSnapshot, doc, deleteDoc, writeBatch, getDocs, query, setDoc, getDoc } from 'firebase/firestore';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '../ui/button';
@@ -84,6 +84,7 @@ export default function TeamDashboard() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const setupDone = useRef(false);
 
   const employeesCollectionRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -100,6 +101,9 @@ export default function TeamDashboard() {
         setIsLoading(false);
         return;
     }
+    
+    if (setupDone.current) return;
+    setupDone.current = true;
 
     const checkAndRunInitialSetup = async () => {
         const setupDocRef = doc(firestore, `users/${user.uid}/app-settings`, 'initialSetup');
@@ -126,7 +130,11 @@ export default function TeamDashboard() {
             if (groupedByDesignation['Architect']) {
                 const architectOrder = ["Sobia Razzak", "Luqman Aslam", "Syed M Asad", "M Haseeb", "M Waleed Zahid", "M Khizar"];
                 groupedByDesignation['Architect'].sort((a, b) => {
-                    return architectOrder.indexOf(a.name) - architectOrder.indexOf(b.name);
+                    const indexA = architectOrder.indexOf(a.name);
+                    const indexB = architectOrder.indexOf(b.name);
+                    if (indexA === -1) return 1;
+                    if (indexB === -1) return -1;
+                    return indexA - indexB;
                 });
             }
             
@@ -167,12 +175,18 @@ export default function TeamDashboard() {
       return;
     }
     const docRef = doc(firestore, `users/${user.uid}/employees`, employeeId);
-    try {
-      await deleteDoc(docRef);
-      toast({ title: 'Employee Deleted', description: 'The employee has been removed successfully.' });
-    } catch (error) {
-      toast({ variant: 'destructive', title: 'Deletion Failed', description: 'Could not delete the employee.' });
-    }
+    
+    deleteDoc(docRef)
+      .then(() => {
+        toast({ title: 'Employee Deleted', description: 'The employee has been removed successfully.' });
+      })
+      .catch((serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'delete',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   const renderEmployeeCard = (employee: { id: string, name: string; designation: string }) => {
@@ -270,3 +284,4 @@ export default function TeamDashboard() {
     </div>
   );
 }
+
