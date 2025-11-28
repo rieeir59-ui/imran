@@ -3,11 +3,11 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, GanttChart, HardHat, ListChecks, CalendarDays, Folder, File as FileIcon, Search, Briefcase, CheckCircle, XCircle, CircleDotDashed, PlusCircle, Trash2 } from 'lucide-react';
+import { FileText, GanttChart, HardHat, ListChecks, CalendarDays, Folder, File as FileIcon, Search, Briefcase, CheckCircle, XCircle, CircleDotDashed, PlusCircle, Trash2, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useUser, useStorage, useFirestore, useMemoFirebase } from '@/firebase';
 import { ref, listAll, getMetadata, deleteObject } from 'firebase/storage';
-import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, doc, deleteDoc, getDoc, onSnapshot } from "firebase/firestore";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -24,68 +24,20 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const savedRecords = [
-    {
-        title: 'Project Checklist',
-        description: 'Review and manage your project setup checklist.',
-        href: '/project-checklist',
-        icon: ListChecks
-    },
-    {
-        title: 'Project Information',
-        description: 'Access and edit general project information.',
-        href: '/projects',
-        icon: HardHat
-    },
-    {
-        title: 'Project Data',
-        description: 'View and update detailed project data entries.',
-        href: '/project-data',
-        icon: FileText
-    },
-    {
-        title: 'Predesign Assessment',
-        description: 'Manage your predesign general assessments.',
-        href: '/predesign-assessment',
-        icon: FileText
-    },
-    {
-        title: 'Site Visit Form',
-        description: 'Review and edit site visit reports.',
-        href: '/site-visit',
-        icon: FileText
-    },
-    {
-        title: 'Project Timeline',
-        description: 'General project timeline and scheduling.',
-        href: '/project-timeline',
-        icon: GanttChart
-    },
-    {
-        title: 'Weekly Work Schedules',
-        description: 'Manage and review all employee weekly schedules.',
-        href: '/weekly-schedule',
-        icon: CalendarDays
-    },
-    {
-        title: 'Commercial Projects Timeline',
-        description: 'Track the progress of all commercial projects.',
-        href: '/commercial-timeline',
-        icon: GanttChart
-    },
-    {
-        title: 'Residential Projects Timeline',
-        description: 'Track the progress of all residential projects.',
-        href: '/residential-timeline',
-        icon: GanttChart
-    },
-    {
-        title: 'Bank Timelines',
-        description: 'Access timelines for all bank-related projects.',
-        href: '/bank',
-        icon: GanttChart
-    },
+    { title: 'Project Checklist', description: 'Review and manage your project setup checklist.', href: '/project-checklist', icon: ListChecks, docPath: 'projectChecklists/project-checklist' },
+    { title: 'Project Information', description: 'Access and edit general project information.', href: '/projects', icon: HardHat, docPath: 'projectInformation/main-project-information' },
+    { title: 'Project Data', description: 'View and update detailed project data entries.', href: '/project-data', icon: FileText, docPath: 'projectData/main-project-data' },
+    { title: 'Predesign Assessment', description: 'Manage your predesign general assessments.', href: '/predesign-assessment', icon: FileText, docPath: 'predesignAssessments/main-predesign-assessment' },
+    { title: 'Site Visit Form', description: 'Review and edit site visit reports.', href: '/site-visit', icon: FileText, docPath: 'siteVisits/site-visit-proforma' },
+    { title: 'Project Timeline', description: 'General project timeline and scheduling.', href: '/project-timeline', icon: GanttChart, docPath: 'projectTimelines/main-project-timeline' },
+    { title: 'Bank Forms', description: 'Access all bank-related project forms.', href: '/bank', icon: FileText },
+    { title: 'Commercial Projects Timeline', description: 'Track the progress of all commercial projects.', href: '/commercial-timeline', icon: GanttChart, docPath: 'projectTimelines/commercial-timeline' },
+    { title: 'Residential Projects Timeline', description: 'Track the progress of all residential projects.', href: '/residential-timeline', icon: GanttChart, docPath: 'projectTimelines/residential-timeline' },
+    { title: 'File Manager', description: 'Upload and manage all your project files.', href: '/file-manager', icon: Folder },
 ];
 
 interface UploadedFile {
@@ -107,6 +59,9 @@ export default function SaveRecordPage() {
     const [schedules, setSchedules] = useState<Schedule[]>([]);
     const [isLoadingSchedules, setIsLoadingSchedules] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [recordStatus, setRecordStatus] = useState<Record<string, boolean>>({});
+    const [isLoadingStatus, setIsLoadingStatus] = useState(true);
+    
     const { user } = useUser();
     const storage = useStorage();
     const firestore = useFirestore();
@@ -121,6 +76,31 @@ export default function SaveRecordPage() {
         if (!user || !firestore) return null;
         return collection(firestore, `users/${user.uid}/weeklySchedules`);
     }, [user, firestore]);
+
+     useEffect(() => {
+        if (!user || !firestore) {
+            setIsLoadingStatus(false);
+            return;
+        }
+
+        const checkStatuses = async () => {
+            setIsLoadingStatus(true);
+            const statusMap: Record<string, boolean> = {};
+            const checks = savedRecords.map(async (record) => {
+                if (record.docPath) {
+                    const docRef = doc(firestore, `users/${user.uid}/${record.docPath}`);
+                    const docSnap = await getDoc(docRef);
+                    statusMap[record.href] = docSnap.exists();
+                }
+            });
+            await Promise.all(checks);
+            setRecordStatus(statusMap);
+            setIsLoadingStatus(false);
+        };
+
+        checkStatuses();
+    }, [user, firestore]);
+
 
     useEffect(() => {
         if (!filesRef) {
@@ -159,25 +139,23 @@ export default function SaveRecordPage() {
             return;
         };
 
-        setIsLoadingSchedules(true);
-        getDocs(schedulesCollectionRef)
-            .then((querySnapshot) => {
-                const schedulesData = querySnapshot.docs.map(doc => {
-                    const data = doc.data();
-                    // Handle both cases: employeeName inside schedules array or at the top level
-                    const employeeName = data.schedules?.[0]?.employeeName || data.employeeName || 'Unnamed Schedule';
-                    return {
-                        id: doc.id,
-                        schedules: data.schedules || [],
-                        employeeName: employeeName,
-                    }
-                });
-                setSchedules(schedulesData);
-                setIsLoadingSchedules(false);
-            })
-            .catch(() => {
-                setIsLoadingSchedules(false);
+        const unsubscribe = onSnapshot(schedulesCollectionRef, (querySnapshot) => {
+            const schedulesData = querySnapshot.docs.map(doc => {
+                const data = doc.data();
+                const employeeName = data.schedules?.[0]?.employeeName || data.employeeName || 'Unnamed Schedule';
+                return {
+                    id: doc.id,
+                    schedules: data.schedules || [],
+                    employeeName: employeeName,
+                }
             });
+            setSchedules(schedulesData);
+            setIsLoadingSchedules(false);
+        }, () => {
+            setIsLoadingSchedules(false);
+        });
+
+        return () => unsubscribe();
     }, [schedulesCollectionRef]);
     
     const formatFileSize = (bytes: number): string => {
@@ -218,7 +196,6 @@ export default function SaveRecordPage() {
         }
     }
 
-
     const filteredRecords = savedRecords.filter(record => 
         record.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         record.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -231,7 +208,6 @@ export default function SaveRecordPage() {
     const filteredFiles = uploadedFiles.filter(file =>
         file.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
 
     return (
         <main className="p-4 md:p-6 lg:p-8 space-y-8">
@@ -253,7 +229,7 @@ export default function SaveRecordPage() {
                 <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {filteredRecords.length > 0 ? (
                         filteredRecords.map((record) => (
-                            <Link href={record.href} key={record.title} className="block hover:bg-accent transition-colors p-4 rounded-lg border">
+                            <Link href={record.href} key={record.title} className="relative block hover:bg-accent transition-colors p-4 rounded-lg border">
                                 <div className="flex items-start gap-4">
                                     <record.icon className="h-8 w-8 text-primary mt-1" />
                                     <div>
@@ -261,6 +237,11 @@ export default function SaveRecordPage() {
                                         <p className="text-sm text-muted-foreground">{record.description}</p>
                                     </div>
                                 </div>
+                                {record.docPath && (
+                                    <Badge variant={recordStatus[record.href] ? "default" : "secondary"} className={cn("absolute top-2 right-2", recordStatus[record.href] && "bg-green-500")}>
+                                        {isLoadingStatus ? <Loader2 className="h-3 w-3 animate-spin"/> : recordStatus[record.href] ? 'Completed' : 'Not Started'}
+                                    </Badge>
+                                )}
                             </Link>
                         ))
                     ) : (
