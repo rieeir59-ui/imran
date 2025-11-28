@@ -21,6 +21,7 @@ const mainMenuItems = [
 ];
 
 const projectFormsItems = [
+  { href: '/projects-overview', icon: BriefcaseBusiness, label: 'Projects Overview' },
   { href: '/projects', icon: FolderKanban, label: 'Project Information' },
   { href: '/predesign-assessment', icon: ClipboardCheck, label: 'Predesign Assessment' },
   { href: '/project-checklist', icon: ClipboardCheck, label: 'Project Checklist' },
