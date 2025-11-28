@@ -21,6 +21,7 @@ import {
   Loader2,
   Download,
   ArrowLeft,
+  Camera,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
@@ -30,10 +31,13 @@ import {
   useMemoFirebase,
   FirestorePermissionError,
   errorEmitter,
+  useStorage,
 } from '@/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import Image from 'next/image';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Globe, Mail, MapPin, Phone } from 'lucide-react';
 
@@ -87,6 +91,7 @@ const ChecklistItem = ({
   </div>
 );
 
+
 const SiteSurveyPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -96,6 +101,7 @@ const SiteSurveyPage = () => {
   const { toast } = useToast();
   const { user } = useUser();
   const firestore = useFirestore();
+  const storage = useStorage();
 
   const docRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -181,38 +187,41 @@ const SiteSurveyPage = () => {
         doc.text("PREMISES REVIEW FOR PROPOSED BRANCH/OFFICE", 105, y, { align: 'center' });
         y += 8;
 
-        // --- Helper to add a section with a title and key-value pairs ---
-        const addSection = (title: string, data: (string | [string, string])[][], startY: number) => {
+        const addSection = (title: string, data: (string | [string, string])[][]) => {
+            if (y > 250) {
+                doc.addPage();
+                y = 15;
+            }
             autoTable(doc, {
-                startY: startY,
+                startY: y,
                 head: [[{ content: title, styles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' } }]],
                 body: data,
                 theme: 'grid',
                 columnStyles: { 0: { fontStyle: 'bold' } },
                 didDrawPage: (data) => { y = data.cursor?.y || 0; }
             });
-            return (doc as any).lastAutoTable.finalY + 5;
+            y = (doc as any).lastAutoTable.finalY + 5;
         }
         
         const getYesNo = (fieldName: string) => formData[fieldName] ? 'Yes' : 'No';
 
         // --- Location ---
-        y = addSection("Location", [
+        addSection("Location", [
             ["Purpose", formData.purpose || ''],
             ["City", formData.city || ''],
             ["Region", formData.region || ''],
             ["Address", formData.address || ''],
-        ], y);
+        ]);
 
         // --- Legal File ---
-        y = addSection("Legal File", [
+        addSection("Legal File", [
             ["Name of Owner", formData.owner_name || ''],
             ["Completion Certificate", getYesNo('completion_cert')],
             ["Is Leased", `${getYesNo('is_leased')} (As informed by Owner Representative)`],
-        ], y);
+        ]);
 
         // --- Area ---
-        y = addSection("Area (Attach as-built plan(s))", [
+        addSection("Area (Attach as-built plan(s))", [
             ["Maximum Frontage (ft)", formData.frontage || ''],
             ["Maximum Depth (ft)", formData.depth || ''],
             ["Total Area (Sqft)", formData.total_area || ''],
@@ -221,7 +230,7 @@ const SiteSurveyPage = () => {
             ["Covered Area (Basement)", formData.covered_basement || ''],
             ["Covered Area (Ground Floor)", formData.covered_ground || ''],
             ["No. of Stories/Floors", formData.stories || ''],
-        ], y);
+        ]);
         
         // --- Building Overview ---
         const buildingOverviewData = [
@@ -261,11 +270,11 @@ const SiteSurveyPage = () => {
             ].filter(Boolean).join(', ')],
             ["In case of Plot, existing level from road", formData.plot_levels || ''],
         ];
-        y = addSection("Building Overview", buildingOverviewData, y);
+        addSection("Building Overview", buildingOverviewData);
 
 
         // --- Utilities ---
-        y = addSection("Utilities", [
+        addSection("Utilities", [
             ["Sanctioned Electrical Load", formData.electrical_load || ''],
             ["Type of electrical load", [
                 formData.el_com && "Commercial",
@@ -279,27 +288,27 @@ const SiteSurveyPage = () => {
             ["Type of Water", formData.water_type || ''],
             ["Gas Connection", getYesNo('gas_connection')],
             ["Sewerage Line", getYesNo('sewerage_line')],
-        ], y);
+        ]);
         
         // --- Bounded As ---
-        y = addSection("Bounded As", [
+        addSection("Bounded As", [
             ["Front", formData.bound_front || ''],
             ["Back", formData.bound_back || ''],
             ["Right", formData.bound_right || ''],
             ["Left", formData.bound_left || ''],
-        ], y);
+        ]);
         
         // --- Rental Detail ---
-        y = addSection("Rental Detail", [
+        addSection("Rental Detail", [
             ["Acquisition", formData.acquisition || ''],
             ["Expected Rental/month", formData.expected_rental || ''],
             ["Expected Advance (# of months)", formData.expected_advance || ''],
             ["Expected period of lease", formData.lease_period || ''],
             ["Annual increase in rental", formData.rental_increase || ''],
-        ], y);
+        ]);
         
         // --- Survey Conducted By ---
-        y = addSection("Survey Conducted By", [
+        addSection("Survey Conducted By", [
             ["Name", formData.surveyor_name || ''],
             ["Designation", formData.surveyor_designation || ''],
             ["Contact", formData.surveyor_contact || ''],
@@ -307,7 +316,7 @@ const SiteSurveyPage = () => {
             ["Landline", formData.surveyor_landline || ''],
             ["Email", formData.surveyor_email || ''],
             ["Date", formData.survey_date || ''],
-        ], y);
+        ]);
 
 
         // --- Footer ---
@@ -514,3 +523,5 @@ const SiteSurveyPage = () => {
 };
 
 export default SiteSurveyPage;
+
+    
