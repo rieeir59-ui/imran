@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { UploadCloud, File as FileIcon, MoreVertical, Edit, Trash2, Save, Loader2, PlusCircle, ArrowLeft, Terminal } from 'lucide-react';
+import { UploadCloud, File as FileIcon, MoreVertical, Edit, Trash2, Save, Loader2, PlusCircle, ArrowLeft, Terminal, Download } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useStorage, useAuth } from '@/firebase';
@@ -269,6 +269,7 @@ export default function FileManagerPage() {
                         <CardTitle>Editing: {activeFile.name}</CardTitle>
                         <div className="flex gap-2">
                            <Button variant="outline" onClick={() => setActiveFile(null)}><ArrowLeft className="mr-2"/> Back to Files</Button>
+                           <Button onClick={() => window.open(activeFile.url, '_blank')} variant="secondary"><Download className="mr-2"/> Download</Button>
                            <Button onClick={handleSaveTextFile} disabled={isSaving}>
                              {isSaving ? <Loader2 className="animate-spin mr-2"/> : <Save className="mr-2"/>}
                              Save and Close
