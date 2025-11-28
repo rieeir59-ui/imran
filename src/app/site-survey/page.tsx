@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -160,14 +159,14 @@ const SiteSurveyPage = () => {
         toast({ title: 'Success', description: 'Site survey data saved.' });
         setIsEditing(false);
       })
-      .catch((serverError) => {
+      .catch(async (serverError) => {
         const permissionError = new FirestorePermissionError({
-          path: docRef.path,
-          operation: 'write',
-          requestResourceData: formData,
+            path: docRef.path,
+            operation: 'write',
+            requestResourceData: formData,
         });
         errorEmitter.emit('permission-error', permissionError);
-      })
+    })
       .finally(() => setIsSaving(false));
   };
   
@@ -484,7 +483,7 @@ const SiteSurveyPage = () => {
             <FormRow label="Emergency Exit:">{renderRadioGroupWithNote('emergency_exit', ['Yes', 'No'], "Can provide if not available?")} {isEditing && <Checkbox id="can_provide_exit" checked={formData.can_provide_exit || false} onCheckedChange={(c) => handleCheckboxChange('can_provide_exit', c as boolean)} />}</FormRow>
             <FormRow label="Ramp Available for disabled persons:">{renderRadioGroupWithNote('ramp_available', ['Yes', 'No'], "Can provide if not available?")} {isEditing && <Checkbox id="can_provide_ramp" checked={formData.can_provide_ramp || false} onCheckedChange={(c) => handleCheckboxChange('can_provide_ramp', c as boolean)} />}</FormRow>
             <FormRow label="Seepage in Building:">{renderRadioGroupWithNote('seepage', ['Yes', 'No'])}</FormRow>
-            {formData.seepage && <>
+            {formData.seepage === 'yes' && <>
                 <FormRow label="Area of Seepage:">{renderInput("seepage_area")}</FormRow>
                 <FormRow label="Possible cause of Seepage:">{renderInput("seepage_cause")}</FormRow>
             </>}
