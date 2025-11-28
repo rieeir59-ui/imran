@@ -1,36 +1,8 @@
 
-'use client';
-
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { DataProvider } from '@/lib/data-context';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/layout/sidebar';
-import { SidebarInset } from '@/components/ui/sidebar';
-import { AppHeader } from '@/components/layout/header';
-import { FirebaseClientProvider } from '@/firebase';
-import { useEffect } from 'react';
-import { TooltipProvider } from '@/components/ui/tooltip';
-
-// This new component will handle the side effect of loading the theme.
-const ThemeLoader = () => {
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('dashboard-theme');
-    if (savedTheme) {
-      try {
-        const { primary, background, accent } = JSON.parse(savedTheme);
-        const root = document.documentElement;
-        if (primary) root.style.setProperty('--primary', `hsl(${primary})`);
-        if (background) root.style.setProperty('--background', `hsl(${background})`);
-        if (accent) root.style.setProperty('--accent', `hsl(${accent})`);
-      } catch (error) {
-        console.error("Failed to parse or apply theme from localStorage", error);
-      }
-    }
-  }, []);
-
-  return null; // This component doesn't render anything visible.
-}
+import { ClientProviders } from '@/components/ClientProviders';
 
 export default function RootLayout({
   children,
@@ -45,22 +17,11 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <ThemeLoader />
-        <FirebaseClientProvider>
-          <DataProvider>
-            <TooltipProvider>
-              <SidebarProvider>
-                <AppSidebar />
-                <div className="flex-1">
-                  <SidebarInset>
-                    <AppHeader />
-                    {children}
-                  </SidebarInset>
-                </div>
-              </SidebarProvider>
-            </TooltipProvider>
-          </DataProvider>
-        </FirebaseClientProvider>
+        <DataProvider>
+            <ClientProviders>
+                {children}
+            </ClientProviders>
+        </DataProvider>
         <Toaster />
       </body>
     </html>
