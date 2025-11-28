@@ -10,6 +10,7 @@ import { SidebarInset } from '@/components/ui/sidebar';
 import { AppHeader } from '@/components/layout/header';
 import { FirebaseClientProvider } from '@/firebase';
 import { useEffect } from 'react';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 // This new component will handle the side effect of loading the theme.
 const ThemeLoader = () => {
@@ -47,15 +48,17 @@ export default function RootLayout({
         <ThemeLoader />
         <FirebaseClientProvider>
           <DataProvider>
-            <SidebarProvider>
-              <AppSidebar />
-              <div className="flex-1">
-                <SidebarInset>
-                  <AppHeader />
-                  {children}
-                </SidebarInset>
-              </div>
-            </SidebarProvider>
+            <TooltipProvider>
+              <SidebarProvider>
+                <AppSidebar />
+                <div className="flex-1">
+                  <SidebarInset>
+                    <AppHeader />
+                    {children}
+                  </SidebarInset>
+                </div>
+              </SidebarProvider>
+            </TooltipProvider>
           </DataProvider>
         </FirebaseClientProvider>
         <Toaster />
