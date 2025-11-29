@@ -118,65 +118,57 @@
   .no-print {
     display: none !important;
   }
-
-  main.p-4, main.p-6, main.p-8 {
+  
+  main {
     padding: 0 !important;
     margin: 0 !important;
   }
-  
+
   .printable-card {
     border: none !important;
     box-shadow: none !important;
   }
-
+  
   .printable-card table {
-    font-size: 8px !important; /* Reduce font size for tables */
+    font-size: 8px !important;
     width: 100% !important;
-    table-layout: fixed; /* Force table to obey width */
-  }
-
-  .printable-card th,
-  .printable-card td {
-    padding: 2px 4px !important; /* Adjust padding */
-    overflow-wrap: break-word; /* Wrap long text */
-    word-wrap: break-word;
-    border: 1px solid #ccc; /* Add borders for clarity */
+    table-layout: auto !important;
   }
   
-  /* Ensure all content within the printable card is visible */
+  .printable-card th,
+  .printable-card td {
+    padding: 2px 4px !important;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    border: 1px solid #ccc;
+    color: black !important;
+  }
+  
+  /* Hide interactive elements, but show their values */
   .printable-card input,
   .printable-card textarea,
   .printable-card button,
   .printable-card [role="combobox"],
-  .printable-card .react-datepicker-wrapper {
+  .printable-card .react-datepicker-wrapper,
+  .printable-card [role="radiogroup"] {
     display: none !important;
   }
-
-  .printable-card .cell-value,
-  .printable-card .form-value,
+  
+  /* Create pseudo-content to show the value of form fields */
+  .printable-card .form-value::after {
+    content: attr(data-value);
+    display: block;
+    white-space: pre-wrap;
+  }
+  
+  /* General text elements */
   .printable-card p,
   .printable-card span,
   .printable-card div {
-    display: block !important;
-    min-height: auto !important;
-    padding: 0 !important;
-    border: none !important;
     color: black !important;
-    white-space: pre-wrap !important; /* to respect newlines in textareas */
-    font-size: 8px !important;
   }
 
-  .printable-card [data-state=checked] {
-    background-color: hsl(var(--primary)) !important;
-    border-color: hsl(var(--primary)) !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .printable-card [data-state=checked] > svg {
-    color: hsl(var(--primary-foreground)) !important;
-  }
-  
+  /* Ensure progress bars are visible and styled */
   .printable-card [role="progressbar"] {
     display: block !important;
     border: 1px solid #ccc;
