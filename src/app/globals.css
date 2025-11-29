@@ -137,47 +137,57 @@
 
   .printable-card th,
   .printable-card td {
-    padding: 1px 2px !important; /* Reduce padding further */
+    padding: 2px 4px !important; /* Adjust padding */
     overflow-wrap: break-word; /* Wrap long text */
     word-wrap: break-word;
+    border: 1px solid #ccc; /* Add borders for clarity */
   }
-
-  .printable-content input,
-  .printable-content textarea,
-  .printable-content button {
+  
+  /* Ensure all content within the printable card is visible */
+  .printable-card input,
+  .printable-card textarea,
+  .printable-card button,
+  .printable-card [role="combobox"],
+  .printable-card .react-datepicker-wrapper {
     display: none !important;
   }
 
-  .printable-content .form-value,
-  .printable-card .cell-value {
+  .printable-card .cell-value,
+  .printable-card .form-value,
+  .printable-card p,
+  .printable-card span,
+  .printable-card div {
     display: block !important;
     min-height: auto !important;
-    padding: 2px 4px !important;
-    border-bottom: none !important;
+    padding: 0 !important;
+    border: none !important;
     color: black !important;
-    white-space: pre-wrap; /* to respect newlines in textareas */
+    white-space: pre-wrap !important; /* to respect newlines in textareas */
     font-size: 8px !important;
   }
 
-  .printable-content .form-value {
-    display: block !important;
-    border-bottom: 1px solid #ccc;
-    min-height: 20px;
-    padding: 2px;
-  }
-  .printable-content .form-value::after {
-    content: attr(data-value);
-  }
-
-  /* Ensure checkbox state is visible */
-  [data-state=checked] {
+  .printable-card [data-state=checked] {
     background-color: hsl(var(--primary)) !important;
     border-color: hsl(var(--primary)) !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  [data-state=checked] > svg {
+  .printable-card [data-state=checked] > svg {
     color: hsl(var(--primary-foreground)) !important;
+  }
+  
+  .printable-card [role="progressbar"] {
+    display: block !important;
+    border: 1px solid #ccc;
+    height: 10px;
+    background-color: #e9ecef;
+  }
+  
+  .printable-card [role="progressbar"] > div {
+    height: 100%;
+    background-color: #2196F3 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }
