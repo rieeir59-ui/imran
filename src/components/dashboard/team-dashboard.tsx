@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
-import { collection, onSnapshot, doc, deleteDoc, writeBatch, getDoc, setDoc, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, writeBatch, getDoc, setDoc, getDocs, query, where } from 'firebase/firestore';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
@@ -56,20 +56,11 @@ interface Task {
   status: 'Assigned' | 'In Progress' | 'Completed';
 }
 
-const setupInitialTeam = async (firestore: any, user: any) => {
+const syncArchitectsTeam = async (firestore: any, user: any) => {
     const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
+    const architectQuery = query(employeesCollectionRef, where("designation", "==", "Architect"));
     
-    // First, get existing employees to prevent duplicates
-    const existingEmployeesSnap = await getDocs(employeesCollectionRef).catch(error => {
-        const permissionError = new FirestorePermissionError({
-          path: `users/${user.uid}/employees`,
-          operation: 'list',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw error;
-    });
-    const existingEmployeeNames = new Set(existingEmployeesSnap.docs.map(doc => doc.data().name));
-
+    // The authoritative list of architects.
     const correctArchitects = [
       { name: "Sobia Razzak", designation: "Architect" },
       { name: "Luqman Aslam", designation: "Architect" },
@@ -78,31 +69,56 @@ const setupInitialTeam = async (firestore: any, user: any) => {
       { name: "M Waleed Zahid", designation: "Architect" },
       { name: "M Khizar", designation: "Architect" },
     ];
-    
-    const batch = writeBatch(firestore);
-    let hasChanges = false;
+    const correctArchitectNames = new Set(correctArchitects.map(a => a.name));
 
-    correctArchitects.forEach(architect => {
-        if (!existingEmployeeNames.has(architect.name)) {
-            const newDocRef = doc(employeesCollectionRef);
-            batch.set(newDocRef, architect);
-            hasChanges = true;
+    try {
+        const architectSnapshot = await getDocs(architectQuery).catch(error => {
+            const permissionError = new FirestorePermissionError({
+                path: employeesCollectionRef.path,
+                operation: 'list',
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            throw error;
+        });
+
+        const existingArchitects = architectSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
+        const existingArchitectNames = new Set(existingArchitects.map(a => a.name));
+        
+        const batch = writeBatch(firestore);
+        let changesMade = false;
+
+        // Delete architects who are not in the correct list
+        existingArchitects.forEach(architect => {
+            if (!correctArchitectNames.has(architect.name)) {
+                const docRef = doc(firestore, `users/${user.uid}/employees`, architect.id);
+                batch.delete(docRef);
+                changesMade = true;
+            }
+        });
+
+        // Add architects who are in the correct list but not in the database
+        correctArchitects.forEach(architect => {
+            if (!existingArchitectNames.has(architect.name)) {
+                const newDocRef = doc(employeesCollectionRef);
+                batch.set(newDocRef, architect);
+                changesMade = true;
+            }
+        });
+
+        if (changesMade) {
+            return batch.commit();
         }
-    });
-  
-    if (!hasChanges) {
-        return Promise.resolve(); // No changes to commit
-    }
 
-    return batch.commit().catch(error => {
-        const permissionError = new FirestorePermissionError({
+    } catch (error) {
+        console.error("Error syncing architects team:", error);
+         const permissionError = new FirestorePermissionError({
           path: `users/${user.uid}/employees`,
-          operation: 'write',
-          requestResourceData: 'Initial Team Setup', // Simplified for context
+          operation: 'write', 
+          requestResourceData: 'Sync Architects Team',
         });
         errorEmitter.emit('permission-error', permissionError);
         throw error;
-    });
+    }
 };
 
 
@@ -145,9 +161,9 @@ export default function TeamDashboard() {
                 throw serverError;
             });
 
-            if (!docSnap.exists() || !docSnap.data().teamSetupDone) {
-                await setupInitialTeam(firestore, user);
-                await setDoc(setupDocRef, { teamSetupDone: true });
+            if (!docSnap.exists() || !docSnap.data().teamSetupDoneV2) { // Use a new version flag
+                await syncArchitectsTeam(firestore, user);
+                await setDoc(setupDocRef, { teamSetupDoneV2: true }, { merge: true });
             }
         } catch (error) {
             console.error("Error during initial setup check:", error);
