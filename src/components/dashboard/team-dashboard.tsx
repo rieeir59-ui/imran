@@ -56,23 +56,28 @@ interface Task {
   status: 'Assigned' | 'In Progress' | 'Completed';
 }
 
-const syncArchitectsTeam = async (firestore: any, user: any) => {
+const syncAllTeams = async (firestore: any, user: any) => {
     const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
-    const architectQuery = query(employeesCollectionRef, where("designation", "==", "Architect"));
-    
-    // The authoritative list of architects.
-    const correctArchitects = [
+
+    const allTeams = [
       { name: "Sobia Razzak", designation: "Architect" },
       { name: "Luqman Aslam", designation: "Architect" },
       { name: "Syed M Asad", designation: "Architect" },
       { name: "M Haseeb", designation: "Architect" },
       { name: "M Waleed Zahid", designation: "Architect" },
       { name: "M Khizar", designation: "Architect" },
+      { name: "Rabiya", designation: "Software Engineer" },
+      { name: "Eman", designation: "Software Engineer" },
+      { name: "Imran Abbas", designation: "Software Engineer" },
+      { name: "M Nouman", designation: "Quantity Surveyor" },
+      { name: "M Mujahid", designation: "Draftsperson" },
+      { name: "M Jabbar", designation: "Draftsperson" },
+      { name: "M Waqas", designation: "Draftsperson" },
     ];
-    const correctArchitectNames = new Set(correctArchitects.map(a => a.name));
+    const correctEmployeeNames = new Set(allTeams.map(e => e.name));
 
     try {
-        const architectSnapshot = await getDocs(architectQuery).catch(error => {
+        const querySnapshot = await getDocs(employeesCollectionRef).catch(error => {
             const permissionError = new FirestorePermissionError({
                 path: employeesCollectionRef.path,
                 operation: 'list',
@@ -81,26 +86,26 @@ const syncArchitectsTeam = async (firestore: any, user: any) => {
             throw error;
         });
 
-        const existingArchitects = architectSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
-        const existingArchitectNames = new Set(existingArchitects.map(a => a.name));
+        const existingEmployees = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
+        const existingEmployeeNames = new Set(existingEmployees.map(e => e.name));
         
         const batch = writeBatch(firestore);
         let changesMade = false;
 
-        // Delete architects who are not in the correct list
-        existingArchitects.forEach(architect => {
-            if (!correctArchitectNames.has(architect.name)) {
-                const docRef = doc(firestore, `users/${user.uid}/employees`, architect.id);
+        // Delete employees who are not in the correct list
+        existingEmployees.forEach(employee => {
+            if (!correctEmployeeNames.has(employee.name)) {
+                const docRef = doc(firestore, `users/${user.uid}/employees`, employee.id);
                 batch.delete(docRef);
                 changesMade = true;
             }
         });
 
-        // Add architects who are in the correct list but not in the database
-        correctArchitects.forEach(architect => {
-            if (!existingArchitectNames.has(architect.name)) {
+        // Add employees who are in the correct list but not in the database
+        allTeams.forEach(employee => {
+            if (!existingEmployeeNames.has(employee.name)) {
                 const newDocRef = doc(employeesCollectionRef);
-                batch.set(newDocRef, architect);
+                batch.set(newDocRef, employee);
                 changesMade = true;
             }
         });
@@ -110,11 +115,11 @@ const syncArchitectsTeam = async (firestore: any, user: any) => {
         }
 
     } catch (error) {
-        console.error("Error syncing architects team:", error);
+        console.error("Error syncing teams:", error);
          const permissionError = new FirestorePermissionError({
           path: `users/${user.uid}/employees`,
           operation: 'write', 
-          requestResourceData: 'Sync Architects Team',
+          requestResourceData: 'Sync All Teams',
         });
         errorEmitter.emit('permission-error', permissionError);
         throw error;
@@ -161,14 +166,14 @@ export default function TeamDashboard() {
                 throw serverError;
             });
 
-            if (!docSnap.exists() || !docSnap.data().teamSetupDoneV2) { // Use a new version flag
-                await syncArchitectsTeam(firestore, user);
-                await setDoc(setupDocRef, { teamSetupDoneV2: true }, { merge: true });
+            if (!docSnap.exists() || !docSnap.data().fullTeamSetupDoneV1) {
+                await syncAllTeams(firestore, user);
+                await setDoc(setupDocRef, { fullTeamSetupDoneV1: true }, { merge: true });
             }
         } catch (error) {
             console.error("Error during initial setup check:", error);
         } finally {
-            setupDoneRef.current = true; // Mark setup as attempted to prevent re-runs
+            setupDoneRef.current = true;
         }
     };
 
@@ -223,10 +228,8 @@ export default function TeamDashboard() {
         snapshot.forEach((doc) => {
           const task = doc.data() as Task;
           if (task.employeeName) {
-            // If any task is completed, mark as completed. Otherwise, if any task exists, mark as assigned.
             if (task.status === 'Completed') {
                 if (taskStatusMap[task.employeeName] !== 'completed') {
-                     // If there are other tasks that are not completed, it remains 'assigned'
                      const allTasksForEmployee = snapshot.docs.map(d => d.data()).filter(d => d.employeeName === task.employeeName);
                      if(allTasksForEmployee.every(t => t.status === 'Completed')) {
                         taskStatusMap[task.employeeName] = 'completed';
