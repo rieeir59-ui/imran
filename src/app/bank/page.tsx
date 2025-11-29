@@ -399,7 +399,7 @@ const Section32 = React.memo(() => (
 ));
 Section32.displayName = 'Section32';
 
-const Section33 = React.memo(() => (<Card><CardHeader><CardTitle>Construction Change Director</CardTitle></CardHeader><CardContent>...</CardContent></Card>));
+const Section33 = React.memo(() => (<Card><CardHeader><CardTitle>Construction Change Director</CardTitle></CardHeader><CardContent><p>This form can be filled out on the <Link href="/construction-change-directive" className="text-primary underline">Construction Change Directive page</Link>.</p></CardContent></Card>));
 Section33.displayName = 'Section33';
 
 
@@ -409,6 +409,36 @@ const components: { [key: string]: React.FC } = {
 };
 
 export default function BankPage() {
+    const { user, isUserLoading } = useUser();
+    const auth = useAuth();
+    
+    useEffect(() => {
+        if (!isUserLoading && !user && auth) {
+          initiateAnonymousSignIn(auth);
+        }
+    }, [isUserLoading, user, auth]);
+
+    if(isUserLoading) {
+        return <div className="p-8 text-center"><Loader2 className="animate-spin" /></div>
+    }
+
+    if(!user && !isUserLoading) {
+         return (
+       <main className="p-4 md:p-6 lg:p-8">
+        <Card>
+          <CardHeader><CardTitle>Authentication Required</CardTitle></CardHeader>
+          <CardContent>
+            <Alert variant="destructive">
+              <Terminal className="h-4 w-4" />
+              <AlertTitle>Unable to Authenticate</AlertTitle>
+              <AlertDescription>We could not sign you in. Please refresh the page to try again.</AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      </main>
+     )
+    }
+
     return (
         <main className="p-4 md:p-6 lg:p-8">
             <div className="grid grid-cols-12 gap-8">
