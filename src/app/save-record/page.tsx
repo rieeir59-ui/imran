@@ -172,6 +172,20 @@ export default function SaveRecordPage() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
+    const handleDeleteRecord = async (record: typeof savedRecords[0]) => {
+        if (!user || !firestore || !record.docPath) return;
+
+        const docRef = doc(firestore, `users/${user.uid}/${record.docPath}`);
+        try {
+            await deleteDoc(docRef);
+            setRecordStatus(prev => ({ ...prev, [record.href]: false }));
+            toast({ title: 'Record Deleted', description: `The data for "${record.title}" has been deleted.` });
+        } catch (error) {
+            console.error("Error deleting record:", error);
+            toast({ variant: 'destructive', title: 'Deletion Failed', description: 'Could not delete the saved record.' });
+        }
+    };
+    
     const handleDeleteSchedule = async (scheduleId: string, employeeName: string) => {
         if (!user || !firestore) {
             toast({ variant: 'destructive', title: 'Error', description: 'Authentication error.'});
@@ -234,20 +248,43 @@ export default function SaveRecordPage() {
                 <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {filteredRecords.length > 0 ? (
                         filteredRecords.map((record) => (
-                            <Link href={record.href} key={record.title} className="relative block hover:bg-accent transition-colors p-4 rounded-lg border">
-                                <div className="flex items-start gap-4">
-                                    <record.icon className="h-8 w-8 text-primary mt-1" />
+                            <div key={record.title} className="relative group p-4 rounded-lg border flex items-start gap-4 hover:bg-accent transition-colors">
+                                <Link href={record.href} className="flex-grow flex items-start gap-4">
+                                    <record.icon className="h-8 w-8 text-primary mt-1 flex-shrink-0" />
                                     <div>
                                         <h3 className="text-lg font-bold">{record.title}</h3>
                                         <p className="text-sm text-muted-foreground">{record.description}</p>
                                     </div>
-                                </div>
+                                </Link>
                                 {record.docPath && (
-                                    <Badge variant={recordStatus[record.href] ? "default" : "secondary"} className={cn("absolute top-2 right-2", recordStatus[record.href] && "bg-green-500")}>
-                                        {isLoadingStatus ? <Loader2 className="h-3 w-3 animate-spin"/> : recordStatus[record.href] ? 'Completed' : 'Not Started'}
-                                    </Badge>
+                                    <div className="flex items-center gap-2">
+                                        <Badge variant={recordStatus[record.href] ? "default" : "secondary"} className={cn("absolute top-2 right-2", recordStatus[record.href] && "bg-green-500")}>
+                                            {isLoadingStatus ? <Loader2 className="h-3 w-3 animate-spin"/> : recordStatus[record.href] ? 'Completed' : 'Not Started'}
+                                        </Badge>
+                                        {recordStatus[record.href] && (
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="absolute bottom-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            This will permanently delete the saved data for "{record.title}". This action cannot be undone.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDeleteRecord(record)}>Delete</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        )}
+                                    </div>
                                 )}
-                            </Link>
+                            </div>
                         ))
                     ) : (
                         !isLoadingSchedules && filteredSchedules.length === 0 && (
@@ -400,5 +437,8 @@ export default function SaveRecordPage() {
     )
 
     
+
+    
+}
 
     
