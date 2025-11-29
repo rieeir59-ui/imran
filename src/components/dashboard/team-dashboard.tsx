@@ -15,6 +15,7 @@ import {
   PlusCircle,
   Trash2,
   CircleDotDashed,
+  Check,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
@@ -167,9 +168,9 @@ export default function TeamDashboard() {
                 throw serverError;
             });
 
-            if (!docSnap.exists() || !docSnap.data().fullTeamSetupDoneV2) {
+            if (!docSnap.exists() || !docSnap.data().fullTeamSetupDoneV3) {
                 await syncAllTeams(firestore, user);
-                await setDoc(setupDocRef, { fullTeamSetupDoneV2: true }, { merge: true });
+                await setDoc(setupDocRef, { fullTeamSetupDoneV3: true }, { merge: true });
             }
         } catch (error) {
             console.error("Error during initial setup check:", error);
@@ -226,23 +227,19 @@ export default function TeamDashboard() {
 
     const unsubscribe = onSnapshot(tasksCollectionRef, (snapshot) => {
         const taskStatusMap: Record<string, 'completed' | 'assigned'> = {};
+        const employeeHasTask: Record<string, boolean> = {};
+
         snapshot.forEach((doc) => {
           const task = doc.data() as Task;
           if (task.employeeName) {
-            if (task.status === 'Completed') {
-                if (taskStatusMap[task.employeeName] !== 'completed') {
-                     const allTasksForEmployee = snapshot.docs.map(d => d.data()).filter(d => d.employeeName === task.employeeName);
-                     if(allTasksForEmployee.every(t => t.status === 'Completed')) {
-                        taskStatusMap[task.employeeName] = 'completed';
-                     } else {
-                        taskStatusMap[task.employeeName] = 'assigned';
-                     }
-                }
-            } else if (!taskStatusMap[task.employeeName]) {
-                 taskStatusMap[task.employeeName] = 'assigned';
-            }
+            employeeHasTask[task.employeeName] = true;
           }
         });
+        
+        Object.keys(employeeHasTask).forEach(name => {
+             taskStatusMap[name] = 'assigned';
+        })
+
         setEmployeeTaskStatus(taskStatusMap);
     }, (error) => {
         console.error("Error fetching tasks:", error);
@@ -272,7 +269,7 @@ export default function TeamDashboard() {
   };
 
   const renderEmployeeCard = (employee: { id: string, name: string; designation: string }) => {
-    const taskStatus = employeeTaskStatus[employee.name];
+    const hasTask = !!employeeTaskStatus[employee.name];
     const href = `/weekly-schedule?employee=${encodeURIComponent(employee.name)}&designation=${encodeURIComponent(employee.designation)}`;
 
     return (
@@ -280,12 +277,8 @@ export default function TeamDashboard() {
          <Link href={href} className="block p-4 rounded-lg border hover:bg-accent transition-colors flex flex-col items-center justify-center h-full min-h-[124px]">
             <User className="h-8 w-8 text-primary mb-2" />
             <span className="font-semibold text-center">{employee.name}</span>
-            {taskStatus === 'completed' ? (
+            {hasTask && (
               <CheckCircle className="h-5 w-5 text-green-500 absolute top-2 right-2" />
-            ) : taskStatus === 'assigned' ? (
-              <CircleDotDashed className="h-5 w-5 text-blue-500 absolute top-2 right-2" />
-            ) : (
-              <XCircle className="h-5 w-5 text-red-500 absolute top-2 right-2" />
             )}
         </Link>
         <AlertDialog>
