@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
-import { collection, onSnapshot, doc, deleteDoc, writeBatch, getDoc, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, writeBatch, getDoc, setDoc, getDocs } from 'firebase/firestore';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
@@ -59,6 +59,17 @@ interface Task {
 const setupInitialTeam = async (firestore: any, user: any) => {
     const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
     
+    // First, get existing employees to prevent duplicates
+    const existingEmployeesSnap = await getDocs(employeesCollectionRef).catch(error => {
+        const permissionError = new FirestorePermissionError({
+          path: `users/${user.uid}/employees`,
+          operation: 'list',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw error;
+    });
+    const existingEmployeeNames = new Set(existingEmployeesSnap.docs.map(doc => doc.data().name));
+
     const correctArchitects = [
       { name: "Sobia Razzak", designation: "Architect" },
       { name: "Luqman Aslam", designation: "Architect" },
@@ -69,12 +80,20 @@ const setupInitialTeam = async (firestore: any, user: any) => {
     ];
     
     const batch = writeBatch(firestore);
+    let hasChanges = false;
 
     correctArchitects.forEach(architect => {
-        const newDocRef = doc(employeesCollectionRef);
-        batch.set(newDocRef, architect);
+        if (!existingEmployeeNames.has(architect.name)) {
+            const newDocRef = doc(employeesCollectionRef);
+            batch.set(newDocRef, architect);
+            hasChanges = true;
+        }
     });
   
+    if (!hasChanges) {
+        return Promise.resolve(); // No changes to commit
+    }
+
     return batch.commit().catch(error => {
         const permissionError = new FirestorePermissionError({
           path: `users/${user.uid}/employees`,
@@ -115,7 +134,7 @@ export default function TeamDashboard() {
     const checkAndRunInitialSetup = async () => {
         if (setupDoneRef.current) return;
         
-        const setupDocRef = doc(firestore, `users/${user.uid}/app-settings/initialSetup`);
+        const setupDocRef = doc(firestore, `users/${user.uid}/app-settings/initialTeamSetup`);
         try {
             const docSnap = await getDoc(setupDocRef).catch(serverError => {
                 const permissionError = new FirestorePermissionError({
@@ -130,9 +149,10 @@ export default function TeamDashboard() {
                 await setupInitialTeam(firestore, user);
                 await setDoc(setupDocRef, { teamSetupDone: true });
             }
-            setupDoneRef.current = true;
         } catch (error) {
             console.error("Error during initial setup check:", error);
+        } finally {
+            setupDoneRef.current = true; // Mark setup as attempted to prevent re-runs
         }
     };
 
