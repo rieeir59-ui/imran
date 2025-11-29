@@ -73,6 +73,7 @@ const syncAllTeams = async (firestore: any, user: any) => {
       { name: "M Mujahid", designation: "Draftsperson" },
       { name: "M Jabbar", designation: "Draftsperson" },
       { name: "M Waqas", designation: "Draftsperson" },
+      { name: "M Mohsin", designation: "3D Visualizer" },
     ];
     const correctEmployeeNames = new Set(allTeams.map(e => e.name));
 
@@ -166,9 +167,9 @@ export default function TeamDashboard() {
                 throw serverError;
             });
 
-            if (!docSnap.exists() || !docSnap.data().fullTeamSetupDoneV1) {
+            if (!docSnap.exists() || !docSnap.data().fullTeamSetupDoneV2) {
                 await syncAllTeams(firestore, user);
-                await setDoc(setupDocRef, { fullTeamSetupDoneV1: true }, { merge: true });
+                await setDoc(setupDocRef, { fullTeamSetupDoneV2: true }, { merge: true });
             }
         } catch (error) {
             console.error("Error during initial setup check:", error);
@@ -367,4 +368,3 @@ export default function TeamDashboard() {
     </div>
   );
 }
-
