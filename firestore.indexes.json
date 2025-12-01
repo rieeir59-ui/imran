@@ -3,7 +3,7 @@
   "indexes": [
     {
       "collectionGroup": "files",
-      "queryScope": "COLLECTION",
+      "queryScope": "COLLECTION_GROUP",
       "fields": [
         {
           "fieldPath": "uploadedBy",
@@ -17,7 +17,7 @@
     },
     {
       "collectionGroup": "files",
-      "queryScope": "COLLECTION",
+      "queryScope": "COLLECTION_GROUP",
       "fields": [
         {
           "fieldPath": "projectId",
@@ -31,7 +31,7 @@
     },
     {
       "collectionGroup": "files",
-      "queryScope": "COLLECTION",
+      "queryScope": "COLLECTION_GROUP",
       "fields": [
         {
           "fieldPath": "type",
@@ -45,7 +45,7 @@
     },
     {
       "collectionGroup": "files",
-      "queryScope": "COLLECTION",
+      "queryScope": "COLLECTION_GROUP",
       "fields": [
         {
           "fieldPath": "uploadedBy",
@@ -59,7 +59,7 @@
     },
     {
       "collectionGroup": "files",
-      "queryScope": "COLLECTION",
+      "queryScope": "COLLECTION_GROUP",
       "fields": [
         {
           "fieldPath": "uploadedBy",
