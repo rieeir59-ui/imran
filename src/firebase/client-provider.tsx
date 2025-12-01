@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { type ReactNode } from 'react';
@@ -18,6 +19,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
       auth={firebaseServices.auth}
       firestore={firebaseServices.firestore}
       storage={firebaseServices.storage}
+      googleProvider={firebaseServices.googleProvider}
     >
       {children}
     </FirebaseProvider>
