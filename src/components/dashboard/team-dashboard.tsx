@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
-import { collection, onSnapshot, doc, deleteDoc, writeBatch, getDoc, setDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, writeBatch, getDocs, setDoc, query, where } from 'firebase/firestore';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
@@ -57,7 +57,7 @@ interface Task {
   status: 'Assigned' | 'In Progress' | 'Completed';
 }
 
-const syncAllTeams = async (firestore: any, user: any) => {
+const syncAllTeams = (firestore: any, user: any) => {
     const employeesCollectionRef = collection(firestore, `users/${user.uid}/employees`);
 
     const allTeams = [
@@ -78,54 +78,48 @@ const syncAllTeams = async (firestore: any, user: any) => {
     ];
     const correctEmployeeNames = new Set(allTeams.map(e => e.name));
 
-    try {
-        const querySnapshot = await getDocs(employeesCollectionRef).catch(error => {
+    getDocs(employeesCollectionRef)
+        .then(querySnapshot => {
+            const existingEmployees = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
+            const existingEmployeeNames = new Set(existingEmployees.map(e => e.name));
+            
+            const batch = writeBatch(firestore);
+            let changesMade = false;
+
+            existingEmployees.forEach(employee => {
+                if (!correctEmployeeNames.has(employee.name)) {
+                    const docRefToDelete = doc(firestore, `users/${user.uid}/employees`, employee.id);
+                    batch.delete(docRefToDelete);
+                    changesMade = true;
+                }
+            });
+
+            allTeams.forEach(employee => {
+                if (!existingEmployeeNames.has(employee.name)) {
+                    const newDocRef = doc(employeesCollectionRef);
+                    batch.set(newDocRef, employee);
+                    changesMade = true;
+                }
+            });
+
+            if (changesMade) {
+                batch.commit().catch(serverError => {
+                    const permissionError = new FirestorePermissionError({
+                        path: `users/${user.uid}/employees`,
+                        operation: 'write',
+                        requestResourceData: 'Sync All Teams Batch Write',
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
+                });
+            }
+        })
+        .catch(serverError => {
             const permissionError = new FirestorePermissionError({
                 path: employeesCollectionRef.path,
                 operation: 'list',
             });
             errorEmitter.emit('permission-error', permissionError);
-            throw error;
         });
-
-        const existingEmployees = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Employee));
-        const existingEmployeeNames = new Set(existingEmployees.map(e => e.name));
-        
-        const batch = writeBatch(firestore);
-        let changesMade = false;
-
-        // Delete employees who are not in the correct list
-        existingEmployees.forEach(employee => {
-            if (!correctEmployeeNames.has(employee.name)) {
-                const docRef = doc(firestore, `users/${user.uid}/employees`, employee.id);
-                batch.delete(docRef);
-                changesMade = true;
-            }
-        });
-
-        // Add employees who are in the correct list but not in the database
-        allTeams.forEach(employee => {
-            if (!existingEmployeeNames.has(employee.name)) {
-                const newDocRef = doc(employeesCollectionRef);
-                batch.set(newDocRef, employee);
-                changesMade = true;
-            }
-        });
-
-        if (changesMade) {
-            return batch.commit();
-        }
-
-    } catch (error) {
-        console.error("Error syncing teams:", error);
-         const permissionError = new FirestorePermissionError({
-          path: `users/${user.uid}/employees`,
-          operation: 'write', 
-          requestResourceData: 'Sync All Teams',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw error;
-    }
 };
 
 
@@ -168,9 +162,9 @@ export default function TeamDashboard() {
                 throw serverError;
             });
 
-            if (!docSnap.exists() || !docSnap.data().fullTeamSetupDoneV3) {
-                await syncAllTeams(firestore, user);
-                await setDoc(setupDocRef, { fullTeamSetupDoneV3: true }, { merge: true });
+            if (!docSnap.exists() || !docSnap.data().fullTeamSetupV3) {
+                syncAllTeams(firestore, user);
+                await setDoc(setupDocRef, { fullTeamSetupV3: true }, { merge: true });
             }
         } catch (error) {
             console.error("Error during initial setup check:", error);
@@ -248,20 +242,20 @@ export default function TeamDashboard() {
     return () => unsubscribe();
   }, [tasksCollectionRef]);
 
-  const handleDeleteEmployee = async (employeeId: string) => {
+  const handleDeleteEmployee = (employeeId: string) => {
     if (!user || !firestore) {
       toast({ variant: 'destructive', title: 'Error', description: 'Authentication error.' });
       return;
     }
-    const docRef = doc(firestore, `users/${user.uid}/employees`, employeeId);
+    const docRefToDelete = doc(firestore, `users/${user.uid}/employees`, employeeId);
     
-    deleteDoc(docRef)
+    deleteDoc(docRefToDelete)
       .then(() => {
         toast({ title: 'Employee Deleted', description: 'The employee has been removed successfully.' });
       })
       .catch((serverError) => {
         const permissionError = new FirestorePermissionError({
-          path: docRef.path,
+          path: docRefToDelete.path,
           operation: 'delete',
         });
         errorEmitter.emit('permission-error', permissionError);
@@ -278,7 +272,7 @@ export default function TeamDashboard() {
             <User className="h-8 w-8 text-primary mb-2" />
             <span className="font-semibold text-center">{employee.name}</span>
             {hasTask && (
-              <CheckCircle className="h-5 w-5 text-green-500 absolute top-2 right-2" />
+              <Check className="h-5 w-5 text-green-500 absolute top-2 right-2" />
             )}
         </Link>
         <AlertDialog>
