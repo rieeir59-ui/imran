@@ -73,7 +73,7 @@
     },
     {
       "collectionGroup": "files",
-      "queryScope": "COLLECTION",
+      "queryScope": "COLLECTION_GROUP",
       "fields": [
         {
           "fieldPath": "uploadedBy",
@@ -81,7 +81,7 @@
         },
         {
           "fieldPath": "uploadedAt",
-          "order": "DESCENDING"
+          "order": "ASCENDING"
         }
       ]
     }
