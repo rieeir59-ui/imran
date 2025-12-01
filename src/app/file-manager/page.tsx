@@ -71,11 +71,19 @@ export default function FileManagerPage() {
   const fetchFiles = useCallback(async () => {
     if (!user || !firestore) return;
     setIsLoading(true);
-    const q = query(collection(firestore, "files"), where("uploadedBy", "==", user.uid), orderBy("uploadedAt", "desc"));
+    const q = query(collection(firestore, "files"), where("uploadedBy", "==", user.uid));
     
     try {
         const querySnapshot = await getDocs(q);
         const userFiles = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UploadedFile));
+        
+        // Sort files on the client side
+        userFiles.sort((a, b) => {
+            const dateA = a.uploadedAt?.toDate ? a.uploadedAt.toDate() : new Date(0);
+            const dateB = b.uploadedAt?.toDate ? b.uploadedAt.toDate() : new Date(0);
+            return dateB.getTime() - dateA.getTime();
+        });
+
         setFiles(userFiles);
     } catch (error) {
       console.error("Error fetching files:", error);
